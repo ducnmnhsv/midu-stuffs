@@ -1,0 +1,237 @@
+Issue Type,Summary,Priority,Story Points,Epic Link,Assignee,Description,Acceptance Criteria,Labels,Components
+Epic,Emergency Security Patch,Highest,,SECURITY-EPIC-1,,Critical IDOR vulnerability requiring immediate remediation. Complete PII data exposure risk.,,security;critical;idor,Backend
+Story,Implement Server-Side Authorization for eKYC Endpoints,Highest,8,SECURITY-EPIC-1,Backend Lead,"Implement proper object-level authorization on all eKYC-related API endpoints to ensure users can only access their own data.
+
+Technical Implementation:
+- Add authorization middleware to verify userId from JWT matches resource owner
+- Implement check: eKycRecord.userId === authenticatedUser.userId
+- Return 403 Forbidden if authorization fails
+- Add audit logging for all authorization failures
+- Block requests where eKycId doesn't belong to authenticated user
+- Add rate limiting (max 10 requests/minute per user)","- Add authorization middleware to verify userId from JWT matches the resource owner
+- Implement check: eKycRecord.userId === authenticatedUser.userId
+- Return 403 Forbidden if authorization fails
+- Add audit logging for all authorization failures
+- Block requests where eKycId doesn't belong to authenticated user
+- Add rate limiting to prevent brute force attacks (max 10 requests/minute per user)
+- Unit tests for authorization middleware
+- Integration tests attempting cross-user access
+- Penetration test to verify fix
+- Load test to ensure no performance degradation",security;p0;authorization;backend,Backend
+Story,Secure S3 File Server Access,Highest,5,SECURITY-EPIC-1,Backend + DevOps,"Implement authentication and authorization for S3 file server access to prevent unauthorized access to CCCD images.
+
+Technical Implementation:
+- Remove public access from S3 bucket
+- Implement pre-signed URL generation with 15-minute expiration
+- Add authorization check before generating pre-signed URLs
+- Verify user owns the CCCD record before granting access
+- Add watermarking to CCCD images with user ID
+- Implement access logging for all file downloads","- Remove public access from S3 bucket
+- Implement pre-signed URL generation with expiration (15 minutes)
+- Add authorization check before generating pre-signed URLs
+- Verify user owns the CCCD record before granting access
+- Add watermarking to CCCD images with user ID
+- Implement access logging for all file downloads
+- Verify public access is blocked
+- Test pre-signed URL expiration
+- Test cross-user access attempts
+- Verify watermarking is applied",security;p0;s3;file-storage;backend;devops,Backend;DevOps
+Story,Implement UUID-Based Resource Identifiers,Highest,13,SECURITY-EPIC-1,Backend Team,"Replace sequential integer IDs with UUIDs to prevent enumeration attacks.
+
+Migration Strategy:
+1. Add new UUID column to eKYC table
+2. Generate UUIDs for all existing records
+3. Update API to accept both formats (transition period)
+4. Update mobile app to use UUIDs
+5. Deprecate integer ID endpoints
+6. Remove integer ID column after full migration","- Migrate eKycId from integer to UUID v4
+- Update database schema with UUID column
+- Create migration script with zero downtime
+- Update all API endpoints to use UUID
+- Maintain backward compatibility during transition period
+- Update mobile app to handle UUID format
+- Add database indexes for UUID lookups
+- Test migration script on staging data
+- Verify no data loss during migration
+- Test API with both ID formats
+- Performance test UUID lookups
+- Test mobile app compatibility",security;p0;uuid;migration;backend,Backend
+Story,Forensic Investigation of Existing Breach,Highest,8,SECURITY-EPIC-1,Security Team + Legal,"Investigate if the vulnerability has been exploited and identify affected users.
+
+Investigation Steps:
+1. Analyze API access logs for last 6 months
+2. Identify requests with mismatched userId and eKycId
+3. Track S3 access logs for unauthorized downloads
+4. Correlate suspicious activities
+5. Determine data exposure scope
+6. Assess legal notification requirements","- Analyze access logs for suspicious patterns
+- Identify all instances of cross-user data access
+- Create list of potentially affected users
+- Determine scope and timeline of potential breach
+- Document findings for legal/compliance team
+- Prepare user notification if required
+- Report to regulatory authorities if required (GDPR/PDPA)",security;p0;forensics;compliance;legal,Security;Legal
+Epic,eContract Integration Security,Highest,,SECURITY-EPIC-2,,Secure the third-party eContract integration to prevent unauthorized access through token manipulation.,,security;critical;econtract;integration,Backend
+Story,Secure eContract Third-Party Integration,Highest,8,SECURITY-EPIC-2,Backend + Integration,"Implement secure token exchange with eContract system to prevent unauthorized access.
+
+Technical Implementation:
+- Implement server-to-server token exchange (no client exposure)
+- Generate unique session tokens per user request
+- Add token expiration (30 minutes)
+- Bind tokens to specific user ID and IP address
+- Validate token ownership before displaying WebView
+- Implement token revocation mechanism
+- Add CSRF protection for WebView interactions","- Implement server-to-server token exchange (no client exposure)
+- Generate unique session tokens per user request
+- Add token expiration (30 minutes)
+- Bind tokens to specific user ID and IP address
+- Validate token ownership before displaying WebView
+- Implement token revocation mechanism
+- Add CSRF protection for WebView interactions
+- Test token expiration
+- Test IP binding validation
+- Test cross-user token usage attempts
+- Test CSRF protection
+- Load test token generation",security;p0;econtract;integration;backend,Backend
+Story,Implement Request Signing for eContract API,Highest,5,SECURITY-EPIC-2,Backend,"Add cryptographic request signing to prevent request tampering.
+
+Technical Implementation:
+- Implement HMAC-SHA256 request signing
+- Include timestamp in signature to prevent replay attacks
+- Validate signature on server side
+- Reject requests with invalid signatures
+- Implement signature key rotation mechanism
+- Add monitoring for signature validation failures","- Implement HMAC-SHA256 request signing
+- Include timestamp in signature to prevent replay attacks
+- Validate signature on server side
+- Reject requests with invalid signatures
+- Implement signature key rotation mechanism
+- Add monitoring for signature validation failures
+- Test signature validation
+- Test replay attack prevention
+- Test key rotation
+- Performance test signing overhead",security;p0;signing;cryptography;backend,Backend
+Epic,Comprehensive Security Audit,High,,SECURITY-EPIC-3,,Conduct comprehensive security audit and implement automated testing to prevent future vulnerabilities.,,security;audit;testing,Security;QA
+Story,Complete API Security Audit,High,13,SECURITY-EPIC-3,Security Team + Backend Lead,"Conduct comprehensive security audit of all API endpoints to identify similar IDOR vulnerabilities.
+
+Audit Checklist:
+- User profile endpoints
+- Transaction history endpoints
+- Document upload/download endpoints
+- Account management endpoints
+- Payment endpoints
+- Notification endpoints
+- Settings endpoints","- Audit all API endpoints for authorization checks
+- Create inventory of all endpoints with user-specific data
+- Identify all endpoints using sequential IDs
+- Document authorization model for each endpoint
+- Create security test suite for all endpoints
+- Generate security audit report
+- Prioritize remediation of findings
+- Deliverables: Security audit report (PDF); Vulnerability matrix (spreadsheet); Remediation roadmap; Security test suite",security;p1;audit;backend,Security;Backend
+Story,Implement Automated Security Testing,High,8,SECURITY-EPIC-3,QA + Security Engineer,"Set up automated security testing in CI/CD pipeline to prevent future vulnerabilities.
+
+Tools to Implement:
+- OWASP ZAP for dynamic testing
+- SonarQube for static analysis
+- npm audit / Snyk for dependency scanning
+- Custom authorization test framework","- Integrate OWASP ZAP or similar tool in CI/CD
+- Create automated IDOR test cases
+- Add authorization tests for all endpoints
+- Implement pre-deployment security gate
+- Set up security scanning for dependencies
+- Configure alerts for security test failures
+- Create security testing documentation
+- Test all endpoints for IDOR vulnerabilities
+- Test for SQL injection; XSS; CSRF vulnerabilities
+- Test authentication bypass attempts",security;p1;automation;testing;cicd;qa,QA;Security
+Story,Security Awareness Training,High,3,SECURITY-EPIC-3,Security Team + HR,"Conduct security training for development team on secure coding practices.
+
+Training Topics:
+- IDOR vulnerabilities and prevention
+- OWASP Top 10
+- Secure authentication and authorization
+- Input validation and sanitization
+- Secure file handling
+- API security best practices","- Create IDOR vulnerability training materials
+- Conduct workshop on OWASP Top 10
+- Create secure coding guidelines document
+- Implement code review checklist for security
+- Set up regular security training schedule (quarterly)
+- Track training completion for all developers",security;p1;training;education,Security;HR
+Epic,Monitoring & Incident Response,High,,SECURITY-EPIC-4,,Implement comprehensive security monitoring and incident response capabilities.,,security;monitoring;incident-response,DevOps;Security
+Story,Implement Security Monitoring & Alerting,High,8,SECURITY-EPIC-4,DevOps + Security Engineer,"Set up comprehensive security monitoring to detect and alert on suspicious activities.
+
+Metrics to Monitor:
+- Authorization failure rate
+- Failed login attempts
+- API error rate (403/401)
+- Unusual access patterns
+- File download frequency
+- Token generation rate
+
+Alert Conditions:
+- More than 5 authorization failures in 5 minutes from same user
+- More than 10 different eKycId access attempts in 1 minute
+- Access to more than 20 CCCD images in 1 hour
+- Token generation rate exceeds 100/minute","- Implement audit logging for all authorization failures
+- Set up alerts for repeated authorization failures (>5 in 5 minutes)
+- Monitor for sequential ID enumeration attempts
+- Track unusual access patterns (accessing many records quickly)
+- Implement SIEM integration (Splunk/ELK)
+- Create security dashboard in Grafana
+- Set up PagerDuty alerts for critical security events",security;p1;monitoring;alerting;devops,DevOps;Security
+Story,Incident Response Plan,High,5,SECURITY-EPIC-4,Security Team + Management,"Create and document incident response plan for security breaches.
+
+Incident Response Procedures:
+1. Detection: Automated alerts or manual report
+2. Containment: Disable affected endpoints/accounts
+3. Investigation: Analyze logs; identify scope
+4. Eradication: Deploy fixes; patch vulnerabilities
+5. Recovery: Restore services; verify security
+6. Post-Incident: Document lessons learned; update procedures","- Document incident response procedures
+- Define incident severity levels
+- Create communication templates for users
+- Establish incident response team roles
+- Create runbook for common security incidents
+- Set up incident tracking system
+- Conduct incident response drill
+- Deliverables: Incident response playbook; Communication templates; Escalation matrix; Post-incident report template",security;p1;incident-response;compliance,Security;Management
+Epic,Long-Term Security Improvements,Medium,,SECURITY-EPIC-5,,Implement long-term security improvements for defense-in-depth.,,security;improvement;encryption,Backend;DevOps
+Story,Implement API Rate Limiting & Throttling,Medium,5,SECURITY-EPIC-5,Backend + DevOps,"Implement comprehensive rate limiting to prevent abuse and enumeration attacks.
+
+Rate Limit Tiers:
+- Per User: 100 requests/minute; 5000 requests/hour
+- Per IP: 500 requests/minute; 20000 requests/hour
+- Sensitive Endpoints (eKYC; files): 10 requests/minute","- Implement rate limiting per user (100 requests/minute)
+- Implement rate limiting per IP (500 requests/minute)
+- Add exponential backoff for repeated violations
+- Implement CAPTCHA for suspicious activities
+- Create rate limit monitoring dashboard
+- Document rate limits in API documentation",security;p2;rate-limiting;backend;devops,Backend;DevOps
+Story,Implement Data Encryption at Rest,Medium,13,SECURITY-EPIC-5,Backend + DevOps,"Encrypt sensitive PII data at rest to add defense-in-depth.
+
+Fields to Encrypt:
+- CCCD number
+- Phone number
+- Email address
+- Contract number
+- Full name
+- Address","- Implement database encryption for PII fields
+- Encrypt CCCD images in S3 with KMS
+- Implement key rotation mechanism
+- Update backup procedures for encrypted data
+- Document encryption key management
+- Test restore procedures with encrypted data",security;p2;encryption;kms;backend;devops,Backend;DevOps
+Story,Implement Field-Level Access Control,Medium,8,SECURITY-EPIC-5,Backend,"Implement granular field-level access control for sensitive data.
+
+Access Levels:
+- User: Full access to own data
+- Support: Masked view (last 4 digits of CCCD)
+- Admin: Full access with audit logging
+- System: Automated processes only","- Define access levels (user; support; admin)
+- Implement field masking for support staff
+- Add audit logging for sensitive field access
+- Create access control policy engine
+- Implement need-to-know principle
+- Add UI indicators for sensitive data access",security;p2;access-control;rbac;backend,Backend
