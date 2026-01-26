@@ -1,0 +1,9 @@
+{
+    "name": "High Contrast",
+    "background": "#ffffff",
+    "container": "#eeeeee",
+    "border": "#212121",
+    "text": "#000000",
+    "primary": "#212121",
+    "accent": "#212121"
+}
