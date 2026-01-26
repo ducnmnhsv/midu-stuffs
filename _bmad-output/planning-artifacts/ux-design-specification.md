@@ -13,12 +13,11 @@ inputDocuments: ["/Users/ducnguyen/Documents/project/tradex-monitoring/_bmad-out
 ## Executive Summary
 
 ### Project Vision
-To provide a secure, high-fidelity capture mechanism that bridges the gap between user-reported issues and engineering reproduction, specifically tailored for the high-stakes Fintech trading environment.
+To provide a minimal, one-touch system log capture mechanism that allows users to securely share anonymous technical data for bug investigation without exposing personal information.
 
 ### Target Users
-*   **Active Traders:** Demand zero performance lag and absolute privacy.
-*   **Customer Support:** Require high-speed lookup and clear status visibility.
-*   **Product Engineers:** Depend on precise, chronologically accurate navigation and API sequences.
+*   **Traders:** Who want to report a technical glitch without manual effort or privacy concerns.
+*   **Engineers:** Who need anonymous system logs to investigate logic errors.
 
 ### Key Design Challenges
 *   **Interface Non-Intrusion:** Designing triggers (Shake/Long-press) and notifications (Snackbar) that coexist with a dense trading UI.
@@ -133,14 +132,14 @@ Moving from "Manual Evidence Collection" to "Automated Flight Recording." The us
 ### 2.4 Novel UX Patterns
 **The "Redaction Shield" Animation:** A novel visual pattern where the log blob is shown being passed through a "filter" or "shredder" that leaves only the safe diagnostic data. This fulfills the "Transparent Security" principle.
 
-### 2.5 Experience Mechanics (Luồng Mới)
-1.  **Entry:** Người dùng truy cập vào mục **More** -> **Settings**.
-2.  **Initiation:** Lắc nhẹ thiết bị (Shake) khi đang ở trong màn hình Settings.
-3.  **The Consent Popup (Xác nhận):** Một hộp thoại đơn giản hiện lên ngay lập tức:
-    *   **Tiêu đề:** "Gửi báo cáo hỗ trợ?"
-    *   **Nội dung:** "Chúng tôi sẽ thu thập các bước di chuyển gần đây và dữ liệu kỹ thuật để giúp kỹ sư sửa lỗi. Mọi thông tin cá nhân đều đã được ẩn đi."
-    *   **Nút bấm:** [Hủy] | [Gửi & Xem ID]
-4.  **Feedback:** Nếu bấm [Gửi], thiết bị rung nhẹ (Haptic) và hiện **Investigation ID Card**.
+### 2.5 Experience Mechanics (Minimalist Flow)
+1.  **Entry:** User navigates to **More** -> **Settings**.
+2.  **Trigger:** User shakes the device while on the Settings screen.
+3.  **Consent Popup:** A simple dialog appears:
+    *   **Title:** "Send System Logs?"
+    *   **Body:** "Help us improve by sending anonymous technical logs. No personal data or trade details are collected."
+    *   **Actions:** [Send] | [Cancel]
+4.  **Completion:** Upon tapping Send, a success toast appears: "Logs sent. Thank you!" No further interaction required.
 
 ## Visual Design Foundation
 
@@ -192,39 +191,17 @@ We chose the **Mission Control** aesthetic because it leverages the user's exist
 
 ## User Journey Flows
 
-### Journey 1: The Support-Guided Report (Xác nhận rõ ràng)
-Người dùng gặp sự cố và được nhân viên hỗ trợ hướng dẫn vào mục Cài đặt để gửi log.
+### Journey 1: Minimalist Log Submission
+The user experiences a bug and wants to help the developers.
 
 ```mermaid
 graph TD
-    A[Start: User vào More > Settings] --> B{Lắc máy - Shake}
-    B --> C[Haptic Signal + Popup Yêu cầu cho phép]
-    C -->|Từ chối| D[Đóng popup - Không ghi log]
-    C -->|Đồng ý| E[Thực hiện Redaction & Tạo ID]
-    E --> F[Hiện ID Card để copy gửi Support]
+    A[User vào Settings] --> B{Shake Device}
+    B --> C[Popup: Send Technical Logs?]
+    C -->|Cancel| D[Exit]
+    C -->|Send| E[Anonymous Logs Uploaded]
+    E --> F[Toast: Success Message]
 ```
-
-### Journey 2: The Support Hand-off
-Designing the high-speed transfer of diagnostic data to the support team.
-
-```mermaid
-graph TD
-    A[Start: ID Snackbar Visible] --> B[Interaction: User Taps Snackbar]
-    B --> C[Visual: Detailed ID Card Sheet Appears]
-    C --> D[Action: User Taps 'Copy Investigation ID']
-    D --> E[Visual: Instant Haptic + 'Copied' Toast]
-    E --> F[Context: User Switches to Support Chat]
-    F --> G[Action: Pastes ID and Sends]
-    G --> H[End: Support Confirms Receipt]
-```
-
-### Journey Patterns
-*   **The Impact Snackbar:** A native-style notification that uses depth (shadows) and system-authority styling to stand out from the app's trading data.
-*   **Tap-to-Copy:** Standardizing the 6-digit ID as a mono-spaced, high-legibility string that copies instantly upon a single tap.
-
-### Flow Optimization Principles
-*   **0-Input Redaction:** Removing all manual user steps for privacy. The "Shield" provides the feeling of protection without requiring the user to do anything.
-*   **Frictionless Export:** Ensuring the ID is ready for the support conversation with zero typing.
 
 ## Component Strategy
 
