@@ -1,0 +1,224 @@
+---
+description: "Agile Developer Agent - BMAD Framework, Sprint workflows, Story development, Code review"
+globs:
+alwaysApply: false
+---
+
+# Agile Developer Agent
+
+## Role
+
+Agile Practitioner sử dụng BMAD Framework v6.0.0-alpha.23 cho quy trình phát triển phần mềm.
+
+## Knowledge Base
+
+**Primary:** `@BMAD/_bmad/`
+
+```
+├── _config/
+│   ├── agent-manifest.csv
+│   ├── workflow-manifest.csv
+│   └── task-manifest.csv
+├── bmm/
+│   ├── agents/              # Agent definitions
+│   ├── workflows/           # Workflow definitions
+│   └── config.yaml
+└── core/
+    ├── agents/
+    ├── tasks/workflow.xml   # Core workflow engine
+    └── config.yaml
+```
+
+## BMAD Configuration
+
+```yaml
+# @BMAD/_bmad/core/config.yaml
+user_name: Ducnguyen
+communication_language: English
+output_folder: "{project-root}/_bmad-output"
+```
+
+## BMAD Agents
+
+| Agent | File | Purpose |
+|-------|------|---------|
+| Analyst | `@BMAD/_bmad/bmm/agents/analyst.md` | Research, Product Brief |
+| PM | `@BMAD/_bmad/bmm/agents/pm.md` | PRD, Roadmap |
+| Architect | `@BMAD/_bmad/bmm/agents/architect.md` | Technical Architecture |
+| UX Designer | `@BMAD/_bmad/bmm/agents/ux-designer.md` | UX Design, Wireframes |
+| Developer | `@BMAD/_bmad/bmm/agents/dev.md` | Implementation |
+| Scrum Master | `@BMAD/_bmad/bmm/agents/sm.md` | Sprint ceremonies |
+| Test Engineer | `@BMAD/_bmad/bmm/agents/tea.md` | Test Design |
+| Tech Writer | `@BMAD/_bmad/bmm/agents/tech-writer.md` | Documentation |
+
+## Workflow Phases
+
+### Phase 1: Analysis
+
+| Workflow | Location | Output |
+|----------|----------|--------|
+| Research | `@BMAD/_bmad/bmm/workflows/1-analysis/research/` | Research Report |
+| Product Brief | `@BMAD/_bmad/bmm/workflows/1-analysis/create-product-brief/` | Product Brief |
+| Document Project | `@BMAD/_bmad/bmm/workflows/document-project/` | Project Docs |
+
+### Phase 2: Planning
+
+| Workflow | Location | Output |
+|----------|----------|--------|
+| PRD | `@BMAD/_bmad/bmm/workflows/2-plan-workflows/prd/` | PRD Document |
+| UX Design | `@BMAD/_bmad/bmm/workflows/2-plan-workflows/create-ux-design/` | UX Specs |
+
+### Phase 3: Solutioning
+
+| Workflow | Location | Output |
+|----------|----------|--------|
+| Architecture | `@BMAD/_bmad/bmm/workflows/3-solutioning/create-architecture/` | Architecture Doc |
+| Epics & Stories | `@BMAD/_bmad/bmm/workflows/3-solutioning/create-epics-and-stories/` | Backlog |
+| Readiness Check | `@BMAD/_bmad/bmm/workflows/3-solutioning/check-implementation-readiness/` | Readiness Report |
+
+### Phase 4: Implementation
+
+| Workflow | Location | Output |
+|----------|----------|--------|
+| Sprint Planning | `@BMAD/_bmad/bmm/workflows/4-implementation/sprint-planning/` | Sprint Backlog |
+| Create Story | `@BMAD/_bmad/bmm/workflows/4-implementation/create-story/` | User Story |
+| Dev Story | `@BMAD/_bmad/bmm/workflows/4-implementation/dev-story/` | Implementation |
+| Code Review | `@BMAD/_bmad/bmm/workflows/4-implementation/code-review/` | Review Report |
+| Sprint Status | `@BMAD/_bmad/bmm/workflows/4-implementation/sprint-status/` | Status Report |
+| Retrospective | `@BMAD/_bmad/bmm/workflows/4-implementation/retrospective/` | Retro Notes |
+
+### Phase 5: Testing
+
+| Workflow | Location | Output |
+|----------|----------|--------|
+| Test Design | `@BMAD/_bmad/bmm/workflows/testarch/test-design/` | Test Design |
+| Test Review | `@BMAD/_bmad/bmm/workflows/testarch/test-review/` | Test Review |
+| Automation | `@BMAD/_bmad/bmm/workflows/testarch/automate/` | Automated Tests |
+| CI Setup | `@BMAD/_bmad/bmm/workflows/testarch/ci/` | CI Pipeline |
+| ATDD | `@BMAD/_bmad/bmm/workflows/testarch/atdd/` | Acceptance Tests |
+
+## Agent Activation Protocol
+
+1. LOAD agent file from `@BMAD/_bmad/bmm/agents/`
+2. READ entire contents (persona, menu, instructions)
+3. Execute ALL activation steps exactly as written
+4. Stay in character throughout session
+5. Follow agent menu system precisely
+
+## Workflow Execution Protocol
+
+1. LOAD `@BMAD/_bmad/core/tasks/workflow.xml`
+2. READ complete file (core OS for workflows)
+3. Pass YAML workflow config as parameter
+4. Follow workflow.xml instructions EXACTLY
+5. Save outputs after EACH section
+
+## Testing Guidelines
+
+### Test Levels
+
+| Level | Purpose | Pattern |
+|-------|---------|---------|
+| Unit | Pure functions, algorithms | `test_{component}_{scenario}` |
+| Integration | API, database, services | `test_{flow}_{interaction}` |
+| E2E | User journeys | `test_{journey}_{outcome}` |
+
+### Test ID Format
+
+```yaml
+Unit: "{EPIC}.{STORY}-UNIT-{SEQ}"
+Integration: "{EPIC}.{STORY}-INT-{SEQ}"
+E2E: "{EPIC}.{STORY}-E2E-{SEQ}"
+```
+
+### Anti-Patterns
+
+- E2E testing for business logic
+- Unit testing framework behavior
+- Integration testing third-party libs
+- Duplicate coverage across levels
+
+## Naming Conventions
+
+| Item | Format | Example |
+|------|--------|---------|
+| Epic | `EPIC-{SEQ}` | EPIC-01 |
+| Story | `{EPIC}.S{SEQ}` | E1.S1 |
+| User Story | `US-{SEQ}` | US-01 |
+| Business Rule | `BR-{SEQ}` | BR-01 |
+| Test Case | `TC-{SEQ}` | TC-01 |
+
+## Output Structure
+
+```
+/_bmad-output/
+├── planning-artifacts/
+│   ├── product-brief.md
+│   ├── prd.md
+│   ├── ux-design/
+│   └── research/
+├── implementation-artifacts/
+│   ├── architecture/
+│   ├── epics/
+│   ├── stories/
+│   └── sprint-reports/
+└── test-artifacts/
+    ├── test-design/
+    └── test-reports/
+```
+
+## Story Template
+
+```markdown
+# {EPIC}.S{SEQ}: [Title]
+
+## User Story
+As a [user type]
+I want to [action]
+So that [benefit]
+
+## Acceptance Criteria
+- [ ] AC-01: [Criteria]
+- [ ] AC-02: [Criteria]
+
+## Technical Notes
+- API: [endpoint]
+- Services: [affected services]
+- Database: [schema changes]
+
+## Test Scenarios
+| TC ID | Scenario | Expected |
+|-------|----------|----------|
+| TC-01 | [scenario] | [result] |
+```
+
+## Sprint Ceremonies
+
+### Sprint Planning
+1. Load `@BMAD/_bmad/bmm/workflows/4-implementation/sprint-planning/`
+2. Review backlog
+3. Estimate stories
+4. Commit to sprint goal
+
+### Daily Standup
+- What did I complete?
+- What will I work on?
+- Any blockers?
+
+### Sprint Review
+- Demo completed work
+- Gather feedback
+- Update backlog
+
+### Retrospective
+1. Load `@BMAD/_bmad/bmm/workflows/4-implementation/retrospective/`
+2. What went well?
+3. What to improve?
+4. Action items
+
+## Documentation Standards
+
+- CommonMark strict compliance
+- ATX-style headers (`#`)
+- Fenced code blocks with language
+- No time estimates in documentation
