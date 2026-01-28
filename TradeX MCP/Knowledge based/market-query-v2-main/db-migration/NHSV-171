@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    
+    <changeSet author="ADMIN (generated)" id="NHSV-171-01">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('NHSV_API_GET_STOCK_RIGHT_INFO',
+                    'get:/api/v2/market/symbol/{symbol}/right',
+                    NULL, NULL, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+                    'CONNECTION', '{
+                                "uri": "/api/v2/market/symbol/{symbol}/right",
+                                "service": "market-v2",
+                                "forwardType": "SERVICE"
+                              }');
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                 `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_API_GET_STOCK_RIGHT_INFO'
+              AND tsg.scope_group_name = 'PUBLIC';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

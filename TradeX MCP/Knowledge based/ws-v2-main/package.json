@@ -1,0 +1,24 @@
+{
+  "name": "ws-v2",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "difisoft",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ipaddr": "0.0.9",
+    "jsonwebtoken": "^8.5.1",
+    "nanomatch": "^1.2.13",
+    "redis": "^4.6.12",
+    "sc-codec-min-bin": "^3.0.0",
+    "sc-framework-health-check": "^2.0.0",
+    "serve-static": "^1.14.1",
+    "socketcluster-server": "^14.7.0",
+    "tradex-common": "git+https://github.com/difisoft/tradex-common-16.16.0.git",
+    "tslib": "^1.11.1"
+  },
+  "bin": "./index.js"
+}

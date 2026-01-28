@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>TechX SocketCluster</title>
+  <script type="text/javascript" src="socketcluster.js"></script>
+  <script type="text/javascript" src="sc-codec-min-bin.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <table>
+      <tr>
+        <td>Websocket Host</td>
+        <td>Port</td>
+        <td>Secure</td>
+      </tr>
+      </tr>
+        <td>
+          <input id="host1" value="prod1.dev.tradex.vn" style="width: 200px;"/>
+        </td>
+        <td>
+          <input id="port1" value="8001" style="width: 50px;"/>
+        </td>
+        <td>
+          <input id="checkbox1" type="checkbox">
+        </td>
+      <tr>
+      </tr>
+        <td>
+          <input id="host2" value="prod2.dev.tradex.vn" style="width: 200px;"/>
+        </td>
+        <td>
+          <input id="port2" value="8001" style="width: 50px;"/>
+        </td>
+        <td>
+          <input id="checkbox2" type="checkbox">
+        </td>
+      <tr>
+      </tr>
+        <td>
+          <input id="host3" value="prod3.dev.tradex.vn" style="width: 200px;"/>
+        </td>
+        <td>
+          <input id="port3" value="8001" style="width: 50px;"/>
+        </td>
+        <td>
+          <input id="checkbox3" type="checkbox">
+        </td>
+      <tr>
+        <tr>
+          <td>
+            <button onclick="connect()">Connect</button>
+          </td>
+        </tr>
+    </table>
+    <table>
+      <tr>
+        <td>Mã check</td>
+        <td>
+          <textarea id='listIdCheck' style="width: 300px; height: 100px;"></textarea>
+        </td>
+        
+        <!-- <td>host</td>
+        <td>
+          <input id="host"/>
+        </td>
+        <td>port1</td>
+        <td>
+          <input id="port1" value="8000"/>
+        </td> -->
+        <!-- <td>port2</td>
+        <td>
+          <input id="port2" value="8001"/>
+        </td> -->
+        
+      </tr>
+      <!-- <tr>
+        <td>topic</td>
+        <td>
+          <input id="topic" />
+        </td>
+        <td>maxChannel</td>
+        <td>
+          <input id="channel"/>
+        </td>
+        <td>
+          <button onclick="subscribe()">Subscribe</button>
+        </td>
+
+        <td>
+          <button onclick="checker()">Checker</button>
+        </td> 
+      </tr>-->
+
+      <tr>
+        <tr>
+          <td>
+            <button onclick="checker()">Checker</button>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <button onclick="reset()">Reset</button>
+          </td>
+        </tr>
+    </table>
+    <table id="myTable">
+      <tr>
+        <td style="width: 250px;">Channel</td>
+        <td style="width: 50px;">ws1</td>
+        <td style="width: 50px;">ws2</td>
+        <td style="width: 50px;">ws3</td>
+        <td style="width: 100px;">Check</td>
+      </tr>
+    </table>
+  </div>
+  <script type="text/javascript">
+    var socket1 = null;
+    var socket2 = null;
+    var socket3 = null;
+
+    function createSocket(host, port, secure){
+      let socket = socketCluster.connect({
+        hostname: host,
+        port: port,
+        codecEngine: scCodecMinBin,
+        secure: secure
+      });
+      socket.on('error', function (err) {
+        console.error(err);
+      });
+
+      socket.on('connect', function () {
+        console.log(`Socket ${host}:${port} is connected !`);
+      });
+      return socket;
+    }
+    var connect = () => {
+      socket1 = createSocket(document.getElementById('host1').value, document.getElementById('port1').value, document.getElementById('checkbox1').checked);
+      socket2 = createSocket(document.getElementById('host2').value, document.getElementById('port2').value, document.getElementById('checkbox2').checked);
+      if(document.getElementById('host3').value != '')
+        socket3 = createSocket(document.getElementById('host3').value, document.getElementById('port3').value, document.getElementById('checkbox3').checked);
+    };
+
+    function reset(){
+      socketCluster.destroy(socket1);
+      socket1 = null;
+      socketCluster.destroy(socket2);
+      socket2 = null;
+      if(socket3 != null){
+        socketCluster.destroy(socket3);
+        socket3 = null;
+      }
+      
+
+      for(let i = 1; i <= tableCount; i ++){
+        table.deleteRow(1);
+      }
+      tableCount = 0;
+
+      connect();
+      setTimeout(()=> {
+        checker();
+      },5000);
+    }
+
+    var table = document.getElementById("myTable");
+    var tableCount = 0;
+    function checker(){
+      let listIdCheck = (document.getElementById('listIdCheck').value).split(',');
+      console.log(`checker:`, listIdCheck);
+      for(let i in listIdCheck){
+        let channelName = listIdCheck[i];
+        subs(`market.stock.quote.` + channelName);
+        subs(`market.stock.bidoffer.` + channelName);
+      }
+    }
+
+    function subs(channelName){
+      tableCount++;
+      console.log(`subscribe ${channelName}`);
+      let count1 = 0;
+      let count2 = 0;
+      let count3 = 0;
+      let row = table.insertRow(tableCount);
+      let cell0 = row.insertCell(0);
+      let cell1 = row.insertCell(1);
+      let cell2 = row.insertCell(2);
+      let cell3 = row.insertCell(3);
+      let cell4 = row.insertCell(4);
+      cell0.innerHTML = channelName;
+      cell4.innerHTML = '<span style="color:#FF0000	"> FAIL </span>';
+      var channel1 = socket1.subscribe(channelName);
+      channel1.watch(function (data) {
+        count1++;
+        cell1.innerHTML = count1;
+        if(count1 == count2 && ((socket3 != null && count2 == count3) || socket3 == null)){
+          cell4.innerHTML = '<span style="color:#008000		"> PASS </span>';
+        } else {
+          cell4.innerHTML = '<span style="color:#FF0000	"> FAIL </span>';
+        }
+      });
+      var channel2 = socket2.subscribe(channelName);
+      channel2.watch(function (data) {
+        count2++;
+        cell2.innerHTML = count2;
+        if(count1 == count2 && ((socket3 != null && count2 == count3) || socket3 == null)){
+          cell4.innerHTML = '<span style="color:#008000		"> PASS </span>';
+        } else {
+          cell4.innerHTML = '<span style="color:#FF0000	"> FAIL </span>';
+        }
+      });
+      if(socket3!= null){
+        var channel3 = socket3.subscribe(channelName);
+        channel3.watch(function (data) {
+          count3++;
+          cell3.innerHTML = count3;
+          if(count1 == count2 && ((socket3 != null && count2 == count3) || socket3 == null)){
+            cell4.innerHTML = '<span style="color:#008000		"> PASS </span>';
+          } else {
+            cell4.innerHTML = '<span style="color:#FF0000	"> FAIL </span>';
+          }
+        });
+      }
+    }
+  </script>
+</body>
+
+</html>

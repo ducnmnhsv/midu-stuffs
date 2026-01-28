@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TechX SocketCluster</title>
+    <script type="text/javascript" src="socketcluster.js"></script>
+	<script type="text/javascript" src="sc-codec-min-bin.js"></script>
+</head>
+<body>
+<div class="container">
+    <table>
+        <tr>
+            <td>stock quote count:</td>
+            <td><p id='stockQuoteCount'></p></td>
+        </tr>
+        <tr>
+            <td>index quote count:</td>
+            <td><p id='indexQuoteCount'></p></td>
+        </tr>
+        <tr>
+            <td>bidoffer count:</td>
+            <td><p id='bidOfferCount'></p></td>
+        </tr>
+        <tr>
+            <td>deal count:</td>
+            <td><p id='dealCount'></p></td>
+        </tr>
+        <tr>
+            <td>advertise count:</td>
+            <td><p id='advertiseCount'></p></td>
+        </tr>
+		<tr>
+            <td>futures quote count:</td>
+            <td><p id='futuresQuoteCount'></p></td>
+        </tr>
+		<tr>
+            <td>futures bid-offer count:</td>
+            <td><p id='futuresBidOfferCount'></p></td>
+        </tr>
+    </table>
+
+    <textarea id="result" cols="80" rows="10"></textarea>
+    </br>
+    <span>Follow one stockCode/indexCode, Example:</span></br>
+    <a href="/bid-offer?code=ACB" target="_blank">/bid-offer?code=ACB</a></br>
+    <a href="/stock?code=ACB" target="_blank">/stock?code=ACB</a></br>
+    <a href="/deal?code=ACB" target="_blank">/deal?code=ACB</a></br>
+    <a href="/advertise?code=ACB" target="_blank">/advertise?code=ACB</a></br>
+    <a href="/index?code=VNIndex" target="_blank">/index?code=VNIndex</a></br>
+	<a href="/futures?code=VN30F1812" target="_blank">/futures?code=VN30F1812</a></br>
+	<a href="/futures-bid-offer?code=VN30F1812" target="_blank">/futures-bid-offer?code=VN30F1812</a></br>
+    <a href="/onesignal" target="_blank">/onesignal</a></br>
+    <a href="/disconnect-notify?username=102c020233" target="_blank">/disconnect-notify?username=102c020233</a></br>
+	<a href="/push.html" target="_blank">/push.html (demo publish to channel)</a></br>
+
+
+</div>
+<script type="text/javascript">
+  var stockQuoteCount = 0;
+  var indexQuoteCount = 0;
+  var bidOfferCount = 0;
+  var dealCount = 0;
+  var advertiseCount = 0;
+  var futuresQuoteCount = 0;
+  var futuresBidOfferCount = 0;
+
+  var channels = [
+    {'name': 'stockUpdate', 'topic': 'market.stock.quote'},
+	{'name': 'futuresUpdate', 'topic': 'market.futures.quote'},
+    {'name': 'indexUpdate', 'topic': 'market.index.quote'},
+    {'name': 'bidOffer', 'topic': 'market.stock.bidoffer'},
+    {'name': 'deal', 'topic': 'market.stock.putthrough.deal'},
+	{'name': 'futuresBidOfferUpdate', 'topic': 'market.futures.bidoffer'},
+    {'name': 'advertise', 'topic': 'market.stock.putthrough.advertise'},
+    {'name': 'masterTbl', 'topic': 'market.mastertbl'},
+    {'name': 'xxx', 'topic': 'xxx'},
+    {'name': 'yyy', 'topic': 'yyy'},
+    {'name': 'sample', 'topic': 'sample'}
+  ];
+
+
+  // Initiate the connection to the server
+  var socket = socketCluster.connect({
+	codecEngine: scCodecMinBin,
+  });
+  socket.on('error', function (err) {
+    console.error(err);
+  });
+
+  socket.on('connect', function () {
+    // console.log('Socket is connected');
+    appendToResult('Socket is connected');
+    subscribe(channels);
+    appendToResult('---------------------------------------------------------------');
+  });
+
+  socket.on('random', function (data) {
+    console.log('Received "random" event with data: ' + data.number);
+  });
+
+  function subscribe(channels) {
+    console.log('start subscribe');
+    channels.forEach(function subscribe(channel, index) {
+      appendToResult('subscribe channel: ' + channel.name + '(' + channel.topic + ')');
+      var tempChannel = socket.subscribe(channel.topic);
+
+      tempChannel.on('subscribeFail', function (err) {
+        // console.error('Failed to subscribe to the ' + channel.name + ' due to error: ' + err);
+        appendToResult('Failed to subscribe to the ' + channel.name + ' due to error: ' + err);
+      });
+
+      tempChannel.watch(function (data) {
+        console.log(channel.name, data);
+        if (channel.name == 'stockUpdate') {
+          stockQuoteCount++;
+          document.getElementById('stockQuoteCount').innerHTML = '' + stockQuoteCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'indexUpdate') {
+          indexQuoteCount++;
+          document.getElementById('indexQuoteCount').innerHTML = '' + indexQuoteCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'bidOffer') {
+          bidOfferCount++;
+          document.getElementById('bidOfferCount').innerHTML = '' + bidOfferCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'deal') {
+          dealCount++;
+          document.getElementById('dealCount').innerHTML = '' + dealCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'advertise') {
+          advertiseCount++;
+          document.getElementById('advertiseCount').innerHTML = '' + advertiseCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'futuresUpdate') {
+          futuresQuoteCount++;
+          document.getElementById('futuresQuoteCount').innerHTML = '' + futuresQuoteCount + '  :  ' + new Date().toLocaleTimeString();
+        } else if (channel.name == 'futuresBidOfferUpdate') {
+          futuresBidOfferCount++;
+          document.getElementById('futuresBidOfferCount').innerHTML = '' + futuresBidOfferCount + '  :  ' + new Date().toLocaleTimeString();
+        }
+      });
+    });
+  }
+
+
+  function appendToResult(text) {
+    document.getElementById('result').value += text + '\n';
+  }
+
+  function resetResult() {
+    document.getElementById('result').value += '';
+  }
+</script>
+</body>
+</html>

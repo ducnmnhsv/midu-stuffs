@@ -1,0 +1,820 @@
+asyncapi: "1.1.0"
+info:
+  title: TradeX WebSocket API
+  version: "1.0.0"
+  x-logo: 
+  description: |
+    WebSocket Specification For TradeX System.
+  termsOfService: https://tradex.com.vn/terms
+
+servers:
+  - url: vcsc.dev.tradex.vn:8000
+    description: Allows you to connect TradeX Realtime System using the Socket Cluster
+    scheme: ws
+    variables:
+      clientId:
+        default: vcsc
+        description: You can find your `clientId` in our control panel, under the administration tab.
+      clientSecret:
+        default: vcsc
+        description: You can find your `clientSecret` in our control panel, under the administration tab.
+
+topics:
+  tradex.notify.global:
+    publish:
+      $ref: "#/components/messages/Notification"
+  domain.notify.account.{accountNumber}:
+    publish:
+      $ref: "#/components/messages/Notification"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            accountNumber:
+              type: string
+              description: the specified account number (and sub number) to subscribe notification data
+  tradex.notify.user.{userId}:
+    publish:
+      $ref: "#/components/messages/Notification"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            userId:
+              type: string
+              description: the user id to subscribe notification data
+  market.status:
+    publish:
+      $ref: "#/components/messages/MarketStatus"
+  market.stock.quote:
+    publish:
+      $ref: "#/components/messages/StockQuote"
+  market.stock.extra.quote:
+    publish:
+      $ref: "#/components/messages/StockQuoteExtra"
+  market.stock.quote.{code}:
+    publish:
+      $ref: "#/components/messages/StockQuote"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified stock code to subscribe quote data
+  market.stock.extra.quote.{code}:
+    publish:
+      $ref: "#/components/messages/StockQuoteExtra"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified stock code to subscribe extra quote data
+  market.stock.bidoffer:
+    publish:
+      $ref: "#/components/messages/StockBidOffer"
+  market.stock.bidoffer.{code}:
+    publish:
+      $ref: "#/components/messages/StockBidOffer"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified stock code to subscribe bid/offer data
+  market.stock.putthrough.advertise:
+    publish:
+      $ref: "#/components/messages/StockPutThroughAdvertise"
+  market.stock.putthrough.deal:
+    publish:
+      $ref: "#/components/messages/StockPutThroughDeal"
+  market.index.quote:
+    publish:
+      $ref: "#/components/messages/IndexQuote"
+  market.index.extra.quote:
+    publish:
+      $ref: "#/components/messages/IndexQuoteExtra"
+  market.index.quote.{code}:
+    publish:
+      $ref: "#/components/messages/IndexQuote"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified index code to subscribe quote data
+  market.index.extra.quote.{code}:
+    publish:
+      $ref: "#/components/messages/IndexQuoteExtra"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified index code to subscribe extra quote data
+  market.futures.quote:
+    publish:
+      $ref: "#/components/messages/FuturesQuote"
+  market.futures.quote.{code}:
+    publish:
+      $ref: "#/components/messages/FuturesQuote"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified futures code to subscribe quote data
+  market.futures.bidoffer:
+    publish:
+      $ref: "#/components/messages/FuturesBidOffer"
+  market.futures.bidoffer.{code}:
+    publish:
+      $ref: "#/components/messages/FuturesBidOffer"
+    parameters:
+      - name: ""
+        schema:
+          type: object
+          properties:
+            code:
+              type: string
+              description: the specified futures code to subscribe bid/offer data
+components:
+  messages:
+    Notification:
+      summary: |
+        `Notification Data`
+      description: |
+        ***Notification data receive from TradeX System***
+      tags:
+        - name: Notification
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          method:
+            type: string
+            description: the type to classify the notification
+            enum:
+              - MATCH_ORDER
+          payload:
+            type: object
+            description: the payload data of the notification   
+    MarketStatus:
+      summary: |
+        `Market Status Session`
+      description: |
+        ***Market Status from Exchange***
+      tags:
+        - name: Market
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          market:
+            type: string
+            description: the market name
+            enum:
+              - HOSE
+              - HNX
+              - UPCOM
+          type:
+            type: string
+            description: the system type
+            enum:
+              - EQUITY
+              - DERIVATIVES
+          time:
+            type: string
+            description: the time of the data, format is `hhmmss`
+          status:
+            type: string
+            description: the status of market session
+            enum:
+              - ATO
+              - LO
+              - INTERMISSION
+              - ATC
+              - PLO
+              - RUNOFF
+              - CLOSED
+    StockQuote:
+      summary: |
+        `Stock Quote Data`
+      description: |
+        ***Stock Quote data receiving realtime from Exchange after every tick***
+      tags:
+        - name: Market
+        - name: Stock
+      headers:
+        type: object
+      payload:
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/Quote"
+          - properties:
+              highTime:
+                type: string
+                description: the time of the high price, format is `hhmmss`
+              lowTime:
+                type: string
+                description: the time of the low price, format is `hhmmss`
+              bidPrice:
+                description: the best bid price of this stock
+                type: number
+                format: double
+              offerPrice:
+                description: the best offer price of this stock
+                type: number
+                format: double
+              ceilingPrice:
+                description: the ceiling price of this stock
+                type: number
+                format: double
+              floorPrice:
+                description: the floor price of this stock
+                type: number
+                format: double
+              averagePrice:
+                description: the average price of this stock
+                type: number
+                format: double
+              referencePrice:
+                description: the reference price of this stock
+                type: number
+                format: double
+              tradingVolume:
+                type: integer
+                description: the trading volume of this stock for today
+              tradingValue:
+                type: number
+                format: double
+                description: the trading volume of this stock for today
+              turnoverRate:
+                type: number
+                format: double
+                description: the turnover rate of this stock
+              matchingVolume:
+                type: integer
+                description: the matching volume for this quote of this stock
+              bidVolume:
+                type: integer
+                description: the current best bid volume of this stock
+              offerVolume:
+                type: integer
+                description: the current best offer volume of this stock
+              totalBidVolume:
+                type: integer
+                description: the accumulate bid volume of this stock for today
+              totalBidCount:
+                description: the accumulate bid count of this stock for today
+                type: integer
+              totalOfferVolume:
+                type: integer
+                description: the accumulate bid volume of this stock for today
+              totalOfferCount:
+                description: the accumulate offer count of this stock for today
+                type: integer
+              foreignerTotalRoom:
+                type: integer
+                description: the foreigner total allowed volume of this stock
+              foreignerCurrentRoom:
+                type: integer
+                description: the foreigner current allowed volume of this stock
+              holdVolume:
+                description: the foreigner hold volume of this stock
+                type: integer
+              holdRatio:
+                description: the foreigner hold ratio of this stock
+                type: number
+                format: double
+              foreignerTradingVolume:
+                description: the foreigner trading volume of this stock
+                type: integer
+              foreignerTradingValue:
+                description: the foreigner trading value of this stock
+                type: number
+                format: double  
+              matchedBy:
+                type: string
+                description: this quote matched by Bid or Offer order
+                enum: ['BID', 'OFFER']
+              ceilingFloorEqual:
+                type: string
+                description: the price is equal to Ceiling or Floor or just null
+                enum: ['CEILING', 'FLOOR']
+              sequence:
+                type: integer
+                description: the sequence number of this quote for each stock code
+    StockQuoteExtra:
+      summary: |
+        `Stock Quote Extra Data`
+      description: |
+        ***Extra Stock Quote data receiving realtime from TradeX after every tick***
+      tags:
+        - name: Market
+        - name: Stock
+      headers:
+        type: object
+      payload:
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/QuoteExtra"
+          - properties:
+              foreignerBuyVolume:
+                description: the foreigner buy volume of this stock
+                type: integer
+              foreignerSellVolume:
+                description: the foreigner sell volume of this stock
+                type: integer
+              buyableRatio:
+                description: the foreigner buyable ratio of this stock
+                type: number
+                format: double
+    StockBidOffer:
+      summary: |
+        `Stock Bid Offer Data`
+      description: |
+        ***Stock Bid Offer List receiving realtime from Exchange***
+      tags:
+        - name: Market
+        - name: Stock
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          code:
+            type: string
+            description: the code of this stock
+          time:
+            type: string
+            description: the time that received this data, format is `yyyyMMddhhmmss`
+          bidPrice:
+            description: the best bid price of this stock
+            type: number
+            format: double
+          offerPrice:
+            description: the best offer price of this stock
+            type: number
+            format: double
+          bidVolume:
+            type: integer
+            description: the current best bid volume of this stock
+          offerVolume:
+            type: integer
+            description: the current best offer volume of this stock
+          bidOfferList:
+            type: array
+            items:
+              $ref: '#/components/schemas/BidOfferItem'
+            description: the list of 3 first bid/offer
+          totalOfferVolume:
+            type: integer
+            description: the accumulate offer volume of this stock for today
+          totalOfferCount:
+            type: integer
+            description: the accumulate offer count of this stock for today
+          totalBidVolume:
+            type: integer
+            description: the accumulate bid volume of this stock for today
+          totalBidCount:
+            type: integer
+            description: the accumulate bid count of this stock for today
+          expectedPrice:
+            type: number
+            format: double
+            description: the expected price during ATO & ATC session
+          session:
+            type: string
+            description: the market session
+    StockPutThroughAdvertise:
+      summary: |
+        `Stock PutThrough Advertise Notice Data`
+      description: |
+        ***Stock Put-Through Advertise Notice receiving realtime from Exchange***
+      tags:
+        - name: Market
+        - name: Stock
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          code:
+            type: string
+            description: the code of this stock
+          time:
+            type: string
+            description: the time that received this data, format is `hhmmss`
+          secId:
+            type: string
+            description: the Securities Company Id of this put-through advertisement
+          traderId:
+            type: string
+            description: the trader Id of this put-through advertisement
+          sellBuyType:
+            type: string
+            description: sell or buy type of this put-through advertisement
+          price:
+            type: number
+            format: double
+            description: price of this put-through advertisement
+          quantity:
+            type: integer
+            description: quantity of this put-through advertisement
+          ptVolume:
+            type: integer
+            description: the total put-through volume of this stock
+          ptValue:
+            type: number
+            format: double
+            description: the total put-through value of this stock
+          contact:
+            type: string
+            description: the contact of this put-through advertisement
+          isCancel:
+            type: boolean
+            description: the status of this put-through advertisement
+    StockPutThroughDeal:
+      summary: |
+        `Stock PutThrough Deal Notice Data`
+      description: |
+        ***Stock Put-Through Deal Notice receiving realtime from Exchange***
+      tags:
+        - name: Market
+        - name: Stock
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          code:
+            type: string
+            description: the code of this stock
+          time:
+            type: string
+            description: the time that received this data, format is `hhmmss`
+          confirmNumber:
+            type: string
+            description: the contract number of the put-through deal
+          matchVolume:
+            type: integer
+            description: the match volume of the put-through deal
+          matchPrice:
+            type: number
+            format: double
+            description: the match price of the put-through deal
+          ptVolume:
+            type: integer
+            description: the total put-through volume of this stock
+          ptValue:
+            type: number
+            format: double
+            description: the total put-through value of this stock
+          isCancel:
+            type: boolean
+            description: the status of this put-through deal
+    IndexQuote:
+      summary: |
+        `Index Quote Data`
+      description: |
+        ***Index Quote data receiving realtime from Exchange***
+      tags:
+        - name: Market
+        - name: Index
+      headers:
+        type: object
+      payload:
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/Quote"
+          - properties:
+              tradingVolume:
+                type: integer
+                description: the trading volume of this index for today
+              tradingValue:
+                type: number
+                format: double
+                description: the trading volume of this index for today
+              matchingVolume:
+                type: integer
+                description: the matching volume for this quote of this index
+              upCount:
+                type: integer
+                description: total number of rising stock
+              ceilingCount:
+                type: integer
+                description: total number of stock that rising to ceiling price
+              downCount:
+                type: integer
+                description: total number of decreasing stock
+              floorCount:
+                type: integer
+                description: total number of stock that decreasing to floor price 
+              unchangedCount:
+                type: integer
+                description: total number of stock that decreasing to floor price
+              sessions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+                description: the info of all sessions
+              sequence:
+                type: integer
+                description: the sequence number of this quote for each index code
+    IndexQuoteExtra:
+      summary: |
+        `Index Quote Extra Data`
+      description: |
+        ***Index Quote extra data receiving realtime from TradeX***
+      tags:
+        - name: Market
+        - name: Index
+      headers:
+        type: object
+      payload:
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/QuoteExtra"
+          - properties:
+              foreignerBuyVolume:
+                description: the foreigner buy volume of all stocks belong to this index for today
+                type: integer
+              foreignerSellVolume:
+                description: the foreigner sell volume of this stock all stocks belong to this index for today
+                type: integer
+    FuturesQuote:
+      summary: |
+        `Futures Quote Data`
+      description: |
+        ***Futures Quote data receiving realtime from Exchange after every tick***
+      tags:
+        - name: Market
+        - name: Futures
+      headers:
+        type: object
+      payload:
+        type: object
+        allOf:
+          - $ref: "#/components/schemas/Quote"
+          - properties:
+              highTime:
+                type: string
+                description: the time of the high price, format is `hhmmss`
+              lowTime:
+                type: string
+                description: the time of the low price, format is `hhmmss`
+              bidPrice:
+                description: the best bid price of this futures
+                type: number
+                format: double
+              offerPrice:
+                description: the best offer price of this futures
+                type: number
+                format: double
+              ceilingPrice:
+                description: the ceiling price of this futures
+                type: number
+                format: double
+              floorPrice:
+                description: the floor price of this futures
+                type: number
+                format: double
+              averagePrice:
+                description: the average price of this futures
+                type: number
+                format: double
+              referencePrice:
+                description: the reference price of this futures
+                type: number
+                format: double
+              basis:
+                description: the basis of this futures
+                type: number
+                format: double
+              mBasis:
+                description: the market basis of this futures
+                type: number
+                format: double
+              tBasis:
+                description: the theoretical basis of this futures
+                type: number
+                format: double
+              tPrice:
+                description: the theoretical price of this futures
+                type: number
+                format: double
+              disparity:
+                description: the disparity of this futures
+                type: number
+                format: double
+              disparityRate:
+                description: the disparity rate of this futures
+                type: number
+                format: double
+              tradingVolume:
+                type: integer
+                description: the trading volume of this futures for today
+              tradingValue:
+                type: number
+                format: double
+                description: the trading volume of this futures for today
+              matchingVolume:
+                type: integer
+                description: the matching volume for this quote of this futures
+              bidVolume:
+                type: integer
+                description: the current best bid volume of this futures
+              offerVolume:
+                type: integer
+                description: the current best offer volume of this futures
+              totalBidVolume:
+                type: integer
+                description: the accumulate bid volume of this futures for today
+              totalBidCount:
+                description: the accumulate bid count of this futures for today
+                type: integer
+              totalOfferVolume:
+                type: integer
+                description: the accumulate bid volume of this futures for today
+              totalOfferCount:
+                description: the accumulate offer count of this futures for today
+                type: integer
+              foreignerBuyVolume:
+                description: the foreigner buy volume of this futures
+                type: integer
+              foreignerSellVolume:
+                description: the foreigner sell volume of this futures
+                type: integer
+              matchedBy:
+                type: string
+                description: this quote matched by Bid or Offer futures
+                enum: ['BID', 'OFFER']
+              ceilingFloorEqual:
+                type: string
+                description: the price is equal to Ceiling or Floor or just null
+                enum: ['CEILING', 'FLOOR']
+              sequence:
+                type: integer
+                description: the sequence number of this quote for each futures code
+    FuturesBidOffer:
+      summary: |
+        `Futures Bid Offer Data`
+      description: |
+        ***Futures Bid Offer List receiving realtime from Exchange***
+      tags:
+        - name: Market
+        - name: Futures
+      headers:
+        type: object
+      payload:
+        type: object
+        properties:
+          code:
+            type: string
+            description: the code of this futures
+          time:
+            type: string
+            description: the time that received this data, format is `yyyyMMddhhmmss`
+          bidPrice:
+            description: the best bid price of this futures
+            type: number
+            format: double
+          offerPrice:
+            description: the best offer price of this futures
+            type: number
+            format: double
+          bidVolume:
+            type: integer
+            description: the current best bid volume of this futures
+          offerVolume:
+            type: integer
+            description: the current best offer volume of this futures
+          bidOfferList:
+            type: array
+            items:
+              $ref: '#/components/schemas/BidOfferItem'
+            description: the list of 5 first bid/offer
+          totalOfferVolume:
+            type: integer
+            description: the accumulate offer volume of this futures for today
+          totalOfferCount:
+            type: integer
+            description: the accumulate offer count of this futures for today
+          totalBidVolume:
+            type: integer
+            description: the accumulate bid volume of this futures for today
+          totalBidCount:
+            type: integer
+            description: the accumulate bid count of this futures for today
+          expectedPrice:
+            type: number
+            format: double
+            description: the expected price during ATO & ATC session
+          session:
+            type: string
+            description: the market session
+  schemas:
+    Quote:
+      type: object
+      properties:
+        code:
+          description: Stock Code or Index Code or Futures Code
+          type: string
+        time:
+          description: the time of this quote data, format is `yyyyMMddhhmmss`
+          type: string
+        open:
+          description: Open Value
+          type: number
+          format: double
+        high:
+          description: High Value
+          type: number
+          format: double
+        low:
+          description: Low Value
+          type: number
+          format: double
+        last:
+          description: Close Value
+          type: number
+          format: double
+        change:
+          description: Change Value
+          type: number
+          format: double
+        rate:
+          description: Change Rate Value
+          type: number
+          format: double
+    QuoteExtra:
+      type: object
+      properties:
+        code:
+          description: Stock Code or Index Code or Futures Code
+          type: string
+        time:
+          description: the time of this quote data, format is `yyyyMMddhhmmss`
+          type: string
+    Session:
+      type: object
+      properties:
+        last:
+          type: number
+          format: double
+          description: the last value of this session
+        change:
+          type: number
+          format: double
+          description: the change value of this session
+        rate:
+          type: number
+          format: double
+          description: the change rate of this session
+        tradingVolume:
+          type: integer
+          description: the total trading volume of this session
+        tradingValue:
+          type: number
+          format: double
+          description: the total trading value of this session
+    BidOfferItem:
+      type: object
+      properties:
+        bidPrice:
+          type: number
+          format: double
+          description: bid price
+        bidVolume:
+          type: integer
+          description: the bid volume
+        bidVolumeChange:
+          type: integer
+          description: the change from bid volume
+        offerPrice:
+          type: number
+          format: double
+          description: offer price
+        offerVolume:
+          type: integer
+          description: the offer volume
+        offerVolumeChange:
+          type: integer
+          description: the change from offer volume    

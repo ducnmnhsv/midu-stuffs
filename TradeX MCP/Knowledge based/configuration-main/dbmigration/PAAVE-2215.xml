@@ -1,0 +1,19 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="Hoang Manh" id="PAAVE-2215-1">
+        <sql splitStatements="false"> INSERT INTO
+            `tradex-configuration`.`t_login_method_scope_group_map` (`login_method_id`,
+            `scope_group_id`) SELECT lmt.id,scg.id FROM `tradex-configuration`.`t_login_method` lmt,
+            `tradex-configuration`.`t_scope_group` scg WHERE lmt.grant_type = 'social_login' AND
+            lmt.service_code = 'paave' AND scg.scope_group_name = 'LINK_ACCOUNT'
+            ON DUPLICATE KEY UPDATE login_method_id = lmt.id, scope_group_id = scg.id;</sql>
+    </changeSet>
+
+</databaseChangeLog>
