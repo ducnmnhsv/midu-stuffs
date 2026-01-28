@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Admin Schema</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+            <style>
+            @media print {
+                @page {
+                    size: A4;
+                    margin: 2cm 1.5cm;
+                }
+                body {
+                    margin: 0;
+                    padding: 20px;
+                }
+            }
+            @media screen {
+                body {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
+                }
+            }
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+            }
+            .markdown-body img {
+                max-width: 100%;
+                height: auto;
+                page-break-inside: avoid;
+            }
+            .markdown-body table {
+                page-break-inside: avoid;
+            }
+            .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+                page-break-after: avoid;
+            }
+            </style>
+            </head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Admin Schema</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#admin-user-management-database-schema"
+id="toc-admin-user-management-database-schema">Admin &amp; User
+Management Database Schema</a>
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#entity-relationship-diagram"
+id="toc-entity-relationship-diagram">Entity Relationship
+Diagram</a></li>
+<li><a href="#field-descriptions" id="toc-field-descriptions">Field
+Descriptions</a>
+<ul>
+<li><a href="#t_user" id="toc-t_user">t_user</a></li>
+<li><a href="#jhi_user" id="toc-jhi_user">jhi_user</a></li>
+<li><a href="#t_authority" id="toc-t_authority">t_authority</a></li>
+<li><a href="#jhi_authority"
+id="toc-jhi_authority">jhi_authority</a></li>
+<li><a href="#t_user_authority"
+id="toc-t_user_authority">t_user_authority</a></li>
+<li><a href="#t_broker" id="toc-t_broker">t_broker</a></li>
+<li><a href="#t_invite_user"
+id="toc-t_invite_user">t_invite_user</a></li>
+<li><a href="#t_chat_room" id="toc-t_chat_room">t_chat_room</a></li>
+<li><a href="#t_created_chat_room"
+id="toc-t_created_chat_room">t_created_chat_room</a></li>
+<li><a href="#t_recent_view_chat_room"
+id="toc-t_recent_view_chat_room">t_recent_view_chat_room</a></li>
+<li><a href="#t_social_link"
+id="toc-t_social_link">t_social_link</a></li>
+<li><a href="#t_feedback" id="toc-t_feedback">t_feedback</a></li>
+<li><a href="#t_stock_event"
+id="toc-t_stock_event">t_stock_event</a></li>
+<li><a href="#t_holiday" id="toc-t_holiday">t_holiday</a></li>
+<li><a href="#market_history_job_result"
+id="toc-market_history_job_result">market_history_job_result</a></li>
+</ul></li>
+<li><a href="#core-entities" id="toc-core-entities">Core Entities</a>
+<ul>
+<li><a href="#t_user-jhi_user" id="toc-t_user-jhi_user">t_user /
+jhi_user</a></li>
+<li><a href="#t_authority-jhi_authority"
+id="toc-t_authority-jhi_authority">t_authority / jhi_authority</a></li>
+<li><a href="#t_user_authority-1"
+id="toc-t_user_authority-1">t_user_authority</a></li>
+<li><a href="#t_broker-1" id="toc-t_broker-1">t_broker</a></li>
+<li><a href="#t_invite_user-1"
+id="toc-t_invite_user-1">t_invite_user</a></li>
+<li><a href="#t_chat_room-1" id="toc-t_chat_room-1">t_chat_room</a></li>
+<li><a href="#t_created_chat_room-1"
+id="toc-t_created_chat_room-1">t_created_chat_room</a></li>
+<li><a href="#t_recent_view_chat_room-1"
+id="toc-t_recent_view_chat_room-1">t_recent_view_chat_room</a></li>
+<li><a href="#t_social_link-1"
+id="toc-t_social_link-1">t_social_link</a></li>
+<li><a href="#t_feedback-1" id="toc-t_feedback-1">t_feedback</a></li>
+</ul></li>
+<li><a href="#supporting-entities"
+id="toc-supporting-entities">Supporting Entities</a>
+<ul>
+<li><a href="#t_stock_event-1"
+id="toc-t_stock_event-1">t_stock_event</a></li>
+<li><a href="#t_holiday-1" id="toc-t_holiday-1">t_holiday</a></li>
+<li><a href="#market_history_job_result-1"
+id="toc-market_history_job_result-1">market_history_job_result</a></li>
+</ul></li>
+<li><a href="#user-management-flow" id="toc-user-management-flow">User
+Management Flow</a></li>
+<li><a href="#broker-management-flow"
+id="toc-broker-management-flow">Broker Management Flow</a></li>
+<li><a href="#chat-room-flow" id="toc-chat-room-flow">Chat Room
+Flow</a></li>
+<li><a href="#authorityrole-system"
+id="toc-authorityrole-system">Authority/Role System</a></li>
+<li><a href="#invitation-system" id="toc-invitation-system">Invitation
+System</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="admin-user-management-database-schema">Admin &amp; User
+Management Database Schema</h1>
+<p>This document describes the database schema for the Admin and User
+Management domain.</p>
+<h2 id="overview">Overview</h2>
+<p>The Admin domain manages system users, brokers, authorities/roles,
+chat rooms, system configuration, and administrative functions across
+the NHSV platform.</p>
+<h2 id="entity-relationship-diagram">Entity Relationship Diagram</h2>
+<figure>
+<img
+src="/Users/hiepnguyen/works/NHSV-source/database_documentation/pdf_output/images/ADMIN_SCHEMA_7859a216.png"
+alt="Database Schema Diagram" />
+<figcaption aria-hidden="true">Database Schema Diagram</figcaption>
+</figure>
+<h2 id="field-descriptions">Field Descriptions</h2>
+<h3 id="t_user">t_user</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the user</li>
+<li><strong>login</strong>: Unique login username</li>
+<li><strong>password_hash</strong>: Hashed password</li>
+<li><strong>full_name</strong>: User’s full name</li>
+<li><strong>email</strong>: User’s email address</li>
+<li><strong>image_url</strong>: URL to user’s profile image</li>
+<li><strong>activated</strong>: Flag indicating if the account is
+activated</li>
+<li><strong>lang_key</strong>: Language preference key</li>
+<li><strong>activation_key</strong>: Key used for account
+activation</li>
+<li><strong>reset_key</strong>: Key used for password reset</li>
+<li><strong>created_date</strong>: Timestamp when the account was
+created</li>
+<li><strong>reset_date</strong>: Timestamp when password was reset</li>
+<li><strong>created_by</strong>: User who created this account</li>
+<li><strong>last_modified_by</strong>: User who last modified this
+account</li>
+<li><strong>last_modified_date</strong>: Timestamp when account was last
+modified</li>
+<li><strong>deactivated_at</strong>: Timestamp when account was
+deactivated</li>
+<li><strong>deactivated_by</strong>: User who deactivated this
+account</li>
+</ul>
+<h3 id="jhi_user">jhi_user</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the user
+(JHipster)</li>
+<li><strong>login</strong>: Unique login username</li>
+<li><strong>password_hash</strong>: Hashed password</li>
+<li><strong>first_name</strong>: User’s first name</li>
+<li><strong>last_name</strong>: User’s last name</li>
+<li><strong>email</strong>: User’s email address</li>
+<li><strong>activated</strong>: Flag indicating if the account is
+activated</li>
+<li><strong>lang_key</strong>: Language preference key</li>
+<li><strong>image_url</strong>: URL to user’s profile image</li>
+<li><strong>activation_key</strong>: Key used for account
+activation</li>
+<li><strong>reset_key</strong>: Key used for password reset</li>
+<li><strong>reset_date</strong>: Timestamp when password was reset</li>
+<li><strong>created_date</strong>: Timestamp when the account was
+created</li>
+<li><strong>created_by</strong>: User who created this account</li>
+<li><strong>last_modified_date</strong>: Timestamp when account was last
+modified</li>
+<li><strong>last_modified_by</strong>: User who last modified this
+account</li>
+</ul>
+<h3 id="t_authority">t_authority</h3>
+<ul>
+<li><strong>name</strong>: Primary key - authority/role name</li>
+<li><strong>description</strong>: Description of the authority/role</li>
+</ul>
+<h3 id="jhi_authority">jhi_authority</h3>
+<ul>
+<li><strong>name</strong>: Primary key - authority/role name
+(JHipster)</li>
+</ul>
+<h3 id="t_user_authority">t_user_authority</h3>
+<ul>
+<li><strong>user_id</strong>: Foreign key to the user</li>
+<li><strong>authority_name</strong>: Foreign key to the
+authority/role</li>
+</ul>
+<h3 id="t_broker">t_broker</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the broker</li>
+<li><strong>username</strong>: Broker’s username</li>
+<li><strong>fullname</strong>: Broker’s full name</li>
+<li><strong>status</strong>: Broker status (active, inactive, etc.)</li>
+<li><strong>total_chat_room</strong>: Total number of chat rooms
+created</li>
+<li><strong>total_viewed_chat_room</strong>: Total number of chat rooms
+viewed</li>
+<li><strong>current_rank</strong>: Current ranking position</li>
+<li><strong>is_dynamic</strong>: Flag indicating if ranking is
+dynamic</li>
+<li><strong>email</strong>: Broker’s email address</li>
+<li><strong>created_at</strong>: Timestamp when the broker was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the broker was last
+updated</li>
+<li><strong>deactivated_at</strong>: Timestamp when the broker was
+deactivated</li>
+<li><strong>deactivated_by</strong>: User who deactivated this
+broker</li>
+<li><strong>invited_by</strong>: User who invited this broker</li>
+<li><strong>photo</strong>: URL to broker’s photo</li>
+<li><strong>introduction</strong>: Broker’s introduction/bio</li>
+</ul>
+<h3 id="t_invite_user">t_invite_user</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the invitation</li>
+<li><strong>email</strong>: Email address of the invited user</li>
+<li><strong>invite_code</strong>: Unique invitation code</li>
+<li><strong>status</strong>: Invitation status (PENDING, ACCEPTED,
+REJECTED, EXPIRED)</li>
+<li><strong>invited_by</strong>: Foreign key to the user who sent the
+invitation</li>
+<li><strong>invited_at</strong>: Timestamp when the invitation was
+sent</li>
+<li><strong>accepted_at</strong>: Timestamp when the invitation was
+accepted</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the record was last
+updated</li>
+</ul>
+<h3 id="t_chat_room">t_chat_room</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the chat room</li>
+<li><strong>room_name</strong>: Name of the chat room</li>
+<li><strong>room_type</strong>: Type of chat room (PUBLIC, PRIVATE,
+etc.)</li>
+<li><strong>broker_id</strong>: Foreign key to the broker who hosts this
+room</li>
+<li><strong>description</strong>: Description of the chat room</li>
+<li><strong>max_participants</strong>: Maximum number of participants
+allowed</li>
+<li><strong>current_participants</strong>: Current number of
+participants</li>
+<li><strong>is_active</strong>: Flag indicating if the chat room is
+active</li>
+<li><strong>created_at</strong>: Timestamp when the chat room was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the chat room was last
+updated</li>
+</ul>
+<h3 id="t_created_chat_room">t_created_chat_room</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the creation
+record</li>
+<li><strong>chat_room_id</strong>: Foreign key to the chat room</li>
+<li><strong>created_by</strong>: Foreign key to the user who created the
+room</li>
+<li><strong>created_at</strong>: Timestamp when the room was
+created</li>
+</ul>
+<h3 id="t_recent_view_chat_room">t_recent_view_chat_room</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the view record</li>
+<li><strong>chat_room_id</strong>: Foreign key to the chat room</li>
+<li><strong>user_id</strong>: Foreign key to the user who viewed the
+room</li>
+<li><strong>last_viewed_at</strong>: Timestamp when the room was last
+viewed</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+</ul>
+<h3 id="t_social_link">t_social_link</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the social link</li>
+<li><strong>broker_id</strong>: Foreign key to the broker</li>
+<li><strong>platform</strong>: Social media platform (FACEBOOK, TWITTER,
+YOUTUBE, etc.)</li>
+<li><strong>link_url</strong>: URL to the social media profile/page</li>
+<li><strong>is_active</strong>: Flag indicating if the link is
+active</li>
+<li><strong>created_at</strong>: Timestamp when the link was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the link was last
+updated</li>
+</ul>
+<h3 id="t_feedback">t_feedback</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the feedback</li>
+<li><strong>user_id</strong>: Foreign key to the user who submitted
+feedback</li>
+<li><strong>feedback_type</strong>: Type of feedback (BUG,
+FEATURE_REQUEST, COMPLAINT, etc.)</li>
+<li><strong>title</strong>: Title of the feedback</li>
+<li><strong>content</strong>: Content/details of the feedback</li>
+<li><strong>status</strong>: Feedback status (PENDING, REVIEWED,
+RESOLVED, etc.)</li>
+<li><strong>created_at</strong>: Timestamp when the feedback was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the feedback was last
+updated</li>
+</ul>
+<h3 id="t_stock_event">t_stock_event</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the stock event</li>
+<li><strong>event_type</strong>: Type of event (DIVIDEND, SPLIT, MERGER,
+etc.)</li>
+<li><strong>symbol</strong>: Stock symbol</li>
+<li><strong>description</strong>: Description of the event</li>
+<li><strong>event_date</strong>: Date when the event occurs</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the record was last
+updated</li>
+</ul>
+<h3 id="t_holiday">t_holiday</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the holiday</li>
+<li><strong>holiday_name</strong>: Name of the holiday</li>
+<li><strong>holiday_date</strong>: Date of the holiday</li>
+<li><strong>holiday_type</strong>: Type of holiday (NATIONAL,
+TRADING_HOLIDAY, etc.)</li>
+<li><strong>is_active</strong>: Flag indicating if the holiday is
+active</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the record was last
+updated</li>
+</ul>
+<h3 id="market_history_job_result">market_history_job_result</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the job result</li>
+<li><strong>job_name</strong>: Name of the background job</li>
+<li><strong>status</strong>: Job status (RUNNING, COMPLETED, FAILED,
+etc.)</li>
+<li><strong>result_data</strong>: Job result data in JSON format</li>
+<li><strong>started_at</strong>: Timestamp when the job started</li>
+<li><strong>completed_at</strong>: Timestamp when the job completed</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+</ul>
+<h2 id="core-entities">Core Entities</h2>
+<h3 id="t_user-jhi_user">t_user / jhi_user</h3>
+<p>System users. <code>t_user</code> is used in <code>nhsv-admin</code>
+and <code>copy-trading-engine</code>, while <code>jhi_user</code> is
+used in <code>ekyc-admin</code> (JHipster-based).</p>
+<p><strong>Key Fields:</strong> - <code>login</code>: Username/login
+identifier - <code>password_hash</code>: Hashed password -
+<code>email</code>: User email address - <code>activated</code>: Account
+activation status - <code>full_name</code> / <code>first_name</code>,
+<code>last_name</code>: User’s name</p>
+<p><strong>Key Relationships:</strong> - One-to-many with
+<code>t_user_authority</code> (has roles) - One-to-one with
+<code>t_broker</code> (can be a broker) - One-to-many with
+<code>t_invite_user</code> (can invite users) - One-to-many with
+<code>t_chat_room</code> (participates in chat) - One-to-many with
+<code>t_feedback</code> (submits feedback)</p>
+<h3 id="t_authority-jhi_authority">t_authority / jhi_authority</h3>
+<p>User roles/authorities. Defines what permissions users have.</p>
+<p><strong>Key Relationships:</strong> - Many-to-many with
+<code>t_user</code> via <code>t_user_authority</code> (assigned to
+users)</p>
+<h3 id="t_user_authority-1">t_user_authority</h3>
+<p>Junction table mapping users to their authorities/roles.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (belongs to user) - Many-to-one with
+<code>t_authority</code> (belongs to authority)</p>
+<h3 id="t_broker-1">t_broker</h3>
+<p>Broker/market leader information. Brokers are special users who can
+host chat rooms and be followed in copy trading.</p>
+<p><strong>Key Fields:</strong> - <code>current_rank</code>: Broker’s
+current ranking - <code>total_chat_room</code>: Number of chat rooms
+created - <code>total_viewed_chat_room</code>: Number of chat rooms
+viewed - <code>is_dynamic</code>: Whether broker ranking is dynamic -
+<code>photo</code>, <code>introduction</code>: Broker profile
+information</p>
+<p><strong>Key Relationships:</strong> - One-to-one with
+<code>t_user</code> (is a user) - One-to-many with
+<code>t_chat_room</code> (hosts chat rooms) - One-to-many with
+<code>t_social_link</code> (has social media links)</p>
+<h3 id="t_invite_user-1">t_invite_user</h3>
+<p>User invitation system. Tracks invitations sent to new users.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (invited by user)</p>
+<h3 id="t_chat_room-1">t_chat_room</h3>
+<p>Chat rooms where users can communicate. Brokers can host chat
+rooms.</p>
+<p><strong>Key Fields:</strong> - <code>room_type</code>: Type of chat
+room - <code>broker_id</code>: Broker hosting the room -
+<code>max_participants</code>: Maximum number of participants -
+<code>current_participants</code>: Current number of participants</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_broker</code> (hosted by broker) - One-to-many with
+<code>t_created_chat_room</code> (creation tracking) - One-to-many with
+<code>t_recent_view_chat_room</code> (view tracking)</p>
+<h3 id="t_created_chat_room-1">t_created_chat_room</h3>
+<p>Tracks who created which chat rooms.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_chat_room</code> (belongs to chat room) - Many-to-one with
+<code>t_user</code> (created by user)</p>
+<h3 id="t_recent_view_chat_room-1">t_recent_view_chat_room</h3>
+<p>Tracks recently viewed chat rooms for each user.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_chat_room</code> (belongs to chat room) - Many-to-one with
+<code>t_user</code> (viewed by user)</p>
+<h3 id="t_social_link-1">t_social_link</h3>
+<p>Social media links for brokers.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_broker</code> (belongs to broker)</p>
+<h3 id="t_feedback-1">t_feedback</h3>
+<p>User feedback and support tickets.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (submitted by user)</p>
+<h2 id="supporting-entities">Supporting Entities</h2>
+<h3 id="t_stock_event-1">t_stock_event</h3>
+<p>Stock market events and announcements.</p>
+<p><strong>Usage:</strong> Tracks important events related to
+stocks.</p>
+<h3 id="t_holiday-1">t_holiday</h3>
+<p>Trading holidays and market closures.</p>
+<p><strong>Usage:</strong> Used to determine when markets are
+closed.</p>
+<h3 id="market_history_job_result-1">market_history_job_result</h3>
+<p>Results of background jobs that process market history data.</p>
+<p><strong>Usage:</strong> Tracks execution and results of market data
+processing jobs.</p>
+<h2 id="user-management-flow">User Management Flow</h2>
+<pre><code>User Registration → Activation → Role Assignment → Full Access</code></pre>
+<ol type="1">
+<li><strong>Registration</strong>: New user account created
+(<code>t_user</code>)</li>
+<li><strong>Activation</strong>: User activates account (updates
+<code>activated</code> field)</li>
+<li><strong>Role Assignment</strong>: Authorities assigned via
+<code>t_user_authority</code></li>
+<li><strong>Full Access</strong>: User can access features based on
+roles</li>
+</ol>
+<h2 id="broker-management-flow">Broker Management Flow</h2>
+<pre><code>User → Broker Profile → Chat Rooms → Social Links</code></pre>
+<ol type="1">
+<li>User becomes a broker (creates <code>t_broker</code> record)</li>
+<li>Broker can create chat rooms (<code>t_chat_room</code>)</li>
+<li>Broker can add social links (<code>t_social_link</code>)</li>
+<li>Broker ranking and statistics are tracked</li>
+</ol>
+<h2 id="chat-room-flow">Chat Room Flow</h2>
+<pre><code>Broker → Create Chat Room → Users Join → Track Views</code></pre>
+<ol type="1">
+<li>Broker creates a chat room (<code>t_chat_room</code>)</li>
+<li>Creation is tracked (<code>t_created_chat_room</code>)</li>
+<li>Users join and view the room</li>
+<li>Views are tracked (<code>t_recent_view_chat_room</code>)</li>
+</ol>
+<h2 id="authorityrole-system">Authority/Role System</h2>
+<pre><code>Authority Definition → User Assignment → Permission Check</code></pre>
+<ol type="1">
+<li>Authorities are defined (<code>t_authority</code>)</li>
+<li>Users are assigned authorities (<code>t_user_authority</code>)</li>
+<li>System checks user authorities for permission control</li>
+</ol>
+<h2 id="invitation-system">Invitation System</h2>
+<pre><code>User → Send Invitation → Invitee Accepts → New User Created</code></pre>
+<ol type="1">
+<li>User sends invitation (<code>t_invite_user</code>)</li>
+<li>Invitee receives invitation code</li>
+<li>Invitee accepts and creates account</li>
+<li>Invitation status is updated</li>
+</ol>
+<h2 id="notes">Notes</h2>
+<ul>
+<li><code>t_user</code> and <code>jhi_user</code> serve similar purposes
+but are in different repositories</li>
+<li>Brokers are a special type of user with additional capabilities</li>
+<li>Chat rooms are primarily broker-hosted</li>
+<li>The authority system provides role-based access control</li>
+<li>All entities include audit fields for tracking changes</li>
+</ul>
+</body>
+</html>

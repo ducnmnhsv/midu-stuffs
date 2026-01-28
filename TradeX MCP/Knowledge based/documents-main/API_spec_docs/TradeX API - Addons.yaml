@@ -1,0 +1,3662 @@
+openapi: 3.0.0
+info:
+  title: NHSV Add-ons Functions API Specification
+  version: 1.0.0
+  description: NHSV Add-ons Functions API Specification
+servers:
+  - url: https://nhsvpro.nhsv.vn/rest
+    description: TRADEX API PROD Server
+  - url: https://tnhsvpro.nhsv.vn/rest
+    description: TRADEX API UAT Server
+components:
+  securitySchemes:
+    jwt:
+      type: apiKey
+      in: header
+      name: Authorization
+paths:
+  /api/v1/copyTrading/marketLeader/profile/{marketLeaderId}:     
+    get: 
+      tags:
+        - COPY TRADING
+      summary: Query Market Leader Profile
+      description: Market Leader Profile
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: path
+          name: marketLeaderId
+          schema:
+            type: number
+          description: Market Leader ID
+          required: true
+      responses:
+        '200':
+          description: Query Market Leader Profile Successfully
+          content:    
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: object
+                    properties:
+                      marketLeaderId: 
+                        type: number
+                        description: Market leader’s ID
+                      username: 
+                        type: string
+                        description: Market leader’s username
+                      fullname: 
+                        type: string
+                        description: Market leader’s username
+                      introduction:
+                        type: string
+                        description: Market leader’s introduction
+                      imageUrl:
+                        type: string
+                        description: imageUrl
+                      email:
+                        type: string
+                        description: Market leader’s email
+                      activatedAt:
+                        type: string
+                        description: 'Activated Date and Time (format: dd/mm/yyyy hh:mm:ss)'
+                      status:
+                        type: string
+                        description: status (ACTIVE/INACTIVE)
+                      deactivatedAt:
+                        type: string
+                        description: 'Deactivated Date and Time (format: dd/mm/yyyy hh:mm:ss)'
+                      deactivatedBy: 
+                        type: string
+                        description: The person who deactivates account
+                      invitedBy:
+                        type: string
+                        description: The person who invites NHSV user to create Market Leader Account
+                      totalSubscribers: 
+                        type: number
+                        description: Total subscribers of the Market Leader
+                      profitLossRatio: 
+                        type: number
+                        description: Market Leader's this month profit loss
+                  pageData: 
+                      type: number
+                      description: Page number 
+                    
+  /api/v1/copyTrading/marketLeader/currentPortfolio:
+    get:
+      tags:
+        - COPY TRADING
+      summary: Query Market Leader's Current Portfolio
+      description: Market Leader's Current Portfolio
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: marketLeaderId
+          schema: 
+            type: number
+          required: true
+          description: Market Leader ID
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 20)
+      responses:
+        '200':
+          description: Query Market Leader's Current Portfolio Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: object
+                    properties:
+                      uploadedDateTime:
+                        type: string
+                        description: dd/mm/yyyy hh:mm:ss 
+                      currentPortfolio:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            stockCode:
+                              type: string
+                              description: Stock code
+                            stockWeight: 
+                              type: number
+                              description: stock weight of that stockCode  
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["INVALID_MARKET_LEADER_ID", "MARKET_LEADER_ID_IS_REQUIRED"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string   
+                    
+  /api/v1/copyTrading/marketLeader/historicalPortfolio:
+    get:
+      tags:
+        - COPY TRADING
+      summary: Query Market Leader's Historical Portfolio
+      description: Market Leader's Historical Portfolio
+      security:
+        - jwt:
+            - jwt    
+      parameters: 
+        - in: query 
+          name: marketLeaderId
+          schema: 
+            type: number
+          description: Market Leader ID
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+          description: 'Start date (format: yyyymmdd)'
+        - in: query
+          name: toDate
+          schema: 
+            type: string
+          description: 'End date (format: yyyymmdd'
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: 'sorting option (true: default)'
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+      responses:
+        '200':
+          description: Query ML's Historical Portfolio Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        uploadedDateTime:
+                          type: string
+                          description: dd/mm/yyyy hh:mm:ss 
+                        portfolioId:
+                          type: number 
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements
+ 
+                          
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["MARKET_LEADER_ID_IS_REQUIRED", "INVALID_MARKET_LEADER_ID", "INACTIVE_MARKET_LEADER_ID"]          
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string         
+                      
+  /api/v1/copyTrading/marketLeader/dailyProfitLossRatio:
+    get: 
+      tags:
+        - COPY TRADING
+      summary: Query Market Leader's Daily Profit/Loss Ratio
+      description: Market Leader's Daily Profit/Loss Ratio
+      security:
+        - jwt:
+            - jwt    
+      parameters: 
+        - in: query 
+          name: marketLeaderId
+          schema: 
+            type: array
+            items: 
+             enum: [ID of Market leader(s) ]
+          description: Market Leader ID
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+          description: 'Start date (format: yyyymmdd)'
+        - in: query
+          name: toDate
+          schema: 
+            type: string
+          description: 'End date (format: yyyymmdd)'
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: 'sorting option (true: default)'
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page    
+      responses:
+        '200':
+          description: Query Market Leader's Daily Profit/Loss Ratio Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: object
+                    properties:
+                      beMarketLeaderDate:
+                        type: string
+                        description: The date NHSV users become Market Leader (dd/mm/yyyy)
+                      marketLeaderId: 
+                        type: number
+                        description: Market leader ID 
+                      items: 
+                        type: array 
+                        items: 
+                          type: object
+                          properties:
+                            reportedDate: 
+                              type: string
+                              description: Reported date 
+                            profitLossRatio: 
+                              type: number 
+                              description: Market leader's profit loss
+                            normalisedNAV: 
+                              type: number
+                              description: Normalised value of NAV
+                                
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements
+                        
+
+  /api/v1/copyTrading/subscriber/subscribe:
+    post:
+      tags:
+        - COPY TRADING
+      summary: Subscribe Copy Trading Service
+      security:
+        - jwt:
+            - jwt        
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                username:
+                  type: string
+                  description: NHSV user’s username
+                accountNumber:
+                  type: string
+                  description: NHSV user’s account number
+                subNumber:
+                  type: string
+                  description: NHSV's normal sub account number
+                marketLeaderId:
+                  type: number
+                  description: Market Leader whom NHSV user wants to copy
+                orderSetType:
+                  type: string
+                  enum: ['QUICK_MATCH', 'SAFE_MATCH']
+                allocatedRatio:
+                  type: number
+                  description: Allocated ratio which NHSV user wants to spend for Copy Trading Service (0 < allocatedRatio < 1)
+
+      responses:
+        '200':
+          description: Subscribe Market Leader Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    enum: ['COPY_TRADE_SUBSCRIBE_SUCCESS']
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['INVALID_USERNAME', 'INVALID_ACCOUNT_NUMBER', 'INVALID_SUB_NUMBER', 'INVALID_MARKET_LEADER', 'SUB_NUMBER_HAS_BEEN_SUBSCRIBED_BEFORE', 'USERNAME_IS_REQUIRED', 'ACCOUNT_NUMBER_IS_REQUIRED', 'SUB_NUMBER_IS_REQUIRED', 'MARKET_LEADER_ID_IS_REQUIRED', 'CAN_NOT_SUBSCRIBE_COPY_TRADING_BY_MARGIN_SUB_NUMBER', 'ORDER_SET_TYPE_IS_REQUIRED', 'ALLOCATED_RATIO_IS_REQUIRED', 'INVALID_ORDER_SET_TYPE']
+                  params: 
+                    type: array
+                    items: 
+                      type: string
+                  messageParams: 
+                    type: array
+                    items: 
+                      type: string 
+
+    delete:
+      tags:
+        - COPY TRADING
+      summary: Unsubscribe Copy Trading Service
+      security:
+        - jwt:
+            - jwt        
+      parameters:
+        - in: query
+          name: username
+          schema: 
+            type: string
+          required: true
+          description: NHSV user’s username
+        - in: query
+          name: accountNumber
+          schema: 
+            type: string
+          required: true            
+          description: NHSV user’s account number
+        - in: query
+          name: subNumber
+          schema: 
+            type: string
+          required: true            
+          description: NHSV's normal sub account number
+
+      responses:
+        '200':
+          description: Unsubscribe Market Leader Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  message:
+                    type: string
+                    enum: ['COPY_TRADE_UNSUBSCRIBE_SUCCESS'] 
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['INVALID_USERNAME', 'INVALID_ACCOUNT_NUMBER', 'INVALID_SUB_NUMBER',  'SUB_NUMBER_HAS_BEEN_UNSUBSCRIBED_BEFORE', 'USERNAME_IS_REQUIRED', 'ACCOUNT_NUMBER_IS_REQUIRED', 'SUB_NUMBER_IS_REQUIRED']
+                  params: 
+                    type: array
+                    items: 
+                      type: string
+                  messageParams: 
+                    type: array
+                    items: 
+                      type: string                     
+          
+  /api/v1/copyTrading/marketLeader/list:
+    get: 
+      tags:
+        - COPY TRADING
+      summary: Query List Of Market Leader By Period/ List Of All Active Market Leader 
+      security:
+        - jwt:
+            - jwt            
+      parameters: 
+        - in: query 
+          name: search
+          schema: 
+            type: string
+          description: List of selected Market Leader(s)
+        - in: query
+          name: period
+          schema: 
+            type: string
+            enum: ['DAY', 'WEEK', 'MONTH', 'YEAR', 'ALL']
+          description: period option 
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page    
+      responses:
+        '200':
+          description: Query List Of Market Leader By Period/ List Of All Active Market Leader Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: array 
+                    items: 
+                      type: object
+                      properties:
+                        marketLeaderId:
+                          type: number
+                          description: Market Leader ID
+                        username:
+                          type: string
+                          description: Market Leader Username
+                        fullname:
+                          type: string
+                          description: Market Leader Fullname 
+                        imageUrl:
+                          type: string
+                          description: Market Leader Avatar
+                        profitLossRatio:
+                          type: number 
+                          description: Market Leader Profit Ratio In Selected Period 
+                        totalSubscribers: 
+                          type: number 
+                          description: Total Subscribers
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements  
+                        
+  /api/v1/copyTrading/marketLeader/subscriberGrowthRate:
+    get: 
+      tags:
+        - COPY TRADING
+      summary: Query Market Leader's Subscriber Growth rate
+      security:
+        - jwt:
+            - jwt    
+      parameters: 
+        - in: query 
+          name: marketLeaderId
+          schema: 
+            type: number
+          description: Market Leader ID
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+          description: 'Start date (format: yyyymmdd)'
+        - in: query
+          name: toDate
+          schema: 
+            type: string
+          description: 'End date (format: yyyymmdd'
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: 'sorting option (true: default)'
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+
+      responses:
+        '200':
+          description: Query Periodic Profit/Loss Ratio of Market Leader's portfolio Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  beMarketLeaderDate:
+                    type: string
+                    description: The date NHSV users become Market Leader (yyyymmdd)
+                  data:
+                    type: array 
+                    items: 
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                          description: yyyymmdd
+                        totalSubscribers:
+                          type: number
+                          description: Total SUBSCRIBING subscribers
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements  
+                        
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['MARKET_LEADER_ID_IS_REQUIRED', 'INVALID_MARKET_LEADER_ID']
+                  params: 
+                    type: array
+                    items: 
+                      type: string
+                  messageParams: 
+                    type: array
+                    items: 
+                      type: string            
+      
+  /api/v1/copyTrading/subscriber/subscriberInformation:
+    get:
+      tags: 
+        - COPY TRADING
+      summary:   Query My Copy Trading information
+      security:
+        - jwt:
+            - jwt        
+      parameters:
+        - in: query
+          name: accountNumber
+          schema: 
+            type: string
+          description: NHSV user’s account number
+        - in: query
+          name: subNumber
+          schema: 
+            type: string
+          description: NHSV user’s subNumber
+        - in: query
+          name: copyTradingStatus
+          schema: 
+            type: string
+            enum: ['SUBSCRIBE', 'UNSUBSCRIBE']
+          description: status
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: To get data ordered by ASC/DESC (default is true)
+      responses:
+        '200':
+          description: Query Subscription Information 
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: array 
+                    items: 
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                          description: NHSV user’s username
+                        accountNumber:
+                          type: string
+                          description: NHSV subscriber’s account number
+                        subNumber:
+                          type: string
+                          description: NHSV subscriber’s sub number
+                        marketLeaderInfo: 
+                          type: object 
+                          properties: 
+                            marketLeaderId:
+                              type: number
+                              description: Market Leader ID
+                            marketLeaderUsername:
+                              type: string
+                              description: Market Leader’s username     
+                            marketLeaderFullname:
+                              type: string
+                              description: Market Leader’s fullname
+                            marketLeaderImageUrl:
+                              type: string
+                              description: Market Leader’s avatar
+                            marketLeaderStatus:
+                              type: string
+                              enum: ['ACTIVE', 'INACTIVE']
+                              description: status
+                            profitLossRatio: 
+                              type: number
+                              description: Market Leader's this month profit loss 
+                            totalSubscribers: 
+                              type: number 
+                              description: Market Leader's total subscriber
+                        subscribedDateTime:
+                          type: string
+                          description: dd/mm/yyyy hh:mm:ss
+                        unsubscribedDateTime:  
+                          type: string
+                          description: >-
+                            dd/mm/yyyy hh:mm:ss  
+                            
+                            - If status = SUBSCRIBE, the system does not show this field
+                        copyTradingStatus:
+                          type: string
+                          description: status 
+                          enum: ['SUBSCRIBE', 'UNSUBSCRIBE']                 
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements  
+                                  
+  
+  /api/v1/copyTrading/marketLeader/historicalPortfolio/allStocks: 
+    get: 
+      tags:
+        - COPY TRADING
+      summary:   Query all stock codes in Market Leader's portfolio
+      security:
+        - jwt:
+            - jwt        
+      parameters:
+        - in: query
+          name: portfolioId
+          schema: 
+            type: number
+          description: Market Leader’s portfolio ID
+          required: true
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+      responses:
+        '200':
+          description: Query all stock codes in Market Leader's portfolio Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  timestamp:
+                    type: string
+                    description: timestamp
+                  status:
+                    type: number
+                    description: status
+                  message:
+                    type: string
+                    description: message
+                  data:
+                    type: object
+                    properties: 
+                      marketLeaderId: 
+                        type: number
+                        description: portfolioId's Market Leader's ID
+                      portfolioId:  
+                        type: number
+                        description: Selected portfolio ID
+                      allStockCodes: 
+                        type: array 
+                        items: 
+                          type: object
+                          properties:
+                            stockCode:
+                              type: string
+                              description: Stock Code
+                            stockWeight:
+                              type: number
+                              description: Stock Weight
+                  pageData:
+                    type: object
+                    properties:
+                      pageSize:
+                        type: number
+                        description: The number of records on one page
+                      pageNumber:
+                        type: number
+                        description: The number of the specific page
+                      totalElements:
+                        type: number
+                        description: total stock codes in Market Leader’s portfolio
+                      totalPages:
+                        type: number
+                        description: total pages based on pageNumber, pageSize and totalElements  
+                        
+  /api/v1/favorite/watchlist:
+    post: 
+      tags:
+        - WATCHLIST
+      summary: Create Watchlist
+      security:
+        - jwt:
+            - jwt         
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                watchlistName:  
+                  type: string
+                  description: watchlist name
+              required: 
+                - watchListName
+      responses: 
+        '200': 
+          description: Create Watchlist Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['WATCHLIST_CREATE_SUCCESS']
+                  watchlistId: 
+                    type: string
+                    description: newly created watchlist's ID
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['WATCHLIST_NAME_EXIST','MAX_20_WATCHLISTS']
+                  params: 
+                    type: array
+                    items: 
+                      type: string
+                  messageParams: 
+                    type: array
+                    items: 
+                      type: string           
+                      
+    get: 
+      tags:
+        - WATCHLIST
+      summary: Query List of Watchlists
+      security:
+        - jwt:
+            - jwt     
+      responses: 
+        '200': 
+          description: Query List of Watchlists Successfully
+          content:
+            application:
+              schema: 
+                type: array
+                items:
+                  type: object
+                  properties: 
+                    watchlistId: 
+                      type: string
+                      description: watchlist ID  
+                    watchlistName: 
+                      type: string
+                      description: name of watchlistId
+                    numberOfStocks: 
+                      type: number
+                      description: number of stocks in watchlist
+                      
+    put: 
+      tags: 
+        - WATCHLIST
+      summary: Edit Watchlist Name
+      security:
+        - jwt:
+            - jwt         
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                watchlistId:
+                  type: string
+                  description: watchlist ID
+                watchlistName:  
+                  type: string
+                  description: new name of watchlist
+              required: 
+                - watchlistId
+                - watchlistName
+      responses: 
+        '200': 
+          description: Edit Watchlist Name Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['WATCHLIST_MODIFY_SUCCESS']
+                  watchlistId: 
+                    type: number
+                    description: watchlist's ID
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['WATCHLIST_NAME_EXIST']
+                  params: 
+                    type: array
+                    items: 
+                      type: string
+                  messageParams: 
+                    type: array
+                    items: 
+                      type: string    
+
+    delete: 
+      tags:
+        - WATCHLIST
+      summary: Delete Watchlist
+      security:
+        - jwt:
+            - jwt   
+      parameters:
+        - in: query
+          name: watchlistId
+          schema: 
+            type: string
+          description: watchlist ID
+          required: true
+      responses:
+        '200': 
+          description: Delete Watchlist Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['WATCHLIST_DELETE_SUCCESS']
+                  watchlistId:
+                    type: string
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['WATCHLIST_HAS_BEEN_DELETED', 'WATCHLIST_INVALID']
+            
+  /api/v1/favorite/symbol:                      
+    get: 
+      tags:
+        - WATCHLIST
+      summary: Query List of Stocks in Watchlist
+      security:
+        - jwt:
+            - jwt        
+      parameters: 
+        - in: query
+          name: watchlistId
+          schema: 
+            type: string
+          required: true
+          description: watchlist ID
+      responses:
+        '200': 
+          description: Query List of Stocks in Watchlist Successfully
+          content:
+            application:
+              schema: 
+                type: array
+                items:
+                  type: string
+                  
+    post:
+      tags:
+        - WATCHLIST
+      summary: Add Symbols in Watchlist
+      security:
+        - jwt:
+            - jwt 
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                watchlistId:
+                  type: array
+                  items:
+                    type: string
+                  description: list of watchlist ID
+                symbol:  
+                  type: array
+                  items:
+                    type: string                  
+                  description: list of symbols
+              required: 
+                - watchlistId
+                - symbol      
+      responses: 
+        '200': 
+          description: Add Symbols in Watchlist Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['ADD_SYMBOL_WATCHLIST_SUCCESS']
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['WATCHLIST_50_SYMBOL_MAX']
+                  params: 
+                    type: array
+                    items: 
+                      type: number
+
+    delete:
+      tags:
+        - WATCHLIST
+      summary: Remove Symbols in Watchlist
+      security:
+        - jwt:
+            - jwt   
+      parameters:
+        - in: query
+          name: watchlistId
+          schema: 
+            type: array
+            items: 
+              type: string
+          description: list of watchlist ID
+          required: true
+        - in: query
+          name: symbol
+          schema: 
+            type: string
+          description: symbol code
+          required: true
+      responses:
+        '200': 
+          description: Remove Symbols in Watchlist Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['DELETE_SYMBOL_SUCCESS']
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['DELETE_SYMBOL_FAILED']
+                    
+  /api/v1/favorite/watchlist/order:
+    put: 
+      tags: 
+        - WATCHLIST
+      summary: Edit Watchlist Position in the user's watchlist list
+      description: >-
+                    when moving watchlist position 
+                      - If orderNo is 0, the watchlist will be moved to top 
+                      - If orderNo is a bigger number than the total number of active watchlists, the watchlist will be moved to bottom
+      security:
+        - jwt:
+            - jwt
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                watchlistId:
+                  type: string
+                  description: watchlist ID
+                orderNo:  
+                  type: number
+                  description: >-
+                    moving position 
+              required: 
+                - watchlistId
+                - orderNo      
+      responses:
+        '200': 
+          description: Move Watchlist Postition Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['WATCHLIST_MODIFY_ORDER_SUCCESS']  
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: 
+                  code:
+                    type: string
+                    enum: ['WATCHLIST_INVALID']         
+
+  /api/v1/favorite/symbol/include:
+    get:
+      tags:
+        - WATCHLIST
+      summary: Get watchlists including a specific symbol
+      security:
+        - jwt:
+            - jwt   
+      parameters: 
+        - in: query
+          name: symbol
+          schema: 
+            type: string
+          description: symbol code to query watchlists list   
+          required: true          
+      responses:
+        '200': 
+          description: Query List Successfully
+          content:
+            application:
+              schema: 
+                type: array
+                items:
+                  type: string
+          
+                
+  /api/v1/brokerChat/brokerProfile:                      
+    get: 
+      tags:
+        - BROKER CHAT
+      summary: Query List of Broker
+      security:
+        - jwt:
+            - jwt        
+      parameters: 
+        - in: query
+          name: keyword
+          schema: 
+            type: string
+          description: Keyword to search brokers by their full name
+        - in: query
+          name: type
+          schema: 
+            type: string
+            enum: ['ALL', 'DYNAMIC'] 
+          description: Indicate list of ALL or DYNAMIC brokers 
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+      responses:
+        '200': 
+          description: Query Query List of Broker Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties:
+                  total: 
+                    type: number 
+                    description: The total of broker on the list
+                  pageNumber: 
+                    type: number
+                    description: The number of the specific page
+                  pageSize: 
+                    type: number
+                    description: The number of the specific page
+                  brokers: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        id:
+                          type: number
+                          description: Broker's ID
+                        fullName:
+                          type: string
+                          description: Broker's full name 
+                        photo: 
+                          type: string
+                          description: Broker's photo
+                        isDynamic:
+                          type: boolean
+                          description: Whether the broker is DYNAMIC
+                        rank: 
+                          type: number
+                          description: Broker's rank
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["INVALID_TYPE"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string
+                          
+  /api/v1/brokerChat/brokerProfile/{id}:
+    get: 
+      tags:
+        - BROKER CHAT
+      summary: Query Broker's Profile 
+      security:
+        - jwt:
+            - jwt        
+      parameters: 
+        - in: path
+          name: id
+          schema: 
+            type: number
+          required: true
+          description: Broker's ID
+          
+      responses:
+        '200': 
+          description: Query Broker's Profile Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties:
+                  username: 
+                    type: string 
+                    description: Broker's username
+                  fullName: 
+                    type: string
+                    description: Broker's full name
+                  introduction:  
+                    type: string
+                    description: Broker's bio
+                  email: 
+                    type: string
+                    description: Broker's email
+                  status: 
+                    type: string
+                    enum: ['ACTIVE', 'DEACTIVATED']
+                    description: Broker's account status
+                  photo: 
+                    type: string
+                    description: Broker's photo
+                  rank: 
+                    type: number
+                    description: Broker's rank
+                  isDynamic:
+                    type: boolean
+                    description: Whether the broker is DYNAMIC
+                  totalChatrooms: 
+                    type: number
+                    description: Total chat room the broker owns
+                  totalChatRoomsVIews: 
+                    type: number
+                    description: Total chat rooms views
+                  createdAt: 
+                    type: string
+                    description: 'Account created date and time (format: dd/mm/yyyy hh:mm:ss)'
+                  updatedAt: 
+                    type: string
+                    description: 'Account information updated date and time (format: dd/mm/yyyy hh:mm:ss)'
+                  deactivatedAt: 
+                    type: string
+                    description: 'Account deactivated date and time (format: dd/mm/yyyy hh:mm:ss)'
+                  deactivatedBy: 
+                    type: string
+                    description: Account deactivated by whom
+                  invitedBy: 
+                    type: string
+                    description: Account invited by whom
+                  chatRooms:
+                    items: 
+                      type: object
+                      properties: 
+                        id:
+                          type: number
+                          description: Chat room's ID
+                        groupName:
+                          type: string
+                          description: Chat room 's name
+                        introduction: 
+                          type: string
+                          description: Chat room's description
+                        photo: 
+                          type: string
+                          description: Chat room's photo
+                        totalView:
+                          type: number
+                          description: Total view of chat room 
+                        socialLinks: 
+                          type: array
+                          items: 
+                            type: object
+                            properties: 
+                              type: 
+                                type: string
+                                description: type of chat room's platform
+                              link: 
+                                type: string
+                                description: link to navigate to chat room 
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["ACCOUNT_NOT_FOUND"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string    
+  /api/v1/brokerChat/chatRooms:
+    get: 
+      tags:
+        - BROKER CHAT
+      summary: Query List of Chat room
+      security:
+        - jwt:
+            - jwt        
+      parameters: 
+        - in: query
+          name: keyword
+          schema: 
+            type: string
+          description: Keyword to search chat room by group name, chat room owner's name 
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page
+      responses:
+        '200': 
+          description: Query Chat Room List Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties:
+                  totalChatRooms: 
+                    type: number 
+                    description: The total of chat rooms on the list
+                  currentPage: 
+                    type: number
+                    description: The number of the specific page
+                  pageSize: 
+                    type: number
+                    description: The number of the specific page
+                  chatRooms: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        id:
+                          type: number
+                          description: Chat room's ID
+                        groupName:
+                          type: string
+                          description: Chat room's name 
+                        introduction: 
+                          type: string
+                          description: Chat room 's introduction
+                        photo:
+                          type: string
+                          description: Chat room's photo
+                        totalView:
+                          type: number
+                          description: Total view of the chat room 
+                        brokerInfo:
+                          type: array
+                          items:
+                            type: object
+                            properties: 
+                              brokerId: 
+                                type: number
+                                description: Broker's ID
+                              brokerName: 
+                                type: string
+                                description: Broker's name 
+                              brokerPhoto:
+                                type: string
+                                description: Broker's photo
+                        socialLinks: 
+                          type: array
+                          items: 
+                            type: object
+                            properties: 
+                              type: 
+                                type: string
+                                description: type of chat room's platform
+                              link: 
+                                type: string
+                                description: link to navigate to chat room 
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["INVALID_TYPE"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string
+                      
+  /api/v1/brokerChat/chatRooms/{id}:
+    get: 
+      tags:
+        - BROKER CHAT
+      summary: Query Chat Room Information 
+      security:
+        - jwt:
+            - jwt        
+      parameters: 
+        - in: path
+          name: id
+          schema: 
+            type: number
+          required: true
+          description: Chat room's ID
+          
+      responses:
+        '200': 
+          description: Query Chat Room Information Successfully
+          content:
+            application:
+              schema: 
+                type: object
+                properties:
+                  name: 
+                    type: string 
+                    description: Chat room's name 
+                  introduction:
+                    type: string
+                    description: Chat room's description
+                  photo: 
+                    type: string
+                    description: Chat room's photo
+                  contact: 
+                    type: string
+                    description: Group owner's contact
+                  totalView:
+                    type: number
+                    description: Total view of chat room 
+                  socialLinks: 
+                    type: array
+                    items: 
+                      type: object
+                      properties: 
+                        type: 
+                          type: string
+                          description: type of chat room's platform
+                        link: 
+                          type: string
+                          description: link to navigate to chat room
+                  brokerInfo: 
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        brokerId: 
+                          type: number
+                          description: Broker's ID
+                        email: 
+                          type: string
+                          description: Broker's email
+                        fullName: 
+                          type: string
+                          description: Broker's full name
+                        isDynamic: 
+                          type: boolean
+                          description: whether the broker is DYNAMIC
+                        photo: 
+                          type: string
+                          description: Broker's photo
+                  createdAt: 
+                    type: string
+                    description: 'Chat room created date and time (format: dd/mm/yyyy hh:mm:ss)'
+                  updatedAt:
+                    type: string
+                    description: 'Chat room information updated date and time (format: dd/mm/yyyy hh:mm:ss)'
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["FIELD_IS_REQUIRED", "CHAT_ROOM_NOT_FOUND","CHAT_ROOM_OWNER_IS_DEACTIVATED"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string
+  
+  /api/v1/aws:
+    get:
+      tags: 
+        - FEEDBACK
+        - EKYC
+      summary: Create a predefined URL for an image
+      description: A predefined URL will be provided for client to attach a image to it (required logging in with demo account)
+      security:
+        - jwt:
+            - jwt       
+      parameters: 
+        - in: query
+          name: serviceName
+          schema: 
+            type: string
+            enum: ['feedback', 'ekyc']
+          required: true
+          description: Service Name
+        - in: query
+          name: key
+          schema: 
+            type: string
+          required: true            
+          description: >- 
+            Name for the file. We recommend to use a unique (hard-to-replicate) name for the predefined URL 
+      responses:
+        '200': 
+          description: >- 
+              Predefined URL is generated. 
+                
+                Client will open the URL in the response, attach an image to it and send the request with PUT method. 
+                
+                When the status is 200, it means the image is attached to the URL
+          content:
+            application:
+              schema: 
+                type: object
+      
+  /api/v1/equity/account/feedback:
+    post: 
+      tags: 
+        - FEEDBACK
+      summary: Send Feedback
+      security:
+        - jwt:
+            - jwt         
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                email:  
+                  type: string
+                  description: enter email adress to enable Support Team to contact you
+                fullName: 
+                  type: string
+                  description: enter your fullname
+                phoneNo: 
+                  type: string
+                  description: enter your contact phone number to enable Support Team to contact you
+                message: 
+                  type: string
+                  description: enter feedback message
+                imageUrl: 
+                  type: array
+                  items: 
+                    type: string 
+                    description: attach the image url to the feedback request (5 is the max)
+              required: 
+                - email
+                - fullName
+                - phoneNo
+                - message
+      responses: 
+        '200': 
+          description: Feedback is sent to Support Team
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  message: 
+                    type: string
+                    enum: ['FEEDBACK_SENT']
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    enum: ["MAX_5_IMAGES"]        
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string                    
+        
+  /api/v1/equity/account/notification:
+    get:
+      tags:
+        - NOTIFICATION
+      summary: Query Account's Notification List
+      security:
+        - jwt:
+            - jwt 
+      parameters:
+        - in: query
+          name: subAccount
+          schema: 
+            type: string
+            description: subaccount
+          required: true
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+            description: querying starting date (format yyyymmdd, default is the current date)
+          required: false
+        - in: query
+          name: toDate
+          schema: 
+            type: string
+            description: querying end date (format yyyymmdd, default is the current date)
+          required: false
+        - in: query
+          name: nextKey
+          schema: 
+            type: string
+            description: using the last nextKey API returns from the previous request to query the next one
+          required: false
+      responses:
+        '200':
+          description: Query notification list successfully
+          content: 
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties: 
+                    seq:
+                      type: string
+                      description: sequence number
+                    sendDateTime:
+                      type: string
+                      description: date and time notification is sent (format yyyymmdd hh:mm:ss)
+                    author:
+                      type: string
+                      description: sender
+                    title:
+                      type: string
+                      description: title
+                    shortTitle:
+                      type: string
+                      description: brief title
+                    content:
+                      type: string
+                      description: full content
+                    shortContent:
+                      type: string
+                      description: brief content
+                    nextKey:
+                      type: string
+                      description: used for next querying
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string     
+                      
+  /api/v1/equity/account/notification/maintenance:
+    get:
+      tags:
+        - NOTIFICATION
+      summary: Query Maintenance Notification in the Current Date
+      responses:
+        '200':
+          description: Query notification list successfully
+          content: 
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties: 
+                    seq:
+                      type: string
+                      description: sequence number
+                    createdDateTime:
+                      type: string
+                      description: date and time notification is created (format dd/mm/yyyy hh:mm:ss)
+                    title:
+                      type: string
+                      description: title
+                    shortTitle:
+                      type: string
+                      description: brief title
+                    content:
+                      type: string
+                      description: full content
+                    shortContent:
+                      type: string
+                      description: brief content
+                    author:
+                      type: string
+                      description: sender
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string    
+                      
+  /api/v1/lotte/equity/account/notification/settings:
+    get:
+      tags:
+        - NOTIFICATION  
+      summary: Query Account's Notification Status
+      responses:
+        '200':
+          description: Notification Status is retured
+          content: 
+            application/json:
+              schema: 
+                  type: object
+                  properties: 
+                    notification:
+                      type: string
+                      description: current status 
+                      enum: ["ON", "OFF"]
+
+    post:
+      tags:
+        - NOTIFICATION  
+      summary: Update Account's Notification Status
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                notification:
+                  type: string
+                  example: ON
+                  description: Update status
+                  enum: ["ON", "OFF"]                  
+              required: 
+                - notification
+      responses:
+        '200':
+          description: Notification Status is updated successfullt
+          content: 
+            application/json:
+              schema: 
+                  type: object
+                      
+
+  /api/v1/ekyc-admin/sendOtp:
+    post:
+      tags: 
+        - EKYC
+      summary: Trigger sending OTP
+      description: Send OTP to input phone number (required logging in with demo account)
+      security:
+        - jwt:
+            - jwt         
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                id:
+                  type: string
+                  example: "+849198139801"
+                  description: phone number
+                idType: 
+                  type: string
+                  enum: ["PHONE_NO"]
+                txType: 
+                  type: string
+                  enum: ["E_KYC"]
+              required: 
+                - id
+                - idType
+                - txType
+      responses:
+        '200':
+          description: Send OTP successfully
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  otpId: 
+                    type: string
+                    example: "bbc40183-fc8c-4642-a884-7224da9f3387"
+                  expiredTime: 
+                    type: string
+                    example: "20231031100058"
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    enum: ["PHONENO_LOCK_INCORRECT_OTP_MAX"]
+                    example: PHONENO_LOCK_INCORRECT_OTP_MAX
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string   
+
+  /api/v1/ekyc-admin/verifyOtp:
+    post:
+      tags:
+        - EKYC
+      summary: Verify OTP
+      description: Verify OTP (required logging in with demo account)
+      security:
+        - jwt:
+            - jwt         
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                otpId:
+                  type: string
+                  example: "bbc40183-fc8c-4642-a884-7224da9f3387"
+                  description: otpId from API POST /api/v1/ekyc-admin/sendOtp
+                otpValue: 
+                  type: string
+                  example: "123456"
+                  description: 6-digit OTP sent to phone number
+              required: 
+                - otpValue
+                - otpId
+      responses:
+        '200':
+          description: Verify OTP successfully
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  otpKey: 
+                    type: string
+                    example: "lạksd-alkjdlakjc-123091283i"
+                  expiredTime: 
+                    type: string
+                    example: "20231031100058"
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    enum: ["INCORRECT_OTP", "OTP_EXPIRED", "INCORRECT_OTP_MAX"]
+                    example: "INCORRECT_OTP"
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string   
+      
+  /api/v1/lotte/ekycs/create:
+    post: 
+      tags: 
+        - EKYC
+      summary: Create eKYC application number
+      description: This API will return error if phoneNo has existed in the system (required logging in with demo account grant_type=client_credentials)
+      security:
+        - jwt:
+            - jwt 
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                groupType: 
+                  type: string
+                  example: idv
+                  description: >- 
+                    type of investor - idv: cá nhân or org:tổ chức
+                  enum: ["idv", "org"]
+                phoneNo: 
+                  type: string
+                  example: 0239090010
+                  description: phone number      
+                email: 
+                  type: string
+                  example: abc@ekyc.com
+                  description: email address 
+      responses:
+        '200':
+          description: Create eKYC application number successfully
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  eKycId: 
+                    type: string
+                    example: "123"
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    example: "Tồn tại số tài khoản sử dụng số điện thoại đăng ký.Vui lòng liên hệ NHSV để biết thêm chi tiết."
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string       
+                      
+  /api/v1/ekycs/branch:
+    get: 
+      tags: 
+        - EKYC
+      summary: Query NHSV's Branch List
+      description: required logging in with demo account grant_type=client_credentials
+      security: 
+        - jwt:
+            - jwt
+      responses:
+        '200':
+          description: Query NHSV's Branch List sucessfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: 
+                    branchCode: 
+                      type: string
+                      example: "100"
+                      description: Branch code
+                    branchName: 
+                      type: string
+                      example: "Chi nhánh Hà Thành"
+                      description: Branch name
+                      
+  /api/v1/ekycs/banks:
+    get: 
+      tags: 
+        - EKYC
+      summary: Query Banks List
+      description: required logging in with demo account grant_type=client_credentials
+      security: 
+        - jwt:
+            - jwt
+      responses:
+        '200':
+          description: Query Banks List sucessfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: 
+                    bankCode: 
+                      type: string
+                      example: "0202"
+                      description: Bank code
+                    bankName: 
+                      type: string
+                      example: "BIDV"
+                      description: Bank name    
+
+  /api/v1/ekycs/banks/{bankCode}/branches:
+    get: 
+      tags: 
+        - EKYC
+      summary: Query Bank's Branch List
+      description: required logging in with demo account grant_type=client_credentials
+      security: 
+        - jwt:
+            - jwt
+      parameters: 
+        - in: path
+          name: bankCode
+          schema: 
+            type: string
+          description: >- 
+            bankCode from get: /api/v1/ekycs/banks
+          required: true  
+      responses:
+        '200':
+          description: Query Bank's Branch List sucessfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties: 
+                    branchCode: 
+                      type: string
+                      example: "01202001"
+                      description: Bank's Branch code
+                    branchName: 
+                      type: string
+                      example: "NHTMCP DTVAPT VN-HOI SO CHINH - HA NOI"
+                      description: Bank's Branch name                      
+      
+  /api/v1/ekycs/partner:
+    get:
+      tags:
+        - EKYC
+      summary: Query Broker's Name
+      description: Need to check for partner's name before request eKYC (required logging in with demo account grant_type=client_credentials) 
+      security: 
+        - jwt:
+            - jwt 
+      parameters:
+        - in: query
+          name: partnerId
+          schema: 
+            type: string
+            description: partnerId
+          required: true   
+      responses:
+        '200':
+          description: Partner exists
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  name: 
+                    type: string
+                    example: Đinh Ngọc Bằng
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    example: "PARTNER_NOT_FOUND"
+                  params:
+                    type: array
+                    items:
+                      type: string                    
+                                    
+                  
+  /api/v1/lotte/ekycs:
+    post: 
+      tags: 
+        - EKYC
+      summary: Update information in eKYC application number
+      description: To complete opening new account process (required logging in with demo account grant_type=client_credentials)
+      security: 
+        - jwt:
+            - jwt 
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                deviceUniqueId:
+                  type: string
+                eKycId:
+                  type: string
+                  example: 123
+                  description: >- 
+                    eKycId gotten from post: /api/v1/lotte/ekycs/create
+                email: 
+                  type: string
+                  example: abc@ekyc.com
+                  description: email address
+                phoneNo:
+                  type: string
+                  example: 0944040899
+                  description: phoneNo was verified and input in post:/api/v1/lotte/ekycs/create
+                fullName: 
+                  type: string
+                  example: Nguyễn Văn A
+                  description: fullname
+                identifierId: 
+                  type: string
+                  example: 0980989818273
+                  description: CCCD/CMND (Must validate existence using post:/api/v1/equity/account/checkNationalId)
+                birthDay: 
+                  type: string
+                  example: 19900101
+                  description: date of birth
+                gender: 
+                  type: string
+                  example: Male
+                  enum: ["Male", "Female"]
+                  description: Gender 
+                issueDate: 
+                  type: string
+                  example: 20170101
+                  description: CCCD/CMND's Issued Date
+                issuePlace: 
+                  type: string
+                  example: CỤC CẢNH SÁT QUẢN LÝ HÀNH CHÍNH VỀ TRẬT TỰ XÃ HỘI
+                  description: CCCD/CMND's Issued Place
+                permanentAddress: 
+                  type: string
+                  example: Hà Nội, Viêt Nam
+                  description: Địa chỉ thường trú
+                contactAddress: 
+                  type: string
+                  example: Hà Nội, Viêt Nam
+                  description: Địa chỉ liên hệ 
+                branch: 
+                  type: string
+                  example: 500
+                  description: NHSV's Branch (got from API GET:/api/v1/ekycs/branch)
+                marginInclued: 
+                  type: boolean
+                  example: true
+                  description: Do you want to open Margin Account? 
+                onlineTrading: 
+                  type: boolean
+                  example: true
+                  description: Do you want to trade via Internet?
+                authenMethod: 
+                  type: string
+                  example: otp
+                  description: Authentication method 
+                  enum: ["otp", "token"]
+                otpReceiveMethod: 
+                  type: string
+                  example: email
+                  description: OTP Card receiving method
+                  enum: ["email", "express"]
+                advancedCashIncluded: 
+                  type: boolean
+                  example: true
+                  description: Do you want to register Cash In Advanced?
+                smsMethod: 
+                  type: string
+                  example: string
+                  description: SMS Notification type
+                  enum: ["basic", "advanced"]                  
+                emailNotification: 
+                  type: boolean
+                  example: true
+                  description: Do you want to receive notification via email?
+                bankList:
+                  type: array
+                  description: Bank List (must have at least 1 object and max is 3)
+                  items: 
+                    type: object
+                    properties: 
+                      bankId:
+                        type: string
+                        example: "0202"
+                        description: Bank ID (gotten from bankCode of API GET /api/v1/ekycs/banks)
+                      bankName:
+                        type: string
+                        example: "BIDV"
+                        description: Bank's short name
+                      bankAccNo:
+                        type: string
+                        example: "09940408291282"
+                        description: Bank Account Number
+                      ownerName:
+                        type: string
+                        example: "Nguyễn Văn A"
+                        description: Name of Bank's Owner
+                      branchId: 
+                        type: string
+                        example: "01202001"
+                        description: bankId's branchID (gotten from API GET /api/v1/ekycs/banks/:id/branches)
+                referral: 
+                  type: string
+                  example: 1
+                  description: >- 
+                    referral type:
+                      - 1: Nhân viên/CTV
+                      - 2: Khách hàng
+                      - 3: Quảng cáo
+                      - 4: Khác 
+                  enum: ["1", "2", "3", "4"]
+                partnerId: 
+                  type: string
+                  example: "bangdn"
+                  description: >- 
+                    referral ID:
+                      - referral =  1: Nhân viên/CTV -> partnerId = NHSV staff (bắt buộc phải xác thực ID này bằng API post:/api/v1/ekycs/partner và dùng name API trả về để fill vào trường partnerName)
+                      - referral = 2: Khách hàng -> partnerId = CCCD của Khách hàng đó (partnerName truyền sẽ là CCCD của Khách hàng đó)
+                      - referral = 3: Quảng cáo -> partnerId người dùng tự điền (partnerId và partnerName đều là giá trị tự điền)
+                      - referral = 4: Khác  -> partnerId người dùng tự điền (partnerId và partnerName đều là giá trị tự điền)
+                partnerName: 
+                  type: string
+                  example: Đinh Ngọc Bằng
+                  description: >- 
+                    referral ID:
+                      - referral =  1: Nhân viên/CTV -> partnerId = NHSV staff (bắt buộc phải xác thực ID này bằng API post:/api/v1/ekycs/partner và dùng name API trả về để fill vào trường partnerName)
+                      - referral = 2: Khách hàng -> partnerId = CCCD của Khách hàng đó (partnerName truyền sẽ là CCCD của Khách hàng đó)
+                      - referral = 3: Quảng cáo -> partnerId người dùng tự điền (partnerId và partnerName đều là giá trị tự điền)
+                      - referral = 4: Khác  -> partnerId người dùng tự điền (partnerId và partnerName đều là giá trị tự điền)     
+                customerSupport: 
+                  type: boolean
+                  example: true
+                  description: Do you have a personal customer support staff? 
+                csPartnerId: 
+                  type: string
+                  example: "bangdn"
+                  description: >- 
+                      - Required if customerSupport = true and must input a value (empty value is not allowed)
+                      
+                      - Optional if customerSupport = false
+                csName: 
+                  type: string
+                  example: Đinh Ngọc Bằng
+                  description: >- 
+                      - Required if customerSupport = true and must input a value (empty value is not allowed)
+                      
+                      - Optional if customerSupport = false                  
+                backImageUrl: 
+                  type: string
+                  example: "https://file.nhsv-dev.tradex.vn/ekyc-images/back_image.jpg"
+                  description: ID's back image
+                frontImageUrl: 
+                  type: string
+                  example: "https://file.nhsv-dev.tradex.vn/ekyc-images/front_image.jpg"
+                  description: ID's front image
+                portraitImageUrl: 
+                  type: string
+                  example: "https://file.nhsv-dev.tradex.vn/ekyc-images/portrait_image.jpg"
+                  description: customer's portrait image                  
+                matchingRate: 
+                  type: string
+                  example: 99.99
+                  description: >- 
+                    VNPT's eKYC score. API returns error if matchingRate < 80 (80 is adjustable)
+                fatca: 
+                  type: boolean
+                  description: Are you the one who needs to comply with FATCA (Foreign Account Tax Compliance Act)? 
+                taxNo: 
+                  type: string
+                  example: 123123
+                  description: tax number
+                dataSign:
+                  type: string
+                  description: dataSign từ INFO_RESULT của VNPT
+                dataBase64: 
+                  type: string
+                  description: dataBase64từ INFO_RESULT của VNPT
+                beneficiaryOwner: 
+                  type: object
+                  required: 
+                    - fullName
+                    - birthDay
+                    - nationality
+                    - identifierId
+                    - issueDate
+                    - issuePlace
+                    - permanentAddress
+                    - contactAddress
+                    - occupation
+                    - position
+                    - phoneNumber
+                    - visaNo
+                    - visaIssuePlace
+                  properties: 
+                    fullName: 
+                      type: string
+                      example: Nguyễn Văn A
+                    birthDay: 
+                      type: string
+                      example: 19900101
+                    nationality: 
+                      type: string
+                      example: Việt Name
+                    identifierId: 
+                      type: string
+                      example: 001090010101
+                    issueDate: 
+                      type: string
+                      example: 20220101
+                    issuePlace: 
+                      type: string
+                      example: CỤC CẢNH SÁT QUẢN LÝ HÀNH CHÍNH VỀ TRẬT TỰ XÃ HỘI
+                    permanentAddress: 
+                      type: string
+                      example: Thành phố HCM Việt Nam
+                    contactAddress: 
+                      type: string
+                      example: Thành phố HCM Việt Nam
+                    occupation: 
+                      type: string
+                      example: abc
+                    position: 
+                      type: string
+                      example: xyz
+                    phoneNumber: 
+                      type: string
+                      example: 090119900101
+                    visaNo: 
+                      type: string
+                      example: C19900101
+                    visaIssuePlace: 
+                      type: string
+                      example: Việt Nam
+                    foreignResidence: 
+                      type: string
+                      example: Raymond Street Eastwood NSW 2122 Australia
+                investmentExperience: 
+                  required: 
+                    - investmentGoal
+                    - risk
+                    - experienced
+                  type: object
+                  properties: 
+                    investmentGoal: 
+                      type: string
+                      example: 'long_term'
+                      enum: ["long_term","mid_term","short_term"]
+                    risk: 
+                      type: string
+                      example: low
+                      enum: ["high","normal","low"]                      
+                    experienced: 
+                      type: boolean
+                    publicCoop: 
+                      description: max 2 (Tên công ty đại chúng mà Khách hàng là người nội bộ hoặc người có liên quan của người nội bộ)
+                      type: array
+                      items: 
+                        type: object
+                        required:
+                          - companyName
+                          - stock
+                          - position
+                        properties: 
+                          companyName: 
+                            type: string
+                            example: publicCoop1
+                          stock: 
+                            type: string
+                            example: PC1
+                          position: 
+                            type: string
+                            example: Director
+                    blockholder: 
+                      description: max 2 (Tên công ty đại chúng mà Khách hàng sở hữu từ 5% trở lên số cổ phiếu có quyền biểu quyết)
+                      type: array
+                      items: 
+                        type: object
+                        required:
+                          - companyName
+                          - stock
+                          - position                        
+                        properties: 
+                          companyName: 
+                            type: string
+                            example: blockholder1
+                          stock: 
+                            type: string
+                            example: BH1
+                          position: 
+                            type: string
+                            example: Consultant
+              required: 
+                - deviceUniqueId
+                - eKycId
+                - email
+                - phoneNo
+                - fullName
+                - identifierId
+                - birthDay
+                - gender
+                - issueDate
+                - issuePlace
+                - permanentAddress
+                - contactAddress
+                - branch
+                - marginInclued
+                - onlineTrading
+                - authenMethod
+                - otpReceiveMethod
+                - advancedCashIncluded
+                - smsMethod
+                - emailNotification
+                - bankList
+                - referral
+                - partnerId
+                - partnerName
+                - customerSupport
+                - backImageUrl
+                - frontImageUrl
+                - matchingRate
+                - fatca
+                - dataSign
+                - dataBase64
+      responses:
+        '200':
+          description: Register eKYC successfully
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  status: 
+                    type: string
+                    example: "success"
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    example: "INVALID_PARAMETERS"
+                  params:
+                    type: array
+                    items:
+                      type: string
+                  messageParams:
+                    type: array
+                    items:
+                      type: string
+                      
+  /api/v1/equity/account/checkNationalId:
+    post: 
+      tags: 
+        - EKYC
+      summary: Check NationalId Exist 
+      description: Need to check for NationalId existed before requesting eKYC (required logging in with demo account grant_type=client_credentials) 
+      security: 
+        - jwt:
+            - jwt 
+      requestBody: 
+        content:
+          application/json:
+            schema: 
+              type: object
+              properties: 
+                identifierId:
+                  type: string
+                  example: 001199123123
+                  description: ID Number
+      responses:
+        '200':
+          description: ID has not been used
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  exist: 
+                    type: boolean
+                    example: false
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    example: "[V3101]Quý khách đã có tài khoản tại NHSV. Vui lòng liên hệ hotline 1900 1055 để được hỗ trợ"
+                  params:
+                    type: array
+                    items:
+                      type: string
+                      
+  /api/v1/lotte/equity/account/vsdStatus:
+    get:
+      tags:
+        - EKYC
+      summary: Query Account's Status in VSD
+      security: 
+        - jwt:
+            - jwt 
+      parameters:
+        - in: query
+          name: accountNumber
+          schema: 
+            type: string
+          example: 039C100737
+          description: Account Number being logged in 
+          required: true          
+        - in: query
+          name: subAccount
+          schema: 
+            type: string
+          description: subAcccount  
+          required: true
+      responses:
+        '200':
+          description: Status is returned
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  status: 
+                    type: string
+                    enum: ["PENDING", "APPROVED", "REJECTED", "UNKNOWN"]
+                    example: APPROVED       
+                    
+  /api/v1/lotte/equity/account/contractStatus:
+    get:
+      tags:
+        - eCONTRACT
+      summary: Query Account's Contact Status
+      security: 
+        - jwt:
+            - jwt 
+      parameters:
+        - in: query
+          name: accountNumber
+          schema: 
+            type: string
+          example: 039C100737
+          description: Account Number being logged in 
+          required: true          
+      responses:
+        '200':
+          description: Status is returned
+          content: 
+            application/json:
+              schema: 
+                type: object
+                properties: 
+                  contractStatus: 
+                    type: string
+                    enum: ["COMPLETED", "PROCESSING", "REJECTED", "UNKNOWN"]
+                    example: COMPLETED    
+        '400':
+          description: Bad Request
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    description: error message
+                    example: "[V2006]Không có thông tin tài khoản"
+                  params:
+                    type: array
+                    items:
+                      type: string      
+                      
+  /api/v1/equity/account/contracts:
+    get:
+      tags:
+        - eCONTRACT
+      summary: Get eContract webView
+      security: 
+        - jwt:
+            - jwt 
+      parameters:
+        - in: query
+          name: eKycId
+          schema: 
+            type: string
+          example: 5029
+          description: >- 
+              - eKycId is required during the eKYC flows (logging in with grant_type client_credentials)
+              
+              - However eKycId is not requried when users are currently logged in by using NHSV account's credentials info (BE will get the NationalID from accessToken to query to FPT)
+          required: false   
+      responses:
+        '200':
+          description: Status is returned
+          content: 
+            application/json:
+              schema: 
+                  type: object
+                  properties: 
+                    timestamp: 
+                      type: string
+                      example: 01/01/2024 04:04:25
+                    status: 
+                      type: integer
+                      format: int32
+                      example: 200
+                    message: 
+                      type: string
+                      example: OK
+                    data: 
+                      type: object
+                      properties: 
+                        items: 
+                          type: array
+                          items: 
+                            type: object
+                            nullable: true
+                            properties: 
+                              envelopeId: 
+                                type: string
+                                example: 000010n0ir90tbpQBALGGuVko
+                              envelopeStatus: 
+                                type: string
+                                example: processing
+                                enum: ["processing", "completed", "rejected", "voided"] 
+                              recipientStatus: 
+                                type: string
+                                example: processing
+                                enum: ["processing", "signed", "rejected"] 
+                              contractInfo: 
+                                type: object
+                                properties: 
+                                  contractName: 
+                                    type: string
+                                    example: HĐMTK-039C900074-BÙI TRANG NGÂN
+                                  contractNo: 
+                                    type: string
+                                    example: HDMTK-20241124/001
+                                  createdDate: 
+                                    type: string
+                                    example: 27/12/2023
+                                  submittedFrom: 
+                                    type: string
+                                    example: /1899/5511
+                              webView: 
+                                type: object
+                                properties: 
+                                  url: 
+                                    type: string
+                                    example: https://demo.econtract.fpt.com/app/fi-wv/000010n0ir90tbpQBALGGuVko/p_002_r_001/act
+                                  cookieName: 
+                                    type: string
+                                    example: jwttoken_000010n0ir90tbpQBALGGuVko_p_002_r_001
+                                  cookieValue: 
+                                    type: string
+                                    example: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwXzAwMl9yXzAwMSIsImlhdCI6MTcwNDEyNTA2NiwiZW52ZWxvcGVJZCI6IjAwMDAxMG4waXI5MHRicFFCQUxHR3VWa28iLCJwYXJ0eUlkIjoicF8wMDIiLCJwYXJ0eUluZGV4IjoxLCJyZWNpcGllbnRJZCI6InBfMDAyX3JfMDAxIiwicmVjaXBpZW50SW5kZXgiOjAsInJlY2lwaWVudEVNYWlsIjoidHJhbmduZ2FuNDg5OUBnbWFpbC5jb20iLCJwZXJtIjoidl9kIiwic2Vzc2lvbklkIjoiblQxcEcxMUNNZ0k0OVNHT3FsMGhkT2JzQk9BIiwiZXhwIjoxNzA0MTI2ODY2fQ.IeCS-BZ-BX9ialJdN4Sr_GdT1lOQ0sLx1jA_rVY20tENkqXuraw4lJlcrytdYoexVwcRWPfJWhjsFqKl0iyzlg
+                                  expireIn: 
+                                    type: integer
+                                    format: int32
+                                    example: 1800
+                                  iframeUrl: 
+                                    type: string
+                                    example: https://demo.econtract.fpt.com/app/fi-wv/000010n0ir90tbpQBALGGuVko/p_002_r_001/act?jwt=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJwXzAwMl9yXzAwMSIsImlhdCI6MTcwNDEyNTA2NiwiZW52ZWxvcGVJZCI6IjAwMDAxMG4waXI5MHRicFFCQUxHR3VWa28iLCJwYXJ0eUlkIjoicF8wMDIiLCJwYXJ0eUluZGV4IjoxLCJyZWNpcGllbnRJZCI6InBfMDAyX3JfMDAxIiwicmVjaXBpZW50SW5kZXgiOjAsInJlY2lwaWVudEVNYWlsIjoidHJhbmduZ2FuNDg5OUBnbWFpbC5jb20iLCJwZXJtIjoidl9kIiwic2Vzc2lvbklkIjoiblQxcEcxMUNNZ0k0OVNHT3FsMGhkT2JzQk9BIiwiZXhwIjoxNzA0MTI2ODY2fQ.IeCS-BZ-BX9ialJdN4Sr_GdT1lOQ0sLx1jA_rVY20tENkqXuraw4lJlcrytdYoexVwcRWPfJWhjsFqKl0iyzlg
+                    pageData: 
+                      type: string
+                      format: nullable                                    
+                      
+  /api/v1/news/latest:
+    get:
+      tags:
+        - NEWS
+      summary: Query List Of Latest News
+      description: Query List Of Latest News
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 20)
+      responses:
+        '200':
+          description: Query List Of Latest News Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    description: News ID
+                  title:
+                    type: string
+                    description: Title of the news
+                  head:
+                    type: string
+                    description: Head of the news
+                  publishTime: 
+                    type: string
+                    description: News publish time
+                  imageUrl: 
+                    type: string 
+                    description: Url of image
+                  url: 
+                    type: string
+                    description: Url of the news
+                  stocks:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            stockCode: 
+                              type: string
+                              description: Stock related/ mentioned in the news
+                            changeRate: 
+                              type: string
+                              description: Change of price (%)
+                            colorId: 
+                              type: number 
+                              enum: [2,1,0,-1,-2]
+                              description: | 
+                                - 2: Ceiling Price
+                                - 1: Increase
+                                - 0: Stable
+                                - -1: Decrease
+                                - -2: Floor Price
+  /api/v1/news/stockNews:
+    get:
+      tags:
+        - NEWS
+      summary: Query List Of News By Stock 
+      description: Query List Of News By Stock
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code 
+          schema:
+            type: string
+          required: true
+          description: Name of stock code 
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 20)
+      responses:
+        '200':
+          description: Query List Of News By Stock Successfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: 
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        description: News ID
+                      title:
+                        type: string
+                        description: Title of the news
+                      head:
+                        type: string
+                        description: Head of the news
+                      publishTime: 
+                        type: string
+                        description: News publish time
+                      url: 
+                        type: string
+                        description: Url of the news
+                      content:
+                        type: string
+                        description: Content of the news 
+                      author: 
+                        type: string
+                        description: Author of the news
+                      source: 
+                        type: string
+                        description: Source of the news
+  /api/v1/news/getLatestNewsByWatchList:
+    get:
+      tags:
+        - NEWS
+      summary: Query List Of News By Stock In User's Watch List
+      description: Query List Of News By Stock In User's Watch List
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: watchListId 
+          schema:
+            type: string
+            enum: ['ALL']
+          description: Enter user's watchlist id to get list news of stock in the watch list. Default is ALL
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 8)
+      responses:
+        '200':
+          description: Query List Of News By Watchlist Successfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: 
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        description: News ID
+                      title:
+                        type: string
+                        description: Title of the news
+                      head:
+                        type: string
+                        description: Head of the news
+                      publishTime: 
+                        type: string
+                        description: News publish time
+                      url: 
+                        type: string
+                        description: Url of the news
+                      content:
+                        type: string
+                        description: Content of the news 
+                      author: 
+                        type: string
+                        description: Author of the news
+                      source: 
+                        type: string
+                        description: Source of the news
+                      stockCode: 
+                        type: array
+                        items: 
+                          type: string
+                        description: Stocks that mentioned in the news
+  /api/v1/news/getLatestNewsByStocks:
+    get:
+      tags:
+        - NEWS
+      summary: Query List Of News By Stock In Non Login User's Watch List 
+      description: Query List Of News By Stock In Non Login User's Watch List
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code 
+          schema:
+            type: array
+            items:
+              type: string
+          description: Enter list of stocks to get news 
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 8)
+      responses:
+        '200':
+          description: Query List Of News By Stocks Successfully 
+          content: 
+            application/json:
+              schema:
+                type: array
+                items: 
+                    type: object
+                    properties:
+                      id:
+                        type: number
+                        description: News ID
+                      title:
+                        type: string
+                        description: Title of the news
+                      head:
+                        type: string
+                        description: Head of the news
+                      publishTime: 
+                        type: string
+                        description: News publish time
+                      url: 
+                        type: string
+                        description: Url of the news
+                      content:
+                        type: string
+                        description: Content of the news 
+                      author: 
+                        type: string
+                        description: Author of the news
+                      source: 
+                        type: string
+                        description: Source of the news
+                      
+  /api/v1/news/newsDetail:
+    get:
+      tags:
+        - NEWS
+      summary: Query News Detail
+      description: Query News Detail
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: id 
+          schema:
+            type: number
+          required: true 
+          description: News ID 
+      responses:
+        '200':
+          description: Query News Detail Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    description: Title of the news
+                  head:
+                    type: string
+                    description: Head of the news
+                  publishTime: 
+                    type: string
+                    description: News publish time
+                  imageUrl: 
+                    type: string 
+                    description: Url of image
+                  url: 
+                    type: string
+                    description: Url of the news
+                  author: 
+                    type: string
+                    description: Author of the news
+                  content: 
+                    type: string
+                    description: Content of the news
+                  stocks:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            stockCode: 
+                              type: string
+                              description: Stock related/ mentioned in the news
+                            changeRate: 
+                              type: string
+                              description: Change of price (%)
+                            colorId: 
+                              type: number 
+                              enum: [2,1,0,-1,-2]
+                              description: | 
+                                - 2: Ceiling Price
+                                - 1: Increase
+                                - 0: Stable
+                                - -1: Decrease
+                                - -2: Floor Price
+  /api/v1/company/ownershipStructure:
+    get:
+      tags:
+        - COMPANY INFO
+      summary: Query Company Ownership Structure
+      description: Query Company Ownership Structure
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code 
+          required: true
+      responses:
+        '200':
+          description: Query Company Ownership Structure Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Name of ownership
+                  note:
+                    type: string
+                    description: note
+                  shares: 
+                    type: number 
+                    description: Owned shares
+                  rate: 
+                    type: number 
+                    description: Owned ratio
+  
+  /api/v1/company/majorShareholders:
+    get:
+      tags:
+        - COMPANY INFO
+      summary: Query Company Major Share Holder
+      description: Query Company Major Share Holder
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code 
+          required: true
+      responses:
+        '200':
+          description: Query Company Ownership Structure Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Name of major shareholder
+                  shares: 
+                    type: number 
+                    description: Shares of major holder
+                  hold: 
+                    type: number 
+                    description: Owned ratio
+                    
+  /api/v1/company/profile:
+    get:
+      tags:
+        - COMPANY INFO
+      summary: Query Company Profile
+      description: Query Company Profile
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code 
+          required: true
+      responses:
+        '200':
+          description: Query Company Profile Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  introduction:
+                    type: string
+                    description: Introduction of company
+                  listingDate: 
+                    type: string
+                    description: First trading date
+                  listingPrice: 
+                    type: string 
+                    description: Price of first listed session
+                  industryName: 
+                    type: string
+                    description: Sector Name 
+                  notes: 
+                    type: string
+                    description: Milestones of company
+                    
+  /api/v1/company/transactionHistory:
+    get:
+      tags:
+        - COMPANY INFO
+      summary: Query Company Internal Trading
+      description: Query Company Internal Trading
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code 
+          required: true
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+          description: From Date. Default is null (current date), (format:yyyymmdd)
+        - in: query
+          name: toDate 
+          schema:
+            type: string
+          description: To Date (format:yyyymmdd)
+          required: true
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: The number of the specific page (default is 0)
+        - in: query
+          name: pageSize
+          schema: 
+            type: number
+          description: The number of records on one page (default is 20)
+      responses:
+        '200':
+          description: Query Company Internal Trading Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: Name of shareholder
+                  position: 
+                    type: string
+                    description: Position of internal shareholder
+                  tranferTypeId: 
+                    type: number 
+                    description: | 
+                        Type of transfer 
+                        - 1: Major Shareholder Transactions
+                        - 2: Internal shareholder Transactions
+                        - 3: Related person's Transactions
+                        - 5: Treasury Stock Transactions
+                  executionDate: 
+                    type: string 
+                    description: Transaction Date 
+                  registerBuyQuantity: 
+                    type: number 
+                    description: Register Buy Volume
+                  registerSellQuantity: 
+                    type: number
+                    description: Register Sell Volume
+                  buyQuantity:
+                    type: number 
+                    description: Buy Volume
+                  buyRate: 
+                    type: number 
+                    description: Buy Percent
+                  sellQuantity: 
+                    type: number 
+                    description: Sell Volume 
+                  sellRate: 
+                    type: number 
+                    description: Sell Percent 
+                  holdingQuantityBefore: 
+                    type: number 
+                    description: Volume Before Transaction
+                  holdingRateBefore: 
+                    type: number 
+                    description: Ratio Before Transaction
+                  holdingQuantityAfter: 
+                    type: number
+                    description: Volume After Transaction
+                  holdingRateAfter:
+                    type: number
+                    description: Ration After Transaction
+                  affiliatedPersonPosition: 
+                    type: string
+                    description: Position of affiliated person
+                  affiliatedPerson:
+                    type: string
+                    description: Internal person who is the affiliated person of organization conducting transaction
+                  
+  
+  /api/v1/finance/incomeStatement :
+    get:
+      tags:
+        - FINANCE
+      summary: Query Company Income Statement 
+      description: Query Company Income Statement 
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code
+          required: true
+        - in: query
+          name: period
+          schema: 
+            type: string
+            enum: ['QUARTER','YEAR']
+          description: To view income statement information by quarter or by year. Default is QUARTER
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: Order of the data. Default is true 
+      
+      responses:
+        '200':
+          description: Query Company Income Statement Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quarterlyIncomeStatement:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        quarter: 
+                          type: number
+                          description: Quarter 
+                        operatingIncome: 
+                          type: number
+                          description: Quarterly operating income 
+                        revenue: 
+                          type: number
+                          description: Quarterly revenue 
+                        netIncome:
+                          type: number
+                          description: Quarterly net income
+                        grossProfit:
+                          type: number
+                          description: Quarterly gross profit
+                  yearlyIncomeStatement:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        operatingIncome: 
+                          type: number
+                          description: Yearly operating income 
+                        revenue: 
+                          type: number
+                          description: Yearly revenue 
+                        netIncome:
+                          type: number
+                          description: Yearly net income
+                        grossProfit:
+                          type: number
+                          description: Yearly gross profit  
+  /api/v1/finance/balanceSheet :
+    get:
+      tags:
+        - FINANCE
+      summary: Query Company Balance Sheet 
+      description: Query Company Balance Sheet  
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code
+          required: true
+        - in: query
+          name: period
+          schema: 
+            type: string
+            enum: ['QUARTER','YEAR']
+          description: To view balance sheet information by quarter or by year. Default is QUARTER
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: Order of the data. Default is true 
+      
+      responses:
+        '200':
+          description: Query Company Balance Sheet Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quarterlyBalanceSheet:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        quarter: 
+                          type: number
+                          description: Quarter 
+                        totalAsset: 
+                          type: number
+                          description: Quarterly total asset 
+                        totalEquity: 
+                          type: number
+                          description: Quarterly total equity
+                        totalLiablities:
+                          type: number
+                          description: Quarterly total liabilities
+                  yearlyBalanceSheet:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        totalAsset: 
+                          type: number
+                          description: Yearly total asset 
+                        totalEquity: 
+                          type: number
+                          description: Yearly total equity
+                        totalLiablities:
+                          type: number
+                          description: Yearly total liabilities                      
+  /api/v1/finance/cashFlow :
+    get:
+      tags:
+        - FINANCE
+      summary: Query Company Cash Flow 
+      description: Query Company Cash Flow  
+      security:
+        - jwt:
+            - jwt
+      parameters:
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: Stock Code
+          required: true
+        - in: query
+          name: period
+          schema: 
+            type: string
+            enum: ['QUARTER','YEAR']
+          description: To view cash flow information by quarter or by year. Default is QUARTER
+        - in: query
+          name: sortAsc
+          schema: 
+            type: boolean
+          description: Order of the data. Default is true 
+      
+      responses:
+        '200':
+          description: Query Company Cash Flow Successfully 
+          content: 
+            application/json:
+              schema:
+                type: object
+                properties:
+                  quarterlyCashFlow:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        quarter: 
+                          type: number
+                          description: Quarter 
+                        operatingCashFlow: 
+                          type: number
+                          description: Quarterly net cash from operating activities
+                        financingCashFlow: 
+                          type: number
+                          description: Quarterly net cash from financing activities
+                        investingCashFlow:
+                          type: number
+                          description: Quarterly net cash from investing activities
+                  yearlyCashFlow:
+                    type: array
+                    items: 
+                      type: object 
+                      properties:
+                        year: 
+                          type: number
+                          description: Year
+                        operatingCashFlow: 
+                          type: number
+                          description: Yearly net cash from operating activities
+                        financingCashFlow: 
+                          type: number
+                          description: Yearly net cash from financing activities
+                        investingCashFlow:
+                          type: number
+                          description: Yearly net cash from investing activities                        
+                 
+tags:
+  - name: COPY TRADING
+  - name: BROKER CHAT
+  - name: WATCHLIST
+  - name: FEEDBACK
+  - name: NOTIFICATION
+  - name: EKYC
+  - name: NEWS
+  - name: COMPANY INFO
+  - name: FINANCE
+  - name: eCONTRACT
