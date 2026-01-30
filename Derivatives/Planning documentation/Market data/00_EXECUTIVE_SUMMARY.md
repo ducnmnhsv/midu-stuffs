@@ -1,14 +1,16 @@
-# Derivatives Integration - Executive Summary
+# Derivatives Market Data - Executive Summary
 
+> **Module:** Market Data  
 > **Project:** TradeX Derivatives Integration  
 > **Date:** 2025-01-30  
-> **Status:** Planning Complete
+> **Status:** Planning Complete  
+> **Priority:** P0
 
 ---
 
 ## TL;DR
 
-Bổ sung giao dịch phái sinh (Futures) vào hệ thống TradeX Backend với 2 nguyên tắc:
+Bổ sung **hiển thị thông tin giá phái sinh** (Futures) vào hệ thống TradeX Backend với 2 nguyên tắc:
 1. **ISOLATION** - Không ảnh hưởng hệ thống equity đang chạy ổn định
 2. **MINIMIZE FE CHANGES** - Giữ nguyên cơ chế FE, data phái sinh được aggregate từ WebSocket như cơ sở
 
@@ -211,11 +213,24 @@ derivatives:
 
 | Document | Location |
 |----------|----------|
-| Lotte DR API Specs | `Derivatives/Documentation/[API specs]Lotte_DR.md` |
-| Lotte DR WebSocket | `Derivatives/Documentation/Websocket_DR_Lotte.md` |
+| Module Index | [Planning documentation/_index.md](../_index.md) |
+| Lotte DR API Specs | [Documentation/[API specs]Lotte_DR.md](../../Documentation/[API%20specs]Lotte_DR.md) |
+| Lotte DR WebSocket | [Documentation/Websocket_DR_Lotte.md](../../Documentation/Websocket_DR_Lotte.md) |
+| Agent Rules (TEMPO) | [Agent based rules (tempo)/_index.md](../../Agent%20based%20rules%20(tempo)/_index.md) |
 | TradeX Init Job | `TradeX Knowledge/init-job.md` |
 | TradeX SymbolInfo API | `TradeX Knowledge/symbol-info-api.md` |
 
 ---
 
-*End of Executive Summary*
+## Related Modules
+
+| Module | Status | Description |
+|--------|--------|-------------|
+| **Market Data** | ✅ Planning Complete | Bạn đang ở đây |
+| Orders | 📋 Not Started | Đặt/Sửa/Hủy lệnh |
+| Cash Transaction | 📋 Not Started | Nộp/Rút tiền ký quỹ |
+| Account | 📋 Not Started | Tra cứu tài khoản |
+
+---
+
+*End of Executive Summary - Market Data Module*

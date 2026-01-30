@@ -1,15 +1,9 @@
 # Derivatives Integration Plan - TradeX Backend
 
-> **⚠️ DEPRECATED:** File này đã được move vào module structure mới.  
-> **→ Xem:** [Market data/01_DERIVATIVES_INTEGRATION_PLAN.md](./Market%20data/01_DERIVATIVES_INTEGRATION_PLAN.md)  
-> **→ Index:** [_index.md](./_index.md)
-
----
-
 > **Document ID:** DER-PLAN-001  
 > **Version:** 1.0  
 > **Created:** 2025-01-30  
-> **Status:** Draft (Deprecated - use Market data module)  
+> **Status:** Draft  
 > **Author:** PM Team
 
 ---
