@@ -17,6 +17,18 @@
 |----------------|----------|-------------|
 | TradeX System | `@TradeX MCP/Knowledge based/` | Source code & documentation |
 | BMAD Framework | `@BMAD/_bmad/` | Agile development workflows |
+| **TradeX Knowledge** | `@TradeX Knowledge/` | PM knowledge about TradeX mechanisms |
+
+### TradeX Knowledge (for PM)
+
+Folder chứa các tài liệu tổng hợp về cơ chế TradeX, giúp PM hiểu hệ thống mà không cần scan codebase:
+
+| Document | Content |
+|----------|---------|
+| `_index.md` | Overview, navigation, system architecture |
+| `market-data-channels.md` | WebSocket channels (quote, bidoffer), field mappings |
+
+> **Note:** Rule `@tradex-knowledge` tự động apply, AI sẽ đọc knowledge trước khi scan codebase.
 
 ## Available Agents
 
@@ -50,10 +62,11 @@ Dự án này có 2 specialized agents. Sử dụng `@` mention để activate:
 
 ```
 /_bmad-output/
-├── planning-artifacts/    # PRD, Product Brief
-├── implementation-artifacts/  # Architecture, Stories
-├── test-artifacts/        # Test design, reports
-└── ba-artifacts/          # API analysis, BRD
+├── planning-artifacts/       # PRD, Product Brief
+├── implementation-artifacts/ # Architecture, Stories
+├── test-artifacts/           # Test design, reports
+└── ba-artifacts/             # API analysis, BRD, PM Knowledge
+    └── tradex-*-knowledge.md # TradeX mechanism knowledge docs
 ```
 
 ## Documentation Standards

@@ -1,0 +1,117 @@
+---
+description: "TradeX System Knowledge - Accumulated knowledge about TradeX backend mechanisms"
+globs:
+alwaysApply: true
+---
+
+# TradeX Knowledge Base
+
+## Purpose
+
+This rule contains accumulated knowledge about TradeX backend system, compiled from codebase analysis sessions. Use this knowledge first before scanning codebase to optimize response time.
+
+## Knowledge Location
+
+**Folder:** `@TradeX Knowledge/`
+
+| Document | Content |
+|----------|---------|
+| [_index.md](../TradeX%20Knowledge/_index.md) | Overview, navigation, system architecture |
+| [market-data-channels.md](../TradeX%20Knowledge/market-data-channels.md) | WebSocket channels, data flow, field mappings |
+| [symbol-info-api.md](../TradeX%20Knowledge/symbol-info-api.md) | SymbolInfo API, data aggregation mechanism |
+| [init-job.md](../TradeX%20Knowledge/init-job.md) | Daily init job, symbol_static.json |
+
+## Quick Reference - Market Data
+
+### WebSocket Channels
+
+| Channel Pattern | Kafka Topic | Description |
+|-----------------|-------------|-------------|
+| `market.quote.{code}` | `quoteUpdate` | Giá, KL, ĐTNN |
+| `market.bidoffer.{code}` | `bidOfferUpdate` | Sổ lệnh (10 levels) |
+| `market.extra.{code}` | `extraUpdate` | Extended info |
+| `market.status` | `marketStatus` | Trạng thái phiên |
+
+### Data Flow
+
+```
+Lotte WS → market-collector-lotte → Kafka → realtime-v2 + ws-v2 → Client
+```
+
+### Key Services
+
+| Service | Role | Tech |
+|---------|------|------|
+| `market-collector-lotte` | Collect from Lotte socket | Java |
+| `realtime-v2` | Process, Redis cache | Java |
+| `ws-v2` | Publish to WebSocket | Node.js |
+
+### Field Abbreviations (market.quote)
+
+| Abbr | Meaning | Vietnamese |
+|------|---------|------------|
+| `s` | symbol | Mã CK |
+| `c` | current price | Giá hiện tại |
+| `ch` | change | Thay đổi |
+| `ra` | rate % | Tỷ lệ % |
+| `vo` | volume | Khối lượng |
+| `va` | value | Giá trị |
+| `mb` | matchedBy (ASK/BID) | Bên khớp |
+| `tb` | totalBidVolume | Tổng KL mua |
+| `to` | totalOfferVolume | Tổng KL bán |
+| `fr.bv` | foreigner buy | ĐTNN mua |
+| `fr.sv` | foreigner sell | ĐTNN bán |
+
+### Field Abbreviations (market.bidoffer)
+
+| Abbr | Meaning | Vietnamese |
+|------|---------|------------|
+| `ss` | session | Phiên GD |
+| `bb` | bestBids | Giá mua tốt nhất |
+| `bo` | bestOffers | Giá bán tốt nhất |
+| `ep` | expectedPrice | Giá dự kiến |
+| `exv` | expectedVolume | KL dự kiến |
+| `p` | price | Giá |
+| `v` | volume | Khối lượng |
+
+### Session Types
+
+| Code | Session | Time (HOSE) |
+|------|---------|-------------|
+| `ATO` | Opening | 09:00-09:15 |
+| `LO` | Continuous | 09:15-11:30, 13:00-14:30 |
+| `ATC` | Closing | 14:30-14:45 |
+| `PLO` | Post Limit | 14:45-15:00 |
+
+### Lotte Control Codes (HOSE)
+
+| Code | Session |
+|------|---------|
+| `P` | ATO |
+| `O`, `R` | LO |
+| `I` | INTERMISSION |
+| `A` | ATC |
+| `C` | PLO |
+| `K`, `G` | CLOSED |
+
+## Usage Instructions
+
+1. **Start with index**: Read `@TradeX Knowledge/_index.md` to see available knowledge
+2. **Navigate to topic**: Follow links to specific documents
+3. **Only scan codebase** if knowledge documents don't cover the topic
+4. **After new analysis**: Create new document in `TradeX Knowledge/` folder, update `_index.md`
+
+## Adding New Knowledge
+
+When analyzing new TradeX mechanisms:
+
+1. Create document at: `TradeX Knowledge/{topic}.md`
+2. Add links to/from `_index.md` and related documents
+3. Update this rule's Quick Reference if frequently needed
+
+## Context for PM
+
+- **Audience**: PM cần hiểu hệ thống để communicate với dev
+- **Language**: Mix Vietnamese/English (technical terms in English)
+- **Format**: Tables, diagrams, practical examples
+- **Focus**: Business interpretation, not just technical details
