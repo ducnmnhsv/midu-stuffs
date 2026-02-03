@@ -13,8 +13,9 @@
 | **Market Data** | [market-data-channels.md](./market-data-channels.md) | WebSocket channels, data flow, field mappings |
 | **Symbol Info API** | [symbol-info-api.md](./symbol-info-api.md) | API symbolInfo, data aggregation mechanism |
 | **Init Job** | [init-job.md](./init-job.md) | Daily init job, symbol_static.json generation |
+| **Regular Orders** | [regular-order-api-mapping.md](./regular-order-api-mapping.md) | TradeX ↔ Lotte API mapping for equity/derivatives orders |
 | *(coming soon)* | authentication.md | Login, token, session management |
-| *(coming soon)* | order-flow.md | Order placement, matching, status |
+| *(coming soon)* | conditional-orders.md | Stop orders, OCO, Trailing, Bull/Bear |
 | *(coming soon)* | notification.md | Push notification, SMS, email |
 
 ---
@@ -145,6 +146,19 @@ Cơ chế lấy giá đầu ngày (Daily Init):
 
 ---
 
+### [Regular Order API Mapping](./regular-order-api-mapping.md)
+
+API mapping cho lệnh thường (Equity & Derivatives):
+- Buy/Sell/Cancel/Modify orders
+- TradeX → Lotte field mappings
+- Request/Response structures
+- Lotte DRORD codes (DRORD-029/030/031/032/011)
+- Order types & validity codes
+
+**Related:** Khi làm feature đặt lệnh, sửa/hủy lệnh, hoặc debug order flow
+
+---
+
 ## How to Use This Knowledge Base
 
 ### For PM
@@ -165,10 +179,11 @@ Cơ chế lấy giá đầu ngày (Daily Init):
 
 | Document | Status | Last Updated |
 |----------|--------|--------------|
-| `_index.md` | ✅ Active | 2025-01-28 |
+| `_index.md` | ✅ Active | 2026-02-03 |
 | `market-data-channels.md` | ✅ Active | 2025-01-28 |
 | `symbol-info-api.md` | ✅ Active | 2025-01-28 |
 | `init-job.md` | ✅ Active | 2025-01-28 |
+| `regular-order-api-mapping.md` | ✅ Active | 2026-02-03 |
 
 ---
 

@@ -67,7 +67,55 @@ Dự án này có 2 specialized agents. Sử dụng `@` mention để activate:
 ├── test-artifacts/           # Test design, reports
 └── ba-artifacts/             # API analysis, BRD, PM Knowledge
     └── tradex-*-knowledge.md # TradeX mechanism knowledge docs
+
+/Derivatives/Planning documentation/
+├── Market data/              # Market data integration docs
+│   ├── README.md            # Single entry point
+│   ├── Planning/            # Planning & requirements docs
+│   ├── Specifications/      # Technical specs (< 500 lines each)
+│   ├── Issues/              # Active implementation issues
+│   └── Archive/             # Completed/historical docs
+├── Orders/                   # Order-related analysis & planning
+│   ├── _index.md            # Orders documentation index
+│   └── [NN]_*.md            # Numbered order documents
+└── [Other categories]/       # Future categories (Account, Asset, Portfolio, etc.)
+    └── [Follow Market data structure]
 ```
+
+**Important Rules for Derivatives Documentation:**
+
+1. **Use Standard Structure** (see `.cursor/skills/derivatives-doc-structure/SKILL.md`):
+   ```
+   {Category}/
+   ├── README.md              ← Single entry point (mandatory)
+   ├── Planning/              ← 01_Integration_Plan.md, 02_Business_Requirements.md, etc.
+   ├── Specifications/        ← {Feature}_API.md, {Feature}_Spec.md
+   ├── Issues/                ← {Feature}_Implementation.md
+   └── Archive/               ← Completed docs
+   ```
+
+2. **Naming Conventions:**
+   - ✅ PascalCase with underscores: `Chart_API_Spec.md`, `Order_API_Implementation.md`
+   - ✅ README.md at category root (not `_index.md` or `00_EXECUTIVE_SUMMARY.md`)
+   - ❌ NO brackets: `[ISSUE]`, `[BRIEF]`, `[COMPLETION]`
+   - ❌ NO special prefixes: `_index.md`, `00_`
+
+3. **File Organization:**
+   - Planning docs: Numbered 01-04 in `Planning/` folder
+   - Specifications: In `Specifications/` folder, max ~500 lines each
+   - Active issues: In `Issues/` folder, one per feature
+   - Completed: Move to `Archive/` folder
+
+4. **Key Principles:**
+   - Single entry point per category (README.md)
+   - Clear separation: Planning vs Specs vs Issues vs Archive
+   - Scalable structure for adding new features
+   - Consistent across all Derivatives categories
+
+5. **Before Creating New Category:**
+   - Read skill: `.cursor/skills/derivatives-doc-structure/SKILL.md`
+   - Copy `Market data/` structure as template
+   - Follow checklist in skill document
 
 ## Documentation Standards
 

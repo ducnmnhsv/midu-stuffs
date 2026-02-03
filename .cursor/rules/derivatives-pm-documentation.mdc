@@ -1,0 +1,514 @@
+# RULE: PM-Friendly Derivatives Documentation
+
+**Rule ID:** derivatives-pm-documentation  
+**Version:** 1.0  
+**Created:** February 3, 2026  
+**Purpose:** Documentation standards for PM/BA (NO implementation details)
+
+---
+
+## Core Principle
+
+**PM/BA documentation must focus on BUSINESS LOGIC and DATA FLOW, NOT implementation code.**
+
+---
+
+## What PM Needs
+
+### ✅ YES - Include These
+
+1. **Business Context**
+   - Why we need this feature
+   - Business value
+   - User impact
+
+2. **Data Flow Diagrams**
+   ```
+   Client → API → Service → Database
+   ```
+
+3. **High-Level Architecture**
+   - Which services are involved
+   - How they communicate (REST, Kafka, WebSocket)
+   - Data storage (Redis, MongoDB)
+
+4. **API Contracts (Abstract)**
+   ```
+   Request: symbol, resolution, from, to
+   Response: timestamps, prices (OHLCV)
+   ```
+
+5. **Business Rules**
+   - When to trigger
+   - Validation rules
+   - Edge cases
+
+6. **Acceptance Criteria**
+   - Feature works for X
+   - Response time < Y
+   - No regression on Z
+
+---
+
+## What PM Does NOT Need
+
+### ❌ NO - Exclude These
+
+1. **Code Implementation**
+   ```java
+   // ❌ NO JAVA/TypeScript code blocks
+   @Service
+   public class DerivativeService {
+       ...
+   }
+   ```
+
+2. **Technical Implementation Details**
+   - ❌ Class names, method signatures
+   - ❌ Variable naming
+   - ❌ Database query syntax
+   - ❌ Exception handling code
+
+3. **Low-Level Architecture**
+   - ❌ Thread management
+   - ❌ Memory optimization
+   - ❌ Connection pooling
+   - ❌ Caching strategies (technical)
+
+---
+
+## Document Structure for PM
+
+### Planning Documents
+
+**Location:** `Planning/` folder
+
+#### 01_Integration_Plan.md
+- **Focus:** What needs to be done, in what order
+- **Include:**
+  - Phases and milestones
+  - Dependencies
+  - Timeline
+  - Services affected (high-level)
+- **Exclude:** Implementation code, technical details
+
+#### 02_Business_Requirements.md
+- **Focus:** Business needs and user stories
+- **Include:**
+  - User stories
+  - Success metrics
+  - Scope (in/out)
+  - Business rules
+- **Exclude:** Technical how-to
+
+#### 03_Technical_Requirements.md (HIGH-LEVEL ONLY)
+- **Focus:** What system needs to support
+- **Include:**
+  - Services affected
+  - APIs needed
+  - Data storage (abstract)
+  - Performance requirements
+- **Exclude:** Code, implementation details
+
+#### 04_Use_Cases_Testing.md
+- **Focus:** How feature should behave
+- **Include:**
+  - User scenarios
+  - Test cases (input/output)
+  - Expected behavior
+  - Edge cases
+- **Exclude:** Test automation code
+
+---
+
+### Specifications Folder
+
+**Location:** `Specifications/` folder
+
+**Purpose:** Technical specs FOR DEVELOPERS (PM can skip)
+
+**Content:** Implementation details, code examples, DTOs, etc.
+
+**PM Reading:** Optional, only if curious about implementation
+
+---
+
+### Issues Folder
+
+**Location:** `Issues/` folder
+
+**Structure for PM:**
+
+```markdown
+# {Feature} Implementation
+
+## 📋 Executive Summary (PM READS THIS)
+
+### Problem Statement
+{Business problem in plain language}
+
+### Current vs Target
+{What works now vs what should work}
+
+### Solution Approach (HIGH-LEVEL)
+1. Collect data from X
+2. Store in Y
+3. API returns Z
+
+### Timeline
+{Phases and estimates}
+
+### Success Criteria
+{Acceptance criteria}
+
+---
+
+## 🔍 Technical Background (PM CAN SKIP)
+
+{Implementation details for developers}
+
+---
+
+## 📝 Detailed Requirements (PM CAN SKIP)
+
+{Technical requirements with code}
+```
+
+---
+
+## Examples
+
+### ✅ GOOD - PM-Friendly
+
+```markdown
+## Data Collection for Chart API
+
+### Business Need
+Users need to see derivatives price history on charts.
+
+### Data Flow
+```
+WebSocket (Lotte) → market-collector-lotte → Kafka → realtime-v2 → Redis
+                                                                      ↓
+Client → /tradingview/history → market-query-v2 → Read from Redis → Return
+```
+
+### What We Need
+1. **Daily Data** - Store OHLCV for each day
+2. **Minute Data** - Store 1/5/15/30/60 min candles
+3. **Query Logic** - Detect derivatives vs equity, query appropriate data
+
+### Success Criteria
+- Chart displays for VN30F2501
+- All resolutions work (D, W, M, 1, 5, 15, 30, 60)
+- Response time < 500ms
+- Equity charts still work (no regression)
+```
+
+---
+
+### ❌ BAD - Too Technical for PM
+
+```markdown
+## Data Collection Implementation
+
+```java
+@Service
+@Slf4j
+public class DerivativeDailyService {
+    
+    @Autowired
+    private LotteDrApiService drApiService;
+    
+    @Autowired
+    private SymbolDailyRepository symbolDailyRepository;
+    
+    public CompletableFuture<Void> downloadDerivativeDailyHistory(List<String> derivativeCodes) {
+        for (String code : derivativeCodes) {
+            try {
+                List<DerivativeMinutelyItem> minuteData = drApiService.getMinutelyDerivatives(
+                    code, "0", null, null
+                ).get(30, TimeUnit.SECONDS);
+                
+                if (minuteData != null && !minuteData.isEmpty()) {
+                    SymbolDaily daily = aggregateToDaily(code, minuteData);
+                    symbolDailyRepository.save(daily);
+                    log.info("Saved daily data for derivative: {}", code);
+                }
+            } catch (Exception e) {
+                log.warn("Failed to download daily for {}: {}", code, e.getMessage());
+            }
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+}
+```
+```
+
+❌ **Problem:** PM doesn't need to see:
+- Java code
+- Class structure
+- Exception handling
+- Method signatures
+
+---
+
+## Guidelines for AI Agent
+
+### When Creating PM Documentation
+
+1. **Start with "Why"**
+   - Business context first
+   - Technical details later (in Specifications/)
+
+2. **Use Diagrams, Not Code**
+   - Data flow diagrams
+   - Architecture diagrams
+   - Sequence diagrams (high-level)
+
+3. **Abstract Technical Details**
+   - "Store in MongoDB" (not "symbolDaily collection schema")
+   - "Query from Redis" (not "RedisTemplate.opsForValue()")
+   - "Call Lotte API" (not "RestTemplate.exchange()")
+
+4. **Separate PM Content from Dev Content**
+   - Planning/ → PM reads
+   - Specifications/ → Developers read
+   - Issues/ → Executive Summary for PM, Details for Dev
+
+5. **Test Your Documentation**
+   - Can PM understand business impact? ✅
+   - Can PM explain to stakeholders? ✅
+   - Does PM need code knowledge? ❌
+
+---
+
+## Folder Structure (Revised for PM)
+
+```
+/Derivatives/Planning documentation/{Category}/
+│
+├── README.md                      ← PM ENTRY POINT
+│   - Business overview
+│   - Implementation status
+│   - Quick links
+│
+├── Planning/                      ← PM READS THESE
+│   ├── 01_Integration_Plan.md    (Business roadmap)
+│   ├── 02_Business_Requirements.md (BRD)
+│   ├── 03_Technical_Requirements.md (HIGH-LEVEL only)
+│   └── 04_Use_Cases_Testing.md   (Test scenarios)
+│
+├── Specifications/                ← DEVELOPERS READ (PM optional)
+│   └── {Feature}_Spec.md         (Implementation details, code)
+│
+├── Issues/                        ← PM READS EXECUTIVE SUMMARY
+│   └── {Feature}_Implementation.md
+│       ├── Executive Summary     (PM reads)
+│       └── Technical Details     (PM skips)
+│
+└── Archive/                       ← Historical reference
+```
+
+---
+
+## Enforcement Rules
+
+### For AI Agent
+
+When creating documentation for Derivatives:
+
+1. **Check audience first**
+   - Is this document for PM? → No code
+   - Is this document for Developers? → Code OK
+
+2. **Planning/ folder = PM-friendly**
+   - No Java/TypeScript code blocks
+   - No class/method signatures
+   - High-level architecture only
+   - Data flow diagrams OK
+   - Business logic focus
+
+3. **Specifications/ folder = Developer-friendly**
+   - Code examples OK
+   - Implementation details OK
+   - DTOs, schemas OK
+   - Technical architecture OK
+
+4. **Issues/ folder = Hybrid**
+   - Executive Summary → PM-friendly (no code)
+   - Technical sections → Developer-friendly (code OK)
+   - Clear separation
+
+---
+
+## Review Checklist
+
+Before finalizing PM documentation:
+
+- [ ] No code blocks in Planning/ folder
+- [ ] No implementation details in README.md
+- [ ] Data flow explained with diagrams, not code
+- [ ] Business value clearly stated
+- [ ] Acceptance criteria understandable by PM
+- [ ] Technical details moved to Specifications/
+- [ ] Issues/ have Executive Summary (no code)
+- [ ] PM can understand and explain feature
+
+---
+
+## Examples by Folder
+
+### README.md
+
+✅ **Include:**
+- Business mission
+- Architecture diagram (high-level)
+- Feature status table
+- Links to planning docs
+
+❌ **Exclude:**
+- Code snippets
+- Class diagrams
+- Database schemas
+- Implementation code
+
+---
+
+### Planning/01_Integration_Plan.md
+
+✅ **Include:**
+```markdown
+## Phase 1: Data Collection (Week 1-2)
+
+**Goal:** Collect derivatives price data
+
+**Services Affected:**
+- market-collector-lotte (collect from Lotte)
+- realtime-v2 (aggregate and cache)
+
+**Data Flow:**
+Lotte WebSocket → Collector → Kafka → Realtime → Redis
+
+**Dependencies:**
+- Lotte API access configured
+- Kafka topics created
+- Redis keys planned
+
+**Deliverable:** Derivatives data available in Redis
+```
+
+❌ **Exclude:**
+```java
+// ❌ NO CODE IN PLANNING DOCS
+@Service
+public class MarketCollectorService {
+    ...
+}
+```
+
+---
+
+### Planning/02_Business_Requirements.md
+
+✅ **Include:**
+```markdown
+## BR-1: Real-time Derivatives Quotes
+
+**As a** trader
+**I want to** see real-time VN30F prices
+**So that** I can make timely trading decisions
+
+**Business Value:**
+- Enable derivatives trading
+- Retain users who need derivatives
+- Competitive with other platforms
+
+**Acceptance Criteria:**
+- Quotes update < 1 second
+- Display matches exchange data
+- No impact on equity quotes
+```
+
+❌ **Exclude:**
+- WebSocket connection code
+- Data aggregation logic
+- Caching implementation
+
+---
+
+### Specifications/Chart_API_Spec.md
+
+✅ **Can Include (for Developers):**
+```java
+// Code examples OK here
+@Service
+public class FeedService {
+    public TradingViewHistory queryHistory(Request req) {
+        if (isDerivatives(req.symbol)) {
+            return queryDerivativesData(req);
+        }
+        return queryEquityData(req);
+    }
+}
+```
+
+**Note:** PM typically doesn't read Specifications/ folder
+
+---
+
+### Issues/Chart_API_Implementation.md
+
+```markdown
+# Chart API Implementation
+
+## 📋 Executive Summary (PM READS THIS)
+
+### Problem
+Chart API doesn't work for derivatives symbols.
+
+### Solution
+Enable derivatives data sources for chart API.
+
+### Timeline
+2.5-3 weeks
+
+### Success Criteria
+- Chart works for VN30F2501
+- All resolutions supported
+- No equity regression
+
+---
+
+## 🔍 Technical Details (DEVELOPERS READ)
+
+### Implementation
+
+```java
+// Code for developers
+...
+```
+```
+
+---
+
+## Summary
+
+**For PM Documentation:**
+- ✅ Business context, data flow, high-level architecture
+- ❌ Code blocks, implementation details, technical specifics
+
+**For Developer Documentation:**
+- ✅ Everything including code
+
+**Separation:**
+- Planning/ = PM-friendly
+- Specifications/ = Developer-friendly
+- Issues/ = Hybrid (Executive Summary for PM, Details for Dev)
+
+---
+
+**Rule Status:** Active  
+**Applies To:** All Derivatives categories  
+**Enforcement:** AI Agent must check audience before adding code  
+**Related Skill:** `derivatives-doc-structure`
