@@ -11,7 +11,7 @@
 | Category | Status | Focus Area |
 |----------|--------|------------|
 | **[Market/](./Market/)** | ✅ Complete | Real-time quotes, charts, WebSocket |
-| **[Order/](./Order/)** | ✅ In Progress | Order placement (regular & conditional) |
+| **[Order/](./Order/)** | ✅ Complete | Order placement (regular & conditional) |
 | **[Account/](./Account/)** | 📋 Planned | Account info, balance, positions |
 | **[Asset/](./Asset/)** | 📋 Planned | Portfolio, asset management |
 
