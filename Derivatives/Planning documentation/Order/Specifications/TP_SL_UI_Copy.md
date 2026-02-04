@@ -1,4 +1,12 @@
-# TP/SL – Tooltip & Warning Copy (EN / VI)
+# TP/SL – UI Copy & Validation Messages (EN / VI)
+
+**Document Type:** UI/UX Content  
+**Category:** Orders - TP/SL Feature  
+**Version:** 1.0  
+**Date:** February 3, 2026
+
+> **Note:** This is NOT a technical specification.  
+> This document contains UI copy, tooltips, and validation messages for TP/SL feature.
 
 ---
 

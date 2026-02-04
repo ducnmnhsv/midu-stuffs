@@ -1,111 +1,41 @@
 # Order - Derivatives Orders
 
-> **Category:** Orders (Regular & Conditional)  
-> **Audience:** PM, BA, Stakeholders  
-> **Last Updated:** February 3, 2026
+> **Module:** Orders (Regular & Conditional)  
+> **Project:** TradeX Derivatives Integration  
+> **Last Updated:** February 4, 2026  
+> **Status:** Regular Orders Complete | Conditional Orders Planned
 
 ---
 
-## 📋 Overview
+## 📋 Quick Navigation
 
-This category covers **order operations** for Derivatives trading, including:
-- Regular Orders (Buy, Sell, Cancel, Modify)
-- Conditional Orders (Stop, OCO, Trailing) - Coming Soon
-
----
-
-## 🎯 Feature Status
-
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Regular Orders** | ✅ Complete | Buy/Sell/Cancel/Modify operations |
-| **Query Unmatch Orders** | ✅ Complete | List cancellable/modifiable orders |
-| **Conditional Orders** | 📋 Planned | Stop orders, OCO, Trailing |
-| **Order History** | 📋 Planned | Historical order queries |
+| Section | Description |
+|---------|-------------|
+| [Overview](#-overview) | Business context and scope |
+| [Architecture](#%EF%B8%8F-architecture-high-level) | High-level system design |
+| [Implementation Status](#-implementation-status) | Current progress |
+| [Documentation Map](#-documentation-map) | All docs index |
+| [Active Issues](#-active-issues) | Ready-for-dev tasks |
+| [How to Use](#-how-to-use) | Role-based guide |
 
 ---
 
-## 📁 Documentation
+## 🎯 Overview
 
-### Planning/ - PM-Friendly (NO CODE)
+### Mission
 
-| Document | Status | Description |
-|----------|--------|-------------|
-| [01_Regular_Orders_Business](./Planning/01_Regular_Orders_Business.md) | ✅ Complete | Business requirements for regular orders |
-| [02_Order_Flow](./Planning/02_Order_Flow.md) | ✅ Complete | Order flow and architecture |
-| [03_Order_Types](./Planning/03_Order_Types.md) | ✅ Complete | Order types and validation rules |
-| 04_Conditional_Orders_Business.md | 📋 Planned | Conditional orders business requirements |
+Enable traders to execute derivatives orders (regular and conditional) through NHSV Pro App with speed, flexibility, and control comparable to leading competitors.
 
-### Specifications/ - For Developers
+### Scope
 
-| Document | Status | Description |
-|----------|--------|-------------|
-| [Regular_Orders_API_Spec](./Specifications/Regular_Orders_API_Spec.md) | ✅ Complete | Complete API mapping (TradeX → Lotte) |
-| [Price_Mechanism_Spec](./Specifications/Price_Mechanism_Spec.md) | ✅ Complete | Price calculation technical details |
+| In Scope | Out of Scope |
+|----------|--------------|
+| ✅ Regular Orders (Buy, Sell, Cancel, Modify) | ❌ Batch order operations |
+| ✅ Query cancellable/modifiable orders | ❌ Advanced order routing |
+| 📋 Conditional Orders (Stop, OCO, Trailing) | ❌ Algorithmic trading |
+| 📋 Order History queries | |
 
-**📘 API Standards & Templates** (TradeX-wide, applies to all projects):
-- **[TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md)** - Complete guide (standards + how-to)
-- **[API Spec Template](../../../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md)** - Copy for new specs
-
-### Issues/ - Active Tasks
-
-*No active issues currently*
-
-### Archive/ - Historical
-
-*To be organized as needed*
-
----
-
-## 🎯 Regular Orders
-
-### What They Do
-
-Regular orders are standard trading operations:
-- **Buy** - Open or increase long position
-- **Sell** - Open or increase short position  
-- **Cancel** - Cancel pending order
-- **Modify** - Change price/quantity of pending order
-
-### Key Features
-
-- ✅ Support all order types (LO, ATO, ATC, MOK, MAK, MTL)
-- ✅ Real-time order validation
-- ✅ Query cancellable/modifiable orders
-- ✅ Integration with Lotte backend
-
-### Business Flow
-
-```
-Trader → Place Order → Validation → Send to Exchange → Order Book → Match/Pending
-                                                                      ↓
-Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← Matched
-```
-
----
-
-## 📊 Order Types
-
-### Regular Order Types
-
-| Type | Code | Session | Description |
-|------|------|---------|-------------|
-| **LO** | 2 | All | Limit Order - Giá cố định |
-| **ATO** | 3 | Opening | At-The-Opening - Khớp mở cửa |
-| **MAK** | 4 | Continuous | Market At Kill - Khớp tối đa |
-| **MOK** | 5 | Continuous | Market Or Kill - Khớp hết hoặc hủy |
-| **ATC** | 6 | Closing | At-The-Close - Khớp đóng cửa |
-| **MTL** | 9 | Continuous | Market To Limit - Chuyển thành LO |
-
-### Validity Types
-
-| Code | Type | Description |
-|------|------|-------------|
-| 0 | DAY | Valid for current day |
-| 2 | ATO | Opening session only |
-| 3 | IOC | Immediate Or Cancel |
-| 4 | FOK | Fill Or Kill |
-| 7 | ATC | Closing session only |
+**Legend:** ✅ Complete | 📋 Planned | ❌ Out of scope
 
 ---
 
@@ -119,38 +49,128 @@ Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← �
        │
        ▼
 ┌─────────────┐
-│ rest-proxy  │  → API Gateway
+│ rest-proxy  │  → API Gateway (Auth, Routing)
 └──────┬──────┘
        │
-       ▼
-┌─────────────┐
-│   tuxedo    │  → Regular Order Processing
-└──────┬──────┘
-       │
-       ▼
-┌─────────────┐
-│ Lotte API   │  → Exchange Backend
-└─────────────┘
+       ├──────────────┬─────────────┐
+       ▼              ▼             ▼
+┌─────────────┐ ┌─────────┐ ┌─────────────┐
+│   tuxedo    │ │ order-v2│ │ lotte-bridge│
+│ (Regular)   │ │ (Cond.) │ │ (Core API)  │
+└──────┬──────┘ └────┬────┘ └──────┬──────┘
+       │             │             │
+       └─────────────┴─────────────┘
+                     │
+                     ▼
+              ┌─────────────┐
+              │ Lotte API   │  → Exchange Backend
+              └─────────────┘
 ```
 
-**Services:**
+**Key Services:**
 - `rest-proxy` - Routes requests, handles auth
 - `tuxedo` - Processes regular orders
+- `lotte-bridge` - Core API integration
 - `order-v2` - Handles conditional orders (future)
 
 ---
 
-## 🎯 Conditional Orders (Coming Soon)
+## 📊 Implementation Status
 
-### Planned Features
+### ✅ Completed Features
 
+| Feature | Status | Services | Documents |
+|---------|--------|----------|-----------|
+| Regular Orders (Buy/Sell) | ✅ Live | tuxedo, lotte-bridge | Planning/01-03, Specs/Regular_Orders |
+| Cancel Orders | ✅ Live | tuxedo, lotte-bridge | Specs/Regular_Orders |
+| Modify Orders | ✅ Live | tuxedo, lotte-bridge | Specs/Regular_Orders |
+| Query Unmatch Orders | ✅ Live | tuxedo, lotte-bridge | Specs/Regular_Orders |
+| Price Mechanism | ✅ Live | tuxedo | Specs/Price_Mechanism |
+
+### 📋 Pending Implementation
+
+| Feature | Status | Issue | Priority | Estimate |
+|---------|--------|-------|----------|----------|
+| Conditional Orders | 📋 Planned | TBD | High | 4-6 weeks |
+| Order History | 📋 Planned | TBD | Medium | 2-3 weeks |
+
+---
+
+## 📚 Documentation Map
+
+### Planning & Requirements (PM-Friendly, NO CODE)
+
+| # | Document | Type | Audience | Description |
+|---|----------|------|----------|-------------|
+| 01 | [Regular Orders Business](./Planning/01_Regular_Orders_Business.md) | BRD | PM, BA, Stakeholders | Business requirements, user stories |
+| 02 | [Order Flow](./Planning/02_Order_Flow.md) | Architecture | PM, BA, Architect | System flow, data flow diagrams |
+| 03 | [Order Types](./Planning/03_Order_Types.md) | Spec | PM, BA, QA | Order types, validation rules |
+| 04 | Conditional Orders Business | BRD | PM, BA | *(Planned)* Conditional orders requirements |
+
+**⚠️ Important:** Planning/ docs follow `.cursor/rules/derivatives-pm-documentation.mdc`:
+- ✅ Business logic, diagrams, user stories
+- ❌ NO code blocks (Java, TypeScript, etc.)
+- ❌ NO implementation details (class names, methods)
+
+### Technical Specifications (For Developers)
+
+| Document | Focus Area | Target Audience | Lines |
+|----------|------------|-----------------|-------|
+| [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte) | BE Developers | ~750 |
+| [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
+
+**📘 TradeX-Wide API Standards:**
+- [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)
+- [API Spec Template](../../../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md) - Copy for new specs
+
+### Active Issues (Ready for Development)
+
+**Current:** No active issues
+
+**Future Issues:**
+- Conditional Orders Implementation (when approved)
+- Order History Implementation (when approved)
+
+### Archive (Historical Documents)
+
+**Current:** No archived documents
+
+---
+
+## 🎯 Feature Details
+
+### Regular Orders
+
+**What They Do:**
+- **Buy** - Open or increase long position
+- **Sell** - Open or increase short position  
+- **Cancel** - Cancel pending order
+- **Modify** - Change price/quantity of pending order
+
+**Supported Order Types:**
+- ✅ LO (Limit Order) - All sessions
+- ✅ ATO (At-The-Opening) - Opening session
+- ✅ ATC (At-The-Close) - Closing session
+- ✅ MOK (Market Or Kill) - Continuous session
+- ✅ MAK (Market At Kill) - Continuous session
+- ✅ MTL (Market To Limit) - Continuous session
+
+**Business Flow:**
+```
+Trader → Place Order → Validation → Send to Exchange → Order Book → Match/Pending
+                                                                      ↓
+Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← Matched
+```
+
+### Conditional Orders (Coming Soon)
+
+**Planned Features:**
 - **Stop Orders** - Trigger at price level
 - **OCO Orders** - One-Cancels-Other
 - **Trailing Orders** - Dynamic stop loss
 - **Bull/Bear Orders** - Market sentiment based
 
-### Lotte APIs
-
+**Lotte APIs:**
 - DRORD-005: Stop Buy
 - DRORD-006: Stop Sell
 - DRORD-023/024: Modify Stop
@@ -158,54 +178,122 @@ Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← �
 
 ---
 
-## 📖 How to Use
+## 👥 How to Use This Documentation
 
 ### For PM
 
-1. **Understand business flow** - Read Planning/ docs
-2. **Know order types** - Reference tables above
-3. **Write user stories** - Use business requirements
-4. **Skip technical details** - Leave Specifications/ to developers
+**Focus:** Business value and user impact
+
+**Start with:**
+1. Read [Overview](#-overview) - Understand mission and scope
+2. Read [Planning/01_Regular_Orders_Business](./Planning/01_Regular_Orders_Business.md) - Business requirements
+3. Review [Implementation Status](#-implementation-status) - What's done vs planned
+4. Check [Feature Details](#-feature-details) - Order types and flows
+
+**Skip:**
+- Specifications/ folder (technical details for developers)
 
 ### For BA
 
-1. **Business analysis** - Planning/ folder
-2. **API details** - Specifications/ folder (if needed)
-3. **Test scenarios** - Create in Planning/
+**Focus:** Requirements analysis and testing
+
+**Start with:**
+1. Read all Planning/ docs (01-03) - Complete business context
+2. Review [Order Types](#-feature-details) - Validation rules
+3. Check [Active Issues](#-active-issues) - Tasks ready for analysis
+4. Reference Specifications/ when needed - API contracts for test cases
+
+**Workflow:**
+- Planning/ = Understanding requirements
+- Specifications/ = Defining test scenarios
 
 ### For Developers
 
-1. **Business context** - Read Planning/ docs
-2. **Implementation** - Specifications/ has complete API mapping
-3. **Code references** - Source files listed in specs
+**Focus:** Implementation and technical specs
+
+**Start with:**
+1. Read [Planning/02_Order_Flow](./Planning/02_Order_Flow.md) - System architecture
+2. Read [Specifications/Regular_Orders_API_Spec](./Specifications/Regular_Orders_API_Spec.md) - Complete API mapping
+3. Follow [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Coding standards
+4. Check [Active Issues](#-active-issues) - Implementation tasks
+
+**Code Examples:** All in Specifications/ folder
+
+### For QA
+
+**Focus:** Test scenarios and validation
+
+**Start with:**
+1. Read [Planning/03_Order_Types](./Planning/03_Order_Types.md) - Validation rules
+2. Review [Specifications/Regular_Orders_API_Spec](./Specifications/Regular_Orders_API_Spec.md) - Test cases
+3. Create test plans based on business requirements
+4. Reference Planning/01 - User stories for acceptance criteria
 
 ---
 
-## 🔗 Related Documentation
+## 📦 Related Folders
 
-| Resource | Location |
-|----------|----------|
-| Lotte API Specs | `../Documentation/[API specs]Lotte_DR.md` |
-| Market Data | `../Market/` |
-| TradeX Knowledge | `/TradeX Knowledge/regular-order-api-mapping.md` |
-| Project Rules | `AGENTS.md` |
+| Folder | Content | Status |
+|--------|---------|--------|
+| [Market data/](../Market%20data/) | Market data integration, WebSocket, SymbolInfo | ✅ Complete |
+| [Account/](../Account/) | Account management (future) | 📋 Planned |
+| [Asset/](../Asset/) | Portfolio and positions (future) | 📋 Planned |
+
+---
+
+## 🔗 External References
+
+| Resource | Location | Description |
+|----------|----------|-------------|
+| Lotte API Specs | `../Documentation/[API specs]Lotte_DR.md` | Complete Lotte API documentation |
+| TradeX Knowledge | `/TradeX Knowledge/Planning/regular-order-api-mapping.md` | General order patterns |
+| Project Rules | `/AGENTS.md` | AI agent instructions and skills |
 
 ---
 
 ## ⚠️ Important Notes
 
-### For PM Documentation
+### Documentation Standards
 
-This folder follows **PM-friendly rules**:
-- ✅ Planning/ = Business focus, NO CODE
-- ✅ Specifications/ = Technical details, code OK
-- ✅ Diagrams over implementation
-- ✅ Business value first
+This folder follows **Derivatives Documentation Structure**:
+- **Skill:** `.cursor/skills/derivatives-doc-structure/SKILL.md`
+- **Rule:** `.cursor/rules/derivatives-pm-documentation.mdc`
 
-**Rule:** `.cursor/rules/derivatives-pm-documentation.mdc`
+**Key Principles:**
+- ✅ Single entry point (README.md)
+- ✅ Clear separation (Planning vs Specs vs Issues vs Archive)
+- ✅ Consistent naming (PascalCase with underscores)
+- ✅ PM-friendly Planning/ (NO CODE)
+- ✅ Developer-friendly Specifications/ (CODE OK)
+
+### File Size Guidelines
+
+- ✅ README.md: Comprehensive but < 400 lines
+- ✅ Planning docs: < 500 lines each
+- ✅ Specifications: < 700 lines each (split if larger)
+- ✅ Issues: < 800 lines each
+
+### Naming Conventions
+
+**✅ Good:**
+```
+README.md
+Planning/01_Integration_Plan.md
+Specifications/Order_API_Spec.md
+Issues/Order_Implementation.md
+```
+
+**❌ Bad:**
+```
+_index.md
+[ISSUE] Order API.md
+00_EXECUTIVE_SUMMARY.md
+order-api-spec.md
+```
 
 ---
 
-**Status:** Active Development  
-**Next Milestone:** Conditional Orders Planning  
-**Maintained By:** BA/PM Team
+**Prepared By:** BA Team  
+**Last Review:** February 4, 2026  
+**Document Version:** 2.0  
+**Status:** ✅ Active Development | Regular Orders Complete

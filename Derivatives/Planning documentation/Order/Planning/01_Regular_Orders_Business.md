@@ -1,8 +1,13 @@
 # Regular Orders - Business Requirements
 
-**Document Type:** Business Requirements (PM-Friendly)  
-**Version:** 1.0  
-**Date:** February 3, 2026
+**Document Type:** Business Requirements (PM-Friendly, NO CODE)  
+**Category:** Orders - Regular Orders  
+**Version:** 1.1  
+**Date:** February 4, 2026
+
+> **📘 API Standards:** This follows TradeX API conventions  
+> Technical details: `@TradeX Knowledge/API Standards/tradex-api-conventions.md`  
+> API Specs: `../Specifications/Regular_Orders_API_Spec.md`
 
 ---
 

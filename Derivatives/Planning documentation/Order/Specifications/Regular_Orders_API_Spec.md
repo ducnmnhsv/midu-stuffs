@@ -1,9 +1,13 @@
-# TradeX Regular Order API Specification
+# Regular Orders API Specification
 
 **Document Type:** API Specification  
 **Category:** Orders - Regular Orders (Lệnh Thường)  
-**Date:** February 3, 2026  
-**Version:** 2.0
+**Project:** Derivatives + Equity  
+**Date:** February 4, 2026  
+**Version:** 2.1
+
+> **Note:** This spec follows **TradeX API Conventions**  
+> See: `@TradeX Knowledge/API Standards/tradex-api-conventions.md`
 
 ---
 
@@ -43,6 +47,16 @@ Client/App → rest-proxy → lotte-bridge/tuxedo → Lotte Tuxedo API
 ---
 
 ## TradeX API Standards
+
+> **📘 Complete Standards:** See `@TradeX Knowledge/API Standards/tradex-api-conventions.md`
+
+This section provides a quick reference. For complete details including:
+- Auto-populated fields (sourceIp, userId, etc.)
+- Error format standards
+- Language handling
+- Common request fields
+
+Please refer to the main conventions document.
 
 ### Required Headers
 
