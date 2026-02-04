@@ -39,6 +39,46 @@ TradeX Knowledge/
 
 > **Note:** Rule `@tradex-knowledge` tự động apply, AI sẽ đọc knowledge trước khi scan codebase.
 
+## Available Skills
+
+### Specialized Skills (4)
+
+Dự án này có 4 specialized skills. Cursor tự động phát hiện hoặc mention `@skill-name`:
+
+| Skill | Location | Auto-trigger | Use Case |
+|-------|----------|--------------|----------|
+| **derivatives-doc-structure** | `.cursor/skills/derivatives-doc-structure/` | ✅ | Create/organize Derivatives documentation |
+| **tradex-api-naming** | `.cursor/skills/tradex-api-naming/` | ✅ | Enforce TradeX API naming conventions |
+| **prompt-optimizer** | `.cursor/skills/prompt-optimizer/` | Manual | Optimize individual prompts |
+| **prompt-enhance-workflow** | `.cursor/skills/prompt-enhance-workflow/` | ✅ Auto | Auto-enhance prompts at conversation start |
+
+### Prompt Enhancement Workflow
+
+**New conversation auto-enhancement:**
+
+```
+You: "Viết docs cho API đặt lệnh"
+     ↓
+AI detects: Vague request
+     ↓
+AI presents: Enhanced structured prompt
+     ↓
+You: "yes"
+     ↓
+AI executes: With optimized prompt ✅
+```
+
+**Features:**
+- ✅ Auto-triggers for vague/unclear requests
+- ✅ Skips for already-clear prompts
+- ✅ Vietnamese & English support
+- ✅ PM/BA optimized
+- ✅ Quota-friendly (smart detection)
+
+**Quick approval:** Just type `yes`, `ok`, `được`, `tiếp tục`
+
+**Learn more:** See `.cursor/skills/prompt-enhance-workflow/QUICK_GUIDE.md`
+
 ## Available Agents
 
 ### Current Agents (2)
