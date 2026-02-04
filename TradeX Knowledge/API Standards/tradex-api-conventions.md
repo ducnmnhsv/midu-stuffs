@@ -11,11 +11,12 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Auto-Populated Fields](#auto-populated-fields)
-3. [Standard Error Formats](#standard-error-formats)
-4. [Language Handling](#language-handling)
-5. [Common Request Fields](#common-request-fields)
-6. [Response Format Standards](#response-format-standards)
+2. [Validation Strategy](#validation-strategy)
+3. [Auto-Populated Fields](#auto-populated-fields)
+4. [Standard Error Formats](#standard-error-formats)
+5. [Language Handling](#language-handling)
+6. [Common Request Fields](#common-request-fields)
+7. [Response Format Standards](#response-format-standards)
 
 ---
 
@@ -29,6 +30,7 @@ Tài liệu này định nghĩa các conventions chung cho **tất cả API Deri
 - ✅ **Minimal FE changes** khi migrate từ Equity sang Derivatives
 - ✅ **Clear error handling** patterns
 - ✅ **Transparent field mapping** giữa TradeX ↔ Lotte
+- ✅ **Light validation** - Core is single source of truth
 
 ### Scope
 
@@ -38,6 +40,201 @@ Convention này áp dụng cho:
 - Account APIs (Portfolio, Balance, Margin)
 - Market Data APIs (Quote, Chart, Symbol Info)
 - **Future Derivatives APIs**
+
+---
+
+## Validation Strategy
+
+### Philosophy: Light Validation at TradeX, Core Validates Business Rules
+
+**Principle:** TradeX only validates **basic requirements**, Core (Lotte) validates **all business rules**.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  TradeX Validation (Light)                                   │
+│  - Required fields present?                                  │
+│  - Data types correct?                                       │
+│  - Basic format valid?                                       │
+│  → If YES: Forward to Core                                   │
+│  → If NO: Return 400 INVALID_PARAMETER                       │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Core Validation (Complete)                                  │
+│  - Price within trading range?                               │
+│  - Sufficient margin?                                        │
+│  - Market open?                                              │
+│  - Account has permission?                                   │
+│  - All business logic                                        │
+│  → If YES: Execute order                                     │
+│  → If NO: Return 422 with error code                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Why This Approach?
+
+**✅ Advantages:**
+
+1. **Single Source of Truth**
+   - Core owns all business rules
+   - No duplicate validation logic
+   - Rules change? Core handles it automatically
+
+2. **Consistency with Equity**
+   - Equity already works this way
+   - Proven pattern in production
+   - FE behavior unchanged
+
+3. **Less Maintenance**
+   - One place to update rules (Core)
+   - TradeX code stays simple
+   - Fewer bugs from sync issues
+
+4. **Flexibility**
+   - Core can add new rules anytime
+   - TradeX doesn't need redeployment
+   - Business rules evolve independently
+
+**⚠️ Trade-offs:**
+
+- Extra network call for invalid business rules
+- Slightly slower error response
+- **But:** These are acceptable given the benefits
+
+### What TradeX Should Validate
+
+| Category | Validate? | Examples | Rationale |
+|----------|-----------|----------|-----------|
+| **Required Fields** | ✅ YES | `accountNumber`, `orderQuantity`, `orderPrice` | Basic request integrity |
+| **Data Types** | ✅ YES | `orderPrice` is number, not string | Prevent runtime errors |
+| **Basic Format** | ✅ YES | Email format, phone format | Common validation patterns |
+| **Length Limits** | ✅ YES | `accountNumber` ≤ 10 chars | Prevent buffer overflow |
+| **Null/Empty Check** | ✅ YES | Field is not empty string | Basic data quality |
+| | | | |
+| **Price Ranges** | ❌ NO | Price within floor/ceiling | **Core validates** |
+| **Quantity Limits** | ❌ NO | Max 1000 contracts | **Core validates** |
+| **Margin Requirements** | ❌ NO | Sufficient buying power | **Core validates** |
+| **Trading Hours** | ❌ NO | Market open/closed | **Core validates** |
+| **Account Permissions** | ❌ NO | User owns account | **Core validates** |
+| **Business Logic** | ❌ NO | Any domain-specific rules | **Core validates** |
+
+### Code Examples
+
+#### ✅ DO: Validate Required Fields
+
+```typescript
+// Good: Check if required field is present
+if (!request.accountNumber) {
+  throw new InvalidParameterError()
+    .add('FIELD_IS_REQUIRED', 'accountNumber', ['accountNumber']);
+}
+
+if (!request.orderQuantity || request.orderQuantity <= 0) {
+  throw new InvalidParameterError()
+    .add('FIELD_IS_REQUIRED', 'orderQuantity', ['orderQuantity']);
+}
+```
+
+#### ✅ DO: Validate Data Types
+
+```typescript
+// Good: Check data type
+if (typeof request.orderPrice !== 'number') {
+  throw new InvalidParameterError()
+    .add('INVALID_TYPE', 'orderPrice', ['orderPrice', 'number']);
+}
+```
+
+#### ❌ DON'T: Validate Business Rules
+
+```typescript
+// Bad: Don't validate price range in TradeX
+if (request.orderPrice < floorPrice || request.orderPrice > ceilingPrice) {
+  throw new Error('PRICE_OUT_OF_RANGE'); // ❌ Don't do this
+}
+// Instead: Let Core validate and return error
+
+// Bad: Don't validate margin in TradeX
+if (userMargin < requiredMargin) {
+  throw new Error('INSUFFICIENT_MARGIN'); // ❌ Don't do this
+}
+// Instead: Let Core validate and return error
+```
+
+### Real-World Example: Order Placement
+
+```typescript
+// TradeX Service (lotte-bridge)
+async placeOrder(request: OrderRequest) {
+  // ✅ Validate only required fields
+  if (!request.accountNumber) {
+    throw new InvalidParameterError()
+      .add('FIELD_IS_REQUIRED', 'accountNumber', ['accountNumber']);
+  }
+  
+  if (!request.orderQuantity) {
+    throw new InvalidParameterError()
+      .add('FIELD_IS_REQUIRED', 'orderQuantity', ['orderQuantity']);
+  }
+  
+  // ✅ Forward to Core (Core validates business rules)
+  const lotteResponse = await this.callLotteAPI({
+    acnt_no: request.accountNumber,
+    ord_qty: request.orderQuantity,
+    ord_price: request.orderPrice,
+    // ... other fields
+  });
+  
+  // ✅ Handle Core's business validation errors
+  if (lotteResponse.error_code !== '0000') {
+    // Pass-through Core's error
+    throw new GeneralError(`ORDER_PLACE_${lotteResponse.error_code}`, 
+                          lotteResponse.error_desc);
+  }
+  
+  return lotteResponse.data;
+}
+```
+
+### Testing Strategy
+
+**TradeX Tests:**
+```typescript
+// Test required field validation
+it('should return 400 when accountNumber is missing', async () => {
+  const request = { orderQuantity: 5, orderPrice: 1250.0 };
+  // Missing accountNumber
+  
+  const response = await api.post('/api/v1/derivatives/order', request);
+  
+  expect(response.status).toBe(400);
+  expect(response.body.code).toBe('INVALID_PARAMETER');
+  expect(response.body.params[0].code).toBe('FIELD_IS_REQUIRED');
+});
+
+// ❌ Don't test business rules in TradeX
+// Business rule tests belong in Core/integration tests
+```
+
+**Core/Integration Tests:**
+```typescript
+// Test business rule validation
+it('should return 422 when price exceeds ceiling', async () => {
+  const request = {
+    accountNumber: '0001234567',
+    orderQuantity: 5,
+    orderPrice: 9999.0, // Way above ceiling
+    // ... other fields
+  };
+  
+  const response = await api.post('/api/v1/derivatives/order', request);
+  
+  expect(response.status).toBe(422);
+  expect(response.body.code).toMatch(/ORDER_PLACE_\d+/);
+  expect(response.body.message).toContain('giá trần'); // Core's message
+});
+```
 
 ---
 
@@ -116,7 +313,29 @@ const lotteRequest = {
 
 **Error Code:** `INVALID_PARAMETER`
 
-**Use Case:** Missing required fields, invalid format, out of range
+**Use Case:** **ONLY** for missing required fields or basic format validation
+
+⚠️ **Important Principle:**
+- ✅ **Validate:** Required fields, data types, basic format (email, phone, etc.)
+- ❌ **Don't validate:** Business rules (price range, quantity limits, margin requirements)
+- 🎯 **Why:** Core is single source of truth for business rules
+
+**Rationale:**
+```
+TradeX validates:     Core validates:
+- accountNumber       - Price within trading range
+- orderQuantity       - Sufficient margin
+- orderPrice          - Order quantity limits
+- deviceUniqueId      - Market status (open/closed)
+                      - Account permissions
+                      - All business logic
+```
+
+**Benefits:**
+- ✅ Single source of truth (Core)
+- ✅ No duplicate logic
+- ✅ Auto-sync when Core rules change
+- ✅ Consistent with Equity behavior
 
 #### Pattern
 
@@ -148,12 +367,25 @@ const lotteRequest = {
 import com.techx.tradex.common.exceptions.SubErrorsException;
 import com.techx.tradex.order.constants.Constants;
 
-// Example: deviceUniqueId is required
+// ✅ DO: Validate required fields
 if (!StringUtils.isNotBlank(request.getDeviceUniqueId())) {
     throw new SubErrorsException(ErrorCodeEnums.INVALID_PARAMETER.name())
             .add(Constants.FIELD_IS_REQUIRED, "deviceUniqueId", 
                  Collections.singletonList("deviceUniqueId"));
 }
+
+// ✅ DO: Validate data type
+if (request.getOrderQuantity() == null) {
+    throw new SubErrorsException(ErrorCodeEnums.INVALID_PARAMETER.name())
+            .add(Constants.FIELD_IS_REQUIRED, "orderQuantity",
+                 Collections.singletonList("orderQuantity"));
+}
+
+// ❌ DON'T: Validate business rules (let Core handle)
+// BAD EXAMPLE (don't do this):
+// if (request.getOrderPrice() > maxPrice) {
+//     throw new SubErrorsException("PRICE_OUT_OF_RANGE");
+// }
 ```
 
 #### Implementation (TypeScript/Node.js)
@@ -163,13 +395,39 @@ if (!StringUtils.isNotBlank(request.getDeviceUniqueId())) {
 ```typescript
 import * as Errors from '../errors';
 
+// ✅ DO: Validate required fields
 const accountNumber = data?.accountNumber?.toUpperCase();
 if (Utils.isEmpty(accountNumber)) {
   new Errors.InvalidParameterError()
     .add('FIELD_IS_REQUIRED', 'accountNumber', ['accountNumber'])
     .throwErr();
 }
+
+// ✅ DO: Validate basic format
+if (data.deviceUniqueId && data.deviceUniqueId.length > 50) {
+  new Errors.InvalidParameterError()
+    .add('INVALID_FORMAT', 'deviceUniqueId', ['deviceUniqueId', '50'])
+    .throwErr();
+}
+
+// ❌ DON'T: Validate business rules (let Core handle)
+// BAD EXAMPLE (don't do this):
+// if (data.orderPrice < minPrice || data.orderPrice > maxPrice) {
+//   throw new Error('PRICE_OUT_OF_RANGE');
+// }
 ```
+
+**What to Validate in TradeX:**
+
+| Category | Validate? | Example | Reason |
+|----------|-----------|---------|--------|
+| Required fields | ✅ YES | `accountNumber`, `orderQuantity` | Basic request integrity |
+| Data types | ✅ YES | `orderPrice` is number | Prevent type errors |
+| Basic format | ✅ YES | Email format, phone format | Common validation |
+| Length limits | ✅ YES | `accountNumber` max 10 chars | Prevent buffer issues |
+| **Business rules** | ❌ NO | Price range, quantity limits | **Core validates** |
+| **Market rules** | ❌ NO | Trading hours, margin | **Core validates** |
+| **User permissions** | ❌ NO | Account ownership | **Core validates** |
 
 ### 2. Pass-Through Core Errors
 

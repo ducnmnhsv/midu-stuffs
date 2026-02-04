@@ -161,18 +161,29 @@ Accept-Language: vi
 
 #### Request Fields & Lotte Mapping
 
-| TradeX Field | Type | Required | Lotte Field | Description / Values |
-|--------------|------|----------|-------------|----------------------|
-| `accountNumber` | String | **Yes** | `acnt_no` | Số tài khoản (10 chars) |
-| `code` | String | **Yes** | `ft_code` | Mã hợp đồng phái sinh |
-| `orderQuantity` | Number | **Yes** | `ord_qty` | Khối lượng đặt (≥1) |
-| `orderPrice` | Number | **Yes** | `lm_ord_price` | Giá đặt (trong biên độ) |
-| `orderType` | String | **Yes** | `ord_type` | `LO`→2, `ATO`→3, `MAK`→4, `MOK`→5, `ATC`→6, `MTL`→9 |
-| `sellBuyType` | String | **Yes** | *(endpoint)* | `BUY` / `SELL` (quyết định endpoint) |
-| `deviceUniqueId` | String | **Yes** | `cli_mac_addr` | Device ID |
-| `sourceIp` | String | **Yes** | `ip_addr` | Client IP address |
-| *(from JWT)* | - | - | `user_id` | Username (max 15 chars) |
-| *(from header)* | - | - | `lang_code` | Accept-Language → `V`/`E`/`K` |
+| No | TradeX Field | Type | Required | Description | Lotte Field | Lotte Type | Sample | Note |
+|----|--------------|------|----------|-------------|-------------|------------|--------|------|
+| 1 | `accountNumber` | String | **Yes** | Số tài khoản | `acnt_no` | string | `"0001234567"` | FE must provide |
+| 2 | `code` | String | **Yes** | Mã hợp đồng phái sinh | `ft_code` | string | `"VN30F2502"` | FE must provide |
+| 3 | `orderQuantity` | Number | **Yes** | Khối lượng đặt (≥1) | `ord_qty` | number | `5` | FE must provide |
+| 4 | `orderPrice` | Number | **Yes** | Giá đặt (trong biên độ) | `lm_ord_price` | number | `1285.5` | FE must provide |
+| 5 | `orderType` | String | **Yes** | Loại lệnh | `ord_type` | string | `"LO"` → `2` | FE must provide |
+| 6 | `sellBuyType` | String | **Yes** | Mua/Bán | *(endpoint)* | - | `"BUY"` / `"SELL"` | FE must provide (quyết định endpoint) |
+| 7 | `deviceUniqueId` | String | **Yes** | Device ID | `cli_mac_addr` | string | `"A1B2C3D4E5F6"` | **FE must provide** |
+| 8 | `sourceIp` | String | **Yes** | Client IP | `cli_ip_addr` | string | `"192.168.1.100"` | **Auto-populated by rest-proxy** |
+| 9 | *(from JWT)* | - | - | Username | `user_id` | string | - | **Auto-populated from JWT** |
+| 10 | *(from JWT)* | - | - | Tên người dùng | `hts_user_nm` | string | - | **Auto-populated from JWT** |
+| 11 | *(from JWT)* | - | - | CMND/CCCD | `idno` | string | - | **Auto-populated from JWT** |
+| 12 | *(from header)* | - | - | Ngôn ngữ | `lang_code` | string | `"V"`/`"E"`/`"K"` | **Auto-populated from Accept-Language** |
+
+**🔑 Auto-Populated Fields:**
+- `sourceIp` - Extracted from request IP by `rest-proxy`
+- `user_id`, `hts_user_nm`, `idno` - Extracted from JWT Token by `lotte-bridge`
+- `lang_code` - Mapped from `Accept-Language` header (`vi`→`V`, `en`→`E`, `ko`→`K`)
+
+**📝 FE Must Provide:**
+- All fields except auto-populated ones
+- `deviceUniqueId` is **critical** - cannot be determined server-side
 
 **Order Types:**
 
@@ -211,20 +222,32 @@ Accept-Language: vi
 
 #### Response - Validation Error (400)
 
+**Error Code:** `INVALID_PARAMETER`
+
 ```json
 {
   "success": false,
-  "code": "VALIDATION_ERROR",
+  "code": "INVALID_PARAMETER",
   "message": "Dữ liệu không hợp lệ",
-  "errors": [
+  "params": [
     {
-      "field": "orderPrice",
-      "code": "REQUIRED",
-      "message": "Giá đặt lệnh là bắt buộc"
+      "code": "FIELD_IS_REQUIRED",
+      "param": "orderPrice",
+      "messageParams": ["orderPrice"]
+    },
+    {
+      "code": "INVALID_VALUE",
+      "param": "orderQuantity",
+      "messageParams": ["orderQuantity", "0", "≥1"]
     }
   ]
 }
 ```
+
+**Common Validation Codes:**
+- `FIELD_IS_REQUIRED` - Missing required field
+- `INVALID_VALUE` - Value out of range or invalid format
+- `INVALID_ACCOUNT` - Account validation failed
 
 #### Response - Unauthorized (401)
 
@@ -258,40 +281,46 @@ Accept-Language: vi
 }
 ```
 
-#### Response - Business Error (422)
+#### Response - Business Error (422) - Pass-Through from Lotte
+
+**Use Case:** Business rule violations, insufficient margin, market closed, etc.
+
+**Error Format:** `{OPERATION}_{LOTTE_ERROR_CODE}`
 
 ```json
 {
   "success": false,
-  "code": "BUSINESS_ERROR",
-  "message": "Đặt lệnh thất bại",
-  "errors": [
-    {
-      "field": "orderPrice",
-      "code": "PRICE_OUT_OF_RANGE",
-      "message": "Giá đặt 1400.0 vượt quá giá trần 1350.0"
-    }
-  ]
+  "code": "ORDER_PLACE_1005",
+  "message": "[V3120] Không đủ ký quỹ để đặt lệnh"
 }
 ```
 
+**Examples:**
+
+| Lotte Error Code | TradeX Code | Message Example |
+|------------------|-------------|-----------------|
+| `1005` | `ORDER_PLACE_1005` | `[V3120] Không đủ ký quỹ` |
+| `1234` | `ORDER_PLACE_1234` | `[V0456] Thị trường đã đóng cửa` |
+| `5678` | `ORDER_PLACE_5678` | `[V1111] Giá vượt biên độ` |
+
+**Note:** 
+- Message is passed through from Lotte as-is (including `[CODE]` prefix)
+- Language matches `Accept-Language` header sent to Lotte
+- See `@TradeX Knowledge/API Standards/tradex-api-conventions.md` for complete error handling patterns
+
 #### Response - Server Error (500)
+
+**Use Case:** Internal server errors, Lotte API connection failures
 
 ```json
 {
   "success": false,
   "code": "INTERNAL_ERROR",
-  "message": "Lỗi hệ thống, vui lòng thử lại sau",
-  "errors": [
-    {
-      "code": "LOTTE_API_ERROR",
-      "message": "Không thể kết nối đến hệ thống giao dịch",
-      "lotteErrorCode": "1005",
-      "lotteErrorDesc": "System error"
-    }
-  ]
+  "message": "Lỗi hệ thống, vui lòng thử lại sau"
 }
 ```
+
+**Note:** Generic error for unexpected system failures
 
 ---
 
@@ -392,15 +421,20 @@ Accept-Language: vi
 
 #### Request Fields & Lotte Mapping
 
-| TradeX Field | Type | Required | Lotte Field | Description |
-|--------------|------|----------|-------------|-------------|
-| `accountNumber` | String | **Yes** | `acnt_no` | Số tài khoản (10 chars) |
-| `orderNumber` | String | **Yes** | `ord_no` | Số hiệu lệnh cần hủy |
-| `code` | String | **Yes** | `ft_code` | Mã hợp đồng phái sinh |
-| `deviceUniqueId` | String | **Yes** | `cli_mac_addr` | Device ID |
-| `sourceIp` | String | **Yes** | `ip_addr` | Client IP address |
-| *(from JWT)* | - | - | `user_id` | Username |
-| *(hardcode)* | - | - | `validity` | Always `"0"` (DAY) |
+| No | TradeX Field | Type | Required | Description | Lotte Field | Lotte Type | Sample | Note |
+|----|--------------|------|----------|-------------|-------------|------------|--------|------|
+| 1 | `accountNumber` | String | **Yes** | Số tài khoản | `acnt_no` | string | `"0001234567"` | FE must provide |
+| 2 | `orderNumber` | String | **Yes** | Số hiệu lệnh cần hủy | `ord_no` | string | `"2025020300012"` | FE must provide |
+| 3 | `code` | String | **Yes** | Mã hợp đồng | `ft_code` | string | `"VN30F2502"` | FE must provide |
+| 4 | `deviceUniqueId` | String | **Yes** | Device ID | `cli_mac_addr` | string | `"A1B2C3D4E5F6"` | **FE must provide** |
+| 5 | `sourceIp` | String | **Yes** | Client IP | `cli_ip_addr` | string | `"192.168.1.100"` | **Auto-populated by rest-proxy** |
+| 6 | *(from JWT)* | - | - | Username | `user_id` | string | - | **Auto-populated from JWT** |
+| 7 | *(hardcoded)* | - | - | Validity | `validity` | string | `"0"` (DAY) | **Auto-populated by backend** |
+
+**🔑 Auto-Populated Fields:**
+- `sourceIp` - From request IP
+- `user_id` - From JWT Token
+- `validity` - Always `"0"` (DAY) for cancel operations
 
 #### Response - Success (200)
 
@@ -419,37 +453,27 @@ Accept-Language: vi
 }
 ```
 
-#### Response - Order Already Matched (422)
+#### Response - Order Already Matched (422) - Pass-Through from Lotte
 
 ```json
 {
   "success": false,
-  "code": "BUSINESS_ERROR",
-  "message": "Hủy lệnh thất bại",
-  "errors": [
-    {
-      "code": "ORDER_ALREADY_MATCHED",
-      "message": "Lệnh đã khớp hoàn toàn, không thể hủy"
-    }
-  ]
+  "code": "ORDER_CANCEL_1005",
+  "message": "[V3456] Lệnh đã khớp hoàn toàn, không thể hủy"
 }
 ```
 
-#### Response - Order Not Found (422)
+#### Response - Order Not Found (422) - Pass-Through from Lotte
 
 ```json
 {
   "success": false,
-  "code": "BUSINESS_ERROR",
-  "message": "Hủy lệnh thất bại",
-  "errors": [
-    {
-      "code": "ORDER_NOT_FOUND",
-      "message": "Không tìm thấy lệnh với số hiệu 2025020300012"
-    }
-  ]
+  "code": "ORDER_CANCEL_1234",
+  "message": "[V7890] Không tìm thấy lệnh"
 }
 ```
+
+**Note:** Error codes follow pattern `ORDER_CANCEL_{LOTTE_ERROR_CODE}`
 
 ---
 
@@ -487,18 +511,23 @@ Accept-Language: vi
 
 #### Request Fields & Lotte Mapping
 
-| TradeX Field | Type | Required | Lotte Field | Description |
-|--------------|------|----------|-------------|-------------|
-| `accountNumber` | String | **Yes** | `acnt_no` | Số tài khoản (10 chars) |
-| `orderNumber` | String | **Yes** | `ord_no` | Số hiệu lệnh cần sửa |
-| `code` | String | **Yes** | `ft_code` | Mã hợp đồng phái sinh |
-| `orderQuantity` | Number | **Yes** | `ord_qty` | Khối lượng mới |
-| `orderPrice` | Number | **Yes** | `ord_price` | Giá mới |
-| `unmatchedQuantity` | Number | **Yes** | `un_mth_qty` | KL chưa khớp (lệnh gốc) |
-| `deviceUniqueId` | String | **Yes** | `cli_mac_addr` | Device ID |
-| `sourceIp` | String | **Yes** | `ip_addr` | Client IP address |
-| *(from JWT)* | - | - | `user_id` | Username |
-| *(hardcode)* | - | - | `validity` | Always `"0"` (DAY) |
+| No | TradeX Field | Type | Required | Description | Lotte Field | Lotte Type | Sample | Note |
+|----|--------------|------|----------|-------------|-------------|------------|--------|------|
+| 1 | `accountNumber` | String | **Yes** | Số tài khoản | `acnt_no` | string | `"0001234567"` | FE must provide |
+| 2 | `orderNumber` | String | **Yes** | Số hiệu lệnh cần sửa | `ord_no` | string | `"2025020300012"` | FE must provide |
+| 3 | `code` | String | **Yes** | Mã hợp đồng | `ft_code` | string | `"VN30F2502"` | FE must provide |
+| 4 | `orderQuantity` | Number | **Yes** | Khối lượng mới | `ord_qty` | number | `3` | FE must provide |
+| 5 | `orderPrice` | Number | **Yes** | Giá mới | `ord_price` | number | `1290.0` | FE must provide |
+| 6 | `unmatchedQuantity` | Number | **Yes** | KL chưa khớp (lệnh gốc) | `un_mth_qty` | number | `5` | FE must provide |
+| 7 | `deviceUniqueId` | String | **Yes** | Device ID | `cli_mac_addr` | string | `"A1B2C3D4E5F6"` | **FE must provide** |
+| 8 | `sourceIp` | String | **Yes** | Client IP | `cli_ip_addr` | string | `"192.168.1.100"` | **Auto-populated by rest-proxy** |
+| 9 | *(from JWT)* | - | - | Username | `user_id` | string | - | **Auto-populated from JWT** |
+| 10 | *(hardcoded)* | - | - | Validity | `validity` | string | `"0"` (DAY) | **Auto-populated by backend** |
+
+**🔑 Auto-Populated Fields:**
+- `sourceIp` - From request IP
+- `user_id` - From JWT Token
+- `validity` - Always `"0"` (DAY) for modify operations
 
 #### Response - Success (200)
 
@@ -525,21 +554,17 @@ Accept-Language: vi
 }
 ```
 
-#### Response - Cannot Modify (422)
+#### Response - Cannot Modify (422) - Pass-Through from Lotte
 
 ```json
 {
   "success": false,
-  "code": "BUSINESS_ERROR",
-  "message": "Sửa lệnh thất bại",
-  "errors": [
-    {
-      "code": "ORDER_ALREADY_MATCHED",
-      "message": "Lệnh đã khớp hoàn toàn, không thể sửa"
-    }
-  ]
+  "code": "ORDER_MODIFY_1005",
+  "message": "[V3456] Lệnh đã khớp hoàn toàn, không thể sửa"
 }
 ```
+
+**Note:** Error codes follow pattern `ORDER_MODIFY_{LOTTE_ERROR_CODE}`
 
 ---
 
