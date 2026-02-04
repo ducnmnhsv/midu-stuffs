@@ -21,12 +21,21 @@
 
 ### TradeX Knowledge (for PM)
 
-Folder chứa các tài liệu tổng hợp về cơ chế TradeX, giúp PM hiểu hệ thống mà không cần scan codebase:
+Folder chứa các tài liệu tổng hợp về cơ chế TradeX, được tổ chức theo 3 categories:
 
-| Document | Content |
-|----------|---------|
-| `_index.md` | Overview, navigation, system architecture |
-| `market-data-channels.md` | WebSocket channels (quote, bidoffer), field mappings |
+**Structure:**
+```
+TradeX Knowledge/
+├── System/              # ✅ Production - What's actually running
+├── API Standards/       # 📘 Conventions - Universal standards
+└── Planning/            # 📋 Future - Features in planning
+```
+
+| Category | Documents | Purpose |
+|----------|-----------|---------|
+| **System/** | market-data-channels.md, symbol-info-api.md, init-job.md | Understand live production mechanisms |
+| **API Standards/** | api-conventions.md, tradex-api-conventions.md, templates | Follow API standards when creating specs |
+| **Planning/** | regular-order-api-mapping.md | General patterns for future features |
 
 > **Note:** Rule `@tradex-knowledge` tự động apply, AI sẽ đọc knowledge trước khi scan codebase.
 

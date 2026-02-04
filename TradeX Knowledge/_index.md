@@ -1,26 +1,101 @@
 # TradeX Knowledge Base
 
-> **Purpose:** Tài liệu tổng hợp về cơ chế hoạt động của TradeX Backend  
-> **Audience:** Product Manager, Business Analyst  
+> **Purpose:** Tài liệu tổng hợp về TradeX Backend System  
+> **Audience:** Product Manager, Business Analyst, Developers  
 > **System:** TradeX - Backend của NHSV Pro App
 
 ---
 
-## Quick Navigation
+## 📁 Knowledge Structure
 
-| Topic | Document | Description |
-|-------|----------|-------------|
-| **Market Data** | [market-data-channels.md](./market-data-channels.md) | WebSocket channels, data flow, field mappings |
-| **Symbol Info API** | [symbol-info-api.md](./symbol-info-api.md) | API symbolInfo, data aggregation mechanism |
-| **Init Job** | [init-job.md](./init-job.md) | Daily init job, symbol_static.json generation |
-| **Regular Orders** | [regular-order-api-mapping.md](./regular-order-api-mapping.md) | TradeX ↔ Lotte API mapping for equity/derivatives orders |
-| *(coming soon)* | authentication.md | Login, token, session management |
-| *(coming soon)* | conditional-orders.md | Stop orders, OCO, Trailing, Bull/Bear |
-| *(coming soon)* | notification.md | Push notification, SMS, email |
+```
+TradeX Knowledge/
+├── System/              # ✅ Production - What's actually running
+├── API Standards/       # 📘 Conventions - Universal standards
+└── Planning/            # 📋 Future - Features in planning phase
+```
 
 ---
 
-## System Architecture Overview
+## 📂 Folders
+
+### [System/](./System/) - Live Production Knowledge
+
+**What:** Mechanisms actually running in TradeX production
+
+| Document | Category | Description |
+|----------|----------|-------------|
+| [market-data-channels.md](./System/market-data-channels.md) | Market Data | WebSocket channels, Lotte → Client flow |
+| [symbol-info-api.md](./System/symbol-info-api.md) | Market Data | SymbolInfo aggregation mechanism |
+| [init-job.md](./System/init-job.md) | System | Daily init job, symbol_static.json |
+
+**When to use:** Need to understand how current system works
+
+---
+
+### [API Standards/](./API%20Standards/) - Universal Conventions
+
+**What:** Standards for ALL TradeX APIs (immutable unless system-wide change)
+
+| Document | Type | Description |
+|----------|------|-------------|
+| [tradex-api-conventions.md](./API%20Standards/tradex-api-conventions.md) | Complete | Full standards + How-to guide (~750 lines) |
+| [tradex-api-spec-template.md](./API%20Standards/tradex-api-spec-template.md) | Template | Copy for new specs (~370 lines) |
+
+**When to use:** Creating new APIs, need to follow standards
+
+**Why only 2 files?** Merged redundant docs to save quota, single source of truth
+
+---
+
+### [Planning/](./Planning/) - Future Features
+
+**What:** Features in planning phase (not yet implemented)
+
+| Document | Status | Description |
+|----------|--------|-------------|
+| [regular-order-api-mapping.md](./Planning/regular-order-api-mapping.md) | 📋 Planning | General order API patterns |
+
+**When to use:** Planning new features, understanding future direction
+
+---
+
+## 🎯 Quick Navigation by Role
+
+### For PM
+
+**Understand Production:**
+- System architecture → `System/` folder
+- Market data flow → `System/market-data-channels.md`
+- Daily operations → `System/init-job.md`
+
+**Create New Features:**
+- API standards → `API Standards/api-conventions.md` (quick ref)
+- Future planning → `Planning/` folder
+
+### For BA
+
+**Analyze System:**
+- Current mechanisms → `System/` folder
+- Data flows & integration → System docs
+
+**Create API Specs:**
+1. Read `API Standards/tradex-api-conventions.md` (includes how-to)
+2. Copy `API Standards/tradex-api-spec-template.md`
+3. Follow standards & checklist
+
+### For Developers
+
+**Understand Architecture:**
+- Service interactions → `System/` docs
+- Data flows → System diagrams
+
+**Implement APIs:**
+- Follow `API Standards/tradex-api-conventions.md` (all-in-one)
+
+---
+
+## 📚 System Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -56,7 +131,7 @@
 
 ---
 
-## Core Services
+## 🏗️ Core Services
 
 | Service | Tech | Kafka Topic | Role |
 |---------|------|-------------|------|
@@ -72,18 +147,7 @@
 
 ---
 
-## Data Sources
-
-| Provider | Purpose | Protocol |
-|----------|---------|----------|
-| **Lotte Securities** | Trading API, Market Data | REST, WebSocket |
-| **VietStock** | Company info, News, Financial | REST API |
-| **FPT** | SMS Gateway (OTP) | REST API |
-| **OneSignal** | Push Notifications | REST API |
-
----
-
-## Environments
+## 🌐 Environments
 
 | Environment | URL | Purpose |
 |-------------|-----|---------|
@@ -92,7 +156,7 @@
 
 ---
 
-## Trading Sessions (HOSE)
+## 📊 Trading Sessions (HOSE)
 
 | Session | Time | Order Types | Description |
 |---------|------|-------------|-------------|
@@ -106,94 +170,102 @@
 
 ---
 
-## Knowledge Documents
+## 📖 How to Use This Knowledge Base
 
-### [Market Data Channels](./market-data-channels.md)
+### Adding New Knowledge
 
-Tất cả về real-time market data:
-- WebSocket channels: `market.quote`, `market.bidoffer`
-- Data flow từ Lotte → App
-- Field mappings & abbreviations
-- Session types & control codes
-- Business interpretation
+**Determine folder:**
 
-**Related:** Khi làm feature liên quan đến bảng giá, biểu đồ, watchlist
+1. **System/** - If it's **already running** in production
+   - Services, APIs, jobs, data flows
+   - Example: How market data flows through system
 
----
+2. **API Standards/** - If it's **universal API convention**
+   - Applies to ALL projects
+   - Rarely changes
+   - Example: Error format standards
 
-### [Symbol Info API](./symbol-info-api.md)
+3. **Planning/** - If it's **being planned** but not implemented
+   - General patterns for future features
+   - Not project-specific
+   - Example: Conditional order patterns
 
-Cơ chế tổng hợp thông tin mã chứng khoán:
-- API `/api/v2/market/symbol/latest`
-- Data aggregation từ nhiều sources (Quote, BidOffer, Extra)
-- SymbolInfo data structure
-- Redis storage mechanism
-- Update flow & business logic
+**Wrong folder?**
+- ❌ Project-specific planning → Goes to `[Project]/Planning documentation/`
+- ❌ Project implementation → Document in project folder
 
-**Related:** Khi làm feature cần lấy thông tin đầy đủ của mã (watchlist, portfolio, search)
+### For AI Agents
 
----
-
-### [Init Job](./init-job.md)
-
-Cơ chế lấy giá đầu ngày (Daily Init):
-- Download symbol list từ Lotte API
-- Query giá & thông tin cho tất cả mã
-- Lưu vào Redis/MongoDB
-- Upload `symbol_static.json` lên MinIO/S3
-
-**Related:** Khi cần hiểu tại sao app không có data khi mới mở, hoặc debug init issues
+1. **Read folder READMEs first** to understand structure
+2. **Navigate to appropriate folder** based on need:
+   - Understanding production → `System/`
+   - Creating APIs → `API Standards/`
+   - Planning features → `Planning/`
+3. **Only scan codebase** if knowledge doesn't cover topic
 
 ---
 
-### [Regular Order API Mapping](./regular-order-api-mapping.md)
+## 🔄 Document Lifecycle
 
-API mapping cho lệnh thường (Equity & Derivatives):
-- Buy/Sell/Cancel/Modify orders
-- TradeX → Lotte field mappings
-- Request/Response structures
-- Lotte DRORD codes (DRORD-029/030/031/032/011)
-- Order types & validity codes
+```
+Planning/ (General patterns)
+    ↓
+    [Project approved]
+    ↓
+Project/Planning documentation/ (Detailed requirements)
+    ↓
+    [Implementation]
+    ↓
+System/ (Live documentation)
+```
 
-**Related:** Khi làm feature đặt lệnh, sửa/hủy lệnh, hoặc debug order flow
-
----
-
-## How to Use This Knowledge Base
-
-### For PM
-
-1. **Trước khi họp với Dev**: Đọc document liên quan để hiểu context
-2. **Khi viết requirement**: Tham khảo field names, data structure
-3. **Khi debug issue**: Hiểu data flow để xác định service có vấn đề
-
-### For AI Agent
-
-1. **Đọc `_index.md` trước** để biết có những knowledge nào
-2. **Navigate đến document cụ thể** theo topic
-3. **Chỉ scan codebase** khi knowledge chưa cover
+**Example:**
+- `Planning/regular-order-api-mapping.md` (general pattern)
+- → `Derivatives/Planning documentation/Order/` (detailed Derivatives specs)
+- → `System/order-flow.md` (once live, future)
 
 ---
 
-## Document Status
+## 📊 Document Status
+
+### System/ (Live)
 
 | Document | Status | Last Updated |
 |----------|--------|--------------|
-| `_index.md` | ✅ Active | 2026-02-03 |
-| `market-data-channels.md` | ✅ Active | 2025-01-28 |
-| `symbol-info-api.md` | ✅ Active | 2025-01-28 |
-| `init-job.md` | ✅ Active | 2025-01-28 |
-| `regular-order-api-mapping.md` | ✅ Active | 2026-02-03 |
+| `market-data-channels.md` | ✅ Live | 2025-01-28 |
+| `symbol-info-api.md` | ✅ Live | 2025-01-28 |
+| `init-job.md` | ✅ Live | 2025-01-28 |
+
+### API Standards/ (Universal)
+
+| Document | Status | Last Updated |
+|----------|--------|--------------|
+| `tradex-api-conventions.md` | ✅ Active | 2026-02-04 |
+| `tradex-api-spec-template.md` | ✅ Template | 2026-02-04 |
+
+### Planning/ (Future)
+
+| Document | Status | Last Updated |
+|----------|--------|--------------|
+| `regular-order-api-mapping.md` | 📋 Planning | 2026-02-03 |
 
 ---
 
-## Contributing
+## 🆕 Contributing
 
-Khi AI phân tích thêm về TradeX:
-1. Tạo file mới trong folder này
-2. Cập nhật bảng Navigation ở trên
-3. Thêm links liên kết giữa các documents
+**Adding new knowledge:**
+
+1. Choose appropriate folder (System/API Standards/Planning)
+2. Create document following folder's template
+3. Update folder's README
+4. Update this `_index.md`
+5. Update `.cursor/rules/tradex-knowledge.mdc` if needed
+
+**Folder-specific guidelines:** See each folder's README
 
 ---
 
 *This knowledge base is maintained through AI-assisted analysis of TradeX codebase.*
+
+**Last Updated:** 2026-02-04  
+**Structure Version:** 2.0 (Refactored with clear separation)

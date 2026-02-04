@@ -43,6 +43,10 @@ This category covers **order operations** for Derivatives trading, including:
 | [Regular_Orders_API_Spec](./Specifications/Regular_Orders_API_Spec.md) | ✅ Complete | Complete API mapping (TradeX → Lotte) |
 | [Price_Mechanism_Spec](./Specifications/Price_Mechanism_Spec.md) | ✅ Complete | Price calculation technical details |
 
+**📘 API Standards & Templates** (TradeX-wide, applies to all projects):
+- **[TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md)** - Complete guide (standards + how-to)
+- **[API Spec Template](../../../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md)** - Copy for new specs
+
 ### Issues/ - Active Tasks
 
 *No active issues currently*

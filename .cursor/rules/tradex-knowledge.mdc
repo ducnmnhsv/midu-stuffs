@@ -14,12 +14,34 @@ This rule contains accumulated knowledge about TradeX backend system, compiled f
 
 **Folder:** `@TradeX Knowledge/`
 
+**Structure:**
+```
+TradeX Knowledge/
+├── System/              # ✅ Production - Live mechanisms
+├── API Standards/       # 📘 Conventions - Universal standards  
+└── Planning/            # 📋 Future - Features in planning
+```
+
+### System/ - Live Production
+
 | Document | Content |
 |----------|---------|
-| [_index.md](../TradeX%20Knowledge/_index.md) | Overview, navigation, system architecture |
-| [market-data-channels.md](../TradeX%20Knowledge/market-data-channels.md) | WebSocket channels, data flow, field mappings |
-| [symbol-info-api.md](../TradeX%20Knowledge/symbol-info-api.md) | SymbolInfo API, data aggregation mechanism |
-| [init-job.md](../TradeX%20Knowledge/init-job.md) | Daily init job, symbol_static.json |
+| [market-data-channels.md](../TradeX%20Knowledge/System/market-data-channels.md) | WebSocket channels, data flow, field mappings |
+| [symbol-info-api.md](../TradeX%20Knowledge/System/symbol-info-api.md) | SymbolInfo API, data aggregation |
+| [init-job.md](../TradeX%20Knowledge/System/init-job.md) | Daily init job, symbol_static.json |
+
+### API Standards/ - Universal Conventions
+
+| Document | Content |
+|----------|---------|
+| [tradex-api-conventions.md](../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) | **Complete guide** - Standards, examples, how-to (all-in-one) |
+| [tradex-api-spec-template.md](../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md) | **Template** - Copy for new API specs |
+
+### Planning/ - Future Features
+
+| Document | Content |
+|----------|---------|
+| [regular-order-api-mapping.md](../TradeX%20Knowledge/Planning/regular-order-api-mapping.md) | General order API patterns (planning) |
 
 ## Quick Reference - Market Data
 
@@ -94,12 +116,72 @@ Lotte WS → market-collector-lotte → Kafka → realtime-v2 + ws-v2 → Client
 | `C` | PLO |
 | `K`, `G` | CLOSED |
 
+## Quick Reference - API Conventions
+
+### Auto-Populated Fields (FE không cần truyền)
+
+| TradeX Field | Source | Lotte Field |
+|--------------|--------|-------------|
+| `sourceIp` | Request IP | `cli_ip_addr` |
+| `userId` | JWT Token | `user_id` |
+| `name` | JWT Token | `hts_user_nm` |
+| `identifierNumber` | JWT Token | `idno` |
+
+### Error Format Standards
+
+**Validation Error:**
+
+```json
+{
+  "code": "INVALID_PARAMETER",
+  "params": [
+    { "code": "FIELD_IS_REQUIRED", "param": "accountNumber" }
+  ]
+}
+```
+
+**Pass-Through Core Error:**
+
+Lotte Response:
+```json
+{
+  "error_code": "1005",
+  "error_desc": "[V3120] Lỗi đã xảy ra"
+}
+```
+
+TradeX Response:
+```json
+{
+  "code": "ORDER_PLACE_1005",
+  "message": "[V3120] Lỗi đã xảy ra"
+}
+```
+
+Success: Lotte `error_code: "0000"`
+
+### Language Mapping
+
+| Accept-Language | Lotte lang_code |
+|-----------------|-----------------|
+| `vi` | `V` |
+| `en` | `E` |
+| `ko` | `K` |
+
 ## Usage Instructions
 
-1. **Start with index**: Read `@TradeX Knowledge/_index.md` to see available knowledge
-2. **Navigate to topic**: Follow links to specific documents
-3. **Only scan codebase** if knowledge documents don't cover the topic
-4. **After new analysis**: Create new document in `TradeX Knowledge/` folder, update `_index.md`
+1. **Start with index**: Read `@TradeX Knowledge/_index.md` to see structure
+2. **Choose folder based on need**:
+   - **System/** - Understand production mechanisms
+   - **API Standards/** - 2 files: conventions (all-in-one) + template
+   - **Planning/** - Plan future features
+3. **Navigate to specific document** via folder README
+4. **Only scan codebase** if knowledge doesn't cover topic
+5. **After new analysis**: 
+   - System mechanism → `System/`
+   - API convention → `API Standards/`
+   - Future planning → `Planning/`
+   - Update folder README + `_index.md`
 
 ## Adding New Knowledge
 
