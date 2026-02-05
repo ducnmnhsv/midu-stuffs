@@ -32,7 +32,7 @@ TP/SL (Take Profit / Stop Loss) cho phép khách hàng tự động đóng vị 
 | **Integration** | TradeX-native (không phụ thuộc Lotte) |
 | **Condition Types** | Price-based hoặc Offset-based |
 | **Flexibility** | Chỉ cần TP hoặc SL hoặc cả 2 |
-| **Execution** | Market Order (MOK) khi trigger |
+| **Execution** | Market To Limit (MTL) khi trigger |
 | **Validity** | Day Order (expire 15:00 hôm nay) |
 | **Lifecycle** | Phụ thuộc lệnh gốc (cancel nếu lệnh gốc cancel/không khớp) |
 
@@ -75,7 +75,7 @@ TP/SL (Take Profit / Stop Loss) cho phép khách hàng tự động đóng vị 
 | Lệnh gốc khớp (dù 1 phần) | `PENDING` → `ACTIVE` | Activate ngay, entry price = avg matched price |
 | Lệnh gốc cancel | `PENDING/ACTIVE` → `CANCELLED` | TP/SL follow lệnh gốc |
 | Lệnh gốc modify | TP/SL chuyển sang lệnh mới | Giữ nguyên configuration |
-| Giá trigger | `ACTIVE` → `TRIGGERED` | Đẩy lệnh MOK sang Lotte |
+| Giá trigger | `ACTIVE` → `TRIGGERED` | Đẩy lệnh MTL sang Lotte |
 | End of session (15:00) | `PENDING/ACTIVE` → `EXPIRED` | Day Order expiry |
 
 ### 2.4 Partial Fill Handling
@@ -342,7 +342,7 @@ Step 4: User modify giá → TP/SL chuyển sang lệnh mới, qty = 7
 | `triggeredType` | String | `TAKE_PROFIT` / `STOP_LOSS` / null |
 | `triggerPrice` | Number | Giá trigger (nếu triggered) |
 | `triggerTime` | String | Thời gian trigger (ISO 8601) |
-| `executedOrderNumber` | String | Số lệnh MOK đã đẩy sang Lotte |
+| `executedOrderNumber` | String | Số lệnh MTL đã đẩy sang Lotte |
 | `executedPrice` | Number | Giá khớp thực tế |
 | `executedQuantity` | Number | Khối lượng khớp |
 | `profit` | Number | Lãi/lỗ (points × qty × contract_size) |
@@ -365,7 +365,7 @@ CANCELLED  EXPIRED  (terminal states)
 |--------|-------------|-------------|-------------|
 | `PENDING` | Chờ lệnh gốc khớp | ✅ | ✅ |
 | `ACTIVE` | Đang monitor giá | ✅ | ✅ |
-| `TRIGGERED` | Đã trigger và đẩy lệnh MOK | ❌ | ❌ |
+| `TRIGGERED` | Đã trigger và đẩy lệnh MTL | ❌ | ❌ |
 | `CANCELLED` | Đã hủy (user hoặc system) | ❌ | ❌ |
 | `EXPIRED` | Hết hạn (end of session 15:00) | ❌ | ❌ |
 | `FAILED` | Trigger failed (Lotte reject) | ❌ | ❌ |
@@ -381,7 +381,7 @@ CANCELLED  EXPIRED  (terminal states)
 | `ACTIVE` | 15:00 reached | `EXPIRED` | Daily expiry job |
 | `ACTIVE` | Original order cancelled | `CANCELLED` | Order cancel event |
 | `ACTIVE` | Original order modified | Follow new order | Order modify event |
-| `TRIGGERED` | Lotte rejects MOK | `FAILED` | Lotte error response |
+| `TRIGGERED` | Lotte rejects MTL | `FAILED` | Lotte error response |
 
 ---
 
@@ -410,7 +410,7 @@ CANCELLED  EXPIRED  (terminal states)
 **2. Real-time Monitoring:**
 - Subscribe to `market.quote.{code}` WebSocket channel
 - Compare current price vs trigger conditions
-- Execute MOK order when condition met
+- Execute MTL order when condition met
 
 **3. Daily Expiry:**
 - Scheduled job runs at 15:00
@@ -431,16 +431,636 @@ CANCELLED  EXPIRED  (terminal states)
 
 **Trigger Execution:**
 1. Mark TP/SL status = `TRIGGERED`
-2. Calculate MOK quantity = current position quantity
-3. Push MOK order to Lotte via `lotte-bridge`
-4. Save executed order number
-5. Send notification to user
+2. Calculate MTL quantity = current position quantity
+3. Build MTL order:
+   - **Order Type: MTL (Market To Limit)**
+   - Direction: Opposite of position (BUY position → SELL order, SELL position → BUY order)
+   - Quantity: Current position quantity
+   - Account: Same as TP/SL order
+   - Symbol: Same as TP/SL order
+4. Push MTL order to Lotte via `lotte-bridge`:
+   - For SELL (close LONG): Call DRORD-030 API
+   - For BUY (close SHORT): Call DRORD-029 API
+5. Save executed order number
+6. Send notification to user
+
+**Why MTL (Market To Limit)?**
+- **Fast execution**: Market order priority, matches immediately at best available price
+- **Price protection**: Unmatched quantity converts to limit order, prevents severe slippage
+- **Better than MOK**: MOK cancels unmatched portion entirely, MTL keeps it as limit order
+- **Risk management**: Balances speed (market) with safety (limit conversion)
 
 ---
 
-## 10. Error Handling Summary
+## 10. WebSocket Real-time Updates
 
-### 10.1 Error Response Format
+### 10.1 Overview
+
+WebSocket integration cung cấp real-time updates cho TP/SL orders, đảm bảo FE luôn hiển thị trạng thái mới nhất mà không cần polling.
+
+**Service:** `ws-v2` (Node.js WebSocket server)
+
+### 10.2 Channel Pattern
+
+**Format:**
+```
+tpsl.{accountNumber}
+```
+
+**Examples:**
+```
+tpsl.0001234567    → Updates for account 0001234567
+tpsl.9999888777    → Updates for account 9999888777
+```
+
+**Connection Flow:**
+1. FE connects to WebSocket server
+2. FE subscribes to channel: `tpsl.{accountNumber}`
+3. Backend publishes events to this channel whenever TP/SL status changes
+4. FE receives events in real-time and updates UI
+
+### 10.3 Event Types
+
+#### Event 1: TPSL_CREATED
+
+**Trigger:** User successfully creates new TP/SL order
+
+**Payload:**
+```json
+{
+  "event": "TPSL_CREATED",
+  "timestamp": "2026-02-05T10:30:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "orderNumber": "2026020500012",
+    "accountNumber": "0001234567",
+    "symbolCode": "VN30F2602",
+    "conditionType": "PRICE_BASED",
+    "status": "PENDING",
+    "takeProfit": {
+      "triggerPrice": 1280.0
+    },
+    "stopLoss": {
+      "triggerPrice": 1220.0
+    }
+  }
+}
+```
+
+**FE Actions:**
+- Add new TP/SL to active orders list
+- Show toast notification: "✅ Đã tạo lệnh TP/SL"
+- Update UI badge count
+
+#### Event 2: TPSL_ACTIVATED
+
+**Trigger:** Original order matched, TP/SL moves from PENDING → ACTIVE
+
+**Payload:**
+```json
+{
+  "event": "TPSL_ACTIVATED",
+  "timestamp": "2026-02-05T10:31:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "status": "ACTIVE",
+    "entryPrice": 1250.0,
+    "currentQuantity": 10
+  }
+}
+```
+
+**FE Actions:**
+- Update status in list: PENDING → ACTIVE
+- Show entryPrice
+- Update icon: 🟡 → 🟢
+
+#### Event 3: TPSL_TRIGGERED ⭐
+
+**Trigger:** Price reaches trigger level, MTL order sent to Lotte
+
+**Payload:**
+```json
+{
+  "event": "TPSL_TRIGGERED",
+  "timestamp": "2026-02-05T11:00:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "status": "TRIGGERED",
+    "triggeredType": "TAKE_PROFIT",
+    "triggerPrice": 1280.0,
+    "actualPrice": 1280.5,
+    "executedOrderNumber": "2026020500099",
+    "quantity": 10
+  }
+}
+```
+
+**FE Actions:**
+- **Play sound alert** (critical event)
+- **Show prominent popup:**
+  ```
+  🎯 TP/SL Đã Kích Hoạt!
+  
+  Lệnh TP cho VN30F2602
+  Kích hoạt tại: 1280.0
+  Khối lượng: 10 hợp đồng
+  
+  [Xem Chi Tiết]
+  ```
+- Update status: ACTIVE → TRIGGERED
+- Refresh positions list (position may be closed)
+- Move to history section
+
+#### Event 4: TPSL_CANCELLED
+
+**Trigger:** User cancels or system auto-cancels TP/SL
+
+**Payload:**
+```json
+{
+  "event": "TPSL_CANCELLED",
+  "timestamp": "2026-02-05T12:00:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "status": "CANCELLED",
+    "cancelReason": "USER_REQUESTED",
+    "cancelledBy": "USER"
+  }
+}
+```
+
+**Cancel Reasons:**
+- `USER_REQUESTED` - User clicked cancel
+- `ORIGINAL_ORDER_CANCELLED` - Parent order cancelled
+- `POSITION_CLOSED` - Position fully closed
+- `SYSTEM_CLEANUP` - End of day cleanup
+
+**FE Actions:**
+- Update status: → CANCELLED
+- Show toast: "ℹ️ Lệnh TP/SL đã hủy"
+- Move to history
+- Update icon: ⚫
+
+#### Event 5: TPSL_EXPIRED
+
+**Trigger:** End of trading session (15:00) or contract expires
+
+**Payload:**
+```json
+{
+  "event": "TPSL_EXPIRED",
+  "timestamp": "2026-02-05T15:00:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "status": "EXPIRED",
+    "expireReason": "END_OF_SESSION"
+  }
+}
+```
+
+**Expire Reasons:**
+- `END_OF_SESSION` - Trading session ended (15:00)
+- `CONTRACT_EXPIRED` - Contract expiry date reached
+
+**FE Actions:**
+- Update status: → EXPIRED
+- Show toast: "⏰ Lệnh TP/SL đã hết hạn"
+- Move to history
+- Update icon: ⚪
+
+#### Event 6: TPSL_FAILED ⚠️
+
+**Trigger:** Lotte rejects MTL order when TP/SL triggers
+
+**Payload:**
+```json
+{
+  "event": "TPSL_FAILED",
+  "timestamp": "2026-02-05T11:00:05.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "status": "FAILED",
+    "errorCode": "INSUFFICIENT_MARGIN",
+    "errorMessage": "Không đủ ký quỹ",
+    "triggeredType": "TAKE_PROFIT",
+    "triggerPrice": 1280.0
+  }
+}
+```
+
+**FE Actions:**
+- **Show error popup:**
+  ```
+  ⚠️ TP/SL Không Thể Thực Hiện
+  
+  Lệnh TP cho VN30F2602 bị lỗi
+  Lý do: Không đủ ký quỹ
+  
+  [Xem Chi Tiết] [Thử Lại]
+  ```
+- Update status: → FAILED
+- Allow retry (create new TP/SL)
+- Update icon: 🔴
+
+#### Event 7: TPSL_MODIFIED
+
+**Trigger:** User successfully modifies TP/SL configuration
+
+**Payload:**
+```json
+{
+  "event": "TPSL_MODIFIED",
+  "timestamp": "2026-02-05T13:00:00.000Z",
+  "data": {
+    "tpslOrderId": "12345",
+    "takeProfit": {
+      "triggerPrice": 1290.0
+    },
+    "stopLoss": {
+      "triggerPrice": 1210.0
+    }
+  }
+}
+```
+
+**FE Actions:**
+- Update TP/SL configuration in list
+- Show toast: "✅ Đã cập nhật lệnh TP/SL"
+- Refresh display with new trigger prices
+
+### 10.4 Connection Management
+
+#### Subscription Flow
+
+**Step 1: Connect**
+```
+FE establishes WebSocket connection to ws-v2 server
+URL: wss://nhsvpro.nhsv.vn/ws
+Auth: JWT token in connection params or initial message
+```
+
+**Step 2: Subscribe**
+```
+FE sends subscription message:
+{
+  "action": "subscribe",
+  "channel": "tpsl.0001234567"
+}
+```
+
+**Step 3: Receive Confirmation**
+```
+Server responds:
+{
+  "action": "subscribed",
+  "channel": "tpsl.0001234567",
+  "status": "success"
+}
+```
+
+**Step 4: Receive Events**
+```
+Server pushes events as they occur (see Event Types above)
+```
+
+**Step 5: Unsubscribe (when leaving screen)**
+```
+FE sends:
+{
+  "action": "unsubscribe",
+  "channel": "tpsl.0001234567"
+}
+```
+
+#### Reconnection Handling
+
+**When connection drops:**
+1. FE detects disconnect
+2. FE attempts automatic reconnect (exponential backoff: 1s, 2s, 4s, 8s, max 30s)
+3. On reconnect success:
+   - Re-subscribe to `tpsl.{accountNumber}` channel
+   - Call REST API `/active` to sync current state
+   - Display any missed critical events (TRIGGERED, FAILED)
+
+**Sync after reconnect:**
+```
+GET /api/v1/derivatives/tpslOrder/active?accountNumber={account}
+
+→ Compare with local state
+→ Update any status changes that occurred during disconnect
+→ Show notification if critical events were missed
+```
+
+#### Multi-Device Sync
+
+**Scenario:** User has app open on mobile + web simultaneously
+
+**Behavior:**
+- Both devices subscribe to same channel: `tpsl.{accountNumber}`
+- When event occurs, **both devices receive same event simultaneously**
+- Both devices update UI in sync
+- No conflict or lag between devices
+
+**Example:**
+```
+User cancels TP/SL on mobile
+  → Mobile sends cancel API
+  → Backend updates DB
+  → Backend publishes TPSL_CANCELLED event to channel
+  → Both mobile + web receive event
+  → Both update UI: show "Cancelled" status
+```
+
+### 10.5 Backend Architecture
+
+**Services Involved:**
+- `order-v2`: TP/SL business logic
+- `ws-v2`: WebSocket server
+- Kafka: Event streaming
+
+**Event Flow:**
+1. Status change → Publish to Kafka topic `tpsl-updates`
+2. ws-v2 consumes Kafka → Broadcast to WebSocket channel
+3. FE receives event → Update UI
+
+### 10.6 Performance Considerations
+
+**Channel Isolation:** Each account has dedicated channel `tpsl.{accountNumber}`
+
+**Message Size:** Keep payload minimal (~500 bytes per event)
+
+**Rate Limiting:** Max 100 events/second per account
+
+**Delivery:** At-least-once delivery, FE should deduplicate by `tpslOrderId`
+
+### 10.7 Testing Requirements
+
+**Connection Tests:**
+- Connect with valid/invalid JWT
+- Subscribe/unsubscribe to channels
+- Disconnect handling
+
+**Event Delivery Tests:**
+- Verify all 7 event types delivered correctly
+- Test reconnection with state sync
+- Test multi-device sync (same account, different devices)
+
+---
+
+## 11. Push Notifications Integration
+
+### 11.1 Overview
+
+Push notifications via OneSignal provide critical alerts to users even when app is closed or in background. This complements WebSocket (which only works when app is active).
+
+**Service:** `notification-service` (Java) integrates with OneSignal API
+
+**Purpose:**
+- Alert users about critical TP/SL events when app is inactive
+- Ensure users don't miss important status changes
+- Drive engagement by bringing users back to app
+
+### 11.2 Event Triggers for Push Notifications
+
+**Rule:** Only send push for **3 critical events** to avoid spam
+
+| Event | Send Push? | Priority | Rationale |
+|-------|-----------|----------|-----------|
+| **TRIGGERED** | ✅ YES | 🔴 HIGH | User needs to know position was closed |
+| **AUTO_CANCELLED** (original order cancelled) | ✅ YES | 🟡 MEDIUM | TP/SL no longer active, user may want to recreate |
+| **FAILED** (Lotte rejects MTL order) | ✅ YES | 🔴 CRITICAL | TP/SL triggered but failed to execute, urgent action needed |
+| User-initiated cancel | ❌ NO | - | User already knows |
+| TP/SL created | ❌ NO | - | Not critical |
+| TP/SL modified | ❌ NO | - | Not critical |
+| Session expired (15:00) | ❌ NO | - | Expected, not urgent |
+
+### 11.3 Push Notification Payloads
+
+#### 11.3.1 Event: TRIGGERED
+
+**Scenario:** Price hits trigger level, MTL order successfully sent to Lotte
+
+**OneSignal Payload:**
+```json
+{
+  "app_id": "{ONESIGNAL_APP_ID}",
+  "include_player_ids": ["{user_device_id}"],
+  "headings": {
+    "en": "🎯 TP/SL Triggered",
+    "vi": "🎯 TP/SL đã kích hoạt"
+  },
+  "contents": {
+    "en": "TP order for VN30F2602 triggered at 1280.0. Position closed.",
+    "vi": "Lệnh TP cho VN30F2602 đã kích hoạt tại 1280.0. Vị thế đã đóng."
+  },
+  "data": {
+    "type": "TPSL_UPDATE",
+    "event": "TRIGGERED",
+    "tpslOrderId": "12345",
+    "accountNumber": "0001234567",
+    "symbolCode": "VN30F2602",
+    "triggerPrice": 1280.0,
+    "triggeredType": "TAKE_PROFIT",
+    "executedOrderNumber": "2026020500099",
+    "deepLink": "nhsvpro://tpsl/detail/12345"
+  },
+  "ios_badgeType": "Increase",
+  "ios_badgeCount": 1,
+  "android_channel_id": "tpsl_critical",
+  "priority": 10
+}
+```
+
+**Deep Link Behavior:**
+- Tap notification → App opens to TP/SL detail screen
+- Shows triggered order with execution details
+- Displays matched price and quantity
+
+#### 11.3.2 Event: AUTO_CANCELLED
+
+**Scenario:** Original order cancelled → TP/SL automatically cancelled
+
+**OneSignal Payload:**
+```json
+{
+  "app_id": "{ONESIGNAL_APP_ID}",
+  "include_player_ids": ["{user_device_id}"],
+  "headings": {
+    "en": "⚠️ TP/SL Auto-Cancelled",
+    "vi": "⚠️ TP/SL đã hủy tự động"
+  },
+  "contents": {
+    "en": "TP/SL for VN30F2602 cancelled. Reason: Original order cancelled.",
+    "vi": "Lệnh TP/SL cho VN30F2602 đã hủy. Lý do: Lệnh gốc đã bị hủy."
+  },
+  "data": {
+    "type": "TPSL_UPDATE",
+    "event": "AUTO_CANCELLED",
+    "tpslOrderId": "12345",
+    "accountNumber": "0001234567",
+    "symbolCode": "VN30F2602",
+    "cancelReason": "ORIGINAL_ORDER_CANCELLED",
+    "originalOrderNumber": "2026020500012",
+    "deepLink": "nhsvpro://tpsl/history"
+  },
+  "ios_badgeType": "Increase",
+  "ios_badgeCount": 1,
+  "android_channel_id": "tpsl_medium",
+  "priority": 7
+}
+```
+
+**Deep Link Behavior:**
+- Tap notification → App opens to TP/SL history
+- Shows cancelled order with reason
+- Option to create new TP/SL if position still exists
+
+#### 11.3.3 Event: FAILED
+
+**Scenario:** TP/SL triggered, MTL order sent, but Lotte rejects
+
+**OneSignal Payload:**
+```json
+{
+  "app_id": "{ONESIGNAL_APP_ID}",
+  "include_player_ids": ["{user_device_id}"],
+  "headings": {
+    "en": "🔴 TP/SL Failed",
+    "vi": "🔴 TP/SL không thể thực hiện"
+  },
+  "contents": {
+    "en": "TP order for VN30F2602 failed. Reason: Insufficient margin. Action required!",
+    "vi": "Lệnh TP cho VN30F2602 bị lỗi. Lý do: Không đủ ký quỹ. Cần xử lý ngay!"
+  },
+  "data": {
+    "type": "TPSL_UPDATE",
+    "event": "FAILED",
+    "tpslOrderId": "12345",
+    "accountNumber": "0001234567",
+    "symbolCode": "VN30F2602",
+    "triggerPrice": 1280.0,
+    "errorCode": "INSUFFICIENT_MARGIN",
+    "errorMessage": "Không đủ ký quỹ",
+    "deepLink": "nhsvpro://position/detail/VN30F2602",
+    "actions": ["CLOSE_POSITION", "ADD_MARGIN"]
+  },
+  "ios_badgeType": "Increase",
+  "ios_badgeCount": 1,
+  "android_channel_id": "tpsl_critical",
+  "priority": 10,
+  "ios_sound": "alarm.wav",
+  "android_sound": "alarm"
+}
+```
+
+**Deep Link Behavior:**
+- Tap notification → App opens to Position detail
+- Shows alert: TP/SL failed to execute
+- Quick actions: "Close Position Now" (manual order), "Add Margin"
+
+### 11.4 Anti-Spam Mechanisms
+
+#### 11.4.1 Deduplication (Batch Grouping)
+
+**Rule:** Group notifications for same symbol within 10-second window
+
+**Example:**
+- 3 TP/SL orders trigger for VN30F2602 within 5 seconds
+- Send 1 grouped notification: "3 TP/SL orders triggered for VN30F2602"
+
+**Grouped Payload:**
+```json
+{
+  "headings": { "vi": "🎯 3 lệnh TP/SL đã kích hoạt" },
+  "contents": { "vi": "VN30F2602: 2 lệnh TP, 1 lệnh SL đã kích hoạt" },
+  "data": {
+    "type": "TPSL_BATCH",
+    "symbolCode": "VN30F2602",
+    "count": 3,
+    "orderIds": ["12345", "12346", "12347"]
+  }
+}
+```
+
+#### 11.4.2 Rate Limiting
+
+**Limits:**
+- Max 3 push notifications per minute per account
+- Max 1 push per 10 seconds for same tpslOrderId
+- Exceeded → Queue and batch at next available slot
+
+#### 11.4.3 User Preferences
+
+**Settings:**
+```json
+{
+  "tpsl_triggered": true,          // User can toggle
+  "tpsl_auto_cancelled": true,     // User can toggle
+  "tpsl_failed": true              // Always true (cannot disable)
+}
+```
+
+**Rule:** FAILED events always sent regardless of user preference
+
+#### 11.4.4 Quiet Hours
+
+**Default:** No notifications 22:00 - 07:00 (except FAILED events)
+
+**Rules:**
+- FAILED events: Always send immediately (critical)
+- Other events: Queue and send at 07:00 next morning
+
+### 11.5 Integration Flow
+
+**High-level Flow:**
+1. TP/SL event occurs → Publish to Kafka
+2. ws-v2 consumes event → Broadcast WebSocket + Trigger notification-service
+3. notification-service checks: event type, rate limit, dedup, user prefs, quiet hours
+4. If passed → Call OneSignal API
+5. OneSignal delivers push to device
+6. User taps → App opens with deep link
+
+### 11.6 OneSignal API Integration
+
+**API Endpoint:** `POST https://onesignal.com/api/v1/notifications`
+
+**Authentication:** REST API Key in Authorization header
+
+**Required Fields:**
+- `app_id`: OneSignal application ID
+- `include_player_ids`: Array of device player IDs
+- `headings`: Notification title (multi-language)
+- `contents`: Notification body (multi-language)
+- `data`: Custom data for deep linking
+
+**Device Mapping:** Map `userId` → `onesignal_player_id` (stored in database)
+
+### 11.7 Monitoring & Error Handling
+
+**Metrics to Track:**
+- Push notifications sent per event type
+- Delivery rate, open rate, conversion rate
+- Rate limiting triggers
+- Deduplication group counts
+
+**Error Handling:**
+
+| OneSignal Error | HTTP | Action |
+|-----------------|------|--------|
+| Invalid player_id | 400 | Mark device inactive |
+| Rate limit exceeded | 429 | Retry with backoff |
+| Server error | 500 | Retry 3 times, log |
+
+**Retry Strategy:**
+- CRITICAL events (FAILED): Retry up to 5 times
+- NON-CRITICAL events: Retry up to 2 times
+
+---
+
+## 12. Error Handling Summary
+
+### 12.1 Error Response Format
 
 **Validation Error (400):**
 ```
@@ -467,7 +1087,7 @@ CANCELLED  EXPIRED  (terminal states)
 }
 ```
 
-### 10.2 Complete Error Code Reference
+### 12.2 Complete Error Code Reference
 
 | Category | Error Code | HTTP | Description |
 |----------|------------|------|-------------|

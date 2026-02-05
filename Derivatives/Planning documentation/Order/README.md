@@ -105,7 +105,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | 01 | [Regular Orders Business](./Planning/01_Regular_Orders_Business.md) | BRD | PM, BA, Stakeholders | Business requirements, user stories |
 | 02 | [Order Flow](./Planning/02_Order_Flow.md) | Architecture | PM, BA, Architect | System flow, data flow diagrams |
 | 03 | [Order Types](./Planning/03_Order_Types.md) | Spec | PM, BA, QA | Order types, validation rules |
-| 04 | Conditional Orders Business | BRD | PM, BA | *(Planned)* Conditional orders requirements |
+| 04 | [TP/SL Orders Business](./Planning/04_TPSL_Orders_Business.md) | BRD | PM, BA, Stakeholders | TP/SL requirements, trigger mechanism, MTL order type |
 
 **⚠️ Important:** Planning/ docs follow `.cursor/rules/derivatives-pm-documentation.mdc`:
 - ✅ Business logic, diagrams, user stories
@@ -125,7 +125,17 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 ### Active Issues (Ready for Development)
 
-**Current:** No active issues
+**Current Issues:**
+
+| Issue | Status | Priority | Blocker |
+|-------|--------|----------|---------|
+| [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | 🔴 BLOCKED | High | Waiting for Core order lifecycle events |
+
+**Issue Summary:**
+- **Problem:** TP/SL cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
+- **Options:** Order-Based (ideal) vs Position-Based (feasible) vs Hybrid
+- **Decision Needed:** Offset-Based behavior (static vs dynamic)
+- **Next Step:** Request Core team for order events/API
 
 **Future Issues:**
 - Conditional Orders Implementation (when approved)
