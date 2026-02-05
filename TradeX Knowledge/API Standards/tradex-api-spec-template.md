@@ -95,16 +95,33 @@ Accept-Language: vi
 
 #### Success Response (200)
 
+**Lotte-integrated (mutation):**
 ```json
 {
-  "success": true,
-  "code": "0000",
-  "message": "Success message",
-  "data": {
-    // Response data
-  }
+  "message": "[V0307] Success message from Lotte",
+  "orderNumber": "2026020400123"
 }
 ```
+
+**TradeX-native (mutation):**
+```json
+{
+  "id": 255
+}
+```
+
+**Query APIs:**
+```json
+{
+  "totalCount": 10,
+  "items": [ ... ]
+}
+```
+
+**Note:** 
+- NO `success: true` or `code: "0000"` - use HTTP 200 status
+- Mutation responses are minimal (message + ID only)
+- Query responses contain rich data arrays
 
 #### Response Field Mapping
 
@@ -126,9 +143,7 @@ Accept-Language: vi
 
 ```json
 {
-  "success": false,
   "code": "INVALID_PARAMETER",
-  "message": "Dữ liệu không hợp lệ",
   "params": [
     {
       "code": "FIELD_IS_REQUIRED",
@@ -138,6 +153,8 @@ Accept-Language: vi
   ]
 }
 ```
+
+**Note:** NO `success` or `message` field - FE constructs from code + messageParams
 
 #### 2. Pass-Through Core Error (422)
 
@@ -154,17 +171,17 @@ Accept-Language: vi
 **TradeX Response:**
 ```json
 {
-  "success": false,
   "code": "[OPERATION]_1005",
   "message": "[V3120] Lỗi từ Lotte"
 }
 ```
 
+**Note:** Pass-through Lotte message AS-IS (including `[CODE]` prefix)
+
 #### 3. Authentication Error (401)
 
 ```json
 {
-  "success": false,
   "code": "TOKEN_EXPIRED",
   "message": "Phiên đăng nhập đã hết hạn"
 }
@@ -257,12 +274,8 @@ Content-Type: application/json
 **TradeX Response:**
 ```json
 {
-  "success": true,
-  "code": "0000",
-  "message": "Success message",
-  "data": {
-    "field1": "value1"
-  }
+  "message": "[V0307] Success message from Lotte",
+  "orderNumber": "123"
 }
 ```
 
@@ -279,9 +292,7 @@ Content-Type: application/json
 **Response (400):**
 ```json
 {
-  "success": false,
   "code": "INVALID_PARAMETER",
-  "message": "Dữ liệu không hợp lệ",
   "params": [
     {
       "code": "FIELD_IS_REQUIRED",
@@ -305,7 +316,6 @@ Content-Type: application/json
 **TradeX Response (422):**
 ```json
 {
-  "success": false,
   "code": "[OPERATION]_1005",
   "message": "[V3120] Business error message"
 }

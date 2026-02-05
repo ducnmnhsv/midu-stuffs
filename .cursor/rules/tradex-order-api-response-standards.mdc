@@ -1,0 +1,435 @@
+# TradeX Order API Response Standards
+
+## Purpose
+
+Rule này định nghĩa chuẩn response format cho **TẤT CẢ** Order APIs trong TradeX, bao gồm:
+- **Regular Orders** (Lotte-integrated)
+- **Conditional Orders** (TradeX-native: TP/SL, Stop Orders, etc.)
+
+## Core Principles
+
+### 1. Integration Type Determines Response Format
+
+| Integration Type | Examples | Response Pattern |
+|------------------|----------|------------------|
+| **Lotte-integrated** | Regular Orders (Buy/Sell/Modify/Cancel) | Pass-through Lotte messages |
+| **TradeX-native** | TP/SL, Stop Orders, OCO, etc. | Ultra-simple mutation, no `message` field |
+
+### 2. Operation Type Determines Response Content
+
+| Operation | Response | Rationale |
+|-----------|----------|-----------|
+| **Mutation** (Place/Modify/Cancel) | `{ "id": number }` only | FE chỉ cần ID để tracking |
+| **Query** (Active/History) | Rich data array | FE cần data để display UI |
+
+### 3. HTTP Status = Success Indicator
+
+**NO redundant fields in response body:**
+- ❌ NO `success: true/false`
+- ❌ NO `code: "0000"` for success
+- ✅ HTTP 200 = Success
+- ✅ HTTP 400 = Validation error
+- ✅ HTTP 422 = Business error
+- ✅ HTTP 500 = System error
+
+---
+
+## Response Format Standards
+
+### Lotte-Integrated APIs (Regular Orders)
+
+#### Success Response (200)
+
+**Place/Sell Order:**
+```json
+{
+  "message": "[V0307] Bạn đã thực hiện lệnh Mua. Hãy kiểm tra Trạng thái lệnh!",
+  "orderNumber": "2026020500012"
+}
+```
+
+**Modify Order:**
+```json
+{
+  "message": "[V0318] Bạn đã sửa lệnh thành công",
+  "orderNumber": "2026020500015"
+}
+```
+
+**Cancel Order:**
+```json
+{
+  "message": "[V0320] Bạn đã hủy lệnh thành công",
+  "orderNumber": "2026020500012"
+}
+```
+
+**Rules:**
+- ✅ Pass-through `error_desc` from Lotte exactly (including `[CODE]` prefix)
+- ✅ Extract `new_ord_no` as `orderNumber`
+- ✅ Language determined by `Accept-Language` → Lotte `lang_code` mapping
+- ❌ NO transformation of Lotte messages
+- ❌ NO custom TradeX messages
+
+**Message Format:** `"[{LANG}{CODE}] {Message}"`
+
+| Language | Header | Message Example |
+|----------|--------|-----------------|
+| Vietnamese | `Accept-Language: vi` | `"[V0307] Bạn đã thực hiện lệnh Mua..."` |
+| English | `Accept-Language: en` | `"[E0307] Order placed successfully..."` |
+| Korean | `Accept-Language: ko` | `"[K0307] 주문 성공..."` |
+
+**Success Codes:**
+- `[V/E/K 0307]` - Order placed
+- `[V/E/K 0318]` - Order modified
+- `[V/E/K 0320]` - Order cancelled
+
+#### Validation Error (400)
+
+```json
+{
+  "code": "INVALID_PARAMETER",
+  "params": [
+    {
+      "code": "FIELD_IS_REQUIRED",
+      "param": "accountNumber",
+      "messageParams": ["accountNumber"]
+    }
+  ]
+}
+```
+
+**Note:** TradeX validation - NO `message` field (FE constructs from code + messageParams)
+
+#### Business Error (422)
+
+```json
+{
+  "code": "ORDER_PLACE_1005",
+  "message": "[V3120] Không đủ ký quỹ để đặt lệnh"
+}
+```
+
+**Rules:**
+- ✅ Pass-through Lotte error message (including `[CODE]` prefix)
+- ✅ Error code format: `{OPERATION}_{LOTTE_CODE}`
+  - Examples: `ORDER_PLACE_1005`, `ORDER_CANCEL_2010`, `ORDER_MODIFY_3005`
+- ❌ NO transformation of Lotte error messages
+
+---
+
+### TradeX-Native APIs (TP/SL, Stop Orders, etc.)
+
+#### Success Response (200) - Mutation APIs
+
+**Place/Modify/Cancel:**
+```json
+{
+  "id": 255
+}
+```
+
+**Rules:**
+- ✅ Return **ONLY** numeric `id` field
+- ✅ HTTP 200 = Success
+- ✅ FE query `/active` or `/history` APIs to get full details
+- ❌ NO `message` field
+- ❌ NO `tpslOrderId` or string ID
+- ❌ NO rich data (code, price, status, etc.)
+
+**Why Ultra-Simple?**
+1. FE already has input data (code, price, etc.)
+2. Reduce bandwidth
+3. Consistent with existing Stop Order pattern
+4. FE can query details on demand
+
+#### Success Response (200) - Query APIs
+
+**Query Active/History:**
+```json
+{
+  "totalCount": 2,
+  "orders": [
+    {
+      "tpslOrderId": "TPSL-2026020500001",
+      "orderNumber": "2026020500012",
+      "code": "VN30F2502",
+      "conditionType": "PRICE_BASED",
+      "entryPrice": 1250.0,
+      "currentPrice": 1275.0,
+      "takeProfit": {
+        "triggerPrice": 1300.0,
+        "status": "ACTIVE"
+      },
+      "stopLoss": {
+        "triggerPrice": 1230.0,
+        "status": "ACTIVE"
+      },
+      "status": "ACTIVE",
+      "createdAt": "2026-02-05T09:30:00.000Z"
+    }
+  ]
+}
+```
+
+**Rules:**
+- ✅ Rich data array for display
+- ✅ Include current market context (e.g., `currentPrice`)
+- ✅ Nested objects for complex configs
+
+#### Validation Error (400)
+
+```json
+{
+  "code": "INVALID_PARAMETER",
+  "params": [
+    {
+      "code": "FIELD_IS_REQUIRED",
+      "param": "accountNumber",
+      "messageParams": ["accountNumber"]
+    }
+  ]
+}
+```
+
+**Rules:**
+- ❌ NO `message` field (FE constructs from code + messageParams)
+- ✅ `params` array contains field-level errors
+- ✅ `messageParams` contains context values for i18n
+
+#### Business Error (422)
+
+```json
+{
+  "code": "TP_PRICE_MUST_BE_HIGHER_THAN_ENTRY",
+  "params": [],
+  "messageParams": ["1250.0", "1200.0"]
+}
+```
+
+**Rules:**
+- ❌ NO `message` field (FE constructs from code + messageParams)
+- ✅ Error code format: `{DESCRIPTIVE_NAME}`
+  - Examples: `TP_PRICE_MUST_BE_HIGHER_THAN_ENTRY`, `SL_PRICE_MUST_BE_LOWER_THAN_ENTRY`, `TPSL_ORDER_INVALID_STATUS`
+- ✅ `messageParams` contains context values (prices, quantities, etc.)
+- ✅ Empty `params` array (no field-level errors)
+
+**Error Code Pattern:**
+- Use SCREAMING_SNAKE_CASE
+- Descriptive, self-documenting
+- No numeric codes
+
+---
+
+## Error Code Patterns Summary
+
+### Regular Orders (Lotte-integrated)
+
+| Error Source | Code Pattern | Example | Has `message` field? |
+|--------------|--------------|---------|---------------------|
+| TradeX Validation | `INVALID_PARAMETER` | Missing required field | ❌ NO |
+| TradeX Auth | `UNAUTHORIZED`, `TOKEN_EXPIRED` | Invalid JWT | ✅ YES |
+| Lotte Business | `{OPERATION}_{LOTTE_CODE}` | `ORDER_PLACE_1005` | ✅ YES (from Lotte) |
+
+### TradeX-Native Orders (TP/SL, Stop, etc.)
+
+| Error Source | Code Pattern | Example | Has `message` field? |
+|--------------|--------------|---------|---------------------|
+| TradeX Validation | `INVALID_PARAMETER` | Missing required field | ❌ NO |
+| TradeX Auth | `UNAUTHORIZED`, `TOKEN_EXPIRED` | Invalid JWT | ✅ YES |
+| TradeX Business | `{DESCRIPTIVE_NAME}` | `TP_PRICE_MUST_BE_HIGHER_THAN_ENTRY` | ❌ NO |
+
+---
+
+## Implementation Checklist
+
+### For Regular Orders (Lotte Integration)
+
+**Success Response:**
+- [ ] Extract `error_desc` from Lotte → `message` field (no transformation)
+- [ ] Extract `new_ord_no` from Lotte → `orderNumber` field
+- [ ] Ensure Lotte `[CODE]` prefix is preserved
+- [ ] Map `Accept-Language` → Lotte `lang_code` (`vi` → `V`, `en` → `E`, `ko` → `K`)
+
+**Error Response:**
+- [ ] Extract Lotte `error_code` → prefix with operation → TradeX `code`
+- [ ] Extract Lotte `error_desc` → TradeX `message` (no transformation)
+- [ ] Ensure Lotte `[CODE]` prefix is preserved in error messages
+
+### For TP/SL Orders (TradeX-native)
+
+**Success Response (Mutation):**
+- [ ] Return ONLY `{ "id": number }`
+- [ ] NO `message` field
+- [ ] NO string ID (use numeric `id` from database)
+- [ ] NO rich data
+
+**Success Response (Query):**
+- [ ] Return `{ totalCount, orders: [...] }`
+- [ ] Include rich data array
+- [ ] Include current market context if relevant
+
+**Error Response:**
+- [ ] Use descriptive error codes (SCREAMING_SNAKE_CASE)
+- [ ] NO `message` field (FE constructs from code + messageParams)
+- [ ] Include `messageParams` array with context values
+- [ ] Validation errors: use `params` array with field-level errors
+- [ ] Business errors: use empty `params` array
+
+---
+
+## When Creating New Order APIs
+
+### Step 1: Determine Integration Type
+
+**Ask:** Does this API map to Lotte/Core?
+
+| Answer | Integration Type | Example |
+|--------|------------------|---------|
+| YES | Lotte-integrated | Regular Buy/Sell/Modify/Cancel |
+| NO | TradeX-native | TP/SL, Stop Orders, OCO |
+
+### Step 2: Follow Corresponding Pattern
+
+**If Lotte-integrated:**
+- ✅ Pass-through Lotte messages (success and errors)
+- ✅ Return `{ message, orderNumber }`
+- ✅ Preserve `[CODE]` prefix
+- ✅ Error code format: `{OPERATION}_{LOTTE_CODE}`
+
+**If TradeX-native:**
+- ✅ Mutation: Return `{ "id": number }` only
+- ✅ Query: Return rich data array
+- ✅ NO `message` field in any response
+- ✅ Error code format: `{DESCRIPTIVE_NAME}`
+- ✅ Use `messageParams` for i18n context
+
+### Step 3: Reference Existing Implementation
+
+**Lotte-integrated Reference:**
+- Read: `@Regular_Orders_API_Spec.md`
+- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../OrderController.java`
+
+**TradeX-native Reference:**
+- Read: `@TPSL_Orders_API_Spec.md`
+- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../StopOrderService.java`
+- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../Constants.java` (error codes)
+
+---
+
+## Quick Reference Table
+
+| Feature | Regular Orders | TP/SL Orders |
+|---------|---------------|--------------|
+| **Success Response** | `{ message, orderNumber }` | `{ id }` |
+| **Has `message` in success?** | ✅ YES (from Lotte) | ❌ NO |
+| **Message includes `[CODE]`?** | ✅ YES | N/A |
+| **Error code pattern** | `{OP}_{LOTTE_CODE}` | `{DESCRIPTIVE_NAME}` |
+| **Has `message` in error?** | ✅ YES (from Lotte) | ❌ NO |
+| **Uses `messageParams`?** | ❌ NO (Lotte provides message) | ✅ YES |
+| **Query response** | N/A (use Lotte APIs) | Rich data array |
+| **Language handling** | Via Lotte `lang_code` | Via TradeX i18n |
+
+---
+
+## Common Mistakes to Avoid
+
+### ❌ WRONG: Mixing Patterns
+
+**BAD - Regular Order with TradeX message:**
+```json
+{
+  "message": "Đặt lệnh thành công",  // ❌ Should be Lotte message
+  "orderNumber": "123"
+}
+```
+
+**BAD - TP/SL with message field:**
+```json
+{
+  "message": "Đặt TP/SL thành công",  // ❌ Should not have message
+  "id": 255
+}
+```
+
+### ❌ WRONG: Redundant Success Fields
+
+**BAD - NEVER use `success` or `code: "0000"` in response body:**
+```json
+{
+  "success": true,   // ❌ WRONG - TradeX uses HTTP status
+  "code": "0000",    // ❌ WRONG - TradeX uses HTTP status
+  "id": 255
+}
+```
+
+**GOOD:**
+```json
+{
+  "id": 255  // ✅ Only data, HTTP 200 = success
+}
+```
+
+**Why?**
+- HTTP status code IS the success indicator
+- HTTP 200 = Success
+- HTTP 4xx/5xx = Error
+- `success: true/false` field is redundant and NOT used in TradeX
+
+### ❌ WRONG: Rich Data in Mutation Response
+
+**BAD:**
+```json
+{
+  "id": 255,
+  "code": "VN30F2502",        // ❌ FE already has this
+  "entryPrice": 1250.0,       // ❌ Waste bandwidth
+  "takeProfit": { ... },      // ❌ Query /active for this
+  "status": "PENDING"
+}
+```
+
+### ❌ WRONG: Transforming Lotte Messages
+
+**BAD:**
+```json
+{
+  "message": "Bạn đã đặt lệnh thành công",  // ❌ Should preserve Lotte's exact message
+  "orderNumber": "123"
+}
+```
+
+**GOOD:**
+```json
+{
+  "message": "[V0307] Bạn đã thực hiện lệnh Mua. Hãy kiểm tra Trạng thái lệnh!",
+  "orderNumber": "123"
+}
+```
+
+---
+
+## Usage Instructions
+
+1. **Creating new Order API spec:**
+   - Read this rule FIRST
+   - Determine integration type (Lotte vs TradeX-native)
+   - Follow corresponding pattern EXACTLY
+   - Reference existing implementations
+
+2. **Reviewing Order API spec:**
+   - Check response format matches pattern
+   - Verify error codes follow convention
+   - Ensure NO mixing of patterns
+   - Validate checklist items
+
+3. **Explaining to stakeholders:**
+   - Show comparison table
+   - Explain rationale (bandwidth, consistency, FE needs)
+   - Reference existing Stop Order implementation as proof
+
+---
+
+**Rule Version:** 1.0  
+**Last Updated:** February 5, 2026  
+**Applies To:** All Order APIs (Regular, TP/SL, Stop, OCO, Conditional, etc.)

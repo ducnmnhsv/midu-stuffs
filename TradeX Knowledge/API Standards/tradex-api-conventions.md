@@ -341,9 +341,7 @@ TradeX validates:     Core validates:
 
 ```json
 {
-  "success": false,
   "code": "INVALID_PARAMETER",
-  "message": "Dữ liệu không hợp lệ",
   "params": [
     {
       "code": "FIELD_IS_REQUIRED",
@@ -358,6 +356,8 @@ TradeX validates:     Core validates:
   ]
 }
 ```
+
+**Note:** NO `success` or `message` field - FE constructs message from code + messageParams
 
 #### Implementation (Java)
 
@@ -462,7 +462,6 @@ if (data.deviceUniqueId && data.deviceUniqueId.length > 50) {
 
 ```json
 {
-  "success": false,
   "code": "ORDER_PLACE_1005",
   "message": "[V3120] Lỗi đã xảy ra"
 }
@@ -593,38 +592,42 @@ const lang_code =
 
 ## Response Format Standards
 
+> **IMPORTANT:** TradeX uses HTTP status code to indicate success/failure.  
+> **NEVER** use `success: true/false` or `code: "0000"` fields in response body.
+
 ### 1. Success Response (200)
 
+**Lotte-integrated (mutation):**
 ```json
 {
-  "success": true,
-  "code": "0000",
-  "message": "Thành công",
-  "data": {
-    // Response-specific data
-  }
+  "message": "[V0307] Bạn đã thực hiện lệnh Mua...",
+  "orderNumber": "123"
 }
 ```
+
+**TradeX-native (mutation):**
+```json
+{
+  "id": 255
+}
+```
+
+**Query APIs:**
+```json
+{
+  "totalCount": 10,
+  "orders": [ ... ]
+}
+```
+
+**Key Principle:** HTTP 200 = Success, NO `success: true` or `code: "0000"` needed
 
 ### 2. Error Response Structure
 
-**Base Structure:**
-
+**Validation Error (400):**
 ```json
 {
-  "success": false,
-  "code": "ERROR_CODE",
-  "message": "Error message in selected language"
-}
-```
-
-**With Validation Details (INVALID_PARAMETER):**
-
-```json
-{
-  "success": false,
   "code": "INVALID_PARAMETER",
-  "message": "Dữ liệu không hợp lệ",
   "params": [
     {
       "code": "FIELD_IS_REQUIRED",
@@ -632,6 +635,33 @@ const lang_code =
       "messageParams": ["accountNumber"]
     }
   ]
+}
+```
+
+**Note:** NO `success: false` or `message` field - FE constructs from code + messageParams
+
+**Auth Error (401/403):**
+```json
+{
+  "code": "UNAUTHORIZED",
+  "message": "Token không hợp lệ hoặc đã hết hạn"
+}
+```
+
+**Business Error (422) - Lotte pass-through:**
+```json
+{
+  "code": "ORDER_PLACE_1005",
+  "message": "[V3120] Không đủ ký quỹ"
+}
+```
+
+**Business Error (422) - TradeX-native:**
+```json
+{
+  "code": "TP_PRICE_MUST_BE_HIGHER_THAN_ENTRY",
+  "params": [],
+  "messageParams": ["1250.0", "1200.0"]
 }
 ```
 
@@ -665,9 +695,7 @@ POST /api/v1/derivatives/order
 **Response (400):**
 ```json
 {
-  "success": false,
   "code": "INVALID_PARAMETER",
-  "message": "Dữ liệu không hợp lệ",
   "params": [
     {
       "code": "FIELD_IS_REQUIRED",
@@ -697,7 +725,6 @@ POST /api/v1/derivatives/order
 **TradeX Response to Client (422):**
 ```json
 {
-  "success": false,
   "code": "ORDER_PLACE_1005",
   "message": "[V3120] Không đủ tiền ký quỹ để thực hiện giao dịch"
 }
@@ -722,29 +749,21 @@ POST /api/v1/derivatives/order
 **TradeX Response to Client (200):**
 ```json
 {
-  "success": true,
-  "code": "0000",
-  "message": "Đặt lệnh mua thành công",
-  "data": {
-    "orderNumber": "2026020400123",
-    "code": "VN30F2502",
-    "codeName": "HĐ Tương lai VN30 Tháng 02/2026",
-    "orderType": "LO",
-    "orderPrice": 1285.5,
-    "orderQuantity": 5,
-    "sellBuyType": "BUY",
-    "status": "PENDING",
-    "orderTime": "2026-02-04T09:15:30.000Z"
-  }
+  "message": "[V0307] Bạn đã thực hiện lệnh Mua. Hãy kiểm tra Trạng thái lệnh!",
+  "orderNumber": "2026020400123"
 }
 ```
+
+**Note:** 
+- Simple response with only message (from Lotte) and orderNumber
+- NO `success`, `code`, or rich `data` wrapper
+- FE queries `/todayUnmatch` for full order details if needed
 
 #### Example 4: Token Expired
 
 **Response (401):**
 ```json
 {
-  "success": false,
   "code": "TOKEN_EXPIRED",
   "message": "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại"
 }
