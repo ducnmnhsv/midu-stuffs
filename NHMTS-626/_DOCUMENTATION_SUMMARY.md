@@ -1,7 +1,8 @@
 # NHMTS-626 Documentation Summary
 
 **Refactored:** 2026-02-06  
-**Status:** ✅ Optimized & Production-Ready
+**Revised from repos:** 2026-02-09 (aligned with `TradeX MCP/Knowledge based/configuration` & `ekyc-admin`)  
+**Status:** ✅ Optimized & aligned with codebase
 
 ---
 
@@ -77,11 +78,10 @@ Redundant files merged:
 ### For Backend Developers/Reviewers
 
 1. Read: [`Implementation.md`](./Implementation.md)
-2. Review:
-   - Commits: [ekyc-admin](https://bitbucket.org/nhsv-dev/ekyc-admin/commits/c813d860a59bcabc25f552f286e56a74c8fd5510), [configuration](https://bitbucket.org/nhsv-dev/configuration/commits/c25a051e9a224c20597a0fb9deb687cd7369ad7d)
-   - Code changes
-   - Infrastructure updates
-3. Verify: Security enhancements
+2. Review actual code:
+   - **configuration:** `RequestHandler.ts`, `AmazonWebService.ts`, `IAWSGetSignedDataRequest.ts`
+   - **ekyc-admin:** `consumers/RequestHandler.java`, `EContractCustomService`, `RedisDao.java`, `CustomEKycResource.java`
+3. Verify: Security enhancements (current vs target state in Implementation.md)
 
 ### For Product/PM
 
@@ -132,13 +132,13 @@ Redundant files merged:
 
 ---
 
-## 🔗 External Links
+## 🔗 External & local references
 
-| Resource | URL |
-|----------|-----|
+| Resource | URL / path |
+|----------|------------|
+| **Local repos** | `TradeX MCP/Knowledge based/configuration`, `TradeX MCP/Knowledge based/ekyc-admin` |
 | **PR Configuration** | https://bitbucket.org/nhsv-dev/configuration/pull-requests/3 |
-| **Commit ekyc-admin** | https://bitbucket.org/nhsv-dev/ekyc-admin/commits/c813d860a59bcabc25f552f286e56a74c8fd5510 |
-| **Commit configuration** | https://bitbucket.org/nhsv-dev/configuration/commits/c25a051e9a224c20597a0fb9deb687cd7369ad7d |
+| **Bitbucket** | [ekyc-admin](https://bitbucket.org/nhsv-dev/ekyc-admin) · [configuration](https://bitbucket.org/nhsv-dev/configuration) |
 
 ---
 
@@ -189,6 +189,6 @@ Before deployment:
 
 ---
 
-**Document Version:** 2.0 (Refactored)  
+**Document Version:** 2.1 (Revised from configuration & ekyc-admin repos)  
 **Maintained By:** QA + Security Team  
 **Next Update:** After production deployment

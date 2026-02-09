@@ -1,322 +1,160 @@
 # Implementation Details - NHMTS-626
 
 **Issue:** NHMTS-626 - Security Enhancement  
-**Date:** 2026-02-06
+**Date:** 2026-02-06  
+**Revised:** 2026-02-09 (aligned with `configuration` & `ekyc-admin` repos)
 
 ---
 
 ## 📝 Overview
 
-This document contains technical implementation details for the security fixes.
+This document describes technical implementation for the security fixes, **mapped to the actual codebase** in:
+
+- **configuration:** `TradeX MCP/Knowledge based/configuration` — Kafka consumer (TypeScript), exposes logic for `/api/v1/aws` and admin AWS.
+- **ekyc-admin:** `TradeX MCP/Knowledge based/ekyc-admin` — Java (JHipster), Kafka consumer for eKYC/contract flows, REST for admin/custom eKYC APIs.
 
 ---
 
-## 🔧 Backend Changes
+## 🔧 Backend Architecture (current)
 
-### Repositories Modified
+### configuration (TypeScript, Kafka)
 
-| Repository | Commit | Description |
-|------------|--------|-------------|
-| **ekyc-admin** | [c813d860](https://bitbucket.org/nhsv-dev/ekyc-admin/commits/c813d860a59bcabc25f552f286e56a74c8fd5510) | API controllers, services, Redis integration |
-| **configuration** | [c25a051e](https://bitbucket.org/nhsv-dev/configuration/commits/c25a051e9a224c20597a0fb9deb687cd7369ad7d) | Terraform, S3 bucket policy, IAM |
+- **Entry:** Kafka messages with `message.uri` (e.g. `/api/v1/aws`) → `src/consumers/RequestHandler.ts` → `apiMap[message.uri]`.
+- **AWS presigned:**  
+  - `/api/v1/aws` → `amazonWebService.getSignedDataToUploadPublic(data)`  
+  - `/api/v1/admin/aws` → `adminAmazonWebService.getSignedDataToUploadInternal(data)`
+- **Request model:** `src/models/request/IAWSGetSignedDataRequest.ts` — extends `IDataRequest`, fields: `key`, `serviceName?`. **No `action` field in current code.**
+- **Services:**  
+  - `src/services/AmazonWebService.ts` — `getSignedDataToUploadPublic()` only (upload; uses AWS or Minio `presignedPutObject`).  
+  - `src/services/admin/AdminAmazonWebService.ts` — `getSignedDataToUploadInternal()` only.
+- **Config:** `src/config.ts` — `config.aws.s3` (e.g. `public`, `langResource`, `announcement`). Client can pass `serviceName` to select bucket/conf. No Redis in configuration.
 
----
+### ekyc-admin (Java, Kafka + REST)
 
-## Part A: Session-Based Access Control
-
-### 1. Redis Session Management
-
-**New Service: RedisService**
-```typescript
-// src/services/RedisService.ts
-
-import { Injectable } from '@nestjs/common';
-import { Redis } from 'ioredis';
-
-@Injectable()
-export class RedisService {
-  private client: Redis;
-  
-  constructor() {
-    this.client = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD,
-      db: parseInt(process.env.REDIS_DB || '0'),
-    });
-  }
-  
-  async get(key: string): Promise<string | null> {
-    return this.client.get(key);
-  }
-  
-  async set(key: string, value: string, ...args: any[]): Promise<'OK'> {
-    return this.client.set(key, value, ...args);
-  }
-}
-```
-
-### 2. Contract Authorization
-
-**Modified: ContractController**
-```typescript
-// src/controllers/ContractController.ts
-
-@Get('/api/v1/equity/account/contracts')
-async getContracts(
-  @Query('ekycId') ekycId?: string,
-  @CurrentUser() user?: User,
-  @Session() session?: SessionData
-) {
-  if (user.grantType === 'client_credential') {
-    // Validate session for client_credential
-    if (!ekycId) {
-      throw new BadRequestException('ekycId is required');
-    }
-    
-    // Check Redis session mapping
-    const allowedEkycId = await this.redisService.get(session.refreshTokenId);
-    
-    if (allowedEkycId !== ekycId) {
-      // Log security event
-      await this.auditLogger.warn({
-        event: 'UNAUTHORIZED_EKYC_ACCESS',
-        sessionId: session.refreshTokenId,
-        requestedEkycId: ekycId,
-        allowedEkycId: allowedEkycId,
-      });
-      
-      throw new ForbiddenException('ACCESS_DENIED');
-    }
-    
-    return this.contractService.findByEkycId(ekycId);
-  } else {
-    // Use identifierId from JWT token
-    return this.contractService.findByIdentifierId(user.identifierId);
-  }
-}
-```
-
-### 3. eKYC Flow
-
-**Modified: EkycController**
-```typescript
-// src/controllers/EkycController.ts
-
-@Post('/api/v1/ekycs')
-async createEkyc(@Body() dto: CreateEkycDto) {
-  const ekyc = await this.ekycService.create(dto);
-  
-  // Generate refresh token ID
-  const refreshTokenId = `refresh_token_${crypto.randomUUID()}`;
-  
-  // Store in Redis with 1 hour TTL
-  await this.redisService.set(refreshTokenId, ekyc.id, 'EX', 3600);
-  
-  return {
-    ekycId: ekyc.id,
-    refreshTokenId: refreshTokenId,
-    ...ekyc
-  };
-}
-```
+- **Kafka:** `consumers/RequestHandler.java` handles:
+  - `/api/v1/equity/account/contracts` → `eContractCustomService.signEContract(request)` (payload: `FptECSignRequest`).
+  - `/api/v1/ekycs`, `/api/v1/ekyc-admin/ekyc/add`, sendOtp, verifyOtp, eContractStatus, etc.
+- **REST (JHipster):**  
+  - `web/rest/CustomEKycResource.java` (`@RequestMapping("/api/v1")`):  
+    - `GET /ekyc-admin/ekyc/e-contract-info/{id}`, `GET /ekyc-admin/ekyc/e-contract/download/{id}`, `GET /ekyc-admin/e-kycs`, etc.  
+  - `web/rest/EKycResource.java` → `/api/e-kycs`, `EContractResource` → `/api/e-contracts`.
+- **Redis:** `dao/RedisDao.java` — OTP only (`KIS_E_KYC_OTP_*`, `OtpValidation`). **No session mapping (refresh_token_id → ekyc_id) in current code.**
 
 ---
 
-## Part B: S3 Security Enhancement
+## Part A: Session-Based Access Control (NHMTS-626 target)
 
-### 1. Presigned URL with Action Parameter
+### 1. Redis session mapping (to be added)
 
-**Modified: AwsController**
-```typescript
-// src/controllers/AwsController.ts
+**Current:** ekyc-admin uses Redis for OTP only.
 
-@Get('/api/v1/aws')
-async getPresignedUrl(
-  @Query('serviceName') serviceName: string,
-  @Query('key') key: string,
-  @Query('action') action?: 'upload' | 'download'
-) {
-  // Validate inputs
-  this.validateServiceName(serviceName);
-  this.validateKey(key);
-  
-  if (action && !['upload', 'download'].includes(action)) {
-    throw new BadRequestException('Invalid action');
-  }
-  
-  // Default to upload (backward compatible)
-  const operation = action === 'download' ? 'getObject' : 'putObject';
-  
-  const url = await this.s3Service.getSignedUrl(operation, {
-    Bucket: this.getBucketName(serviceName),
-    Key: key,
-    Expires: 900 // 15 minutes
-  });
-  
-  return { url };
-}
+**Target:** Store session mapping for contract access, e.g.:
 
-private validateKey(key: string): void {
-  if (!key) throw new BadRequestException('Key is required');
-  if (key.length > 1024) throw new BadRequestException('Key too long');
-  if (key.includes('..')) throw new BadRequestException('Path traversal detected');
-  if (/<>\"'&/.test(key)) throw new BadRequestException('Invalid characters');
-}
-```
+- Key: `refresh_token_id` (or equivalent from gateway/token).
+- Value: `ekyc_id` (or allowed eKYC identifier).
+- TTL: e.g. 1 hour.
 
-### 2. S3 Bucket Policy
+**Suggested location:** Either in **ekyc-admin** (extend `RedisDao` or new service) or in the **API gateway** that calls ekyc-admin. If in ekyc-admin, then in `RequestHandler.java` for `/api/v1/equity/account/contracts` (or in `EContractCustomService.signEContract`):
 
-**Modified: terraform/s3-buckets.tf**
-```hcl
-resource "aws_s3_bucket_policy" "ekyc_images_policy" {
-  bucket = aws_s3_bucket.ekyc_images.id
-  
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "DenyPublicAccess"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.ekyc_images.arn}/*"
-        Condition = {
-          StringNotLike = {
-            "aws:Referer" = [
-              "https://nhsvpro.nhsv.vn/*",
-              "https://tnhsvpro.nhsv.vn/*"
-            ]
-          }
-        }
-      }
-    ]
-  })
-}
-```
+- Resolve `refresh_token_id` from request/token.
+- `RedisDao.get(sessionKey)` → allowed ekyc_id.
+- If request `ekycId` (or equivalent) != allowed ekyc_id → return 403 / ACCESS_DENIED and log security event.
 
-### 3. Public Access Block
+### 2. Contract / eKYC authorization (target)
 
-**New: terraform/s3-public-access-block.tf**
-```hcl
-resource "aws_s3_bucket_public_access_block" "ekyc_images_block" {
-  bucket = aws_s3_bucket.ekyc_images.id
-  
-  block_public_acls       = true
-  ignore_public_acls      = true
-  block_public_policy     = true
-  restrict_public_buckets = true
-}
-```
+**Current:** `RequestHandler.java` calls `eContractCustomService.signEContract(request)` for `/api/v1/equity/account/contracts` with no session/ekycId check.
+
+**Target:** Before returning contract data (or signing):
+
+- For client_credential (or similar) flow: require `ekycId` and validate against Redis session mapping.
+- For password_otp / biometric: use identifier from JWT (e.g. identifierId) and do not rely on client-supplied ekycId alone.
+
+Audit log: log `UNAUTHORIZED_EKYC_ACCESS` (requestedEkycId, allowedEkycId, sessionId).
 
 ---
 
-## 🔒 Security Enhancements
+## Part B: S3 / Presigned URL (NHMTS-626 target)
 
-### 1. Input Validation
+### 1. Presigned URL with `action` parameter
 
-All user inputs validated:
-- Service name: whitelist (`ekyc`, `econtract`)
-- S3 key: regex pattern, length limit, no path traversal
-- Action parameter: enum validation
+**Current (configuration):**
 
-### 2. Audit Logging
+- `AmazonWebService.getSignedDataToUploadPublic(request)` — upload only.
+- `IAWSGetSignedDataRequest`: `key`, `serviceName` (optional).
 
-Security events logged:
-```typescript
-interface SecurityEvent {
-  event: string;
-  sessionId: string;
-  requestedEkycId: string;
-  allowedEkycId: string;
-  userId: string;
-  ipAddress: string;
-  timestamp: string;
-}
-```
+**Target:**
 
-### 3. Rate Limiting
+- Add optional `action` to request (or query): `upload` | `download`.
+- In `RequestHandler.ts` apiMap for `/api/v1/aws`: pass `action` through to service.
+- In `AmazonWebService` (and/or admin service if used for ekyc):
+  - `action === 'download'` (or missing and key exists) → generate **getObject** presigned URL.
+  - Otherwise → keep current **putObject** (upload) behavior.
+- Validate `action` enum; reject invalid values with 400.
+- Key validation: length, no `..`, no `<>"'&` (path traversal / XSS).
 
-Applied to:
-- Presigned URL generation (20 req/min per user)
-- Session creation (5 req/min per IP)
+**File-level changes (configuration):**
 
----
+- `src/models/request/IAWSGetSignedDataRequest.ts` — add optional `action?: 'upload' | 'download'`.
+- `src/services/AmazonWebService.ts` — branch on `action`, call AWS/Minio for getObject when `download`.
+- `src/consumers/RequestHandler.ts` — ensure `data.action` passed from message to service.
 
-## 📦 Dependencies Added
+(If presigned URLs are exposed via **rest-proxy** rather than directly from configuration, the same contract — `action=upload` / `action=download` — should be implemented in the layer that calls configuration.)
 
-```json
-{
-  "dependencies": {
-    "ioredis": "^5.3.0",
-    "@aws-sdk/client-s3": "^3.x.x",
-    "@aws-sdk/s3-request-presigner": "^3.x.x"
-  }
-}
-```
+### 2. S3 bucket policy and public access block
+
+**Current:** configuration uses `config.aws.s3` (e.g. bucket names, region). No Terraform in the configuration repo under review.
+
+**Target:**
+
+- For eKYC/S3 buckets (e.g. ekyc_images):  
+  - Block public access (block_public_acls, ignore_public_acls, block_public_policy, restrict_public_buckets).  
+  - Deny s3:GetObject for principal `*` unless via presigned URL (no public reads).
+- Apply via Terraform (or existing infra repo) if that’s where S3 is managed; otherwise document required bucket policy and public-access-block settings.
 
 ---
 
-## 🌍 Environment Variables
+## 🔒 Security (target)
 
-```bash
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DB=0
+- **Input validation:** serviceName whitelist; key regex/length/no `..`/no `<>"'&`; action enum.
+- **Audit logging:** log security events (e.g. UNAUTHORIZED_EKYC_ACCESS, invalid action).
+- **Rate limiting:** optional on presigned URL generation and session creation (e.g. at gateway or in configuration/ekyc-admin if applicable).
 
-# S3
-S3_PRESIGNED_URL_EXPIRES=900
-```
+---
+
+## 📦 Dependencies
+
+- **configuration:** Already uses AWS SDK / Minio; if getObject presigner is not present, add the minimal dependency for presigned getObject.
+- **ekyc-admin:** Redis already used (RedisDao); add only if new session keys are stored in ekyc-admin.
+
+---
+
+## 🌍 Environment / config
+
+- **configuration:** `config.aws`, `config.aws.s3.*` (bucket, region, expires). Optional: `S3_PRESIGNED_URL_EXPIRES` (e.g. 900).
+- **ekyc-admin:** Redis already configured for OTP; if session mapping is in ekyc-admin, reuse same Redis (with distinct key prefix).
 
 ---
 
 ## 🚀 Deployment
 
-### Infrastructure First
-
-```bash
-cd configuration/terraform
-terraform apply
-```
-
-### Application Second
-
-```bash
-cd ekyc-admin
-npm install
-npm run build
-npm run deploy
-```
+- **configuration:** Build and deploy as usual (Kafka consumer); ensure message payload includes `action` when FE/gateway adopts new API.
+- **ekyc-admin:** Build and deploy; if session check is added, ensure gateway passes token/session info and that Redis is available.
+- **Infrastructure:** Apply S3 bucket policy and public access block (e.g. Terraform in infra repo) before or with backend release.
 
 ---
 
-## 📊 Performance Impact
+## 📊 Performance (target)
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| API Response (P95) | 234ms | 287ms | +53ms (+22%) |
-| Redis Lookup | N/A | 8ms | New |
-| S3 Presign Gen | 156ms | 178ms | +22ms (+14%) |
-
-**Conclusion:** Acceptable performance impact for security improvement.
+- Presigned URL generation: keep P95 within acceptable range (e.g. &lt; 500 ms).
+- Redis session lookup: &lt; 50 ms P99 when used.
 
 ---
 
-## 🔄 Rollback Plan
+## 🔄 Rollback
 
-**Application:**
-```bash
-git revert <commit-hash>
-npm run deploy
-```
-
-**Infrastructure (last resort):**
-```bash
-terraform plan -destroy -target=aws_s3_bucket_policy.ekyc_images_policy
-```
+- Revert configuration/ekyc-admin commits and redeploy.
+- Revert S3 policy changes if direct public access was re-enabled for emergency rollback (not recommended long-term).
 
 ---
 
-**Last Updated:** 2026-02-06
+**Last Updated:** 2026-02-09 (aligned with configuration & ekyc-admin codebase)

@@ -4,7 +4,8 @@
 **Impact:** 🔴 **Breaking Change** - FE must update image upload/download logic  
 **Priority:** P0 (Critical)  
 **Assigned To:** Frontend Team  
-**Due Date:** Before backend production deployment
+**Due Date:** Before backend production deployment  
+**Doc revised:** 2026-02-09 (backend source: `configuration` repo, often exposed via rest-proxy)
 
 ---
 
@@ -447,13 +448,16 @@ src="https://ekyc_images.s3.amazonaws.com/file.jpg"
 
 ### API Documentation
 
-- Endpoint: `/api/v1/aws`
+- Endpoint: `/api/v1/aws` (typically called via **rest-proxy**; backend logic in **configuration** service — Kafka consumer, see `TradeX MCP/Knowledge based/configuration`)
+- Request: `key`, `serviceName` (e.g. `ekyc`); **target:** add `action=upload` | `action=download`
 - Environment: 
   - UAT: `https://tnhsvpro.nhsv.vn/rest`
   - Production: `https://nhsvpro.nhsv.vn/rest`
 
 ### Backend References
 
+- **configuration repo (local):** `TradeX MCP/Knowledge based/configuration` — `src/services/AmazonWebService.ts`, `src/models/request/IAWSGetSignedDataRequest.ts`
+- **ekyc-admin repo (local):** `TradeX MCP/Knowledge based/ekyc-admin` — REST `/api/v1/ekyc-admin/ekyc/...`, e-contract download
 - Backend PR: [#3](https://bitbucket.org/nhsv-dev/configuration/pull-requests/3)
 - Implementation details: See `Implementation.md` in NHMTS-626 folder
 - Test cases: See `Test_Cases.md` in NHMTS-626 folder
@@ -494,7 +498,8 @@ src="https://ekyc_images.s3.amazonaws.com/file.jpg"
 
 ---
 
-**Document Version:** 2.0 (Requirements Only)  
+**Document Version:** 2.1 (Revised per configuration & ekyc-admin repos)  
 **Created:** 2026-02-06  
+**Revised:** 2026-02-09  
 **Status:** ✅ Ready for FE Implementation  
 **Next Review:** After FE estimates provided

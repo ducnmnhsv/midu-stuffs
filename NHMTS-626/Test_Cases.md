@@ -3,6 +3,7 @@
 **Issue:** NHMTS-626 - Security Enhancement for eKYC and Storage Service  
 **Test Lead:** QA Team  
 **Created:** 2026-02-06  
+**Revised:** 2026-02-09 (backend: configuration + ekyc-admin — see Implementation.md for API/source mapping)  
 **Status:** Ready for Execution
 
 ---
@@ -216,6 +217,6 @@ aws s3 rm s3://ekyc_images/test.jpg
 
 ---
 
-**Document Version:** 3.0 (Single Table Format)  
-**Last Updated:** 2026-02-06  
+**Document Version:** 3.1 (Aligned with configuration & ekyc-admin repos)  
+**Last Updated:** 2026-02-09  
 **Next Review:** After test execution complete

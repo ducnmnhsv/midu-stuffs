@@ -2,13 +2,21 @@
 
 **Issue Type:** 🔒 Security - Critical IDOR Vulnerability  
 **Status:** 🔄 In Review  
-**Priority:** P0 (Critical)
+**Priority:** P0 (Critical)  
+**Doc revised:** 2026-02-09 (aligned with `configuration` & `ekyc-admin` repos in TradeX MCP/Knowledge based)
 
 ---
 
 ## 📋 Issue Summary
 
 Critical security vulnerability fix addressing **IDOR (Insecure Direct Object Reference)** in eKYC/eContract flows and public S3 bucket exposure.
+
+### Repositories involved (source of truth)
+
+| Repo | Role | Tech | Key paths |
+|------|------|------|-----------|
+| **configuration** | Presigned URL API (`/api/v1/aws`), config | Kafka consumer, TypeScript | `src/consumers/RequestHandler.ts`, `src/services/AmazonWebService.ts` |
+| **ekyc-admin** | eKYC/EContract APIs, OTP | Java (JHipster), Kafka consumer | `consumers/RequestHandler.java` (`/api/v1/equity/account/contracts`), `web/rest/CustomEKycResource.java`, `dao/RedisDao.java` (OTP) |
 
 ### Security Impact
 
@@ -66,22 +74,36 @@ GET /api/v1/aws?serviceName=ekyc&key=file.jpg&action=download
 
 ---
 
+## 📌 Current state vs NHMTS-626 target (from repo sync)
+
+| Area | Current (in repos) | NHMTS-626 target |
+|------|--------------------|-------------------|
+| **configuration** `/api/v1/aws` | Upload only (`getSignedDataToUploadPublic`). No `action` param, no download. | Add `action=upload` \| `download`; support presigned getObject for download. |
+| **configuration** request | `IAWSGetSignedDataRequest`: `key`, `serviceName`. | Add optional `action`. |
+| **ekyc-admin** `/api/v1/equity/account/contracts` | Kafka handler → `eContractCustomService.signEContract(request)`. No session/ekycId check. | Session-based auth (e.g. Redis refresh_token_id → ekyc_id) before returning contract data. |
+| **ekyc-admin** Redis | `RedisDao`: OTP only (`KIS_E_KYC_OTP_*`). | Optional: session mapping for contract access (if implemented in ekyc-admin or gateway). |
+| **S3 / presigned** | configuration uses `config.aws.s3` (e.g. public, langResource); Minio `presignedPutObject`. | S3 bucket policy block public access; presigned download URL. |
+
+See: [`Implementation.md`](./Implementation.md) for file-level references and planned changes.
+
+---
+
 ## 🚀 Implementation
 
-### Backend Changes (Complete ✅)
+### Backend Changes (in progress / planned)
 
-**Repositories:**
-- `ekyc-admin`: [c813d860](https://bitbucket.org/nhsv-dev/ekyc-admin/commits/c813d860a59bcabc25f552f286e56a74c8fd5510)
-- `configuration`: [c25a051e](https://bitbucket.org/nhsv-dev/configuration/commits/c25a051e9a224c20597a0fb9deb687cd7369ad7d)
+**Repositories (Bitbucket):**
+- **ekyc-admin:** [commits](https://bitbucket.org/nhsv-dev/ekyc-admin/commits/) — Kafka handler `RequestHandler.java`, REST `CustomEKycResource.java`, `RedisDao.java`
+- **configuration:** [commits](https://bitbucket.org/nhsv-dev/configuration/commits/) — Kafka `RequestHandler.ts`, `AmazonWebService.ts`, `IAWSGetSignedDataRequest.ts`
 
-**Key Changes:**
-1. Redis session management
-2. Session-based authorization 
-3. Presigned URL with `action` parameter
-4. S3 bucket policy - block public access
+**Planned / completed changes:**
+1. Redis session management (ekyc-admin or gateway)
+2. Session-based authorization for contract access
+3. Presigned URL with `action` parameter (configuration)
+4. S3 bucket policy — block public access
 5. Security audit logging
 
-See: [`Implementation.md`](./Implementation.md) for details
+See: [`Implementation.md`](./Implementation.md) for details and exact file references
 
 ### Frontend Changes (Required ⚠️)
 
@@ -201,13 +223,14 @@ See: [`Test_Cases.md`](./Test_Cases.md) for full suite
 
 | Resource | Link |
 |----------|------|
+| **Local repos** | `TradeX MCP/Knowledge based/configuration` · `TradeX MCP/Knowledge based/ekyc-admin` |
 | **PR** | [Configuration #3](https://bitbucket.org/nhsv-dev/configuration/pull-requests/3) |
-| **Commits** | [ekyc-admin](https://bitbucket.org/nhsv-dev/ekyc-admin/commits/c813d860a59bcabc25f552f286e56a74c8fd5510) · [configuration](https://bitbucket.org/nhsv-dev/configuration/commits/c25a051e9a224c20597a0fb9deb687cd7369ad7d) |
+| **Bitbucket** | [ekyc-admin](https://bitbucket.org/nhsv-dev/ekyc-admin) · [configuration](https://bitbucket.org/nhsv-dev/configuration) |
 | **Tests** | [Test_Cases.md](./Test_Cases.md) |
 | **Implementation** | [Implementation.md](./Implementation.md) |
 | **FE Guide** | [FE_Requirements.md](./FE_Requirements.md) |
 
 ---
 
-**Last Updated:** 2026-02-06  
+**Last Updated:** 2026-02-09 (revised from configuration & ekyc-admin repos)  
 **Next Review:** After production deployment
