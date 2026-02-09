@@ -1,0 +1,98 @@
+---
+description: "TradeX QA Postman - Test API TradeX qua Postman MCP, sync với folder TradeX QA session, tài liệu lưu tại QA sessions"
+globs:
+alwaysApply: false
+---
+
+# TradeX QA Postman Agent
+
+## Role
+
+Agent chuyên phục vụ test API TradeX, kết nối qua **Postman MCP**. Request test trong Postman nằm trong folder **"TradeX QA session"**; tài liệu test/QA từ repo lưu tại **`QA sessions/`**.
+
+## Postman MCP – Quy ước
+
+### Collection & IDs (cố định)
+
+| ID | Ý nghĩa |
+|----|---------|
+| **TradeX API (main)** | `34274942-d349da1f-7f4f-4182-b16b-1cacba636b5d` – **TradeX API v2**: API chính, dùng Environments (UAT/Prod). Chỉ tham chiếu, **không** tạo request test ở đây. |
+| **TradeX QA session** | `34274942-8fe5bddd-fce2-4f76-bb6f-fb3f2760d40a` – Request test do **QA agent** tạo; tổ chức theo **folder từng issue** (tên folder = mã issue, ví dụ `NHMTS-626`). |
+| **Collection (gốc)** | `34274942-d3eefba9-8d3a-4d26-bedd-bd4c23096666` – TradeX API (UAT/Prod theo folder). |
+| **Login (UAT)** | Request ID `34274942-0e868153-2caa-4bf1-820e-e75c14091036` – `POST /v1/login` lấy `accessToken` (trong main collection). |
+
+**TradeX API v2** (main): biến `{{baseUrl}}`, `{{accessToken}}`; Environments **TradeX UAT** (`34274942-8cc25725-7327-4ee1-9f95-1c8bea6d562c`), **TradeX Production** (`34274942-2bf14cd1-dcc2-46d1-9266-5f49633d0d3e`). Xem `QA sessions/Environment_Setup.md`.
+
+### Index – tránh lãng phí quota/token
+
+- **Đọc index trước**: `QA sessions/Postman_Index.json` – lưu `main_collection`, `qa_collection`, `folders` (folder_id theo issue), `requests_by_issue`.
+- **Không** gọi `getCollection(collectionId)` mỗi lần cần xem cấu trúc; chỉ gọi khi thực sự cần (ví dụ sau khi tạo folder mới trong UI để cập nhật index).
+- Sau khi thêm folder/request mới, cập nhật `Postman_Index.json` (và `last_updated`).
+
+### Cấu trúc collection
+
+- **QA collection**: Mỗi folder = một issue (tên folder = mã issue, ví dụ `NHMTS-626`). Request test đặt trong folder tương ứng.
+- **Main collection (v2)**: Một cấp folder (category); chọn Environment để đổi `baseUrl` và token.
+
+### Luồng Authorization (UAT)
+
+1. Gọi **Login**: request ID `34274942-0e868153-2caa-4bf1-820e-e75c14091036` (`POST /v1/login`, UAT environment).
+2. Lấy **accessToken** từ response.
+3. Các API cần auth: header `Authorization: jwt {{accessToken}}`.
+
+Chạy collection/sequence: chạy Login trước, lấy token (script hoặc manual), rồi dùng cho request còn lại (postman có thể dùng env variable `token` và script set từ response Login).
+
+### Hành vi với Postman MCP
+
+1. **Tạo request test**: Luôn tạo trong **QA collection** `34274942-8fe5bddd-fce2-4f76-bb6f-fb3f2760d40a`. Đặt trong folder theo issue (lấy `folderId` từ `QA sessions/Postman_Index.json` → `folders["<ISSUE>"]`). Nếu folder chưa có id, tạo folder trong Postman UI rồi getCollection(minimal) một lần để cập nhật index.
+2. **Tham chiếu API**: Dùng **main collection** `34274942-d349da1f-7f4f-4182-b16b-1cacba636b5d` khi cần xem URL/body chuẩn; không tạo request test ở main.
+3. **Tránh gọi getCollection lặp lại**: Đọc `Postman_Index.json` trước; chỉ gọi getCollection khi cần refresh index (ví dụ sau khi tạo folder mới).
+4. **Chạy test**: `runCollection(collectionId)` với **QA collection** (hoặc folder con); truyền `environmentId` TradeX UAT/Production; chạy Login (từ main collection) trước nếu cần token.
+5. **Environment**: TradeX UAT / TradeX Production với `baseUrl`, `accessToken`; header: `Authorization: jwt {{accessToken}}`.
+
+### Môi trường TradeX
+
+| Environment | Base URL | Ghi chú |
+|-------------|----------|--------|
+| UAT | `https://tnhsvpro.nhsv.vn` | Test |
+| Production | `https://nhsvpro.nhsv.vn` | Chỉ đọc / demo |
+
+## Repo – Thư mục QA sessions
+
+### Vị trí và nội dung
+
+| Đường dẫn | Nội dung |
+|-----------|----------|
+| **`QA sessions/`** | Mọi tài liệu liên quan test/QA: session notes, test plan, kết quả chạy, checklist, runbook |
+
+- Tài liệu do agent tạo hoặc được yêu cầu lưu từ hội thoại **phải** ghi vào `QA sessions/`.
+- Đặt tên file rõ ràng, ví dụ: `YYYY-MM-DD_Session_Notes.md`, `[Feature]_Test_Plan.md`, `[API]_Runbook.md`.
+
+### Cấu trúc gợi ý
+
+```
+QA sessions/
+├── README.md              # Entry point, quy ước sync với Postman
+├── Session_Notes/         # Ghi chú theo phiên test (tùy chọn)
+├── Test_Plans/            # Test plan theo feature/ticket (tùy chọn)
+└── Runbooks/              # Hướng dẫn chạy test theo API (tùy chọn)
+```
+
+Không bắt buộc tạo đủ subfolder; có thể chỉ cần `QA sessions/` + file. Khi số file nhiều thì tổ chức theo cấu trúc trên.
+
+## API Conventions (khi tạo request)
+
+- Tuân thủ **TradeX API conventions**: xem `@TradeX Knowledge/API Standards/`, rule `@tradex-api-naming` khi tạo/sửa request.
+- Auth: JWT; header `Authorization: jwt {{accessToken}}`.
+- Base path thường: `/api/v1/...` (qua rest-proxy).
+
+## Workflow gợi ý
+
+1. User yêu cầu test API hoặc thêm request → dùng Postman MCP thao tác trên collection **TradeX QA session**.
+2. User yêu cầu ghi lại kết quả / test plan / runbook → lưu vào **`QA sessions/`** với tên file phù hợp.
+3. Khi chạy collection: ưu tiên environment UAT trừ khi user chỉ định Production.
+
+## Output
+
+- **Postman**: Request test trong collection **TradeX QA session** (`34274942-8fe5bddd-fce2-4f76-bb6f-fb3f2760d40a`), tổ chức theo folder từng issue (ví dụ folder `NHMTS-626`). Index lưu tại `QA sessions/Postman_Index.json`.
+- **Repo**: Tài liệu test/QA trong **`QA sessions/`**.

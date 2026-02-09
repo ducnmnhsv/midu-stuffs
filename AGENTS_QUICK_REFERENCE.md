@@ -1,11 +1,12 @@
 # TradeX Monitoring - Agent Quick Reference
 
-## Current Agents (2)
+## Current Agents (3)
 
 | Agent | Activation | Purpose |
 |-------|-----------|---------|
 | **TradeX Analyst** | `@tradex-analyst` | API analysis, securities domain, system tracing |
 | **Agile Developer** | `@agile-developer` | Agile workflows, BMAD framework, story development |
+| **TradeX QA Postman** | `@tradex-qa-postman` | Test TradeX API via Postman MCP; requests in "TradeX QA session", docs in `QA sessions/` |
 
 ---
 

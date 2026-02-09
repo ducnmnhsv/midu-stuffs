@@ -1,0 +1,32 @@
+{
+  "description": "Index for Postman collections – đọc file này trước để tránh gọi getCollection nhiều lần (tiết kiệm quota/token). Cập nhật khi thêm folder/request mới.",
+  "main_collection": {
+    "uid": "34274942-d349da1f-7f4f-4182-b16b-1cacba636b5d",
+    "name": "TradeX API v2",
+    "role": "API TradeX (main) – tham chiếu, không tạo request test ở đây."
+  },
+  "qa_collection": {
+    "uid": "34274942-8fe5bddd-fce2-4f76-bb6f-fb3f2760d40a",
+    "name": "TradeX QA session",
+    "role": "Request test do QA agent tạo – tổ chức theo folder từng issue (tên folder = mã issue, ví dụ NHMTS-626)."
+  },
+  "folders": {
+    "NHMTS-626": null
+  },
+  "folder_note": "folder_id = null: chưa tạo folder trong Postman. Tạo folder NHMTS-626 trong collection QA (UI), rồi gọi getCollection(minimal) một lần để lấy id và cập nhật vào đây. Request tạm thời có thể nằm ở root.",
+  "last_updated": "2026-02-09",
+  "requests_by_issue": {
+    "NHMTS-626": [
+      "13e99516-9ec7-3184-8f2b-9caec56c3f16",
+      "2305ed8d-69e9-5c7c-9948-accfa4c1e5db",
+      "5a94c4ab-26fa-8dcb-6c37-7e3eafbd57c8",
+      "c6f9aaf7-4184-9fa2-cf7b-637a6b517ba1",
+      "b4e71ba7-963b-49c1-ef96-2c9fdd3c03f3",
+      "9736abee-e001-a999-0016-25676b2ae0e5",
+      "77352685-f10b-5547-d7ac-37eb4d998836"
+    ]
+  },
+  "url_fix_note": "b4e71ba7: sửa {}{baseUrl}} -> {{baseUrl}}. 9736abee: key=010098000023_frontImage.jpg; nếu path v1rviceName thì sửa thành v1/aws?serviceName.",
+  "aws_params": "API /rest/api/v1/aws: param action=upload|download. File mẫu: 010098000023_frontImage.jpg.",
+  "login_folder": "AccessToken: collection TradeX API v2, folder Login (2afb22a3-d401-4fa6-af78-2485359ee3aa)."
+}

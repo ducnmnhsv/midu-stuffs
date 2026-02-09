@@ -81,14 +81,15 @@ AI executes: With optimized prompt ✅
 
 ## Available Agents
 
-### Current Agents (2)
+### Current Agents (3)
 
-Dự án này có 2 specialized agents. Sử dụng `@` mention để activate:
+Dự án này có 3 specialized agents. Sử dụng `@` mention để activate:
 
 | Agent | Rule File | Use Case |
 |-------|-----------|----------|
 | TradeX Analyst | `@tradex-analyst` | Phân tích API, nghiệp vụ chứng khoán, trace system |
 | Agile Developer | `@agile-developer` | Quy trình Agile, BMAD workflows, story development |
+| **TradeX QA Postman** | `@tradex-qa-postman` | Test API TradeX qua Postman MCP; request trong folder "TradeX QA session", tài liệu trong `QA sessions/` |
 
 ### Proposed Agents (3)
 
@@ -103,6 +104,13 @@ Dự án này có 2 specialized agents. Sử dụng `@` mention để activate:
 **Quick Reference**: Xem `AGENTS_QUICK_REFERENCE.md` để biết cách sử dụng và ví dụ tương tác.
 
 ## Quick Reference
+
+### Postman collections (QA agent)
+
+| Collection | UID | Vai trò |
+|------------|-----|--------|
+| **TradeX API v2** (main) | `34274942-d349da1f-7f4f-4182-b16b-1cacba636b5d` | API chính – tham chiếu; không tạo request test. |
+| **TradeX QA session** | `34274942-8fe5bddd-fce2-4f76-bb6f-fb3f2760d40a` | Request test – folder theo issue (ví dụ NHMTS-626). Index: `QA sessions/Postman_Index.json`. |
 
 ### Servers
 
@@ -130,6 +138,12 @@ Dự án này có 2 specialized agents. Sử dụng `@` mention để activate:
 ├── test-artifacts/           # Test design, reports
 └── ba-artifacts/             # API analysis, BRD, PM Knowledge
     └── tradex-*-knowledge.md # TradeX mechanism knowledge docs
+
+/QA sessions/                 # QA & test docs – sync với Postman "TradeX QA session"
+├── README.md                 # Quy ước sync repo ↔ Postman
+├── Session_Notes/            # (tùy chọn) Ghi chú phiên test
+├── Test_Plans/               # (tùy chọn) Test plan theo feature
+└── Runbooks/                 # (tùy chọn) Hướng dẫn chạy test API
 
 /Derivatives/Planning documentation/
 ├── Market data/              # Market data integration docs
