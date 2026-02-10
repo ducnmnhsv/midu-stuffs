@@ -39,8 +39,11 @@ FE Implementation/
 │   ├── Issues/                  ← Issue requirement cho FE
 │   │   └── Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md
 │   └── References/               ← (Optional) Figma, API links
-├── Order/                       ← Order flow, TPSL (khi có)
+├── Order/                       ← Order flow, TPSL
 │   └── Issues/
+│       ├── Order_Availability_Check_Integration.md
+│       ├── Derivatives_Order_Entry_Integration.md
+│       └── TP_SL_UI_Copy_Implementation.md
 └── Archive/                     ← Issue đã hoàn thành / deprecated
 ```
 
@@ -56,7 +59,11 @@ FE Implementation/
 
 ### Order
 
-*(Sẽ bổ sung khi có issue FE cho Order.)*
+| Issue | Mô tả ngắn | Screens | Status |
+|-------|------------|---------|--------|
+| [Order_Availability_Check_Integration](./Order/Issues/Order_Availability_Check_Integration.md) | Gọi API check max quantity, giới hạn/hiển thị số lượng khi đặt lệnh Derivatives | Order entry | 📋 Ready |
+| [Derivatives_Order_Entry_Integration](./Order/Issues/Derivatives_Order_Entry_Integration.md) | Tích hợp đặt lệnh / hủy / sửa lệnh Derivatives (Place, Cancel, Modify, Unmatch) | Order entry, Unmatch list | 📋 Ready |
+| [TP_SL_UI_Copy_Implementation](./Order/Issues/TP_SL_UI_Copy_Implementation.md) | Áp dụng tooltip, validation, warning TP/SL theo bản copy chuẩn (EN/VI) | TP/SL setup | 🔴 Blocked |
 
 ---
 
