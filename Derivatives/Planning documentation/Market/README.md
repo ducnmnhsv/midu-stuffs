@@ -74,13 +74,19 @@ Derivatives implementation KHÔNG được ảnh hưởng equity flow:
 
 #### 2. Symbol Type Detection
 
-Phái sinh được phân biệt bằng field `t` (type) = `"FUTURES"`:
+Phái sinh được phân biệt bằng field `t` (type) = `"FUTURES"` và `m` = `"derivatives"`. **Hai loại** hợp đồng được phân biệt bằng field `dc` (derivative category), suy từ mã hợp đồng (ký tự thứ 3):
+
+| Loại | Mã (quy tắc) | `dc` | Ví dụ |
+|------|--------------|------|--------|
+| HĐ tương lai chỉ số | 41**I**xxxxxx | `"INDEX"` | VN30F... |
+| HĐTL trái phiếu CP | 41**B**xxxxxx | `"BOND"` | 41B... |
 
 ```json
 {
   "s": "VN30F2501",
-  "t": "FUTURES",    ← Key identifier
-  "m": "derivatives", ← Market field
+  "t": "FUTURES",
+  "m": "derivatives",
+  "dc": "INDEX",     ← INDEX | BOND (FE dùng để hiển thị index name)
   "c": 1285.5,
   ...
 }

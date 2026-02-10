@@ -31,32 +31,17 @@ High-level technical requirements for implementing derivatives market data suppo
 - Graceful degradation if derivatives fail
 - Feature flags for easy enable/disable
 
-**Validation:**
-```java
-// Example: Isolated error handling
-try {
-    processDerivatives();
-} catch (Exception e) {
-    log.warn("Derivatives failed, continuing with equity");
-    // Equity continues normally
-}
-```
+**Validation:** Logic xử lý lỗi tách biệt: khi phái sinh lỗi chỉ ghi log cảnh báo và tiếp tục với cơ sở; không ảnh hưởng equity.
 
 ---
 
 ### REQ-2: Symbol Type Detection
 
-**Requirement:** System must automatically detect symbol type (equity vs derivatives)
+**Requirement:** System must automatically detect symbol type (equity vs derivatives) and derivative sub-type.
 
-**Key Identifier:** Field `t` (type) = `"FUTURES"` for derivatives
-
-**Implementation:**
-```typescript
-function isDerivatives(symbolInfo: SymbolInfo): boolean {
-    return symbolInfo.t === "FUTURES" || 
-           symbolInfo.m === "derivatives";
-}
-```
+**Key identifiers:**
+- **Derivatives:** `t` (type) = `"FUTURES"` và `m` = `"derivatives"`.
+- **Derivative category (`dc`):** `"INDEX"` (HĐ tương lai chỉ số, pattern 41I) | `"BOND"` (HĐTL trái phiếu CP, pattern 41B). Suy từ ký tự thứ 3 của mã tại init; mọi API trả symbol (SymbolInfo, symbol_static, symbol/latest) phải có `dc` cho mã phái sinh.
 
 ---
 

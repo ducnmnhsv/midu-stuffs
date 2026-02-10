@@ -211,6 +211,31 @@ Response:
     foreign_buy_vol, foreign_sell_vol: Long
 ```
 
+#### 4.1.2.1 Phân loại Derivatives theo mã hợp đồng (41I / 41B)
+
+Init job đầu ngày có **hai loại** hợp đồng phái sinh; FE cần đọc được để hiển thị đúng nhóm/index name.
+
+| Loại hợp đồng | Quy tắc mã | Ký tự thứ 3 | Giá trị `dc` | Ghi chú |
+|---------------|------------|-------------|--------------|---------|
+| **HĐ tương lai chỉ số phái sinh** | `41Ixxxxxx` | **I** (Index) | `"INDEX"` | VN30F, VN30, v.v. |
+| **HĐTL trái phiếu chính phủ** | `41Bxxxxxx` | **B** (Bond) | `"BOND"` | Trái phiếu chính phủ |
+
+**Quy tắc xác định (Init Job và mọi nơi trả symbol):**
+
+- Khi merge từng mã phái sinh vào `symbol_static.json` / SymbolInfo / API response, **suy ra** `dc` từ mã hợp đồng: **ký tự thứ 3** của mã: **I** → `"INDEX"`, **B** → `"BOND"`. Trường hợp khác → `dc = null` hoặc `"OTHER"` (mở rộng sau).
+
+**Field trả về cho FE:** `dc` (derivative category) trong mỗi item symbol (symbol_static, SymbolInfo API, WebSocket). FE dùng `dc` để:
+
+- Hiển thị **index name** (ví dụ: INDEX → PS/DR; BOND → TPCP/GB tùy quy ước FE).
+- Lọc/nhóm danh sách mã theo loại phái sinh.
+
+**Ví dụ:**
+
+| Mã (`s`) | Ký tự thứ 3 | `dc` |
+|----------|-------------|------|
+| 41Ixxxxxx (VN30F...) | I | `"INDEX"` |
+| 41Bxxxxxx | B | `"BOND"` |
+
 #### 4.1.3 Implementation Flow
 
 ```
@@ -268,113 +293,10 @@ Response:
                          Save to Redis, MongoDB, MinIO
 ```
 
-#### 4.1.4 Code Changes - market-collector-lotte
+#### 4.1.4 Triển khai Init Job (market-collector-lotte)
 
-**File: LotteApiService.java - New Methods**
+Gọi DRMKT-001 (stock-board) và DRMKT-002 (stock-price); merge danh sách symbol; với mỗi mã phái sinh gán **`dc`** theo quy tắc 41I/41B (4.1.2.1). Chi tiết implementation xem Spec/Issue riêng.
 
-```java
-// NEW: Derivatives API methods
-public CompletableFuture<List<DerivativeStockBoard>> getDerivativeStockBoard() {
-    String url = baseUrl + "/tuxsvc/market/dr/stock-board";
-    // POST with empty body, OAuth2 + API KEY
-    return httpClient.post(url, "{}", DerivativeStockBoardResponse.class)
-        .thenApply(response -> response.getDataList().getListItems());
-}
-
-public CompletableFuture<DerivativeStockPrice> getDerivativeStockPrice(String code) {
-    String url = baseUrl + "/tuxsvc/market/dr/stock-price?code=" + code;
-    // GET with OAuth2 + API KEY
-    return httpClient.get(url, DerivativeStockPriceResponse.class)
-        .thenApply(response -> response.getDataList());
-}
-```
-
-**File: LotteApiSymbolInfoService.java - Modified**
-
-```java
-public CompletableFuture<List<SymbolInfo>> downloadSymbol() {
-    // EXISTING CODE - Equity download (keep unchanged)
-    CompletableFuture<List<SymbolInfo>> equityFuture = downloadEquitySymbols();
-    
-    // NEW CODE - Derivatives download (additive)
-    CompletableFuture<List<SymbolInfo>> derivativesFuture = downloadDerivativeSymbols()
-        .exceptionally(ex -> {
-            log.warn("Derivatives download failed, continuing with equity only", ex);
-            return Collections.emptyList();  // Graceful degradation
-        });
-    
-    // Merge both lists
-    return equityFuture.thenCombine(derivativesFuture, (equity, derivatives) -> {
-        List<SymbolInfo> allSymbols = new ArrayList<>(equity);
-        allSymbols.addAll(derivatives);
-        return allSymbols;
-    });
-}
-
-// NEW METHOD
-private CompletableFuture<List<SymbolInfo>> downloadDerivativeSymbols() {
-    return lotteApiService.getDerivativeStockBoard()
-        .thenCompose(stockBoards -> {
-            List<CompletableFuture<SymbolInfo>> futures = stockBoards.stream()
-                .map(board -> lotteApiService.getDerivativeStockPrice(board.getCode())
-                    .thenApply(price -> mergeDerivativeInfo(board, price)))
-                .collect(Collectors.toList());
-            
-            return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenApply(v -> futures.stream()
-                    .map(CompletableFuture::join)
-                    .collect(Collectors.toList()));
-        });
-}
-
-// NEW METHOD
-private SymbolInfo mergeDerivativeInfo(DerivativeStockBoard board, DerivativeStockPrice price) {
-    SymbolInfo info = new SymbolInfo();
-    
-    // Identification
-    info.setCode(board.getCode());
-    info.setName(price.getName());
-    info.setType(SymbolType.FUTURES);
-    info.setMarket("derivatives");  // KEY: Identifier for derivatives
-    info.setMarketType("VN30F");    // Or derive from code
-    
-    // Price data
-    info.setOpen(board.getOpen());
-    info.setHigh(board.getHigh());
-    info.setLow(board.getLow());
-    info.setLast(board.getLast());
-    info.setChange(board.getChange());
-    info.setRate(board.getChangeRate());
-    info.setCeilingPrice(board.getCeiling());
-    info.setFloorPrice(board.getFloor());
-    info.setReferencePrice(board.getRefPrice());
-    
-    // Volume & Interest
-    info.setTradingVolume(board.getVol());
-    info.setOpenInterest(board.getOi());
-    
-    // BidOffer
-    info.setBidOfferList(parseBidOfferFromBoard(board));
-    info.setTotalBidVolume(board.getBid1Size() + board.getBid2Size() + board.getBid3Size());
-    info.setTotalOfferVolume(board.getOffer1Size() + board.getOffer2Size() + board.getOffer3Size());
-    
-    // Foreigner
-    info.setForeignerBuyVolume(board.getForeignBuyVol());
-    info.setForeignerSellVolume(board.getForeignSellVol());
-    
-    // Derivatives-specific
-    info.setBaseCode(price.getBaseCode());
-    info.setFirstTradingDate(price.getFirstTrdDate());
-    info.setLastTradingDate(price.getEndTrdDate());
-    info.setRemainingDays(price.getRemainDate());
-    info.setTheoryPrice(price.getTheoryPrice());
-    info.setBasis(price.getTheoryBasis());
-    
-    return info;
-}
-```
-
-### 4.2 SymbolInfo API - Giữ nguyên cơ chế hiện tại
 
 #### 4.2.1 Nguyên tắc quan trọng
 
@@ -421,9 +343,11 @@ private SymbolInfo mergeDerivativeInfo(DerivativeStockBoard board, DerivativeSto
 
 **FR-API-002**: Data phái sinh trong API PHẢI được tổng hợp từ WebSocket (giống cơ sở).
 
-**FR-API-003**: Response format cho phái sinh PHẢI giữ nguyên tất cả fields của cơ sở, chỉ thêm fields đặc thù phái sinh.
+**FR-API-003**: Response format cho phái sinh PHẢI giữ nguyên tất cả fields của cơ sở, chỉ thêm fields đặc thù phái sinh (bao gồm **`dc`** – derivative category).
 
-**FR-API-004**: FE KHÔNG cần thay đổi cơ chế gọi API.
+**FR-API-004**: Với mọi mã derivatives, API **SymbolInfo** (và symbol_static, symbol/latest) PHẢI trả field **`dc`** = `"INDEX"` hoặc `"BOND"` (suy từ mã 41I / 41B) để FE hiển thị đúng index name (PS/DR vs TPCP/GB).
+
+**FR-API-005**: FE KHÔNG cần thay đổi cơ chế gọi API.
 
 #### 4.2.4 Phân tích Response Format Cơ sở (Baseline)
 
@@ -1065,77 +989,9 @@ Mỗi bước giá có 6 fields:
                           └────────────────┘
 ```
 
-#### 4.3.9 Code Changes - market-collector-lotte
+#### 4.3.9 WebSocket handler (market-collector-lotte)
 
-**File: DerivativeWebSocketHandler.java (New)**
-
-```java
-@Component
-public class DerivativeWebSocketHandler {
-    
-    @Autowired
-    private KafkaTemplate<String, String> kafkaTemplate;
-    
-    private static final String DR_QUOTE_TOPIC = "quoteUpdateDR";
-    private static final String DR_BIDOFFER_TOPIC = "bidOfferUpdateDR";
-    
-    public void onDrQuoteMessage(String message) {
-        try {
-            String[] parts = message.split("\\|");
-            
-            DerivativeQuote quote = DerivativeQuote.builder()
-                .code(parts[3])
-                .time(parts[2])
-                .open(parseDouble(parts[6]))
-                .high(parseDouble(parts[8]))
-                .low(parseDouble(parts[10]))
-                .last(parseDouble(parts[12]))
-                .change(parseDouble(parts[14]))
-                .changeRate(parseDouble(parts[15]))
-                .averagePrice(parseDouble(parts[16]))
-                .referencePrice(parseDouble(parts[17]))
-                .tradingValue(parseLong(parts[18]))
-                .tradingVolume(parseLong(parts[19]))
-                .matchingVolume(parseLong(parts[20]))
-                .matchedBy(parts[21].equals("B") ? "BID" : "ASK")
-                .totalBidVolume(parseLong(parts[28]))
-                .totalOfferVolume(parseLong(parts[29]))
-                .foreignerBuyVolume(parseLong(parts[32]))
-                .foreignerSellVolume(parseLong(parts[33]))
-                .market("derivatives")  // KEY IDENTIFIER
-                .build();
-            
-            kafkaTemplate.send(DR_QUOTE_TOPIC, quote.getCode(), toJson(quote));
-            
-        } catch (Exception e) {
-            log.error("Error processing DR quote message", e);
-            // Don't throw - isolate error
-        }
-    }
-    
-    public void onDrBidOfferMessage(String message) {
-        try {
-            String[] parts = message.split("\\|");
-            
-            DerivativeBidOffer bidOffer = DerivativeBidOffer.builder()
-                .code(parts[3])
-                .time(parts[2])
-                .controlCode(parts[4])
-                .expectedPrice(parseDouble(parts[5]))
-                .bidOfferList(parseBidOfferList(parts))  // 10 levels from [13] to [72]
-                .totalBidVolume(parseLong(parts[73]))
-                .totalOfferVolume(parseLong(parts[74]))
-                .market("derivatives")
-                .build();
-            
-            kafkaTemplate.send(DR_BIDOFFER_TOPIC, bidOffer.getCode(), toJson(bidOffer));
-            
-        } catch (Exception e) {
-            log.error("Error processing DR bidoffer message", e);
-        }
-    }
-}
-```
+Parse message Lotte DR (pipe-separated), map sang DTO, gửi Kafka `quoteUpdateDR` / `bidOfferUpdateDR`. Message derivatives phải mang theo **`dc`** (INDEX/BOND) khi aggregate vào Redis để SymbolInfo API trả đủ cho FE. Chi tiết implementation xem Spec/Issue riêng.
 
 ---
 
@@ -1143,134 +999,9 @@ public class DerivativeWebSocketHandler {
 
 ### 5.1 SymbolInfo Model - Full Field Reference
 
-> **Baseline:** Dựa trên response thực tế từ API `/api/v2/market/symbolInfo` cho cơ sở
-
-**File: tradex-common-java - SymbolInfo.java**
-
-```java
-@Data
-public class SymbolInfo {
-    // ═══════════════════════════════════════════════════════════════════════
-    // EXISTING FIELDS (Equity) - Giữ nguyên
-    // ═══════════════════════════════════════════════════════════════════════
-    
-    // === IDENTIFICATION ===
-    private String code;              // s: Mã chứng khoán
-    private String type;              // t: STOCK | ETF | CW | INDEX | FUTURES
-    private String market;            // m: HOSE | HNX | UPCOM | derivatives
-    private String name;              // n1: Tên tiếng Việt
-    private String nameEn;            // n2: Tên tiếng Anh
-    
-    // === TIME ===
-    private String time;              // ti: Thời gian cập nhật quote (UTC HHmmss)
-    private String bidOfferTime;      // bot: Thời gian cập nhật sổ lệnh
-    private String lastTradingTime;   // lt: Thời gian giao dịch cuối
-    private String sessions;          // ss: ATO | LO | ATC | PLO | CLOSED
-    
-    // === PRICE DATA ===
-    private Double open;              // o: Giá mở cửa
-    private Double high;              // h: Giá cao nhất
-    private Double low;               // l: Giá thấp nhất
-    private Double last;              // c: Giá hiện tại
-    private Double change;            // ch: Thay đổi giá
-    private Double rate;              // ra: % thay đổi
-    private Double averagePrice;      // a: Giá trung bình
-    
-    // === REFERENCE PRICES ===
-    private Double ceilingPrice;      // ce: Giá trần
-    private Double floorPrice;        // fl: Giá sàn
-    private Double referencePrice;    // re: Giá tham chiếu
-    
-    // === VOLUME DATA ===
-    private Long tradingVolume;       // vo: Khối lượng giao dịch
-    private Long tradingValue;        // va: Giá trị giao dịch (VND)
-    private Long matchingVolume;      // mv: KL khớp lệnh cuối
-    private String matchedBy;         // mb: ASK | BID
-    private Double turnoverRate;      // tor: Tỷ lệ quay vòng
-    
-    // === BID/OFFER DATA ===
-    private Long totalBidVolume;      // tb: Tổng KL dư mua
-    private Long totalOfferVolume;    // to: Tổng KL dư bán
-    private List<BidOfferItem> bidOfferList;  // bb + bo: Sổ lệnh
-    
-    // === EXPECTED DATA (ATO/ATC) ===
-    private Double expectedPrice;     // ep: Giá dự kiến khớp
-    
-    // === FOREIGNER DATA ===
-    private Long foreignerBuyVolume;      // fr.bv: KL mua ĐTNN
-    private Long foreignerSellVolume;     // fr.sv: KL bán ĐTNN
-    private Long foreignerCurrentRoom;    // fr.cr: Room NN còn lại
-    private Long foreignerTotalRoom;      // fr.tr: Tổng room NN
-    
-    // === STATIC DATA ===
-    private Long listedQuantity;      // lq: KL niêm yết
-    private Long marketCap;           // mc: Vốn hóa thị trường
-    
-    // === HISTORICAL DATA ===
-    private List<HighLowYearly> highLowYearly;  // hly: Giá cao/thấp năm
-    
-    // ═══════════════════════════════════════════════════════════════════════
-    // NEW FIELDS FOR DERIVATIVES
-    // ═══════════════════════════════════════════════════════════════════════
-    
-    /**
-     * oi: Open Interest - Số lượng hợp đồng mở (chưa đóng)
-     * Derivatives only, null for equity
-     */
-    private Long openInterest;
-    
-    /**
-     * bc: Base/Underlying asset code (e.g., "VN30" for VN30F2502)
-     * Derivatives only
-     */
-    private String baseCode;
-    
-    /**
-     * ftd: First trading date of the contract (yyyyMMdd)
-     * Derivatives only
-     */
-    private String firstTradingDate;
-    
-    /**
-     * ed: Expiry date / Last trading date of the contract (yyyyMMdd)
-     * Derivatives only
-     */
-    private String expiryDate;
-    
-    /**
-     * rd: Number of days until expiry
-     * Derivatives only
-     */
-    private Integer remainingDays;
-    
-    /**
-     * tp: Theoretical price calculated by exchange
-     * Derivatives only
-     */
-    private Double theoryPrice;
-    
-    /**
-     * bs: Basis = Futures Price - Spot Price
-     * Derivatives only
-     */
-    private Double basis;
-}
-
-@Data
-public class BidOfferItem {
-    private Double price;         // p: Giá
-    private Long volume;          // v: Khối lượng
-    private Long change;          // c: Thay đổi KL (nullable)
-}
-
-@Data
-public class HighLowYearly {
-    private Double high;          // h: Giá cao nhất năm
-    private Double low;           // l: Giá thấp nhất năm
-    private String highDate;      // hd: Ngày đạt giá cao (nullable)
-    private String lowDate;       // ld: Ngày đạt giá thấp (nullable)
-}
-```
+> **Baseline:** Dựa trên response thực tế từ API `/api/v2/market/symbolInfo` cho cơ sở.  
+> **Derivatives:** Mọi response trả về symbol phái sinh (SymbolInfo, symbol_static, symbol/latest) phải có field **`dc`** (INDEX | BOND) theo quy tắc 41I/41B (4.1.2.1).  
+> Danh sách field đầy đủ và mapping sang JSON xem **Bảng 5.2** bên dưới.
 
 ### 5.2 Field Mapping: Java Model → JSON Response
 
@@ -1279,6 +1010,7 @@ public class HighLowYearly {
 | `code` | `s` | ✅ | ✅ |
 | `type` | `t` | ✅ | ✅ (FUTURES) |
 | `market` | `m` | ✅ (HOSE/HNX/UPCOM) | ✅ (derivatives) |
+| `derivativeCategory` | `dc` | null | ✅ (INDEX \| BOND) |
 | `name` | `n1` | ✅ | ✅ |
 | `nameEn` | `n2` | ✅ | ✅ |
 | `time` | `ti` | ✅ | ✅ |
@@ -1319,58 +1051,9 @@ public class HighLowYearly {
 | `theoryPrice` | `tp` | null | ✅ |
 | `basis` | `bs` | null | ✅ |
 
-### 5.3 New DTOs for Lotte DR API
+### 5.3 DTOs Lotte DR API
 
-**File: DerivativeStockBoard.java**
-
-```java
-@Data
-public class DerivativeStockBoard {
-    private String code;
-    private Double last;
-    private Double change;
-    private Double changeRate;
-    private Long vol;
-    private Double ceiling;
-    private Double floor;
-    private Double refPrice;
-    private Double open;
-    private Double high;
-    private Double low;
-    private Double bid1, bid2, bid3;
-    private Double offer1, offer2, offer3;
-    private Long bid1Size, bid2Size, bid3Size;
-    private Long offer1Size, offer2Size, offer3Size;
-    private Long oi;  // Open Interest
-    private Integer expDate;
-    private String controlCode;
-    private Long foreignBuyVol;
-    private Long foreignSellVol;
-}
-```
-
-**File: DerivativeStockPrice.java**
-
-```java
-@Data
-public class DerivativeStockPrice {
-    private String code;
-    private String name;
-    private Double ceiling, floor, open, high, low, last, change;
-    private Double refPrice, averagePrice;
-    private Long volume, amount;
-    private List<BidOfferItem> bidOfferList;
-    private Long totalVisBidSize, totalVisOfferSize;
-    private Long openInterest;
-    private String baseCode;
-    private String firstTrdDate;
-    private String endTrdDate;
-    private Integer remainDate;
-    private Double theoryPrice;
-    private Double theoryBasis;
-    private Long foreignBuyVol, foreignSellVol;
-}
-```
+Cấu trúc dữ liệu nhận từ Lotte DRMKT-001 / DRMKT-002 (stock-board, stock-price) theo mô tả ở 4.1.2. Triển khai chi tiết xem Spec/Issue riêng.
 
 ### 5.4 symbol_static.json Format Update
 
@@ -1397,6 +1080,7 @@ public class DerivativeStockPrice {
 {
     "s": "VN30F2502",
     "m": "derivatives",
+    "dc": "INDEX",
     "n1": "HĐ Tương lai VN30 Tháng 02/2025",
     "n2": "VN30 Index Futures Feb 2025",
     "t": "FUTURES",
@@ -1411,12 +1095,15 @@ public class DerivativeStockPrice {
 }
 ```
 
+(Với HĐTL trái phiếu chính phủ: `"s": "41Bxxxxxx"`, `"dc": "BOND"`.)
+
 **Field Mapping (symbol_static.json):**
 
 | Field | Full Name | Description | Equity | Derivatives |
 |-------|-----------|-------------|--------|-------------|
 | `s` | symbol | Mã chứng khoán | ✅ | ✅ |
 | `m` | market | Thị trường | HOSE/HNX/UPCOM | **derivatives** |
+| `dc` | derivativeCategory | Loại phái sinh: INDEX (41I) \| BOND (41B) | ❌ | ✅ (suy từ ký tự thứ 3 của `s`) |
 | `n1` | name1 | Tên tiếng Việt | ✅ | ✅ |
 | `n2` | name2 | Tên tiếng Anh | ✅ | ✅ |
 | `t` | type | Loại sản phẩm | STOCK/ETF/CW | **FUTURES** |
@@ -1446,6 +1133,7 @@ public class DerivativeStockPrice {
   {
     "s": "VN30F2502",
     "m": "derivatives",
+    "dc": "INDEX",
     "n1": "HĐ Tương lai VN30 Tháng 02/2025",
     "n2": "VN30 Index Futures Feb 2025",
     "t": "FUTURES",
@@ -1461,6 +1149,7 @@ public class DerivativeStockPrice {
   {
     "s": "VN30F2503",
     "m": "derivatives",
+    "dc": "INDEX",
     "n1": "HĐ Tương lai VN30 Tháng 03/2025",
     "n2": "VN30 Index Futures Mar 2025",
     "t": "FUTURES",
@@ -1472,6 +1161,22 @@ public class DerivativeStockPrice {
     "ftd": "20250101",
     "ed": "20250320",
     "rd": 49
+  },
+  {
+    "s": "41Bxxxxxx",
+    "m": "derivatives",
+    "dc": "BOND",
+    "n1": "HĐTL Trái phiếu Chính phủ ...",
+    "n2": "Gov Bond Futures ...",
+    "t": "FUTURES",
+    "re": 100.5,
+    "ce": 102.0,
+    "fl": 99.0,
+    "lq": null,
+    "bc": null,
+    "ftd": "20250101",
+    "ed": "20250630",
+    "rd": 120
   }
 ]
 ```

@@ -59,13 +59,14 @@ Enable derivatives (phái sinh) market data display in NHSV Pro App to support f
 ### BR-3: Symbol Information
 
 **As a** trader  
-**I want to** see derivatives symbol details (expiry, base code, etc.)  
-**So that** I can understand what I'm trading
+**I want to** see derivatives symbol details (expiry, base code, category, etc.)  
+**So that** I can understand what I'm trading and the app can show the correct index name
 
 **Acceptance Criteria:**
 - Display expiry date
-- Display base index (VN30)
+- Display base index (e.g. VN30) or underlying for bond futures
 - Display contract specifications
+- **Derivative category (`dc`):** Mỗi mã phái sinh có **derivative category** (INDEX | BOND) để app hiển thị đúng tên chỉ mục: INDEX → Chỉ số (PS/DR), BOND → Trái phiếu CP (TPCP/GB). Nguồn: Init job và API SymbolInfo/symbol_static/symbol/latest đều trả về `dc` theo quy tắc 41I (chỉ số) / 41B (trái phiếu).
 
 ---
 
