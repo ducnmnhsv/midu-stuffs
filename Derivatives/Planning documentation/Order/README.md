@@ -32,7 +32,8 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 |----------|--------------|
 | ✅ Regular Orders (Buy, Sell, Cancel, Modify) | ❌ Batch order operations |
 | ✅ Query cancellable/modifiable orders | ❌ Advanced order routing |
-| 📋 Conditional Orders (Stop, OCO, Trailing) | ❌ Algorithmic trading |
+| 📋 Order Availability Check (Max quantity) | ❌ Algorithmic trading |
+| 📋 Conditional Orders (Stop, OCO, Trailing) | |
 | 📋 Order History queries | |
 
 **Legend:** ✅ Complete | 📋 Planned | ❌ Out of scope
@@ -91,6 +92,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 | Feature | Status | Issue | Priority | Estimate |
 |---------|--------|-------|----------|----------|
+| Order Availability Check | 📋 Spec Complete | [Order_Availability_Check_API_Spec](./Specifications/Order_Availability_Check_API_Spec.md) | High | 1-2 weeks |
 | Conditional Orders | 📋 Planned | TBD | High | 4-6 weeks |
 | Order History | 📋 Planned | TBD | Medium | 2-3 weeks |
 
@@ -117,7 +119,12 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | Document | Focus Area | Target Audience | Lines |
 |----------|------------|-----------------|-------|
 | [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte) | BE Developers | ~750 |
+| [Order Availability Check API Spec](./Specifications/Order_Availability_Check_API_Spec.md) | DRORD-028 - Check max order quantity before placing order | BE Developers | ~600 |
 | [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
+
+**📄 Design Decisions & Technical Analysis:**
+- [Order Availability Response Design](./Specifications/Order_Availability_Response_Design.md) - Why API response contains only availability data (no margin fields)
+- [Real-time Availability Analysis](./Specifications/Real_time_Availability_Analysis.md) - WebSocket vs polling strategies for real-time availability updates
 
 **📘 TradeX-Wide API Standards:**
 - [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)

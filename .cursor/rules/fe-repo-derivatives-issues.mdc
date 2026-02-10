@@ -1,0 +1,58 @@
+# FE Repo for Derivatives Issues
+
+## Purpose
+
+Rule này quy định cách sử dụng repo **NHSV Pro React Native** (FE app) khi tạo issue cho Frontend trong dự án **Derivatives** từ workspace **tradex-monitoring**.
+
+---
+
+## FE Repo (Cloned – Read Only)
+
+| Item | Value |
+|------|--------|
+| **Path** | `/Users/ducnguyen/Documents/project/nhsv-mts-rn` |
+| **Name** | TradeX / NHSV Pro (React Native) |
+| **Role** | App mobile consume TradeX APIs (bao gồm Derivatives) |
+| **Structure** | `src/` → `screens/`, `components/`, `reduxs/`, `hooks/`, `interfaces/`, `utils/` |
+
+---
+
+## Constraints
+
+1. **Chỉ ĐỌC (Read-only)**  
+   - Repo `nhsv-mts-rn` là **cloned repo** – dùng làm **cơ sở tham chiếu** khi tạo issue cho FE dev.  
+   - **KHÔNG** sửa code, thêm/xóa file, hay commit trong `nhsv-mts-rn` từ workspace tradex-monitoring.
+
+2. **Mục đích sử dụng**  
+   - Đọc cấu trúc, patterns, tên màn hình/component, API usage trong FE để:  
+     - Viết issue FE rõ ràng, đúng context.  
+     - Reference đúng path/file/screen khi cần.  
+     - Đảm bảo issue Derivatives FE nhất quán với codebase hiện tại.
+
+3. **Nơi tạo và lưu artifact**  
+   - Issue descriptions, acceptance criteria, technical notes cho **Derivatives FE** được tạo và lưu trong **tradex-monitoring** (ví dụ: `Derivatives/Planning documentation/Order/Issues/`, Jira/Bitbucket description, v.v.), **không** tạo file mới trong `nhsv-mts-rn`.
+
+---
+
+## Workflow: Tạo Issue cho FE (Derivatives)
+
+1. **Đọc** từ `nhsv-mts-rn`: screens/components liên quan Derivatives, API client, types, navigation.  
+2. **Viết** nội dung issue (title, description, AC, tech notes) trong tradex-monitoring hoặc tool quản lý issue.  
+3. **Không** chỉnh sửa repo `nhsv-mts-rn` khi thực hiện bước 1–2.
+
+---
+
+## Quick Reference – FE Repo Structure
+
+- `src/screens/` – Màn hình (có thể có nhóm derivatives / order / market).  
+- `src/components/` – Component dùng chung hoặc theo feature.  
+- `src/reduxs/` – Redux slices, API calls.  
+- `src/hooks/` – Custom hooks.  
+- `src/interfaces/` – Types, API request/response.  
+- `src/utils/` – Helper, format, config.
+
+Khi tạo issue FE Derivatives, có thể tham chiếu các thư mục trên để mô tả "màn hình/component cần sửa hoặc thêm".
+
+---
+
+**Cập nhật:** 2026-02-10 – Thêm repo FE, quy ước read-only và workflow tạo issue Derivatives.

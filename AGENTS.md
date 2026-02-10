@@ -39,15 +39,27 @@ TradeX Knowledge/
 
 > **Note:** Rule `@tradex-knowledge` tự động apply, AI sẽ đọc knowledge trước khi scan codebase.
 
+### FE Repo for Derivatives Issues (Read-Only)
+
+| Item | Value |
+|------|--------|
+| **Repo** | NHSV Pro React Native (TradeX app) |
+| **Path** | `/Users/ducnguyen/Documents/project/nhsv-mts-rn` |
+| **Usage** | **Chỉ đọc** – dùng làm cơ sở tạo issue cho FE dev (Derivatives). Không sửa code trong repo này từ workspace tradex-monitoring. |
+| **Rule** | `.cursor/rules/fe-repo-derivatives-issues.mdc` |
+
+Khi tạo issue FE cho Derivatives: đọc cấu trúc/screens/components trong `nhsv-mts-rn` để viết issue chính xác; artifact (issue text, AC) lưu trong tradex-monitoring hoặc Jira/Bitbucket.
+
 ## Available Skills
 
-### Specialized Skills (4)
+### Specialized Skills (5)
 
-Dự án này có 4 specialized skills. Cursor tự động phát hiện hoặc mention `@skill-name`:
+Dự án này có 5 specialized skills. Cursor tự động phát hiện hoặc mention `@skill-name`:
 
 | Skill | Location | Auto-trigger | Use Case |
 |-------|----------|--------------|----------|
 | **derivatives-doc-structure** | `.cursor/skills/derivatives-doc-structure/` | ✅ | Create/organize Derivatives documentation |
+| **derivatives-api-spec-format** | `.cursor/skills/derivatives-api-spec-format/` | ✅ | Standard format for Derivatives API specs |
 | **tradex-api-naming** | `.cursor/skills/tradex-api-naming/` | ✅ | Enforce TradeX API naming conventions |
 | **prompt-optimizer** | `.cursor/skills/prompt-optimizer/` | Manual | Optimize individual prompts |
 | **prompt-enhance-workflow** | `.cursor/skills/prompt-enhance-workflow/` | ✅ Auto | Auto-enhance prompts at conversation start |
