@@ -40,7 +40,7 @@
 | 3 | Hệ thống | Lấy danh sách mã PHÁI SINH từ Lotte | Nhận được 4-8 mã VN30F |
 | 4 | Hệ thống | Với mỗi mã phái sinh, lấy thông tin chi tiết | Có đầy đủ giá, OI, ngày đáo hạn |
 | 5 | Hệ thống | Gộp danh sách cơ sở + phái sinh | Danh sách tổng hợp |
-| 6 | Hệ thống | Đánh dấu mã phái sinh: `market: "derivatives"` và `dc` (INDEX \| BOND) theo 41I/41B | Phân biệt rõ ràng; FE dùng `dc` để hiển thị tên chỉ mục (PS/DR, TPCP/GB) |
+| 6 | Hệ thống | Đánh dấu mã phái sinh: **`m`** = "INDEX" hoặc "BOND" theo 41I/41B (cùng field `m` như HOSE/HNX/UPCOM) | Phân biệt rõ ràng; FE dùng `m` để hiển thị tên chỉ mục (PS/DR, TPCP/GB) |
 | 7 | Hệ thống | Lưu vào Redis, MongoDB, S3 | Dữ liệu sẵn sàng |
 
 **Alternative Flow - Lỗi lấy phái sinh:**
@@ -81,7 +81,7 @@
 | 2 | User | Vào mục Thị trường (Market) | Màn hình danh sách mã |
 | 3 | User | Chọn tab "Phái sinh" hoặc filter | Danh sách lọc theo phái sinh |
 | 4 | App | Gọi API lấy danh sách mã phái sinh | API request |
-| 5 | Hệ thống | Trả về danh sách với `market: "derivatives"` và `dc` (INDEX \| BOND) cho mỗi mã phái sinh | Response data |
+| 5 | Hệ thống | Trả về danh sách với **`m`** = "INDEX" hoặc "BOND" cho mỗi mã phái sinh | Response data |
 | 6 | App | Hiển thị danh sách mã phái sinh | VN30F2501, VN30F2502, etc. |
 | 7 | User | Xem thông tin tổng quan | Mã, Giá, Thay đổi, % |
 
@@ -116,7 +116,7 @@
 |------|-------|-----------|------------------|
 | 1 | User | Chọn mã VN30F2501 từ danh sách | Navigate đến màn chi tiết |
 | 2 | App | Gọi API lấy chi tiết mã | API request |
-| 3 | Hệ thống | Trả về thông tin đầy đủ (bao gồm `dc` cho phái sinh) | Response data |
+| 3 | Hệ thống | Trả về thông tin đầy đủ (phái sinh có **`m`** = INDEX \| BOND) | Response data |
 | 4 | App | Hiển thị thông tin giá | Giá, Thay đổi, %, etc. |
 | 5 | App | Hiển thị sổ lệnh | 10 bước giá mua/bán |
 | 6 | App | Hiển thị thông tin đặc thù phái sinh | OI, Ngày đáo hạn, Basis |
@@ -255,7 +255,7 @@ User sees updated price
 | 1 | User | Mở filter/tab options | Hiển thị: Tất cả, Cơ sở, Phái sinh |
 | 2 | User | Chọn "Phái sinh" | Filter applied |
 | 3 | App | Gọi API với `marketFilter: "derivatives"` | API request |
-| 4 | Hệ thống | Trả về chỉ mã có `market: "derivatives"` | Filtered response |
+| 4 | Hệ thống | Trả về chỉ mã có `m` in ["INDEX","BOND"] (hoặc filter theo t=FUTURES) | Filtered response |
 | 5 | App | Hiển thị chỉ mã phái sinh | VN30F2501, VN30F2502, etc. |
 
 **Filter Options:**
@@ -289,15 +289,15 @@ User sees updated price
 | 4 | Kiểm tra log | - | Log: "Found X derivative symbols" |
 | 5 | Kiểm tra log | - | Log: "Successfully downloaded Y symbols" |
 | 6 | Verify Redis | `HGETALL realtime_mapSymbolInfo` | Có cả mã cơ sở và phái sinh |
-| 7 | Verify mã phái sinh | `HGET realtime_mapSymbolInfo VN30F2501` | Có `m: "derivatives"` và `dc: "INDEX"` (hoặc "BOND" cho mã 41B) |
+| 7 | Verify mã phái sinh | `HGET realtime_mapSymbolInfo VN30F2501` | Có `m: "INDEX"` (hoặc "BOND" cho mã 41B) |
 | 8 | Verify file S3 | Download symbol_static.json | Có mã phái sinh với format chuẩn |
 
-**Expected format trong symbol_static.json:** Mã phái sinh có `m: "derivatives"`, `dc: "INDEX"` (hoặc `"BOND"`), và các trường re, ce, fl, bc, ed, rd như ví dụ trong 01_Integration_Plan (5.4).
+**Expected format trong symbol_static.json:** Mã phái sinh có **`m`** = "INDEX" hoặc "BOND", và các trường re, ce, fl, bc, ed, rd như ví dụ trong 01_Integration_Plan (5.4).
 
 **Expected Result:**
 - ✅ ~2000 mã cơ sở
 - ✅ 4-8 mã phái sinh
-- ✅ Tất cả mã phái sinh có `market: "derivatives"` và `dc` (INDEX | BOND)
+- ✅ Tất cả mã phái sinh có **`m`** = "INDEX" hoặc "BOND"
 - ✅ Tất cả mã phái sinh có đầy đủ: OI, ngày đáo hạn, basis
 
 ---
@@ -346,12 +346,12 @@ User sees updated price
 |------|-----------|---------|------------------|
 | 1 | Gọi API lấy tất cả | `symbolList: ["VCB", "VN30F2501"]` | Trả về cả 2 |
 | 2 | Verify response VCB | - | `m: "HOSE"`, không có `dr` object |
-| 3 | Verify response VN30F2501 | - | `m: "derivatives"`, có `dr` object |
+| 3 | Verify response VN30F2501 | - | `m: "INDEX"`, có `dr` object |
 | 4 | Verify dr object | - | Có: bc, ed, rd, tp, bs, oi |
 | 5 | Gọi API filter derivatives | `marketFilter: "derivatives"` | Chỉ trả về mã phái sinh |
 | 6 | Gọi API filter equity | `marketFilter: "equity"` | Chỉ trả về mã cơ sở |
 
-**Sample Response - Mã phái sinh:** Có `m: "derivatives"`, `dc: "INDEX"` (hoặc "BOND"), và object `dr` chứa bc, ed, rd, tp, bs, oi. Chi tiết format xem 01_Integration_Plan.
+**Sample Response - Mã phái sinh:** Có **`m`** = "INDEX" hoặc "BOND", và object `dr` chứa bc, ed, rd, tp, bs, oi. Chi tiết format xem 01_Integration_Plan.
 
 ---
 
@@ -372,7 +372,7 @@ User sees updated price
 | 2 | Subscribe channel | `market.quote.dr.VN30F2501` | Subscribed |
 | 3 | Chờ update | - | Nhận message trong vòng 1 giây |
 | 4 | Verify message format | - | Có: s, m, c, ch, ra, vo, oi |
-| 5 | Verify m, dc field | - | `m: "derivatives"`, `dc: "INDEX"` hoặc `"BOND"` (nếu có trong message) |
+| 5 | Verify m field | - | `m: "INDEX"` hoặc `"BOND"` (phái sinh) |
 | 6 | Verify latency | Measure timestamp | < 1 giây từ Lotte |
 
 **Sample WebSocket Message:**
@@ -382,7 +382,7 @@ User sees updated price
   "channel": "market.quote.dr.VN30F2501",
   "data": {
     "s": "VN30F2501",
-    "m": "derivatives",
+    "m": "INDEX",
     "c": 1286.0,
     "ch": 13.0,
     "ra": 1.02,
@@ -563,7 +563,7 @@ User sees updated price
 
 **Functional:**
 - [ ] Init job lấy được mã phái sinh
-- [ ] Mã phái sinh có `market: "derivatives"` và `dc` (INDEX | BOND)
+- [ ] Mã phái sinh có **`m`** = "INDEX" hoặc "BOND"
 - [ ] API trả về đầy đủ thông tin
 - [ ] WebSocket real-time hoạt động
 - [ ] Sổ lệnh 10 bước giá

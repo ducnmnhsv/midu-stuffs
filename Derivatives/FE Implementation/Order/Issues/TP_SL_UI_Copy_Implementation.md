@@ -1,5 +1,7 @@
-# FE Issue: Áp dụng TP/SL UI Copy & Validation Messages (Derivatives)
+# [Epic DR-FE-ORD] Story ORD.S3: Áp dụng TP/SL UI Copy & Validation Messages (Derivatives)
 
+> **Jira:** _(điền key khi tạo, e.g. NHMTS-xxx)_  
+> **Epic:** DR-FE-ORD – Derivatives Order FE  
 > **Module:** Order  
 > **Screens:** Màn thiết lập TP/SL (Take Profit / Stop Loss)  
 > **Priority:** P1  
@@ -8,83 +10,77 @@
 
 ---
 
-## 1. Background
+## User Story
 
-Tính năng **TP/SL (Take Profit / Stop Loss)** cho Derivatives sẽ cho phép trader thiết lập giá hoặc offset để tự động đóng vị thế. Nội dung UI (tooltip, validation, warning, confirmation) đã được chuẩn hóa trong tài liệu **TP/SL UI Copy**. FE cần áp dụng đúng bản copy và quy tắc hiển thị (tooltip / warning / error) khi màn TP/SL được triển khai.
-
-**Lưu ý:** Issue này **bị block** bởi quyết định nghiệp vụ và BE: cơ chế track order lifecycle (hủy/sửa lệnh ảnh hưởng TP/SL) đang thảo luận. Xem [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md). FE có thể chuẩn bị UI copy và validation trước, triển khai màn hình khi BE/Core sẵn sàng.
+**As a** trader  
+**I want to** thấy đúng nội dung tooltip, validation, warning và confirmation theo bản copy chuẩn (EN/VI) khi thiết lập TP/SL cho Derivatives  
+**So that** tôi hiểu rõ quy tắc và rủi ro trước khi xác nhận.
 
 ---
 
-## 2. Data Source
+## Acceptance Criteria
 
-- **UI Copy (nguồn chính):** [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
+- [ ] **AC-01** Tất cả tooltip TP/SL dùng đúng nội dung (EN/VI) trong mục I của [TP_SL_UI_Copy](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md). Hiển thị bằng icon ⓘ.
+- [ ] **AC-02** Các trường hợp validation (II) hiển thị đúng message tương ứng và chặn xác nhận. Style: error (màu đỏ).
+- [ ] **AC-03** Các cảnh báo (III) hiển thị đúng message, style warning (màu vàng), không chặn thao tác.
+- [ ] **AC-04** Gợi ý nhập liệu (IV) hiển thị đúng theo loại vị thế (Long/Short) và loại giá/offset.
+- [ ] **AC-05** Màn xác nhận trước khi gửi TP/SL hiển thị đúng nội dung (V): summary header, execution note, auto cancel, final note.
+- [ ] **AC-06** Phần “Nâng cao” / “Tìm hiểu thêm” hiển thị nội dung (VI): price gap, immediate trigger, network delay.
+- [ ] **AC-07** Tất cả copy hỗ trợ VI và EN; chuyển đổi theo cài đặt ngôn ngữ app.
+
+---
+
+## Tasks (Implementation)
+
+- [ ] **T1** Đưa copy từ TP_SL_UI_Copy vào i18n (vi/en) hoặc constants; mapping key theo mục I–VII.
+- [ ] **T2** Tooltips: icon ⓘ cạnh label/block; nội dung (I) theo context (general, price-based, offset-based).
+- [ ] **T3** Validation errors (II): message đúng, style đỏ, chặn submit.
+- [ ] **T4** Warnings (III): message đúng, style vàng, không chặn.
+- [ ] **T5** Inline hints (IV) theo vị thế và loại nhập; Confirmation (V) và Pro warnings (VI) khi màn TP/SL triển khai đầy đủ.
+
+---
+
+## Background / Context
+
+Tính năng **TP/SL** cho Derivatives cho phép thiết lập giá hoặc offset để tự động đóng vị thế. Nội dung UI đã chuẩn hóa trong **TP/SL UI Copy**. FE áp dụng đúng copy và quy tắc hiển thị khi màn TP/SL được triển khai.
+
+**Blocked:** Cơ chế track order lifecycle (hủy/sửa lệnh ảnh hưởng TP/SL) đang thảo luận. Xem [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md). FE có thể chuẩn bị UI copy và validation trước; triển khai màn hình khi BE/Core sẵn sàng.
+
+---
+
+## Data Source
+
+- **UI Copy:** [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
 - **Planning:** [04_TPSL_Orders_Business](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
-- **Blocking issue:** [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)
+- **Blocking:** [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)
 
-Nội dung trong TP_SL_UI_Copy gồm:
-
-- **I. Tooltip** – Giải thích TP/SL, price-based, offset-based, market order, volatility (EN/VI).
-- **II. Validation Error** – Chặn xác nhận: TP = Entry, Invalid TP/SL (Long/Short), Current price passed TP/SL, Offset = 0, Invalid offset sign, Tick size, Price out of range, Market halt.
-- **III. Warning** – Cảnh báo không chặn: TP/SL near market price, High volatility, Avg entry change, Large offset, Low liquidity.
-- **IV. Inline Hint** – Hướng dẫn nhập: TP/SL price (Long/Short), TP/SL offset, Offset-based.
-- **V. Confirmation / Summary** – Trước khi xác nhận: Summary header, Execution note, Auto cancel, Final note.
-- **VI. Pro-level Warning** – Price gap, Immediate trigger, Network delay.
-- **VII. UI Usage** – Tooltip ⓘ; Warning màu vàng; Error màu đỏ; Pro warnings trong “Nâng cao” / “Tìm hiểu thêm”.
+**Nội dung TP_SL_UI_Copy:**  
+I. Tooltip – II. Validation Error – III. Warning – IV. Inline Hint – V. Confirmation/Summary – VI. Pro-level Warning – VII. UI Usage (ⓘ, màu vàng/đỏ).
 
 ---
 
-## 3. Screens & Components (FE reference)
+## Screens & Components (FE reference)
 
 | Vị trí | Mô tả |
 |--------|--------|
-| **TP/SL setup screen** | Màn thiết lập TP/SL (price-based hoặc offset-based). Các ô nhập, nút, và vùng summary cần dùng đúng copy EN/VI theo tài liệu. |
-| **Tooltips** | Icon ⓘ cạnh label/block: hiển thị nội dung Tooltip (I) theo context (general, price-based, offset-based, …). |
-| **Validation** | Khi user nhập sai (TP = entry, invalid price, offset = 0, …): hiển thị message Error (II) tương ứng, màu đỏ, chặn submit. |
-| **Warnings** | Cảnh báo (III): hiển thị màu vàng, không chặn thao tác. |
-| **Inline hint** | Gợi ý dưới ô nhập (IV) theo loại vị thế (Long/Short) và loại nhập (price / offset). |
-| **Confirmation** | Trước khi xác nhận: Summary (V) – header, execution note, auto cancel, final note. |
-| **Pro warnings** | Phần “Nâng cao” / “Tìm hiểu thêm”: nội dung (VI). |
+| TP/SL setup screen | Ô nhập, nút, summary – copy EN/VI theo tài liệu. |
+| Tooltips | Icon ⓘ, nội dung (I). |
+| Validation / Warnings | Error (II) đỏ, Warning (III) vàng. |
+| Inline hint (IV), Confirmation (V), Pro warnings (VI). |
 
-**FE repo (read-only):**  
-Màn TP/SL có thể nằm trong `src/screens/` (ví dụ TPSLScreen, PositionDetailScreen với tab TP/SL). Copy nên đưa vào file i18n (vi/en) hoặc constants, tham chiếu key từ TP_SL_UI_Copy.
+**FE repo (read-only):** Màn TP/SL: `src/screens/` (TPSLScreen, PositionDetailScreen…). Copy → i18n hoặc constants.
 
 ---
 
-## 4. Acceptance Criteria
+## Technical Notes
 
-- [ ] **AC1 – Tooltip**  
-  Tất cả tooltip TP/SL dùng đúng nội dung (EN/VI) trong mục I của [TP_SL_UI_Copy](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md). Hiển thị bằng icon ⓘ.
-
-- [ ] **AC2 – Validation Error**  
-  Các trường hợp validation (II) hiển thị đúng message tương ứng và chặn xác nhận. Style: error (màu đỏ).
-
-- [ ] **AC3 – Warning**  
-  Các cảnh báo (III) hiển thị đúng message, style warning (màu vàng), không chặn thao tác.
-
-- [ ] **AC4 – Inline Hint**  
-  Gợi ý nhập liệu (IV) hiển thị đúng theo loại vị thế (Long/Short) và loại giá/offset.
-
-- [ ] **AC5 – Confirmation / Summary**  
-  Màn xác nhận trước khi gửi TP/SL hiển thị đúng nội dung (V): summary header, execution note, auto cancel, final note.
-
-- [ ] **AC6 – Pro-level Warning**  
-  Phần “Nâng cao” / “Tìm hiểu thêm” hiển thị nội dung (VI): price gap, immediate trigger, network delay.
-
-- [ ] **AC7 – Ngôn ngữ**  
-  Tất cả copy hỗ trợ VI và EN theo tài liệu; chuyển đổi theo cài đặt ngôn ngữ app.
+- Có thể **chuẩn bị** ngay (i18n keys, component tooltip/warning/error); **triển khai đầy đủ màn TP/SL** sau khi BE/Core có quyết định và API TP/SL sẵn sàng.
+- Khi unblock: cập nhật status thành 📋 Ready for FE và bổ sung AC liên quan API (nếu có spec).
 
 ---
 
-## 5. Figma & References
+## References
 
-- **UI Copy:** [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
-- **Business:** [04_TPSL_Orders_Business.md](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
-- **Blocking:** [TPSL_Tracking_Mechanism_Discussion.md](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)
-
----
-
-## 6. Notes for Dev
-
-- Có thể bắt đầu **chuẩn bị** (thêm key i18n, component tooltip/warning/error) ngay; **triển khai đầy đủ màn TP/SL** chỉ sau khi BE/Core có quyết định về tracking mechanism và API TP/SL sẵn sàng.
-- Khi unblock: cập nhật status issue thành 📋 Ready for FE và bổ sung AC liên quan tới gọi API (nếu có spec API TP/SL).
+- [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
+- [04_TPSL_Orders_Business.md](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
+- [TPSL_Tracking_Mechanism_Discussion.md](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)

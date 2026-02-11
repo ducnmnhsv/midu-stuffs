@@ -74,10 +74,10 @@ Derivatives implementation KHÔNG được ảnh hưởng equity flow:
 
 #### 2. Symbol Type Detection
 
-Phái sinh được phân biệt bằng field `t` (type) = `"FUTURES"` và `m` = `"derivatives"`. **Hai loại** hợp đồng được phân biệt bằng field `dc` (derivative category), suy từ mã hợp đồng (ký tự thứ 3):
+Phái sinh dùng **cùng field `m`** (market) như cơ sở: với **cơ sở** `m` = HOSE | HNX | UPCOM; với **phái sinh** `m` = **INDEX** | **BOND** (suy từ mã hợp đồng, ký tự thứ 3). FE đã dùng `m` cho HOSE/HNX/UPCOM nên dùng tiếp `m` cho INDEX/BOND.
 
-| Loại | Mã (quy tắc) | `dc` | Ví dụ |
-|------|--------------|------|--------|
+| Loại | Mã (quy tắc) | `m` | Ví dụ |
+|------|--------------|-----|--------|
 | HĐ tương lai chỉ số | 41**I**xxxxxx | `"INDEX"` | VN30F... |
 | HĐTL trái phiếu CP | 41**B**xxxxxx | `"BOND"` | 41B... |
 
@@ -85,8 +85,7 @@ Phái sinh được phân biệt bằng field `t` (type) = `"FUTURES"` và `m` =
 {
   "s": "VN30F2501",
   "t": "FUTURES",
-  "m": "derivatives",
-  "dc": "INDEX",     ← INDEX | BOND (FE dùng để hiển thị index name)
+  "m": "INDEX",     ← Cùng field m như HOSE/HNX/UPCOM (FE hiển thị index name: PS/DR, TPCP/GB)
   "c": 1285.5,
   ...
 }
@@ -161,6 +160,7 @@ Located in `Issues/` folder:
 | Issue | Priority | Status | Estimate |
 |-------|----------|--------|----------|
 | [Chart API Implementation](./Issues/Chart_API_Implementation.md) | High | 📋 Ready | 2.5-3.5 weeks |
+| [Current Price Screen BE Tasks](./Issues/Current_Price_Screen_BE_Tasks.md) | Medium | 📋 Ready | 2-3 days |
 
 ---
 
@@ -321,7 +321,7 @@ derivatives:
 
 ## 🎯 Success Criteria
 
-1. ✅ `symbol_static.json` contains derivatives with `market: "derivatives"`
+1. ✅ `symbol_static.json` contains derivatives with `m: "INDEX"` \| `"BOND"`
 2. ✅ `/api/v2/market/symbol/latest` returns derivatives data
 3. ✅ WebSocket `market.quote.dr.{code}` publishes real-time data
 4. 📋 `/tradingview/history?symbol=VN30F2501` returns chart data (Pending)

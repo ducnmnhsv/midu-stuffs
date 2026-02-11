@@ -40,8 +40,7 @@ High-level technical requirements for implementing derivatives market data suppo
 **Requirement:** System must automatically detect symbol type (equity vs derivatives) and derivative sub-type.
 
 **Key identifiers:**
-- **Derivatives:** `t` (type) = `"FUTURES"` và `m` = `"derivatives"`.
-- **Derivative category (`dc`):** `"INDEX"` (HĐ tương lai chỉ số, pattern 41I) | `"BOND"` (HĐTL trái phiếu CP, pattern 41B). Suy từ ký tự thứ 3 của mã tại init; mọi API trả symbol (SymbolInfo, symbol_static, symbol/latest) phải có `dc` cho mã phái sinh.
+- **Derivatives:** `t` (type) = `"FUTURES"` và **`m`** = `"INDEX"` hoặc `"BOND"` (cùng field `m` FE dùng cho HOSE/HNX/UPCOM). Suy từ ký tự thứ 3 của mã (41I → INDEX, 41B → BOND) tại init; mọi API trả symbol phải có `m` = INDEX | BOND cho mã phái sinh.
 
 ---
 

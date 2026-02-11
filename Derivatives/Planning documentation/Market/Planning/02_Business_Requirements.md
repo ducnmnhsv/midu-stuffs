@@ -66,7 +66,7 @@ Enable derivatives (phái sinh) market data display in NHSV Pro App to support f
 - Display expiry date
 - Display base index (e.g. VN30) or underlying for bond futures
 - Display contract specifications
-- **Derivative category (`dc`):** Mỗi mã phái sinh có **derivative category** (INDEX | BOND) để app hiển thị đúng tên chỉ mục: INDEX → Chỉ số (PS/DR), BOND → Trái phiếu CP (TPCP/GB). Nguồn: Init job và API SymbolInfo/symbol_static/symbol/latest đều trả về `dc` theo quy tắc 41I (chỉ số) / 41B (trái phiếu).
+- **Field `m` (market):** Với phái sinh dùng **cùng field `m`** như cơ sở: `m` = **"INDEX"** hoặc **"BOND"** (suy từ 41I/41B) để app hiển thị đúng tên chỉ mục (INDEX → PS/DR, BOND → TPCP/GB). Init job và API SymbolInfo/symbol_static/symbol/latest đều trả `m` = INDEX | BOND cho mã phái sinh.
 
 ---
 

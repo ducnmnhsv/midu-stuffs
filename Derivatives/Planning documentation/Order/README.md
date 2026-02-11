@@ -93,7 +93,8 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | Feature | Status | Issue | Priority | Estimate |
 |---------|--------|-------|----------|----------|
 | Order Availability Check | 📋 Spec Complete | [Order_Availability_Check_API_Spec](./Specifications/Order_Availability_Check_API_Spec.md) | High | 1-2 weeks |
-| Conditional Orders | 📋 Planned | TBD | High | 4-6 weeks |
+| **Stop Orders** | 📋 Spec Complete | [Stop_Orders_API_Spec](./Specifications/Stop_Orders_API_Spec.md) | High | 3-5 weeks |
+| Conditional Orders (OCO, Trailing) | 📋 Planned | TBD | Medium | 4-6 weeks |
 | Order History | 📋 Planned | TBD | Medium | 2-3 weeks |
 
 ---
@@ -120,6 +121,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 |----------|------------|-----------------|-------|
 | [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte) | BE Developers | ~750 |
 | [Order Availability Check API Spec](./Specifications/Order_Availability_Check_API_Spec.md) | DRORD-028 - Check max order quantity before placing order | BE Developers | ~600 |
+| [Stop Orders API Spec](./Specifications/Stop_Orders_API_Spec.md) | DRORD-005/006/023/024/025/026 - Stop order (Place/Modify/Cancel) | BE Developers | ~300 |
 | [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
 
 **📄 Design Decisions & Technical Analysis:**
@@ -137,12 +139,11 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | Issue | Status | Priority | Blocker |
 |-------|--------|----------|---------|
 | [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | 🔴 BLOCKED | High | Waiting for Core order lifecycle events |
+| [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | 📋 Đề xuất | High | Chờ PM duyệt hướng thiết kế |
 
 **Issue Summary:**
-- **Problem:** TP/SL cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
-- **Options:** Order-Based (ideal) vs Position-Based (feasible) vs Hybrid
-- **Decision Needed:** Offset-Based behavior (static vs dynamic)
-- **Next Step:** Request Core team for order events/API
+- **TP/SL:** Cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
+- **Stop Order:** Lotte thiếu API query/modify/socket → Đề xuất TradeX-Native (lưu & monitor, khi trigger đẩy DRORD-029/030). Xem [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md)
 
 **Future Issues:**
 - Conditional Orders Implementation (when approved)
@@ -187,11 +188,9 @@ Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← �
 - **Trailing Orders** - Dynamic stop loss
 - **Bull/Bear Orders** - Market sentiment based
 
-**Lotte APIs:**
-- DRORD-005: Stop Buy
-- DRORD-006: Stop Sell
-- DRORD-023/024: Modify Stop
-- DRORD-025/026: Cancel Stop
+**Lotte APIs:** DRORD-005, 006, 023, 024, 025, 026 (Place/Modify/Cancel)
+
+**Spec:** [Stop_Orders_API_Spec](./Specifications/Stop_Orders_API_Spec.md)
 
 ---
 
