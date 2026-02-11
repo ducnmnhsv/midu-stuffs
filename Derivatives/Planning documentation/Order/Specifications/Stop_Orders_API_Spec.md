@@ -36,11 +36,12 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 **Success (Mutation - Place/Modify/Cancel):**
 ```json
 {
-  "message": "[V0307] Lotte message",
-  "orderId": "20260211-001234",
-  "orderDate": "20260211"
+  "message": "[V0307] Message from Lotte",
+  "orderNumber": "20260211-001234"
 }
 ```
+
+**Note:** `orderNumber` = composite `{date}-{seq_no}` (Stop order dùng date+seq từ Lotte). Format giống Regular Order để FE xử lý thống nhất.
 
 **Error:**
 ```json
@@ -50,7 +51,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 }
 ```
 
-**Principles:** Giống Regular Orders - HTTP status = success indicator, NO `success: true/false`, pass-through Lotte messages AS-IS.
+**Principles:** Giống Regular Orders (xem `Regular_Orders_API_Spec.md` §1.3) - HTTP status = success indicator, NO `success: true/false`, pass-through Lotte messages AS-IS, Mutation = minimal (message + orderNumber).
 
 ---
 
@@ -134,9 +135,9 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 |-------------|--------------|-----------|-------------|
 | `error_code` | - | Check = `"0000"` | Success indicator |
 | `error_desc` | `message` | Pass-through AS-IS | Lotte message |
-| `data_list` (seq_no/date) | `orderId`, `orderDate` | Composite | Xác định lệnh (xem Note) |
+| `data_list` (seq_no, date) | `orderNumber` | Composite `{date}-{seq_no}` | Chuẩn TradeX: message + orderNumber |
 
-**Note:** Lotte DRORD-005/006 DataResponse không mô tả chi tiết. Cần xác nhận với Lotte về field trả về (seq_no, date). TradeX có thể trả composite: `orderId` = `{date}-{seq_no}`.
+**Note:** Lotte DRORD-005/006 DataResponse không mô tả chi tiết. Cần xác nhận field trả về (seq_no, date). TradeX format: `orderNumber` = `"{date}-{seq_no}"`.
 
 **Error (422):** Prefix `STOP_ORDER_PLACE_{LOTTE_CODE}`
 
@@ -172,16 +173,15 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | TradeX Field | Type | Required | Lotte Field | Description |
 |--------------|------|----------|-------------|-------------|
 | `accountNumber` | String | ✅ | `acno` | Số tài khoản |
-| `orderDate` | String | ✅ | `date` | yyyyMMdd - Ngày đặt lệnh |
-| `sequenceNumber` | String | ✅ | `seqn` | Số hiệu lệnh (từ DRORD-016) |
+| `orderNumber` | String | ✅ | `date`, `seqn` | Composite `{date}-{seq_no}` - BE parse để gọi Lotte |
 | `orderPrice` | Number | ✅ | `jprc` | Giá mới |
 | `orderQuantity` | Number | ✅ | `jqty` | Khối lượng mới |
 | `priceBand` | Number | ✅ | `bprc` | Biên độ giá mới |
-| `validFromDate` | String | ❌ | `sdate` | Mặc định = orderDate |
-| `validToDate` | String | ❌ | `edate` | Mặc định = orderDate (sdate = edate) |
+| `validFromDate` | String | ❌ | `sdate` | Mặc định = date (parse từ orderNumber) |
+| `validToDate` | String | ❌ | `edate` | Mặc định = sdate (sdate = edate) |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto |
 
-**Order Identification:** Stop order dùng `(date, seqn)` thay vì `orderNumber` đơn lẻ. TradeX có thể accept `orderId` format `{date}-{seqn}` và parse.
+**Order Identification:** Stop order Lotte dùng `(date, seqn)`. TradeX thống nhất dùng `orderNumber` = `{date}-{seq_no}` - FE truyền 1 field, BE parse thành date + seqn cho Lotte.
 
 ### 4.3 Response Mapping
 
@@ -190,7 +190,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | Lotte Field | TradeX Field |
 |-------------|--------------|
 | `error_desc` | `message` |
-| `data_list.seqn` | `orderId` (composite) |
+| - | `orderNumber` | Echo lại từ request (hoặc composite từ Lotte nếu có) |
 
 **Error (422):** Prefix `STOP_ORDER_MODIFY_*`
 
@@ -211,8 +211,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | TradeX Field | Type | Required | Lotte Field | Description |
 |--------------|------|----------|-------------|-------------|
 | `accountNumber` | String | ✅ | `acno` | Số tài khoản |
-| `orderDate` | String | ✅ | `date` | yyyyMMdd |
-| `sequenceNumber` | String | ✅ | `seqn` | Số hiệu lệnh |
+| `orderNumber` | String | ✅ | `date`, `seqn` | Composite `{date}-{seq_no}` |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto |
 
 ### 5.3 Response Mapping
@@ -222,7 +221,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | Lotte Field | TradeX Field |
 |-------------|--------------|
 | `error_desc` | `message` |
-| - | `orderId` (echo back) |
+| - | `orderNumber` | Echo lại từ request |
 
 **Error (422):** Prefix `STOP_ORDER_CANCEL_*`
 
@@ -292,7 +291,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 1. **Single URI per Operation:** FE chỉ cần gọi 1 endpoint cho Place (giống Regular), 1 cho Modify, 1 cho Cancel, 1 cho Query.
 2. **Routing by sellBuyType:** Place: BUY → DRORD-005, SELL → DRORD-006.
-3. **Order ID:** Stop order dùng `(orderDate, sequenceNumber)`. TradeX có thể expose `orderId` = `{date}-{seq}` cho FE dễ dùng.
+3. **Order Number:** Stop order Lotte dùng (date, seqn). TradeX thống nhất `orderNumber` = `{date}-{seq_no}` - cùng format với Regular Order để FE xử lý thống nhất.
 4. **Message Pass-Through:** Lotte messages AS-IS, language via Accept-Language.
 
 ### 8.3 Open Items
