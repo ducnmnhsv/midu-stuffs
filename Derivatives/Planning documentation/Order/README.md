@@ -132,6 +132,8 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 - [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)
 - [API Spec Template](../../../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md) - Copy for new specs
 
+**⚠️ mdm_tp (Kênh thực hiện):** Khi Lotte yêu cầu `mdm_tp`, Backend **derive** từ platform/channel (giống Equity) – FE **không** gửi. Xem [tradex-api-conventions.md §1.1](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền).
+
 ### Active Issues (Ready for Development)
 
 **Current Issues:**

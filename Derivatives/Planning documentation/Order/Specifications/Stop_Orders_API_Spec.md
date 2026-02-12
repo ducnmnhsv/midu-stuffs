@@ -59,14 +59,13 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 ### 2.1 Stop Order Characteristics
 
-| Attribute | Value |
-|-----------|-------|
-| **Trigger** | Giá thị trường đạt `orderPrice` |
-| **Execution** | Lệnh LO (Limit) khi trigger |
-| **Validity** | `from_dt` = `end_dt` (cùng ngày) |
-| **Bước giá** | `ord_band_pri` - biên độ giá (bắt buộc) |
+| TradeX Field | Lotte Field | Mô tả |
+|--------------|-------------|-------|
+| `orderPrice` | `ord_pri` | Giá |
+| `priceBand` | `ord_band_pri` | Bước giá |
+| - | `from_dt`, `end_dt` | Ngày (cùng giá trị) |
 
-### 2.2 Validation Rules (TradeX)
+### 2.2 Validation Rules (TradeX BE)
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
@@ -74,8 +73,10 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | sellBuyType | BUY hoặc SELL only | `INVALID_VALUE` |
 | orderPrice | > 0, tick size compliant | `INVALID_VALUE` |
 | orderQuantity | > 0, integer | `INVALID_VALUE` |
-| priceBand | > 0 (bước giá) | `INVALID_VALUE` |
+| priceBand | Required, gửi lên Lotte | `FIELD_IS_REQUIRED` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
+
+**Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → [FE Issue](../../../FE%20Implementation/Order/Issues/Derivatives_Stop_Order_Integration.md).
 
 **Note:** Business rules (margin, price limits) validated by Lotte Core.
 
@@ -113,15 +114,21 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | `accountNumber` | String | ✅ | `acnt_no` | Direct | Số tài khoản |
 | `symbolCode` | String | ✅ | `stk_cd` | Direct | Mã hợp đồng (VN30F2502) |
 | `sellBuyType` | String | ✅ | - | **Routing only** | `BUY` → dr-stop-order-buy<br>`SELL` → dr-stop-order-sell |
-| `orderPrice` | Number | ✅ | `ord_pri` | Direct | Giá trigger |
+| `orderPrice` | Number | ✅ | `ord_pri` | Direct | Giá |
 | `orderQuantity` | Number | ✅ | `ord_qty` | String | Khối lượng |
-| `priceBand` | Number | ✅ | `ord_band_pri` | String | Bước giá (biên độ) |
+| `priceBand` | Number | ✅ | `ord_band_pri` | String | Bước giá |
 | `orderDate` | String | ❌ | `from_dt`, `end_dt` | yyyyMMdd | Mặc định: today |
 | `deviceUniqueId` | String | ❌ | `cli_mac_addr` | Direct | Device ID |
 | *(Request IP)* | - | - | - | - | Lotte có thể dùng |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto | Username from token |
 | *(Header)* | - | - | `lang_code` | Map (§2.3) | Language |
-| - | - | - | `mdm_tp` | Optional | Kênh thực hiện |
+| - | - | - | `mdm_tp` | **Derived** | Kênh thực hiện – derive từ platform/channel (giống Equity) |
+
+**mdm_tp Logic (Áp dụng cho mọi API Derivatives cần mdm_tp):**
+- FE **không** gửi `mdm_tp` trong request body.
+- Backend derive từ: `request.channel` → `token.platform` → default.
+- Map qua `getPlatformValueCore(platform)` → 31 (IOS), 32 (Android), 42 (PAAVE/DIFISOFT), `%` (default).
+- Chi tiết: [TradeX API Conventions - mdm_tp](../../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền)
 
 **orderDate Logic:**
 - Nếu không truyền: dùng ngày hiện tại (yyyyMMdd)
@@ -152,9 +159,9 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | `sellBuyType` | `FIELD_IS_REQUIRED` | Missing |
 | `sellBuyType` | `INVALID_VALUE` | Not BUY/SELL |
 | `orderPrice` | `FIELD_IS_REQUIRED` | Missing |
+| `orderPrice` | `INVALID_VALUE` | ≤ 0 hoặc không đúng tick size |
 | `orderQuantity` | `FIELD_IS_REQUIRED` | Missing |
 | `priceBand` | `FIELD_IS_REQUIRED` | Missing |
-| `priceBand` | `INVALID_VALUE` | ≤ 0 |
 
 ---
 
@@ -174,9 +181,9 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 |--------------|------|----------|-------------|-------------|
 | `accountNumber` | String | ✅ | `acno` | Số tài khoản |
 | `orderNumber` | String | ✅ | `date`, `seqn` | Composite `{date}-{seq_no}` - BE parse để gọi Lotte |
-| `orderPrice` | Number | ✅ | `jprc` | Giá mới |
-| `orderQuantity` | Number | ✅ | `jqty` | Khối lượng mới |
-| `priceBand` | Number | ✅ | `bprc` | Biên độ giá mới |
+| `orderPrice` | Number | ✅ | `jprc` | Direct | Giá mới |
+| `orderQuantity` | Number | ✅ | `jqty` | Direct | Khối lượng mới |
+| `priceBand` | Number | ✅ | `bprc` | Direct | Bước giá mới |
 | `validFromDate` | String | ❌ | `sdate` | Mặc định = date (parse từ orderNumber) |
 | `validToDate` | String | ❌ | `edate` | Mặc định = sdate (sdate = edate) |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto |
@@ -204,7 +211,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 **Lotte Endpoint:** DRORD-025, 026 (URL chưa có trong tài liệu - cần xác nhận Lotte)
 
-**Request body:** Cùng structure với Modify nhưng không cần orderPrice, orderQuantity, priceBand.
+**Request body:** Chỉ cần accountNumber, orderNumber.
 
 ### 5.2 Request Mapping
 
@@ -246,7 +253,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 |-------------|---------|
 | `stk_cd` | Mã CK (contract code) |
 | `ord_pri` | Giá |
-| `ord_band_pri` | Bước giá / biên độ |
+| `ord_band_pri` | Bước giá |
 | `from_dt`, `end_dt` | Ngày bắt đầu/kết thúc (phải cùng) |
 | `seqn` | Số hiệu lệnh (sequence) |
 | `ctr_cd` | Mã CK (trong query) |

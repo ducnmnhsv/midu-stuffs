@@ -136,6 +136,13 @@ or
 | *(Header)* | - | - | `lang_code` | Map (§2.3) | Language code (V/E/K) |
 | - | - | - | `row_count` | Fixed: 500 | Số lượng bản ghi trả về |
 | - | - | - | `next_key` | Fixed: "" | Empty for first request |
+| - | - | - | `mdm_tp` | **Derived** | Kênh thực hiện – derive từ platform/channel (giống Equity) |
+
+**mdm_tp Logic (khi Lotte yêu cầu):**
+- FE **không** gửi `mdm_tp` trong request body.
+- Backend derive từ: `request.channel` → `token.platform` → default.
+- Map qua `getPlatformValueCore(platform)` → 31 (IOS), 32 (Android), 42 (PAAVE/DIFISOFT), `%` (default).
+- Chi tiết: [TradeX API Conventions - mdm_tp](../../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền)
 
 **Order Type Mapping:**
 
