@@ -1,6 +1,6 @@
 # BE Tasks – Current price screen (statistic, quote abv/asv)
 
-> **Liên quan:** FE Issue [Derivatives_Current_Price_Screen](../../FE%20Implementation/Market/Issues/Derivatives_Current_Price_Screen.md) (MKT.S3)  
+> **Liên quan:** FE Issue [Derivatives_Current_Price_Screen](../../FE%20Implementation/Market/Issues/Derivatives_Current_Price_Screen.md) (MKT.S2)  
 > **Mục đích:** Bổ sung BE tasks chưa được mention trong 01_Integration_Plan cho màn Current price  
 > **Created:** 2026-02-11
 

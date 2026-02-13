@@ -1,4 +1,4 @@
-# [Epic DR-FE-MKT] Story MKT.S3: Màn Current price – Basic info, Bid/Ask, Thống kê lệnh, Aggressive matched
+# [Epic DR-FE-MKT] Story MKT.S2: Màn Current price – Basic info, Bid/Ask, Thống kê lệnh, Aggressive matched
 
 > **Jira:** _(điền key khi tạo, e.g. NHMTS-xxx)_  
 > **Epic:** DR-FE-MKT – Derivatives Market FE  
@@ -41,7 +41,7 @@
 ### Aggressive matched
 
 - [ ] **AC-08** Phần **Aggressive matched** lấy từ API `GET /rest/api/v2/market/symbol/{symbol}/quote` – dùng field **abv** (aggressive buy volume), **asv** (aggressive sell volume) như cơ sở (equity).
-- [ ] **AC-09** Nếu quote/symbolInfo chưa có abv/asv: FE fallback hoặc làm rõ với BE; BE task bổ sung đảm bảo API trả abv, asv cho derivatives.
+- [ ] **AC-09** Nếu quote/symbolInfo **chưa có abv/asv** (BE chưa trả cho derivatives): FE **fallback** hiển thị **"—"** hoặc **0**. Ghi rõ trong UI là đang chờ dữ liệu nếu có design. Xác nhận với BE khi API symbol/quote trả abv, asv cho derivatives.
 
 ### Tab Matched
 
@@ -102,7 +102,7 @@
 
 - **symbolInfo** có thể lấy từ: `GET /api/v2/market/symbolInfo?symbolList=[symbol]` hoặc `/api/v2/market/symbol/latest` (nếu app đã load).
 - **Channel Derivatives:** `market.quote.dr.{code}`, `market.bidoffer.dr.{code}` (khác equity `market.quote.{code}`, `market.bidoffer.{code}`).
-- Index name (PS/DR, TPCP/GB): xem [MKT.S1](./Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md).
+- Index name (PS/DR, TPCP/GB): xem [MKT.S1 – Derivatives_Market_Display](./Derivatives_Market_Display.md).
 - **FE repo:** `src/screens/CurrentPriceScreen/` – cập nhật để hỗ trợ derivatives routing (channel, API).
 
 ---

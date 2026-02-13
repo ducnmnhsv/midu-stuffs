@@ -13,7 +13,7 @@
 | **[Market/](./Market/)** | ✅ Complete | Real-time quotes, charts, WebSocket |
 | **[Order/](./Order/)** | ✅ Complete | Order placement (regular & conditional) |
 | **[Account/](./Account/)** | 📋 Planned | Account info, balance, positions |
-| **[Asset/](./Asset/)** | 📋 Planned | Portfolio, asset management |
+| **[Asset/](./Asset/)** | 📋 Spec Ready | Vị thế mở (DRACC-003), portfolio |
 
 ---
 
@@ -119,7 +119,7 @@ Each category follows this standard:
 
 ### Future
 - Account/ - Plan account management features
-- Asset/ - Plan portfolio features
+- Asset/ - Open Position API spec ✅ | Implement & expand
 
 ---
 

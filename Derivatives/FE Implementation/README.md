@@ -15,6 +15,7 @@
 | [Issue Standard (Agile / Jira)](#issue-standard-agile--jira) | Epic, Story, Task – chuẩn Jira |
 | [Folder Structure](#folder-structure) | Cấu trúc thư mục |
 | [Documentation Map](#documentation-map) | Index theo module |
+| [Multi-Agent Review (BMAD)](#multi-agent-review-bmad) | Kết quả review PM/Analyst/UX/Dev |
 | [Data & Design References](#data--design-references) | Nguồn dữ liệu & Figma |
 
 ---
@@ -27,7 +28,7 @@ Folder này dùng để **tạo và lưu issue requirement cho FE dev** khi tri�
 
 - **Chỉ đọc** repo FE (`nhsv-mts-rn`) khi viết issue; artifact (mô tả issue, AC) lưu tại đây hoặc Jira/Bitbucket.
 - Mỗi **module** (Market, Order, …) có thư mục riêng, bên trong có **Issues/** và tùy chọn **References/** (Figma, API links).
-- Naming file: Theo **feature** – PascalCase + underscore (ví dụ: `Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md`). Không dùng Figma node ID trong tên file. Link Figma đặt trong References; dùng Figma MCP khi cần map node → feature.
+- Naming file: Theo **feature** – PascalCase + underscore (ví dụ: `Derivatives_Market_Display.md`). Không dùng Figma node ID trong tên file. Link Figma đặt trong References; dùng Figma MCP khi cần map node → feature.
 - **Chuẩn issue:** Mỗi file = 1 Story; có Epic ID, Story ID (e.g. MKT.S1), User Story, AC, Tasks. Chi tiết: [ISSUE_STANDARD.md](./ISSUE_STANDARD.md).
 
 ---
@@ -53,17 +54,18 @@ Tất cả issue trong `Issues/` tuân theo chuẩn **Epic → Story → Task** 
 FE Implementation/
 ├── README.md                    ← Bạn đang ở đây
 ├── ISSUE_STANDARD.md            ← Chuẩn Epic/Story/Task, template Jira
+├── Multi_Agent_Review_Report.md ← BMAD multi-agent review (PM, Analyst, UX, Dev)
 ├── Market/                      ← Epic DR-FE-MKT
-│   ├── Issues/                  ← Stories MKT.S1, MKT.S2, MKT.S3
-│   │   ├── Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md
-│   │   ├── Derivatives_Home_Chart_Market_List_PriceTable.md
+│   ├── Issues/                  ← Stories MKT.S1, MKT.S2
+│   │   ├── Derivatives_Market_Display.md      ← Gộp S1+S2: Index name, Search, Current price, Home, Market, Price table
 │   │   └── Derivatives_Current_Price_Screen.md
 │   └── References/              ← Figma, API links
 ├── Order/                       ← Epic DR-FE-ORD
-│   └── Issues/                  ← Stories ORD.S1, ORD.S2, ORD.S3
+│   └── Issues/                  ← Stories ORD.S1, ORD.S2, ORD.S3, ORD.S4
 │       ├── Order_Availability_Check_Integration.md
 │       ├── Derivatives_Order_Entry_Integration.md
-│       └── TP_SL_UI_Copy_Implementation.md
+│       ├── TP_SL_UI_Copy_Implementation.md
+│       └── Derivatives_Stop_Order_Integration.md
 └── Archive/                     ← Issue đã hoàn thành / deprecated
 ```
 
@@ -75,9 +77,8 @@ FE Implementation/
 
 | Story | File | Mô tả ngắn | Screens | Status |
 |-------|------|------------|---------|--------|
-| **MKT.S1** | [Derivatives_Symbol_List_PS_DR_Search_CurrentPrice](./Market/Issues/Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md) | Index name PS/DR tại Search & Current price | Search, Current price | 📋 Ready |
-| **MKT.S2** | [Derivatives_Home_Chart_Market_List_PriceTable](./Market/Issues/Derivatives_Home_Chart_Market_List_PriceTable.md) | Home chart Index, Market list Index/BOND, bảng giá ngang & error state | Home, Market, Price table | 📋 Ready |
-| **MKT.S3** | [Derivatives_Current_Price_Screen](./Market/Issues/Derivatives_Current_Price_Screen.md) | Basic info, Bid/Ask 3&10 bước, Thống kê lệnh, Aggressive matched | Current price | 📋 Ready |
+| **MKT.S1** | [Derivatives_Market_Display](./Market/Issues/Derivatives_Market_Display.md) | Index name PS/DR, Search, Current price, Home chart, Market lists, Price table (gộp S1+S2 cũ) | Search, Current price, Home, Market, Price table | 📋 Ready |
+| **MKT.S2** | [Derivatives_Current_Price_Screen](./Market/Issues/Derivatives_Current_Price_Screen.md) | Basic info, Bid/Ask 3&10 bước, Thống kê lệnh, Aggressive matched | Current price | 📋 Ready |
 
 ### Order (Epic DR-FE-ORD)
 
@@ -86,6 +87,15 @@ FE Implementation/
 | **ORD.S1** | [Order_Availability_Check_Integration](./Order/Issues/Order_Availability_Check_Integration.md) | Check max quantity khi đặt lệnh Derivatives | Order entry | 📋 Ready |
 | **ORD.S2** | [Derivatives_Order_Entry_Integration](./Order/Issues/Derivatives_Order_Entry_Integration.md) | Đặt lệnh / hủy / sửa / Unmatch Derivatives | Order entry, Unmatch list | 📋 Ready |
 | **ORD.S3** | [TP_SL_UI_Copy_Implementation](./Order/Issues/TP_SL_UI_Copy_Implementation.md) | TP/SL UI copy & validation (EN/VI) | TP/SL setup | 🔴 Blocked |
+| **ORD.S4** | [Derivatives_Stop_Order_Integration](./Order/Issues/Derivatives_Stop_Order_Integration.md) | Stop Order Place/Modify/Cancel (lệnh điều kiện) | Đặt lệnh Stop, Sửa/Hủy | 📋 Ready |
+
+---
+
+## Multi-Agent Review (BMAD)
+
+Báo cáo review từ 4 BMAD agents (PM, Analyst, UX Designer, Dev):
+
+- **[Multi_Agent_Review_Report.md](./Multi_Agent_Review_Report.md)** – Kết quả review, verdicts, action items ưu tiên
 
 ---
 

@@ -25,8 +25,15 @@
 - [ ] **AC-03** Success (200): hiển thị `message` (từ Lotte) và `orderNumber` cho user. Không dựa vào field `success`.
 - [ ] **AC-04** Lỗi 4xx/5xx: hiển thị `message` (pass-through từ Lotte) hoặc `params` (validation). Hỗ trợ đa ngôn ngữ qua Accept-Language.
 - [ ] **AC-05** Với lệnh Derivatives chờ khớp: Hủy gọi cancel API, Sửa gọi modify API với params đúng spec. Hiển thị message success/error.
-- [ ] **AC-06** Màn lệnh chờ khớp: với tài khoản/symbol Derivatives, gọi GET todayUnmatch Derivatives và hiển thị đúng định dạng (orderNumber, symbol, side, price, quantity, orderType, …).
+- [ ] **AC-06** Màn lệnh chờ khớp: với tài khoản Derivatives đã chọn, gọi `GET /api/v1/derivatives/order/todayUnmatch?accountNumber={account}` và hiển thị danh sách theo response mapping (§6.3).
 - [ ] **AC-07** Trước khi gọi API: kiểm tra required (accountNumber, symbolCode, sellBuyType, orderType, orderQuantity); với LO kiểm tra orderPrice; với MOK/MAK/MTL không gửi giá hoặc gửi null theo spec.
+- [ ] **AC-08** Unmatch list **empty state:** Khi `orders.length === 0`, hiển thị thông báo *"Chưa có lệnh chờ khớp"* (VI) / *"No pending orders"* (EN). Không hiển thị bảng rỗng không có message.
+
+### Navigate flow
+
+- **Vào đặt lệnh:** Từ Current price (Buy/Sell) hoặc Watchlist / Search → chọn symbol Derivatives → navigate tới Trade tab với symbol + side pre-filled.
+- **Vào Unmatch list:** Từ Trade tab (OrderHistoryInTrade) hoặc Order History (OrderHistory screen) → tab/mode Derivatives → danh sách lệnh chờ khớp.
+- **Back:** Từ Order entry / Unmatch → quay về màn trước (Current price hoặc Trade tab).
 
 ---
 
@@ -58,23 +65,45 @@ Backend **Regular Orders (Derivatives)** đã live: đặt lệnh, hủy, sửa,
 | Place Order | POST | `/api/v1/derivatives/order` |
 | Modify Order | PUT | `/api/v1/derivatives/order/modify` |
 | Cancel Order | PUT | `/api/v1/derivatives/order/cancel` |
-| Query Unmatch | GET | `/api/v1/derivatives/order/todayUnmatch` |
+| Query Unmatch | GET | `/api/v1/derivatives/order/todayUnmatch?accountNumber={account}` |
 
 **Place order – Success (200):** `{ "message": "...", "orderNumber": "..." }`  
 **Error:** `{ "code": "ORDER_PLACE_1005", "message": "..." }` hoặc `{ "code": "INVALID_PARAMETER", "params": [...] }`  
 **Order types:** LO, ATO, ATC, MOK, MAK, MTL (price bắt buộc với LO; null với MOK, MAK, MTL).
 
+**todayUnmatch – Query params (bắt buộc):**
+
+| Param | Required | Description |
+|-------|----------|-------------|
+| `accountNumber` | ✅ | Số tài khoản Derivatives đang chọn |
+
+**todayUnmatch – Response mapping (TradeX → FE hiển thị):**
+
+| Response Field | Type | Hiển thị |
+|----------------|------|----------|
+| `orderNumber` | String | Số lệnh |
+| `symbolCode` | String | Mã CK |
+| `sellBuyType` | String | BUY/SELL (side) |
+| `orderType` | String | Loại lệnh (LO, MTL, …) |
+| `orderPrice` | Number | Giá |
+| `orderQuantity` | Number | KL đặt |
+| `matchedQuantity` | Number | KL khớp |
+| `unmatchedQuantity` | Number | KL chưa khớp |
+| `status` | String | PENDING / PENDING_MODIFY |
+| `orderTime` | String | Thời gian đặt |
+
 ---
 
 ## Screens & Components (FE reference)
 
-| Vị trí | Mô tả |
-|--------|--------|
-| Order entry | Symbol Derivatives → POST order với body đúng spec; hiển thị message + orderNumber khi thành công. |
-| Unmatch list | Derivatives → GET todayUnmatch; danh sách + nút Hủy/Sửa. |
-| Cancel / Modify | Gọi cancel/modify API; hiển thị message success/error. |
+| Vị trí | FE Path (nhsv-mts-rn) | Mô tả |
+|--------|----------------------|-------|
+| Order entry | `src/screens/TradeTab/` – TradeOneTouchForm, OrderHistoryInTrade | Form đặt lệnh; Unmatch list mini trong Trade tab |
+| Unmatch list (full) | `src/screens/OrderHistory/` – OrderBook, OrderHistoryTab | Danh sách lệnh chờ khớp; nút Hủy/Sửa |
+| Modify | `src/screens/ModifyOrderBook/` | Màn sửa lệnh |
+| Cancel / Modify API | `src/reduxs/` hoặc `src/services/` | Gọi cancel/modify API; hiển thị message success/error |
 
-**FE repo (read-only):** Order screens: `src/screens/`; API/redux: `src/reduxs/` hoặc `src/services/`; interfaces: `src/interfaces/`.
+**FE repo (read-only):** `nhsv-mts-rn`. Equity dùng `getTodayUnmatch` → `/lotte/equity/order/todayUnmatch`; Derivatives cần API mới `/api/v1/derivatives/order/todayUnmatch`.
 
 ---
 
@@ -89,5 +118,10 @@ Backend **Regular Orders (Derivatives)** đã live: đặt lệnh, hủy, sửa,
 
 ## References
 
-- [Regular_Orders_API_Spec.md](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md)
-- [01_Regular_Orders_Business.md](../../../Planning%20documentation/Order/Planning/01_Regular_Orders_Business.md)
+| Loại | Link |
+|------|------|
+| **API Spec** | [Regular_Orders_API_Spec.md](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md) – §6 todayUnmatch |
+| **Planning** | [01_Regular_Orders_Business.md](../../../Planning%20documentation/Order/Planning/01_Regular_Orders_Business.md) |
+| **Figma – Order form** | _(bổ sung node-id khi có)_ |
+| **Figma – Unmatch list** | _(bổ sung node-id khi có)_ |
+| **Figma – Success/Error toast** | _(bổ sung node-id khi có)_ |

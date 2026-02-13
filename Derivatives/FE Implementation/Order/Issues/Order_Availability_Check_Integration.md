@@ -77,5 +77,8 @@ Trước khi đặt lệnh Derivatives, trader cần biết **số lượng tố
 
 ## References
 
-- [Order_Availability_Check_API_Spec.md](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md)
-- [Order/README](../../../Planning%20documentation/Order/README.md)
+| Loại | Link |
+|------|------|
+| **API Spec** | [Order_Availability_Check_API_Spec.md](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) |
+| **Planning** | [Order/README](../../../Planning%20documentation/Order/README.md) |
+| **Figma – Quantity field + "Tối đa: X"** | _(bổ sung node-id khi có)_ |

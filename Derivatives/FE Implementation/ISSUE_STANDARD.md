@@ -10,7 +10,7 @@
 | Cấp | Ý nghĩa | Jira type | Ví dụ |
 |-----|---------|-----------|--------|
 | **Epic** | Nhóm tính năng / module lớn | Epic | DR-FE-MKT: Derivatives Market FE |
-| **Story** | Giá trị người dùng, có thể demo | Story | MKT.S1: Hiển thị index name PS/DR tại Search & Current price |
+| **Story** | Giá trị người dùng, có thể demo | Story | MKT.S1: Derivatives Market Display – Index name, Search, Home chart, Market lists, Price table |
 | **Task** | Công việc kỹ thuật, có thể giao dev | Task (sub-task) | T1: Thêm helper getSymbolIndexName; T2: Cập nhật ItemSymbol |
 
 - Mỗi **file** trong `Issues/` tương ứng **một Jira Story** (có thể tạo sub-tasks từ mục Tasks).
@@ -121,11 +121,11 @@ Story coi là **Done** khi:
 
 | File (repo) | Epic | Story ID | Jira Story (ví dụ) |
 |-------------|------|----------|---------------------|
-| Market/Issues/Derivatives_Symbol_List_PS_DR_Search_CurrentPrice.md | DR-FE-MKT | MKT.S1 | NHMTS-xxx |
-| Market/Issues/Derivatives_Home_Chart_Market_List_PriceTable.md | DR-FE-MKT | MKT.S2 | NHMTS-xxx |
-| Market/Issues/Derivatives_Current_Price_Screen.md | DR-FE-MKT | MKT.S3 | NHMTS-xxx |
+| Market/Issues/Derivatives_Market_Display.md | DR-FE-MKT | MKT.S1 | NHMTS-xxx |
+| Market/Issues/Derivatives_Current_Price_Screen.md | DR-FE-MKT | MKT.S2 | NHMTS-xxx |
 | Order/Issues/Order_Availability_Check_Integration.md | DR-FE-ORD | ORD.S1 | NHMTS-xxx |
 | Order/Issues/Derivatives_Order_Entry_Integration.md | DR-FE-ORD | ORD.S2 | NHMTS-xxx |
 | Order/Issues/TP_SL_UI_Copy_Implementation.md | DR-FE-ORD | ORD.S3 | NHMTS-xxx |
+| Order/Issues/Derivatives_Stop_Order_Integration.md | DR-FE-ORD | ORD.S4 | NHMTS-xxx |
 
 Khi tạo Jira: tạo Epic trước (DR-FE-MKT, DR-FE-ORD), rồi tạo Story link to Epic; có thể tạo sub-tasks từ mục **Tasks** trong từng file.
