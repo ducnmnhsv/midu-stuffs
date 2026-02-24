@@ -2,7 +2,7 @@
 
 > **Module:** Orders (Regular & Conditional)  
 > **Project:** TradeX Derivatives Integration  
-> **Last Updated:** February 4, 2026  
+> **Last Updated:** February 24, 2026  
 > **Status:** Regular Orders Complete | Conditional Orders Planned
 
 ---
@@ -140,10 +140,12 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 | Issue | Status | Priority | Blocker |
 |-------|--------|----------|---------|
+| [Trade Screen FE Requirement (Normal/Quick Order)](./Issues/Trade_Screen_FE_Requirement.md) | 📋 Ready | High | — |
 | [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | 🔴 BLOCKED | High | Waiting for Core order lifecycle events |
 | [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | 📋 Đề xuất | High | Chờ PM duyệt hướng thiết kế |
 
 **Issue Summary:**
+- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma; logic đặt lệnh dùng chung. Xem [Trade_Screen_FE_Requirement](./Issues/Trade_Screen_FE_Requirement.md).
 - **TP/SL:** Cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
 - **Stop Order:** Lotte thiếu API query/modify/socket → Đề xuất TradeX-Native (lưu & monitor, khi trigger đẩy DRORD-029/030). Xem [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md)
 

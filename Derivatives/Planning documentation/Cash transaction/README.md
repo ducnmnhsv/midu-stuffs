@@ -33,8 +33,9 @@ Cash Transaction module handles all money-related operations for derivatives tra
 |----------|--------------|
 | ✅ Internal cash transfers (DRACC-019, DRACC-020) | ❌ External bank transfers |
 | ✅ VSD margin deposit/withdrawal (DRACC-009, DRACC-021) | ❌ Equity cash transfers |
-| ✅ Transfer history queries | ❌ Payment gateway integration |
-| 📋 Transaction fee calculation | ❌ Bank reconciliation |
+| ✅ Cash statement / Lịch sử thanh toán (DRACC-023) | ❌ Payment gateway integration |
+| ✅ Transfer history queries | ❌ Bank reconciliation |
+| 📋 Transaction fee calculation | |
 
 ---
 
@@ -102,6 +103,21 @@ VSD System (for margin transactions)
 
 ---
 
+### 3. Cash Statement
+
+> **Location:** [`./Cash statement/`](./Cash%20statement/)
+
+**Purpose:** Tra cứu lịch sử thanh toán (sao kê tiền) phái sinh theo ngày
+
+**APIs:**
+- DRACC-023: Lịch sử thanh toán (Payment history)
+
+**Status:** 📋 Planning (API spec completed)
+
+[→ See Cash Statement Documentation](./Cash%20statement/README.md)
+
+---
+
 ## 📊 Implementation Status
 
 ### ✅ Completed Features
@@ -116,6 +132,7 @@ VSD System (for margin transactions)
 |---------|------|--------|----------|----------|
 | Internal Transfer | DRACC-019, DRACC-020 | 📋 API Spec Done | High | 2-3 weeks |
 | VSD Transaction | DRACC-009, 021, 032, 033, 034 | 📋 API Spec Done | High | 3-4 weeks |
+| Cash Statement | DRACC-023 | 📋 API Spec Done | Medium | 1-2 weeks |
 
 ---
 
@@ -127,6 +144,7 @@ VSD System (for margin transactions)
 |---|--------|--------|-------------------|--------|
 | 1 | Internal Transfer | [README.md](./Internal%20transfer/README.md) | [API Spec](./Internal%20transfer/Internal_Transfer_API_Spec.md) | 📋 Planning |
 | 2 | VSD Transaction | [README.md](./VSD%20transaction/README.md) | [API Spec](./VSD%20transaction/VSD_Transaction_API_Spec.md) | 📋 Planning |
+| 3 | Cash Statement | [README.md](./Cash%20statement/README.md) | [API Spec](./Cash%20statement/Cash_Statement_API_Spec.md) | 📋 Planning |
 
 ### Reference Documents
 
@@ -358,6 +376,7 @@ These fields are **NOT** in request body.
 |-----|---------|------------------|
 | DRACC-019 | Internal cash transfer | [API Mapping](./Internal%20transfer/Internal_Transfer_API_Mapping.md#dracc-019-internal-cash-transfer) |
 | DRACC-020 | Transfer history | [API Mapping](./Internal%20transfer/Internal_Transfer_API_Mapping.md#dracc-020-transfer-history-query) |
+| DRACC-023 | Cash statement / Lịch sử thanh toán | [Cash Statement Spec](./Cash%20statement/Cash_Statement_API_Spec.md) |
 | DRACC-009 | VSD margin withdrawal | Lotte API Specs 2.2.1 |
 | DRACC-021 | VSD transaction history | Lotte API Specs 2.2.4 |
 

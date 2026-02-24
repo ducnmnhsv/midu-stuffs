@@ -75,10 +75,10 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 | `value_margin_securities` | `valueMarginSecurities` | String | Direct | Giá trị chứng khoán ký quỹ |
 | `pending_value_withdrawal_margin_securities` | `pendingValueWithdrawalMarginSecurities` | String | Direct | Giá trị chứng khoán ký quỹ chờ rút |
 | `accepted_collateral_assets` | `acceptedCollateralAssets` | String | Direct | Tài sản đảm bảo được chấp nhận |
-| `realized_interest` | `realizedInterest` | String | Direct | Lãi thật thực |
+| `realized_interest` | `realizedPnL` | String | Direct | Lãi/lỗ đã thực hiện (thống nhất với Cash Statement, Unrealized PnL) |
 | `fees` | `fees` | String | Direct | Phí |
-| `unrealized_interest` | `unrealizedInterest` | String | Direct | Lãi chưa ghi nhận |
-| `unmatched_order_request_index` | `unmatchedOrderRequestIndex` | String | Direct | Gửi yêu cầu của lệnh chưa khớp |
+| `unrealized_interest` | `unrealizedPnL` | String | Direct | Lãi/lỗ chưa ghi nhận (thống nhất với Unrealized PnL API) |
+| `unmatched_order_request_index` | `unmatchedOrderRequestIndex` | String | Direct | Chỉ mục/yêu cầu lệnh chưa khớp (theo Lotte) |
 | `margin_shortfall` | `marginShortfall` | String | Direct | Thâm hụt ký quỹ |
 | `withdrawable_collateral_assets` | `withdrawableCollateralAssets` | String | Direct | Tài sản đảm bảo có thể rút |
 | `value_withdrawable_collateral_assets` | `valueWithdrawableCollateralAssets` | String | Direct | Giá trị tài sản đảm bảo có thể rút |
@@ -162,57 +162,57 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 
 ### 3.3 Response Mapping
 
-**Success (200):** Map 1-1 từ Lotte `data_list`. Mỗi Lotte field → 1 TradeX field (camelCase). Không tổng hợp. Lotte trả String → TradeX giữ String.
+**Success (200):** Map 1-1 từ Lotte `data_list`. Mỗi Lotte field → 1 TradeX field (camelCase). Lotte trả String (có thể rỗng `""`) → TradeX giữ String.
 
-| Lotte Field | TradeX Field | Mô tả (Lotte) |
-|-------------|--------------|---------------|
-| `available_balance` | `availableBalance` | Số dư tiền mặt khả dụng |
-| `current_balance` | `currentBalance` | Số dư tiền mặt hiện có |
-| `quantity_stock` | `quantityStock` | Số lượng chứng khoán khả dụng |
-| `value_stock` | `valueStock` | Giá trị chứng khoán khả dụng |
-| `current_quantity_stock` | `currentQuantityStock` | Số lượng chứng khoán hiện có |
-| `current_value_stock` | `currentValueStock` | Giá trị chứng khoán hiện có |
-| `margin_asset_fee` | `marginAssetFee` | Phí quản lý TSKQ |
-| `shortfall_amount` | `shortfallAmount` | Số tiền thiếu |
-| `position_fee` | `positionFee` | Phí vị thế |
-| `hnx_fee` | `hnxFee` | Phí HNX |
-| `begin_margin_balance` | `beginMarginBalance` | Số dư tiền ký quỹ đầu ngày |
-| `margin_deposit_withdrawal` | `marginDepositWithdrawal` | Tiền ký quỹ nộp / rút |
-| `current_margin_balance` | `currentMarginBalance` | Số dư tiền ký quỹ hôm nay |
-| `margin_withdrawal` | `marginWithdrawal` | Tiền ký quỹ rút |
-| `value_margin_securities` | `valueMarginSecurities` | Giá trị chứng khoán ký quỹ |
-| `pending_value_withdrawal_margin_securities` | `pendingValueWithdrawalMarginSecurities` | Giá trị CK ký quỹ chờ rút |
-| `accepted_collateral_assets` | `acceptedCollateralAssets` | Tài sản đảm bảo được chấp nhận |
-| `realized_interest` | `realizedInterest` | Lãi thật thực |
-| `fees` | `fees` | Phí |
-| `unrealized_interest` | `unrealizedInterest` | Lãi chưa ghi nhận |
-| `unmatched_order_request_index` | `unmatchedOrderRequestIndex` | Gửi yêu cầu lệnh chưa khớp |
-| `margin_shortfall` | `marginShortfall` | Thâm hụt ký quỹ |
-| `withdrawable_collateral_assets` | `withdrawableCollateralAssets` | Tài sản đảm bảo có thể rút |
-| `value_withdrawable_collateral_assets` | `valueWithdrawableCollateralAssets` | Giá trị TĐB có thể rút |
-| `withdrawable_margin_securities` | `withdrawableMarginSecurities` | Chứng khoán ký quỹ có thể rút |
-| `accepted_margin_securities_values` | `acceptedMarginSecuritiesValues` | Giá trị CK KQ được chấp nhận |
-| `tax` | `tax` | Thuế |
-| `field_margin_cash_deposit_withdrawal` | `fieldMarginCashDepositWithdrawal` | Tiền ký quỹ nộp rút |
-| `margin_cash_deposit_withdrawal` | `marginCashDepositWithdrawal` | Tiền ký quỹ nộp rút |
-| `margin_deposit_withdrawal_vsd` | `marginDepositWithdrawalVsd` | Tiền KQ nộp rút tại VSD |
-| `begin_margin_cash_balance_nhsv` | `beginMarginCashBalanceNhsv` | Số dư KQ đầu ngày tại NHSV |
-| `withdrawable_margin_securities_value` | `withdrawableMarginSecuritiesValue` | Giá trị CK KQ có thể rút |
-| `withdrawable_margin_cash` | `withdrawableMarginCash` | Tiền ký quỹ có thể rút |
-| `pending_margin_cash_withdrawal_balance_nhsv` | `pendingMarginCashWithdrawalBalanceNhsv` | Số dư KQ chờ rút tại NHSV |
-| `begin_margin_cash_balance` | `beginMarginCashBalance` | Số dư tiền ký quỹ đầu ngày |
-| `pending_margin_cash_withdrawal_nhsv` | `pendingMarginCashWithdrawalNhsv` | Tiền KQ chờ rút tại NHSV |
-| `pending_margin_cash_withdrawal_vsd` | `pendingMarginCashWithdrawalVsd` | Tiền KQ chờ rút tại VSD |
-| `accepted_collateral_balance_nhsv` | `acceptedCollateralBalanceNhsv` | Số dư đảm bảo tại NHSV |
-| `accepted_margin_securities_value_nhsv` | `acceptedMarginSecuritiesValueNhsv` | Giá trị CK KQ tại NHSV |
-| `accepted_collateral_balance_vsd` | `acceptedCollateralBalanceVsd` | Số dư đảm bảo tại VSD |
-| `margin_cash_balance_nhsv` | `marginCashBalanceNhsv` | Số dư tiền KQ tại NHSV |
-| `pending_withdrawal_margin_securities_nhsv` | `pendingWithdrawalMarginSecuritiesNhsv` | Giá trị CK KQ chờ rút tại NHSV |
-| `margin_cash_balance_vsd` | `marginCashBalanceVsd` | Số dư tiền KQ tại VSD |
-| `pending_withdrawal_margin_securities_vsd` | `pendingWithdrawalMarginSecuritiesVsd` | Giá trị CK KQ chờ rút tại VSD |
-| `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | Giá trị CK KQ tại VSD |
-| `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | Giá trị CK ký quỹ tại VSD |
-| `value_required_vsd` | `valueRequiredVsd` | Giá trị VSD yêu cầu |
+| Lotte Field | TradeX Field | Type | Transform | Mô tả (Lotte) |
+|-------------|--------------|------|-----------|---------------|
+| `available_balance` | `availableBalance` | String | Direct | Số dư tiền mặt khả dụng |
+| `current_balance` | `currentBalance` | String | Direct | Số dư tiền mặt hiện có |
+| `quantity_stock` | `quantityStock` | String | Direct | Số lượng chứng khoán khả dụng |
+| `value_stock` | `valueStock` | String | Direct | Giá trị chứng khoán khả dụng |
+| `current_quantity_stock` | `currentQuantityStock` | String | Direct | Số lượng chứng khoán hiện có |
+| `current_value_stock` | `currentValueStock` | String | Direct | Giá trị chứng khoán hiện có |
+| `margin_asset_fee` | `marginAssetFee` | String | Direct | Phí quản lý TSKQ |
+| `shortfall_amount` | `shortfallAmount` | String | Direct | Số tiền thiếu |
+| `position_fee` | `positionFee` | String | Direct | Phí vị thế |
+| `hnx_fee` | `hnxFee` | String | Direct | Phí HNX |
+| `begin_margin_balance` | `beginMarginBalance` | String | Direct | Số dư tiền ký quỹ đầu ngày |
+| `margin_deposit_withdrawal` | `marginDepositWithdrawal` | String | Direct | Tiền ký quỹ nộp / rút |
+| `current_margin_balance` | `currentMarginBalance` | String | Direct | Số dư tiền ký quỹ hôm nay |
+| `margin_withdrawal` | `marginWithdrawal` | String | Direct | Tiền ký quỹ rút |
+| `value_margin_securities` | `valueMarginSecurities` | String | Direct | Giá trị chứng khoán ký quỹ |
+| `pending_value_withdrawal_margin_securities` | `pendingValueWithdrawalMarginSecurities` | String | Direct | Giá trị CK ký quỹ chờ rút |
+| `accepted_collateral_assets` | `acceptedCollateralAssets` | String | Direct | Tài sản đảm bảo được chấp nhận |
+| `realized_interest` | `realizedPnL` | String | Direct | Lãi/lỗ đã thực hiện |
+| `fees` | `fees` | String | Direct | Phí |
+| `unrealized_interest` | `unrealizedPnL` | String | Direct | Lãi/lỗ chưa ghi nhận |
+| `unmatched_order_request_index` | `unmatchedOrderRequestIndex` | String | Direct | Chỉ mục/yêu cầu lệnh chưa khớp |
+| `margin_shortfall` | `marginShortfall` | String | Direct | Thâm hụt ký quỹ |
+| `withdrawable_collateral_assets` | `withdrawableCollateralAssets` | String | Direct | Tài sản đảm bảo có thể rút |
+| `value_withdrawable_collateral_assets` | `valueWithdrawableCollateralAssets` | String | Direct | Giá trị TĐB có thể rút |
+| `withdrawable_margin_securities` | `withdrawableMarginSecurities` | String | Direct | Chứng khoán ký quỹ có thể rút |
+| `accepted_margin_securities_values` | `acceptedMarginSecuritiesValues` | String | Direct | Giá trị CK KQ được chấp nhận |
+| `tax` | `tax` | String | Direct | Thuế |
+| `field_margin_cash_deposit_withdrawal` | `fieldMarginCashDepositWithdrawal` | String | Direct | Tiền ký quỹ nộp rút |
+| `margin_cash_deposit_withdrawal` | `marginCashDepositWithdrawal` | String | Direct | Tiền ký quỹ nộp rút |
+| `margin_deposit_withdrawal_vsd` | `marginDepositWithdrawalVsd` | String | Direct | Tiền KQ nộp rút tại VSD |
+| `begin_margin_cash_balance_nhsv` | `beginMarginCashBalanceNhsv` | String | Direct | Số dư KQ đầu ngày tại NHSV |
+| `withdrawable_margin_securities_value` | `withdrawableMarginSecuritiesValue` | String | Direct | Giá trị CK KQ có thể rút |
+| `withdrawable_margin_cash` | `withdrawableMarginCash` | String | Direct | Tiền ký quỹ có thể rút |
+| `pending_margin_cash_withdrawal_balance_nhsv` | `pendingMarginCashWithdrawalBalanceNhsv` | String | Direct | Số dư KQ chờ rút tại NHSV |
+| `begin_margin_cash_balance` | `beginMarginCashBalance` | String | Direct | Số dư tiền ký quỹ đầu ngày |
+| `pending_margin_cash_withdrawal_nhsv` | `pendingMarginCashWithdrawalNhsv` | String | Direct | Tiền KQ chờ rút tại NHSV |
+| `pending_margin_cash_withdrawal_vsd` | `pendingMarginCashWithdrawalVsd` | String | Direct | Tiền KQ chờ rút tại VSD |
+| `accepted_collateral_balance_nhsv` | `acceptedCollateralBalanceNhsv` | String | Direct | Số dư đảm bảo tại NHSV |
+| `accepted_margin_securities_value_nhsv` | `acceptedMarginSecuritiesValueNhsv` | String | Direct | Giá trị CK KQ tại NHSV |
+| `accepted_collateral_balance_vsd` | `acceptedCollateralBalanceVsd` | String | Direct | Số dư đảm bảo tại VSD |
+| `margin_cash_balance_nhsv` | `marginCashBalanceNhsv` | String | Direct | Số dư tiền KQ tại NHSV |
+| `pending_withdrawal_margin_securities_nhsv` | `pendingWithdrawalMarginSecuritiesNhsv` | String | Direct | Giá trị CK KQ chờ rút tại NHSV |
+| `margin_cash_balance_vsd` | `marginCashBalanceVsd` | String | Direct | Số dư tiền KQ tại VSD |
+| `pending_withdrawal_margin_securities_vsd` | `pendingWithdrawalMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ chờ rút tại VSD |
+| `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ tại VSD |
+| `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | String | Direct | Giá trị CK ký quỹ tại VSD |
+| `value_required_vsd` | `valueRequiredVsd` | String | Direct | Giá trị VSD yêu cầu |
 
 **Response Structure:** Lotte `data_list` thường 1 item (1 tài khoản, 1 ngày). TradeX trả nguyên `dataList` array.
 
@@ -349,6 +349,42 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 ### 5.3 Data Transformation (1-1, không parse)
 
 **Rule:** Map từng field trực tiếp. Lotte trả String → TradeX giữ String. Chỉ convert snake_case → camelCase cho toàn bộ 44 fields.
+
+---
+
+## 6. Response Field Naming Review (Meaningful & Consistent)
+
+### 6.1 Đã điều chỉnh cho thống nhất với các API khác
+
+| TradeX Field (cũ) | TradeX Field (mới) | Lotte Field | Lý do |
+|-------------------|---------------------|------------|--------|
+| `realizedInterest` | **`realizedPnL`** | `realized_interest` | Cùng khái niệm "lãi/lỗ đã thực hiện" với Cash Statement (`realizedPnL`), dễ hiểu cho FE. |
+| `unrealizedInterest` | **`unrealizedPnL`** | `unrealized_interest` | Thống nhất với Unrealized PnL API và Open Position (`unrealizedPnL`). |
+
+Các field còn lại giữ nguyên tên camelCase từ Lotte (1-1), đã đủ rõ nghĩa.
+
+### 6.2 Cặp tên dễ gây nhầm (giữ nguyên theo Lotte)
+
+| TradeX Field 1 | TradeX Field 2 | Ghi chú |
+|----------------|----------------|---------|
+| `fieldMarginCashDepositWithdrawal` | `marginCashDepositWithdrawal` | Hai field khác nhau từ Lotte ("field" vs không "field"). Giữ nguyên tên; BE/FE cần tra Lotte doc nếu cần phân biệt nghiệp vụ. |
+
+### 6.3 Kiểu dữ liệu (String vs Number)
+
+- **Hiện tại:** Toàn bộ response là **String** (theo Lotte).
+- **Gợi ý (tùy chọn):** Các field là số (balance, fee, quantity, value, PnL...) có thể parse sang **Number** ở BE khi trả về, để thống nhất với Cash Statement, Open Position, Unrealized PnL (các API này trả Number cho amount). Nếu giữ String, FE cần parse trước khi tính toán/hiển thị.
+
+**Các field nên xem là numeric (nếu đổi sang Number):**  
+`availableBalance`, `currentBalance`, `quantityStock`, `valueStock`, `currentQuantityStock`, `currentValueStock`, `marginAssetFee`, `shortfallAmount`, `positionFee`, `hnxFee`, `beginMarginBalance`, `marginDepositWithdrawal`, `currentMarginBalance`, `marginWithdrawal`, `valueMarginSecurities`, `realizedPnL`, `fees`, `unrealizedPnL`, `marginShortfall`, `tax`, và tất cả các field còn lại mang giá trị tiền/số lượng/giá trị.
+
+### 6.4 Tóm tắt
+
+| Hạng mục | Trạng thái |
+|----------|------------|
+| Tên field thống nhất PnL | ✅ `realizedPnL`, `unrealizedPnL` (align với Cash Statement, Unrealized PnL, Open Position) |
+| camelCase, 1-1 Lotte | ✅ Giữ nguyên, không thêm/bớt field |
+| Cặp tên dễ nhầm | ⚠️ Đã ghi chú trong §6.2 |
+| Kiểu Number cho numeric | 📋 Tùy chọn (recommend parse ở BE hoặc FE) |
 
 ---
 
