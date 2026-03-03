@@ -176,3 +176,17 @@ When creating or reviewing new APIs, verify:
 | `StopOrderRequestPlace` | `StopOrderPlaceRequest` |
 | `stopOrderPlace()` | `placeStopOrder()` |
 | `WatchListRequest` (TS) | `IWatchListRequest` |
+
+---
+
+## Ecosystem Integration
+
+This skill is part of the **TradeX Skill/Rule Ecosystem**. Always used as **Step 1** before:
+
+| Next skill | When |
+|------------|------|
+| `derivatives-api-spec-format` | Creating API spec document |
+| `tradex-order-api-response-standards` | Specifying Order API response |
+| `tradex-knowledge` → `tradex-api-conventions` | Checking error format standards |
+
+> **Orchestrator:** See `.cursor/rules/ecosystem-orchestrator.mdc` for full routing logic.

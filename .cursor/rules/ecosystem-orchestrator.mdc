@@ -1,0 +1,175 @@
+---
+description: "Ecosystem Orchestrator - Maps every task type to the exact skills/rules to activate, ensuring consistent and connected output across all TradeX workflows"
+globs:
+alwaysApply: true
+---
+
+# TradeX Ecosystem Orchestrator
+
+## Purpose
+
+Central routing table. For every task type, this rule defines which skills/rules to activate, in what order, and how they connect. This eliminates inconsistency across requests.
+
+---
+
+## Task → Skill/Rule Routing Map
+
+### 1. Creating API Specification (Derivatives)
+
+**Trigger keywords:** "API spec", "tạo spec", "viết spec", "API specification"
+
+**Activation sequence:**
+```
+Step 1 → tradex-api-naming        (naming: URL, DTO, service method)
+Step 2 → derivatives-api-spec-format  (document structure & tables)
+Step 3 → tradex-order-api-response-standards  (if Order API)
+Step 4 → tradex-knowledge (tradex-api-conventions)  (error format, auto-fields)
+```
+
+**Output must have:**
+- URL following `/api/v1/{resource}` convention
+- Request/Response DTO names following `{Resource}{Action}Request/Response`
+- All 4 error types (400/401/403/422)
+- Auto-populated fields marked `*(JWT)*`, `*(Request IP)*`
+- Document footer with status/effort
+
+---
+
+### 2. Creating Documentation (Derivatives folder)
+
+**Trigger keywords:** "tạo docs", "viết tài liệu", "create documentation", "new category"
+
+**Activation sequence:**
+```
+Step 1 → derivatives-doc-structure   (folder structure, naming rules)
+Step 2 → derivatives-pm-documentation  (PM-friendly rules by folder type)
+Step 3 → derivatives-api-spec-format  (if Specifications/ content)
+```
+
+**Output must have:**
+- README.md as single entry point
+- Correct folder: Planning/ Specifications/ Issues/ Archive/
+- PascalCase naming, no brackets
+- Planning/ = no code; Specifications/ = code OK
+
+---
+
+### 3. Creating FE Issue (Derivatives)
+
+**Trigger keywords:** "FE issue", "frontend issue", "tạo issue FE", "Derivatives FE"
+
+**Activation sequence:**
+```
+Step 1 → fe-repo-derivatives-issues    (read nhsv-mts-rn, write in tradex-monitoring)
+Step 2 → derivatives-doc-structure     (save in Issues/ folder)
+Step 3 → derivatives-pm-documentation  (Executive Summary for PM)
+```
+
+**Output must have:**
+- Saved in `Derivatives/Planning documentation/{Category}/Issues/`
+- Executive Summary (PM-readable, no code)
+- Reference to screen/component path in nhsv-mts-rn
+- Acceptance Criteria checklist
+
+---
+
+### 4. Analyzing TradeX System / API
+
+**Trigger keywords:** "phân tích API", "trace API", "how does X work", "service nào xử lý"
+
+**Activation sequence:**
+```
+Step 1 → tradex-analyst              (analysis process, knowledge base)
+Step 2 → tradex-knowledge            (check knowledge base first)
+Step 3 → tradex-api-naming           (verify naming conventions in output)
+```
+
+**Output must have:**
+- Start from TradeX Knowledge if topic covered
+- Only scan codebase if Knowledge doesn't cover topic
+- Save new findings to TradeX Knowledge/
+
+---
+
+### 5. Vague/Unclear Request
+
+**Trigger:** Request is ≥2 of: vague, lacks context, missing structure, PM/BA domain
+
+**Activation sequence:**
+```
+Step 1 → prompt-enhance-workflow    (detect & present enhanced prompt)
+Step 2 → [wait for confirmation]
+Step 3 → [route to correct task type above]
+```
+
+---
+
+### 6. Order API (Any type)
+
+**Trigger keywords:** "order API", "lệnh", "đặt lệnh", "hủy lệnh", "sửa lệnh", "TP/SL", "stop order", "OCO"
+
+**Always activate:**
+```
+tradex-order-api-response-standards   (determine: Lotte-integrated vs TradeX-native)
+```
+
+**Then:**
+- If creating spec → also activate derivatives-api-spec-format
+- If FE issue → also activate fe-repo-derivatives-issues
+
+---
+
+## Connection Rules (Always Apply)
+
+### Rule C1: Naming Consistency
+Whenever creating any API-related output (spec, issue, plan), `tradex-api-naming` MUST be checked for all endpoints, DTOs, and service methods.
+
+### Rule C2: Response Format
+Whenever documenting or specifying an Order API response, `tradex-order-api-response-standards` MUST be checked before finalizing.
+
+### Rule C3: PM-Readability Gate
+Whenever writing to `Planning/` folder → Check `derivatives-pm-documentation`: NO code blocks allowed.
+
+### Rule C4: Knowledge-First
+Before scanning codebase for TradeX system knowledge, check `TradeX Knowledge/` folder first.
+
+### Rule C5: Document Footer
+All Derivatives spec/issue documents MUST end with:
+```
+**Document Status:** ✅/📋/🔄
+**For:** [audience]
+**Next Steps:** [action]
+```
+
+---
+
+## Anti-Patterns (Never Do)
+
+| ❌ Bad | ✅ Good |
+|--------|---------|
+| Create spec without checking tradex-api-naming | Always check naming first |
+| Write code in Planning/ docs | Use diagrams/flow only |
+| Mix Lotte-integrated & TradeX-native response patterns | Check tradex-order-api-response-standards |
+| Scan codebase before checking TradeX Knowledge | Knowledge-first always |
+| Create Derivatives issue without `Issues/` folder structure | Follow derivatives-doc-structure |
+| Generate flat docs without README.md entry point | Always README.md first |
+
+---
+
+## Quick Decision Tree
+
+```
+New task arrives
+│
+├─ Is it API spec? ─────────────────→ tradex-api-naming + derivatives-api-spec-format
+│   └─ Is it an Order API? ────────→ + tradex-order-api-response-standards
+│
+├─ Is it documentation? ───────────→ derivatives-doc-structure + derivatives-pm-documentation
+│   └─ Is it Specifications/ content? → + derivatives-api-spec-format
+│
+├─ Is it FE issue? ─────────────────→ fe-repo-derivatives-issues + derivatives-doc-structure
+│
+├─ Is it system analysis? ──────────→ tradex-analyst + tradex-knowledge
+│
+└─ Is it vague/unclear? ────────────→ prompt-enhance-workflow → then re-route above
+```

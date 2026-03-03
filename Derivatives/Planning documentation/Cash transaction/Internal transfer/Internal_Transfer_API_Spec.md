@@ -2,8 +2,9 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Cash Transaction - Internal Transfer  
-**Version:** 1.0  
-**Date:** February 9, 2026
+**Version:** 1.1  
+**Date:** February 9, 2026  
+**Updated:** February 27, 2026 (thêm API Available Balance – DRACC-xxx)
 
 > **Note:** Internal cash transfer between derivatives sub-accounts (DRACC-019, DRACC-020)
 
@@ -21,6 +22,7 @@ Internal Transfer cho phép chuyển tiền giữa các sub-accounts trong tài 
 
 | Operation | Method | Endpoint |
 |-----------|--------|----------|
+| **Available Balance** | GET | `/api/v1/derivatives/account/available-balance` |
 | Transfer Cash | POST | `/api/v1/derivatives/transfer/cash` |
 | Query History | GET | `/api/v1/derivatives/transfer/cash/history` |
 
@@ -105,9 +107,109 @@ or
 
 ---
 
-## 3. API: Internal Cash Transfer
+## 3. API: Available Balance
 
-### 3.1 Request
+### 3.1 Overview
+
+**Purpose:** Lấy số dư tiền khả dụng của tài khoản phái sinh. FE sử dụng field `availableBalance` để:
+- Hiển thị "Available amount" trên màn hình Internal Transfer
+- Validate amount nhập vào không vượt quá số dư khả dụng
+- Điền giá trị khi nhấn nút "All"
+
+**Endpoint:** `GET /api/v1/derivatives/account/available-balance`
+
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info`
+
+**Headers:**
+- `Authorization: Bearer {JWT}`
+- `Accept-Language: vi` (optional, default: vi)
+
+### 3.2 Request Mapping
+
+**TradeX → Lotte:**
+
+| TradeX Param | Type | Required | Lotte Field | Transform | Description |
+|--------------|------|----------|-------------|-----------|-------------|
+| `accountNumber` | String | ✅ | `account` | Uppercase | Số tài khoản |
+| `subNumber` | String | ✅ | `sub_no` | Direct | Số sub-account |
+| *(JWT)* `userId` | - | - | `user_id` | Auto | User từ token |
+
+**Query Parameters:**
+```
+GET /api/v1/derivatives/account/available-balance?accountNumber=039C101991&subNumber=80
+```
+
+### 3.3 Response Mapping
+
+**Success (200):**
+
+| Lotte Field | TradeX Field | Type | Transform | Description |
+|-------------|--------------|------|-----------|-------------|
+| `available_balance` | `availableBalance` | Number | Parse to number | **Số dư tiền khả dụng** – dùng cho Internal Transfer |
+
+**Response example:**
+```json
+{
+  "availableBalance": 100000000
+}
+```
+
+> **Note:**
+> - `available_balance` từ Lotte là String → TradeX parse sang Number, không làm tròn.
+> - FE dùng `availableBalance` để hiển thị "Available amount" và validate `amount` ≤ `availableBalance`.
+
+**Empty / Zero Balance:**
+```json
+{
+  "availableBalance": 0
+}
+```
+
+### 3.4 Error Mapping
+
+**Validation Error (400) – TradeX:**
+
+| Field | Error Code | Condition |
+|-------|------------|-----------|
+| `accountNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `subNumber` | `FIELD_IS_REQUIRED` | Missing |
+
+**Auth Error (401):**
+
+| Error Code | Condition |
+|------------|-----------|
+| `UNAUTHORIZED` | Invalid token |
+| `TOKEN_EXPIRED` | Token expired |
+
+**Auth Error (403):**
+
+| Error Code | Condition |
+|------------|-----------|
+| `UNAUTHORIZED_ACCOUNT` | Account không thuộc quyền sở hữu |
+
+**Error (422) – Lotte Business Rules:**
+
+| Lotte Field | TradeX Field | Transform | Description |
+|-------------|--------------|-----------|-------------|
+| `error_code` | `code` | Prefix: `DERIVATIVES_AVAILABLE_BALANCE_{code}` | Example: `"DERIVATIVES_AVAILABLE_BALANCE_1005"` |
+| `error_desc` | `message` | Pass-through AS-IS | Lotte error message |
+
+### 3.5 Implementation Checklist
+
+- [ ] Create DTO: `DerivativesAvailableBalanceRequest`
+- [ ] Create DTO: `DerivativesAvailableBalanceResponse`
+- [ ] Implement endpoint in `rest-proxy`
+- [ ] Implement service method in `lotte-bridge` → `getAvailableBalance`
+- [ ] Map `available_balance` (String) → `availableBalance` (Number)
+- [ ] Add validation (required fields, account ownership)
+- [ ] Add error handling with prefix `DERIVATIVES_AVAILABLE_BALANCE_{code}`
+- [ ] Update Swagger documentation
+
+---
+
+## 4. API: Internal Cash Transfer
+
+### 4.1 Request
 
 **Endpoint:** `POST /api/v1/derivatives/transfer/cash`
 
@@ -118,7 +220,7 @@ or
 - `Content-Type: application/json`
 - `Accept-Language: vi` (optional, default: vi)
 
-### 3.2 Request Mapping
+### 4.2 Request Mapping
 
 **TradeX → Lotte:**
 
@@ -141,7 +243,7 @@ or
 | `subNumber` | Default `"00"` if empty | `null` → `"00"` |
 | `receivedAccountNumber` | Always uppercase | `"0001234567"` → `"0001234567"` |
 
-### 3.3 Response Mapping
+### 4.3 Response Mapping
 
 **Success (200):**
 
@@ -176,7 +278,7 @@ or
 | `3001` | `DERIVATIVES_CASH_TRANSFER_3001` | Sub không tồn tại |
 | `4001` | `DERIVATIVES_CASH_TRANSFER_4001` | Không thể chuyển cùng sub |
 
-### 3.4 Error Mapping
+### 4.4 Error Mapping
 
 **Validation Error (400) - TradeX:**
 
@@ -206,9 +308,9 @@ or
 
 ---
 
-## 4. API: Query Transfer History
+## 5. API: Query Transfer History
 
-### 4.1 Request
+### 5.1 Request
 
 **Endpoint:** `GET /api/v1/derivatives/transfer/cash/history`
 
@@ -225,7 +327,7 @@ or
 | `toDate` | String | ✅ | Đến ngày (yyyyMMdd) |
 | `nextData` | String | ❌ | Pagination key (empty for first page) |
 
-### 4.2 Request Mapping
+### 5.2 Request Mapping
 
 **TradeX → Lotte:**
 
@@ -245,7 +347,7 @@ or
 | `toDate` | Format: yyyyMMdd | `"20260209"` |
 | `nextData` | Empty string if not provided | `null` → `""` |
 
-### 4.3 Response Mapping
+### 5.3 Response Mapping
 
 **Success (200):**
 
@@ -295,7 +397,7 @@ or
 | 2 | `"ABC123"` | `"DEF456"` | More data available |
 | 3 | `"DEF456"` | `""` | End of data |
 
-### 4.4 Error Mapping
+### 5.4 Error Mapping
 
 **Validation Error (400) - TradeX:**
 
@@ -325,9 +427,9 @@ or
 
 ---
 
-## 5. Field Mapping Reference
+## 6. Field Mapping Reference
 
-### 5.1 Common Patterns
+### 6.1 Common Patterns
 
 | TradeX Field Pattern | Lotte Field Pattern | Transform Rule |
 |---------------------|-------------------|----------------|
@@ -337,7 +439,7 @@ or
 | `note` | `remark` / `remarks` / `cnte` | Direct mapping |
 | `transactionDate` | `date` / `trade_date` | Format: yyyyMMdd |
 
-### 5.2 Type Transformations
+### 6.2 Type Transformations
 
 **Request (TradeX → Lotte):**
 
@@ -355,7 +457,7 @@ or
 | String (`"Y"`/`"N"`) | Boolean | `"Y"` → `true`, `"N"` → `false` |
 | String (date) | String | `"20260209"` → `"20260209"` |
 
-### 5.3 Naming Consistency
+### 6.3 Naming Consistency
 
 **Important:** Derivatives uses different naming than Equity!
 
@@ -368,23 +470,23 @@ or
 
 ---
 
-## 6. Error Handling Standards
+## 7. Error Handling Standards
 
-### 6.1 Error Code Patterns
+### 7.1 Error Code Patterns
 
 | Operation | Error Code Pattern | Example |
 |-----------|-------------------|---------|
 | Cash Transfer | `DERIVATIVES_CASH_TRANSFER_{lotte_code}` | `DERIVATIVES_CASH_TRANSFER_1005` |
 | Transfer History | `DERIVATIVES_TRANSFER_HISTORY_{lotte_code}` | `DERIVATIVES_TRANSFER_HISTORY_1005` |
 
-### 6.2 Success Criteria
+### 7.2 Success Criteria
 
 | Lotte `error_code` | Status | Action |
 |--------------------|--------|--------|
 | `"0000"` | Success | Return mapped response |
 | Any other | Failure | Throw error with pattern above |
 
-### 6.3 Error Response Format
+### 7.3 Error Response Format
 
 **Validation Error:**
 ```json
@@ -406,9 +508,9 @@ or
 
 ---
 
-## 7. Implementation Notes
+## 8. Implementation Notes
 
-### 7.1 Service Architecture
+### 8.1 Service Architecture
 
 | Component | Role |
 |-----------|------|
@@ -417,7 +519,7 @@ or
 | `derivatives-service` | Business logic, validation (for TradeX-native features) |
 | **Kafka** | Service communication |
 
-### 7.2 Key Principles
+### 8.2 Key Principles
 
 **1. Validation Strategy:**
 - TradeX validates: Required fields, data types, format, account ownership
@@ -445,7 +547,7 @@ or
 - NO rounding
 - Use appropriate data type (e.g., `Decimal` for financial amounts)
 
-### 7.3 Field Naming Standards
+### 8.3 Field Naming Standards
 
 Follow TradeX API Naming Conventions (rule `@tradex-api-naming`):
 
@@ -461,7 +563,7 @@ Follow TradeX API Naming Conventions (rule `@tradex-api-naming`):
 - Pattern: `{operation}{Entity}`
 - Example: `transferCash`, `queryTransferHistory`
 
-### 7.4 Implementation Checklist
+### 8.4 Implementation Checklist
 
 **DRACC-019 (Transfer):**
 - [ ] Create DTO: `DerivativesCashTransferRequest`
@@ -490,7 +592,7 @@ Follow TradeX API Naming Conventions (rule `@tradex-api-naming`):
 
 ---
 
-## 8. Related Documents
+## 9. Related Documents
 
 | Document | Location | Description |
 |----------|----------|-------------|
@@ -502,16 +604,16 @@ Follow TradeX API Naming Conventions (rule `@tradex-api-naming`):
 
 ---
 
-## 9. Open Questions
+## 10. Open Questions
 
-### 9.1 Technical Questions
+### 10.1 Technical Questions
 
 1. **DRACC-019 URL:** Specific endpoint needs confirmation (currently `[Root URL APIKEY]`)
 2. **Maximum Date Range:** Confirm allowed date range for history query (3 months? 6 months?)
 3. **Page Size:** Default/maximum page size for history query?
 4. **Real-time Updates:** WebSocket notifications for transfers?
 
-### 9.2 Business Questions
+### 10.2 Business Questions
 
 1. **Cross-Account Transfer:** Requires additional authorization? Rules?
 2. **Transfer Limits:** Minimum/maximum amounts? Daily limits?

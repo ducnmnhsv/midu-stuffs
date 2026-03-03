@@ -2,6 +2,8 @@
 
 **Mục đích:** Mô tả chi tiết cách ekyc-admin lấy ảnh chữ ký khách hàng từ FPT eContract và sử dụng trong luồng mở tài khoản.
 
+**Luồng tổng thể (upload ảnh Lotte + FPT):** xem [ekyc-flow-upload-lotte-fpt-econtract.md](./ekyc-flow-upload-lotte-fpt-econtract.md).
+
 **Nguồn:** Config ekyc-admin-prod.sh, EKYC_SCHEMA, API Addons. **Code ekyc-admin** (repo nhsv-dev) chưa có trong workspace — cần xác minh thêm tại repo đó.
 
 ---

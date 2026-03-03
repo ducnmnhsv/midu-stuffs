@@ -29,6 +29,7 @@ TradeX Knowledge/
 | [market-data-channels.md](../TradeX%20Knowledge/System/market-data-channels.md) | WebSocket channels, data flow, field mappings |
 | [symbol-info-api.md](../TradeX%20Knowledge/System/symbol-info-api.md) | SymbolInfo API, data aggregation |
 | [init-job.md](../TradeX%20Knowledge/System/init-job.md) | Daily init job, symbol_static.json |
+| [ekyc-flow-upload-lotte-fpt-econtract.md](../TradeX%20Knowledge/System/ekyc-flow-upload-lotte-fpt-econtract.md) | eKYC: upload ảnh Lotte + khởi tạo HĐĐT FPT (full flow) |
 
 ### API Standards/ - Universal Conventions
 

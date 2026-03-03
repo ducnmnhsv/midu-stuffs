@@ -553,7 +553,22 @@ When planning a new Derivatives category:
 
 ---
 
+## Ecosystem Integration
+
+This skill is part of the **TradeX Skill/Rule Ecosystem**. When activated, also check:
+
+| Context | Rule/Skill | Why |
+|---------|------------|-----|
+| Always | `derivatives-pm-documentation` | PM-readability gate for Planning/ folder |
+| For Specifications/ content | `derivatives-api-spec-format` | API spec structure within the folder |
+| For FE Issues | `fe-repo-derivatives-issues` | Read nhsv-mts-rn before writing Issues/ |
+| For any API content | `tradex-api-naming` | Consistent naming in spec filenames and content |
+
+> **Orchestrator:** See `.cursor/rules/ecosystem-orchestrator.mdc` for full routing logic.
+
+---
+
 **Skill Status:** Active  
-**Last Updated:** February 3, 2026  
+**Last Updated:** February 27, 2026  
 **Maintained By:** BA Team  
 **Used By:** All Derivatives category documentation

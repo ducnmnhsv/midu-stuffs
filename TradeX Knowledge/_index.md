@@ -28,6 +28,7 @@ TradeX Knowledge/
 | [market-data-channels.md](./System/market-data-channels.md) | Market Data | WebSocket channels, Lotte → Client flow |
 | [symbol-info-api.md](./System/symbol-info-api.md) | Market Data | SymbolInfo aggregation mechanism |
 | [init-job.md](./System/init-job.md) | System | Daily init job, symbol_static.json |
+| [ekyc-flow-upload-lotte-fpt-econtract.md](./System/ekyc-flow-upload-lotte-fpt-econtract.md) | eKYC | Upload ảnh Lotte + khởi tạo HĐĐT FPT (full flow) |
 
 **When to use:** Need to understand how current system works
 
@@ -235,6 +236,7 @@ System/ (Live documentation)
 | `market-data-channels.md` | ✅ Live | 2025-01-28 |
 | `symbol-info-api.md` | ✅ Live | 2025-01-28 |
 | `init-job.md` | ✅ Live | 2025-01-28 |
+| `ekyc-flow-upload-lotte-fpt-econtract.md` | ✅ Live | 2026-03-02 |
 
 ### API Standards/ (Universal)
 

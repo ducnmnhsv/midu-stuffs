@@ -50,19 +50,48 @@ TradeX Knowledge/
 
 Khi tạo issue FE cho Derivatives: đọc cấu trúc/screens/components trong `nhsv-mts-rn` để viết issue chính xác; artifact (issue text, AC) lưu trong tradex-monitoring hoặc Jira/Bitbucket.
 
-## Available Skills
+## Skill/Rule Ecosystem
 
-### Specialized Skills (5)
+> **Orchestrator Rule:** `.cursor/rules/ecosystem-orchestrator.mdc` — Always applied. Routes every task to the correct skill/rule combination.
+
+### Ecosystem Map
+
+```
+Task arrives
+│
+├─ API Spec ──────────→ tradex-api-naming → derivatives-api-spec-format
+│   └─ Order API ────→ + tradex-order-api-response-standards
+│
+├─ Documentation ─────→ derivatives-doc-structure → derivatives-pm-documentation
+│
+├─ FE Issue ──────────→ fe-repo-derivatives-issues → derivatives-doc-structure
+│
+├─ System Analysis ───→ tradex-analyst → tradex-knowledge
+│
+└─ Vague request ─────→ prompt-enhance-workflow → re-route above
+```
+
+### Connection Rules (enforced by Orchestrator)
+
+| Rule | What it ensures |
+|------|----------------|
+| **C1: Naming Consistency** | `tradex-api-naming` checked for ALL API-related output |
+| **C2: Response Format** | `tradex-order-api-response-standards` checked for ALL Order API responses |
+| **C3: PM-Readability Gate** | `derivatives-pm-documentation` enforced for ALL `Planning/` folder content |
+| **C4: Knowledge-First** | `TradeX Knowledge/` checked before scanning codebase |
+| **C5: Document Footer** | All Derivatives specs/issues end with status + next steps |
+
+### Available Skills (5)
 
 Dự án này có 5 specialized skills. Cursor tự động phát hiện hoặc mention `@skill-name`:
 
-| Skill | Location | Auto-trigger | Use Case |
-|-------|----------|--------------|----------|
-| **derivatives-doc-structure** | `.cursor/skills/derivatives-doc-structure/` | ✅ | Create/organize Derivatives documentation |
-| **derivatives-api-spec-format** | `.cursor/skills/derivatives-api-spec-format/` | ✅ | Standard format for Derivatives API specs |
-| **tradex-api-naming** | `.cursor/skills/tradex-api-naming/` | ✅ | Enforce TradeX API naming conventions |
-| **prompt-optimizer** | `.cursor/skills/prompt-optimizer/` | Manual | Optimize individual prompts |
-| **prompt-enhance-workflow** | `.cursor/skills/prompt-enhance-workflow/` | ✅ Auto | Auto-enhance prompts at conversation start |
+| Skill | Location | Auto-trigger | Use Case | Connected To |
+|-------|----------|--------------|----------|--------------|
+| **derivatives-doc-structure** | `.cursor/skills/derivatives-doc-structure/` | ✅ | Create/organize Derivatives docs | derivatives-pm-documentation, derivatives-api-spec-format |
+| **derivatives-api-spec-format** | `.cursor/skills/derivatives-api-spec-format/` | ✅ | Standard format for API specs | tradex-api-naming, tradex-order-api-response-standards |
+| **tradex-api-naming** | `.cursor/skills/tradex-api-naming/` | ✅ | Enforce API naming conventions | derivatives-api-spec-format |
+| **prompt-optimizer** | `.cursor/skills/prompt-optimizer/` | Manual | Optimize individual prompts | prompt-enhance-workflow |
+| **prompt-enhance-workflow** | `.cursor/skills/prompt-enhance-workflow/` | ✅ Auto | Auto-enhance + route to correct skill | All skills |
 
 ### Prompt Enhancement Workflow
 

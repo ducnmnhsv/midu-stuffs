@@ -404,11 +404,22 @@ Please tell me specifically what to adjust:
 - Reuse enhanced prompts for similar requests
 - Cache common enhancement patterns
 
-## Related Skills
+## Related Skills & Ecosystem Integration
+
+This skill is part of the **TradeX Skill/Rule Ecosystem**. After enhancement and user confirmation, route to:
+
+| Enhanced prompt type | Next skill/rule to activate |
+|---------------------|-----------------------------|
+| API spec task | `tradex-api-naming` → `derivatives-api-spec-format` |
+| Documentation task | `derivatives-doc-structure` → `derivatives-pm-documentation` |
+| Order API task | `tradex-order-api-response-standards` |
+| FE issue task | `fe-repo-derivatives-issues` → `derivatives-doc-structure` |
+| System analysis | `tradex-analyst` → `tradex-knowledge` |
+
+> **Orchestrator:** See `.cursor/rules/ecosystem-orchestrator.mdc` for full routing logic.
 
 - **prompt-optimizer**: Core optimization logic
 - **tradex-api-naming**: API naming conventions
-- Other TradeX domain skills
 
 ---
 

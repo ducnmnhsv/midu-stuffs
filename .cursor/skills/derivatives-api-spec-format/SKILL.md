@@ -685,7 +685,22 @@ When writing a new API spec:
 
 ---
 
+## Ecosystem Integration
+
+This skill is part of the **TradeX Skill/Rule Ecosystem**. When activated, also check:
+
+| Step | Rule/Skill | Why |
+|------|------------|-----|
+| Before | `tradex-api-naming` | Validate all endpoint URLs, DTO names |
+| During (Order APIs) | `tradex-order-api-response-standards` | Correct response format per integration type |
+| During (error format) | `tradex-knowledge` → `tradex-api-conventions` | Error code standards, auto-populated fields |
+| After | `derivatives-doc-structure` | Save file in correct folder with correct name |
+
+> **Orchestrator:** See `.cursor/rules/ecosystem-orchestrator.mdc` for full routing logic.
+
+---
+
 **Skill Status:** Active  
-**Last Updated:** February 10, 2026  
+**Last Updated:** February 27, 2026  
 **Maintained By:** BA Team  
 **Used By:** All Derivatives API specification documents
