@@ -22,7 +22,7 @@ Internal Transfer cho phép chuyển tiền giữa các sub-accounts trong tài 
 
 | Operation | Method | Endpoint |
 |-----------|--------|----------|
-| **Available Balance** | GET | `/api/v1/derivatives/account/available-balance` |
+| **Available Balance** | GET | `/api/v1/derivatives/account/availableBalance` |
 | Transfer Cash | POST | `/api/v1/derivatives/transfer/cash` |
 | Query History | GET | `/api/v1/derivatives/transfer/cash/history` |
 
@@ -116,9 +116,11 @@ or
 - Validate amount nhập vào không vượt quá số dư khả dụng
 - Điền giá trị khi nhấn nút "All"
 
-**Endpoint:** `GET /api/v1/derivatives/account/available-balance`
+**Endpoint:** `GET /api/v1/derivatives/account/availableBalance`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info`
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` (DRACC-031)
+
+**Lotte Doc:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5 – Method **POST**, Request Data: `account_no`, `inquiry_date`, `hts_user_id`. Response: `data_list` (Object/DataResponse) chứa field `available_balance`. **Không có field `sub_no` trong Lotte API.**
 
 **Headers:**
 - `Authorization: Bearer {JWT}`
@@ -126,26 +128,27 @@ or
 
 ### 3.2 Request Mapping
 
-**TradeX → Lotte:**
+**TradeX → Lotte (theo đúng Lotte DRACC-031, không bịa field):**
 
 | TradeX Param | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
-| `accountNumber` | String | ✅ | `account` | Uppercase | Số tài khoản |
-| `subNumber` | String | ✅ | `sub_no` | Direct | Số sub-account |
-| *(JWT)* `userId` | - | - | `user_id` | Auto | User từ token |
+| `accountNumber` | String | ✅ | `account_no` | Uppercase | Số tài khoản (Lotte: account_no) |
+| `inquiryDate` | String | ❌ | `inquiry_date` | yyyyMMdd, default: hôm nay | Ngày tra cứu (Lotte: inquiry_date) |
+| *(JWT)* | - | - | `hts_user_id` | Auto từ token | Lotte bắt buộc – user tra cứu |
 
-**Query Parameters:**
+**Query Parameters (TradeX GET):**
 ```
-GET /api/v1/derivatives/account/available-balance?accountNumber=039C101991&subNumber=80
+GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991
+GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquiryDate=20260227
 ```
 
 ### 3.3 Response Mapping
 
-**Success (200):**
+**Success (200):** Lotte trả về `data_list` (theo DRACC-031). TradeX lấy phần tử đầu (hoặc object duy nhất) trong `data_list`, map field `available_balance` sang response.
 
-| Lotte Field | TradeX Field | Type | Transform | Description |
-|-------------|--------------|------|-----------|-------------|
-| `available_balance` | `availableBalance` | Number | Parse to number | **Số dư tiền khả dụng** – dùng cho Internal Transfer |
+| Lotte Field (trong data_list) | TradeX Field | Type | Transform | Description |
+|------------------------------|--------------|------|-----------|-------------|
+| `available_balance` | `availableBalance` | Number | Parse String → Number | Số dư tiền mặt khả dụng (Lotte: String) |
 
 **Response example:**
 ```json
@@ -172,7 +175,7 @@ GET /api/v1/derivatives/account/available-balance?accountNumber=039C101991&subNu
 | Field | Error Code | Condition |
 |-------|------------|-----------|
 | `accountNumber` | `FIELD_IS_REQUIRED` | Missing |
-| `subNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `inquiryDate` | `INVALID_FORMAT` | Không đúng yyyyMMdd (nếu truyền) |
 
 **Auth Error (401):**
 
@@ -196,12 +199,12 @@ GET /api/v1/derivatives/account/available-balance?accountNumber=039C101991&subNu
 
 ### 3.5 Implementation Checklist
 
-- [ ] Create DTO: `DerivativesAvailableBalanceRequest`
-- [ ] Create DTO: `DerivativesAvailableBalanceResponse`
-- [ ] Implement endpoint in `rest-proxy`
-- [ ] Implement service method in `lotte-bridge` → `getAvailableBalance`
-- [ ] Map `available_balance` (String) → `availableBalance` (Number)
-- [ ] Add validation (required fields, account ownership)
+- [ ] Create DTO: `DerivativesAvailableBalanceRequest` (chỉ `accountNumber`, optional `inquiryDate` – không có `subNumber`)
+- [ ] Create DTO: `DerivativesAvailableBalanceResponse` (field `availableBalance`)
+- [ ] Implement endpoint in `rest-proxy`: GET, query params theo §3.2
+- [ ] Implement service in `lotte-bridge`: gọi Lotte **POST** DRACC-031 với body `account_no`, `inquiry_date`, `hts_user_id` (theo Lotte spec)
+- [ ] Map Lotte `data_list` → lấy `available_balance` (String) → `availableBalance` (Number)
+- [ ] Add validation: `accountNumber` required, `inquiryDate` format yyyyMMdd nếu có, account ownership
 - [ ] Add error handling with prefix `DERIVATIVES_AVAILABLE_BALANCE_{code}`
 - [ ] Update Swagger documentation
 

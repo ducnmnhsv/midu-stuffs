@@ -3,7 +3,7 @@
 > **Module:** Internal Transfer  
 > **Category:** Cash Transaction  
 > **Project:** TradeX Derivatives Integration  
-> **Last Updated:** February 9, 2026  
+> **Last Updated:** February 27, 2026  
 > **Status:** Planning
 
 ---
@@ -16,6 +16,7 @@ Internal transfer module enables users to transfer cash between derivatives sub-
 
 | Feature | Lotte API | Status | Description |
 |---------|-----------|--------|-------------|
+| **Available Balance** | DRACC-031 | 📋 Planning | Lấy số dư tiền khả dụng (field `available_balance`) |
 | Cash Transfer | DRACC-019 | 📋 Planning | Transfer cash between sub-accounts |
 | Transfer History | DRACC-020 | 📋 Planning | Query transfer history with pagination |
 
@@ -25,11 +26,28 @@ Internal transfer module enables users to transfer cash between derivatives sub-
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [Internal_Transfer_API_Spec.md](./Internal_Transfer_API_Spec.md) | Complete API specification for DRACC-019 & DRACC-020 | BA, Developers |
+| [Internal_Transfer_API_Spec.md](./Internal_Transfer_API_Spec.md) | Complete API specification – Available Balance, DRACC-019 & DRACC-020 | BA, Developers |
 
 ---
 
 ## API Summary
+
+### Available Balance
+
+**TradeX Endpoint:** `GET /api/v1/derivatives/account/availableBalance`
+
+**Lotte Source:** DRACC-031 (`tuxsvc/der/account/dr-balance-securities-info`), field `available_balance`
+
+**Purpose:** Lấy số dư tiền khả dụng để FE hiển thị "Available amount" và validate số tiền chuyển
+
+**Key Request Parameters (theo Lotte DRACC-031 – không có sub_no):**
+- `accountNumber` - Số tài khoản (bắt buộc)
+- `inquiryDate` - Ngày tra cứu yyyyMMdd (tùy chọn, mặc định hôm nay)
+
+**Key Response Fields:**
+- `availableBalance` - Số dư tiền khả dụng tối đa có thể chuyển (Number)
+
+---
 
 ### DRACC-019: Internal Cash Transfer
 
@@ -159,14 +177,16 @@ These fields are NOT in request body.
 - ✅ Field mapping documentation
 - ✅ Business rules definition
 - ✅ Use case identification
+- ✅ Available Balance API spec (DRACC-031 `dr-balance-securities-info`)
 
 **Next Steps:**
-1. Create DTOs for request/response
-2. Implement API endpoints in `rest-proxy`
-3. Implement service layer in `lotte-bridge`
-4. Add validation & error handling
-5. Write tests (unit + integration)
-6. Update Swagger documentation
+1. Create DTOs: `DerivativesAvailableBalanceRequest/Response`
+2. Create DTOs for request/response (DRACC-019, DRACC-020)
+3. Implement API endpoints in `rest-proxy`
+4. Implement service layer in `lotte-bridge`
+5. Add validation & error handling
+6. Write tests (unit + integration)
+7. Update Swagger documentation
 
 ---
 
@@ -196,6 +216,7 @@ These fields are NOT in request body.
 2. **Maximum Date Range:** Confirm allowed date range for history query (3 months? 6 months?)
 3. **Cross-Account Transfer:** Requires additional authorization? What are the rules?
 4. **Page Size:** What's the default/maximum page size for history query?
+5. **Available Balance scope:** `available_balance` từ DRACC-031 (`dr-balance-securities-info`) có phải là số dư dùng được cho internal transfer không, hay chỉ dùng cho withdrawal?
 
 ### Known Issues
 
@@ -211,5 +232,5 @@ None at this stage (planning phase).
 ---
 
 **Prepared By:** BA Team  
-**Document Version:** 1.0  
-**Last Review:** February 9, 2026
+**Document Version:** 1.1  
+**Last Review:** February 27, 2026
