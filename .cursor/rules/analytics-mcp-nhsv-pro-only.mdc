@@ -1,0 +1,27 @@
+---
+description: "Google Analytics MCP - Chỉ dùng NHSV Pro property trong repo này"
+globs:
+alwaysApply: true
+---
+
+# Analytics MCP — NHSV Pro Only
+
+Trong workspace **tradex-monitoring**, khi gọi Google Analytics MCP (analytics-mcp) hoặc khi nói đến GA4 / report GA:
+
+- **Chỉ dùng property NHSV Pro.** Không gọi, không liệt kê, không đề cập property/account khác (ví dụ BES, NHSV BES).
+- **Property ID mặc định:** `properties/478227972` (hoặc `478227972`).
+- **Account:** `accounts/345830035` (NHSV).
+
+## Áp dụng
+
+- `get_account_summaries`: có thể gọi để kiểm tra kết nối; khi trình bày kết quả cho user trong repo này, **chỉ hiển thị / dùng NHSV Pro** (account NHSV, property NHSV Pro).
+- `get_property_details`, `get_custom_dimensions_and_metrics`, `run_report`, `run_realtime_report`: **luôn dùng** `property_id`: `properties/478227972` (NHSV Pro).
+- Khi viết tài liệu, runbook, hoặc trả lời về GA4 trong repo này: chỉ tham chiếu NHSV Pro, không mở rộng sang property/account khác trừ khi user yêu cầu rõ ràng.
+
+## Tóm tắt
+
+| Mục | Giá trị |
+|-----|--------|
+| Property (GA4) | NHSV Pro — `properties/478227972` |
+| Account | NHSV — `accounts/345830035` |
+| Phạm vi | Chỉ property này khi làm việc trong tradex-monitoring |
