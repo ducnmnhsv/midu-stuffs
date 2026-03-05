@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 9, 2026
 
-> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034)
+> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
 
 ---
 
@@ -151,7 +151,7 @@ or
 
 **Endpoint:** `GET /api/v1/derivatives/transfer/vsd/banks`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tsoi/apikey/tuxsvc/der/account/list_sec_bank_actn_dr` (DRACC-032)
+**Lotte Endpoint:** `[Root URL APIKEY]/tsol/apikey/tuxsvc/der/account/list_sec_bank_actn_dr` (DRACC-032) — Lotte_DR §2.2.5
 
 **Lotte Doc:** DRACC-032
 

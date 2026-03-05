@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 10, 2026
 
-> **Note:** Check maximum order quantity before placing order (DRORD-028)
+> **Note:** Check maximum order quantity before placing order (DRORD-028). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.3.8 (27/02/2026).
 
 ---
 
@@ -122,9 +122,7 @@ Real-time market liquidity:
 
 **Endpoint:** `GET /api/v1/derivatives/order/checkAvailability`
 
-**Lotte Endpoint:** `[Root URL APIKEY]` (DRORD-028)
-
-**Lotte Doc:** DRORD-028
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-available-order-qty` (DRORD-028) — Lotte_DR §2.3.8. Method POST, request: `acnt_no`, `code`, `sell_buy_type` (1: Buy, 2: Sell). Response: `avail_order_qty`, `avail_liq_qty`.
 
 **Headers:**
 - `Authorization: Bearer {JWT}`

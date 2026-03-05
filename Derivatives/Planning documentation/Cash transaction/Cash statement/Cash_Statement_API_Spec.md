@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 23, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu lịch sử thanh toán (payment/settlement history) theo khoảng thời gian.
+> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu lịch sử thanh toán (payment/settlement history) theo khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) §2.1.4.
 
 ---
 
@@ -131,9 +131,7 @@ Lotte trả về `Y` / `N`. TradeX map 1:1 sang `YES` / `NO`.
 
 **Endpoint:** `GET /api/v1/derivatives/cash/statement`
 
-**Lotte Endpoint:** `[RootURL]/tuxsvc/der/account/dr-payment-history` (DRACC-023)
-
-**Lotte Doc:** [API specs] Lotte_DR.md Section 2.1.4
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-payment-history` (DRACC-023) — Lotte_DR §2.1.4. Request: `acnt`, `next_data` (N, lần đầu có thể " "), `date_fr`, `date_to`.
 
 **Headers:**
 - `Authorization: Bearer {JWT}`

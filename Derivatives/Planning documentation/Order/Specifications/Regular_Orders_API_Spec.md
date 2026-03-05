@@ -5,7 +5,7 @@
 **Version:** 2.0  
 **Date:** February 5, 2026
 
-> **Note:** Lotte-integrated APIs for **Derivatives only**. For Equity orders, see `@TradeX Knowledge/Planning/regular-order-api-mapping.md`
+> **Note:** Lotte-integrated APIs for **Derivatives only**. For Equity orders, see `@TradeX Knowledge/Planning/regular-order-api-mapping.md`. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — §2.3.9–2.3.12, 2.3.3, 2.3.4.
 
 ---
 

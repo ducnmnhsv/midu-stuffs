@@ -84,6 +84,8 @@ Each category follows this standard:
 
 ## 📖 How to Use
 
+**TradeX API Index:** Tất cả endpoint TradeX cho Derivatives (đã đặc tả trong các Spec) được tổng hợp tại [TradeX_Derivatives_API_Index.md](../Documentation/TradeX_Derivatives_API_Index.md) — dùng để tra cứu nhanh và mapping Lotte.
+
 ### Planning a New Feature (PM/BA)
 
 1. Navigate to appropriate category folder

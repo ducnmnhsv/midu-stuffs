@@ -1,17 +1,18 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
-Trang 1 of 111
+**Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
+**Cập nhật từ file:** `04032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (04/03/2026)
 
-## LOTTE HPT
-Đặc tả kỹ thuật T-API Gateway 2.0
+---
 
-Trang 2 of 111
+## LOTTE HPT — Đặc tả kỹ thuật T-API Gateway 2.0
 
 **LỊCH SỬ THAY ĐỔI TÀI LIỆU**
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
-| -          | -         | -               | -        |
+| 2026-03-05 | Doc sync  | Cursor          | Đồng bộ từ PDF 04/03/2026: URL DRACC-009/019, tham số snd_acnt/rcv_acnt, is_acnt_no, is_cnte; DRACC-032 tsol; DRACC-031 net_assets; response scrt_err_msg |
+| 2026-03-04 | Doc sync  | Cursor          | Đồng bộ từ bản spec 27/02/2026: thêm DRACC-035/036/037, DRORD-033; bổ sung URL DRORD-025/026, DRORD-028 |
 
 ## 1. MỤC ĐÍCH
 - Tài liệu mô tả API Thị trường
@@ -30,7 +31,7 @@ Trang 2 of 111
     - `Content-Type`: Y, `application/json`
 - **Request Data (JSON object)**:
     - `acnt`: String, Y, Số TK
-    - `next_data`: String, Y, 0 (Không được phép bỏ trống, nếu muốn tra cứu trang tiếp thì nhập đúng next_data trả trong output của lần tra cứu trước)
+    - `next_data`: String, Y, 0 (Không được phép bỏ trống; data nhập có thể là ký tự số bất kỳ; tra cứu trang tiếp thì nhập đúng next_data trả trong output lần trước)
     - `hts_user_id`: String, Y, lhptgwapi (hts_user_id của TK tra cứu)
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
@@ -198,11 +199,130 @@ Trang 2 of 111
     - `accepted_margin_securities_vsd`: String, Giá trị CK KQ được chấp nhận tại VSD
     - `margin_securities_value_vsd`: String, Giá trị chứng khoán ký quỹ tại VSD
     - `value_required_vsd`: String, Giá trị VSD yêu cầu
+    - `net_assets`: String, Tài sản ròng
+
+#### 2.1.6 DRACC-035: Cung cấp các giao dịch tiền phát sinh trên tài khoản nhà đầu tư
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/account/dr-monetary-transaction`
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `start_date`: String, Y, F: YYYYMMDD (Từ ngày)
+    - `end_date`: String, Y, F: YYYYMMDD (Tới ngày)
+    - `account_no`: String, Y, Số tài khoản
+    - `sub_no`: String, Y, Tiểu khoản
+    - `bank_code`: String, Y, Mã ngân hàng cho vay
+    - `type`: String, Y, Phân loại tra cứu
+    - `next_key`: String, Y, Default: "0" (Biến next)
+    - `hts_user_id`: String, Y, Default: lthpt01 (hts_user_id của TK tra cứu của công ty được phân quyền)
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true/false)
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `trans_date`: String, Ngày phát sinh
+    - `trans_id`: String, Số thứ tự giao dịch
+    - `trans_type`: String, Phân loại nghiệp vụ
+    - `money_increase`: String, Tiền phát sinh tăng
+    - `money_decrease`: String, Tiền phát sinh giảm
+    - `cumulative`: String, Lũy kế
+    - `description`: String, Diễn giải
+    - `date_and_id_trans`: String, Ngày và số thứ tự giao dịch
+    - `business_code`: String, Mã nghiệp vụ
+    - `start_balance`: String, Số dư đầu kỳ
+    - `end_balance`: String, Số dư cuối kỳ
+    - `start_date_trans`: String, Ngày đầu tiên phát sinh giao dịch
+    - `pending_balance`: String, Số dư chờ thanh toán
+    - `end_date_trans`: String, Ngày cuối cùng phát sinh giao dịch
+    - `bank_name`: String, Tên ngân hàng vay
+    - `deposit`: String, Tiền ký quỹ
+
+#### 2.1.7 DRACC-036: Cung cấp trạng thái tài khoản và số tiền cần bổ sung khi vi phạm tỷ lệ MU
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/account/dr-mu-breach-account`
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `query_type`: String, Y, "0": Query mới, "else": Query tiếp (Phân loại tra cứu)
+    - `account_no`: String, Y, Số tài khoản
+    - `settlement_status`: String, Y, 0: Tất cả, 1: Non-margin call, 2: Margin call, 3: Force sell (Trạng thái tất toán)
+    - `branch`: String, Y, Default: "%" (Chi nhánh)
+    - `department`: String, Y, Default: "%" (Phòng giao dịch)
+    - `customer_type`: String, Y, "0": Netting account, "1": Non-netting account, "9": Tất cả (Phân loại khách hàng)
+    - `warning_type`: String, Y, "%": Tất cả, "1": Cảnh báo 1, "2": Cảnh cáo 2, "3": Cảnh cáo 3 (Phân loại cảnh báo)
+    - `next_key`: String, Y, Default: "0" (Biến next)
+    - `hts_user_id`: String, Y, Default: lthpt01 (hts_user_id của TK tra cứu của công ty được phân quyền)
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true/false)
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `account_no`: String, Số tài khoản
+    - `account_name`: String, Tên tài khoản
+    - `product_code`: String, Mã sản phẩm
+    - `contract_code`: String, Mã hợp đồng
+    - `contract_name`: String, Tên hợp đồng
+    - `sales_type_code`: String, Mã phân loại mua bán
+    - `sales_type_name`: String, Tên phân loại mua bán
+    - `positions_count`: String, Số lượng vị thế
+    - `settlement_rate`: String, Tỷ lệ tất toán
+    - `settlement_quantity`: String, Số lượng tất toán
+    - `settlement_status_code`: String, Mã trạng thái tất toán
+    - `settlement_status_name`: String, Tên trạng thái tất toán
+    - `next_key`: String, Biến key
+    - `mu_ratio`: String, Tỷ lệ MU
+    - `warning_type`: String, Mã trạng thái tài khoản
+    - `value`: String, Giá trị cần bù
+    - `amount`: String, Số tiền cần bổ sung
+
+#### 2.1.8 DRACC-037: Lãi/lỗ theo ngày
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/account/dr-daily-profit-loss`
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `account_no`: String, Y, Tên tài khoản
+    - `password`: String, Y, Mật khẩu đã mã hóa
+    - `start_date`: String, Y, F: YYYYMMDD (Từ ngày)
+    - `end_date`: String, Y, F: YYYYMMDD (Tới ngày)
+    - `product_code`: String, Y, Mã sản phẩm
+    - `search_type`: Boolean, Y, true: Tra cứu toàn bộ, false: Tra cứu từng TK (Loại tra cứu)
+    - `next_key`: String, Y, Default: "0" (Biến next)
+    - `branch`: String, Y, Default: "%" (Chi nhánh)
+    - `department`: String, Y, Default: "%" (Phòng giao dịch)
+    - `contract_code`: String, Y, Default: "%" (Mã hợp đồng)
+    - `hts_user_id`: String, Y, Default: lthpt01 (hts_user_id của TK tra cứu của công ty được phân quyền)
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true/false)
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `date`: String, Ngày giao dịch
+    - `account_no`: String, Số tài khoản
+    - `account_name`: String, Tên tài khoản
+    - `product_code`: String, Mã sản phẩm
+    - `contract_code`: String, Mã hợp đồng
+    - `product_name`: String, Tên sản phẩm
+    - `realized_profit_loss`: String, Lãi lỗ đã thực hiện
+    - `unrealized_profit_loss`: String, Lãi lỗ chưa thực hiện
+    - `fee`: String, Phí
+    - `net_profit_loss`: String, Net lãi lỗ
+    - `next_key`: String, Biến key
+    - `tax`: String, Thuế
 
 ### 2.2 GIAO DỊCH TIỀN PHÁI SINH
 
 #### 2.2.1 DRACC-009: Rút tiền ký quỹ
-- **URL**: `[RootURL]/tools/vcs/der/account/dr-withdrawal-deposit`
+- **URL**: `[RootURL]/tsol/apikey/tuxsvc/der/account/dr-withdrawal-deposit`
 - **Method**: GET
 - **Authenticate**: Oauth2, API KEY
 - **Request Header**:
@@ -222,19 +342,19 @@ Trang 2 of 111
     - `success`: boolean, Y (true/false)
     - `data_list`: DataResponse
 - **Object Types (DataResponse)**:
-    - `sert_err_msg`: String, Message thực hiện thành công
+    - `scrt_err_msg`: String, Message thực hiện thành công
 
 #### 2.2.2 DRACC-019: Chuyển khoản nội bộ phái sinh
-- **URL**: `[Root URL APIKEY]`
+- **URL**: `[Root URL APIKEY]/tsol/apikey/tuxsvc/der/account/dr-transfer-cash`
 - **Method**: POST
 - **Authenticate**: API KEY
 - **Request Header**:
     - `apiKey`: Y, [API KEY]
     - `Content-Type`: Y, `application/json`
 - **Request Data (JSON object)**:
-    - `snd_actn`: String, Y, Số TK chuyển
+    - `snd_acnt`: String, Y, Số TK chuyển
     - `snd_sub`: String, Y, Sub chuyển
-    - `rcv_actn`: String, Y, Số TK nhận
+    - `rcv_acnt`: String, Y, Số TK nhận
     - `rcv_sub`: String, Y, Sub nhận
     - `amount`: Number, Y, Số tiền
     - `remark`: String, Y, Nội dung
@@ -321,7 +441,7 @@ Trang 2 of 111
     - `next_data`: String, Next data
 
 #### 2.2.5 DRACC-032: API trả danh sách ngân hàng đang có hiệu lực trên 15701
-- **URL**: `[Root URL APIKEY]/tsoi/apikey/tuxsvc/der/account/list_sec_bank_actn_dr`
+- **URL**: `[Root URL APIKEY]/tsol/apikey/tuxsvc/der/account/list_sec_bank_actn_dr`
 - **Method**: POST
 - **Authenticate**: API KEY
 - **Request Header**:
@@ -349,7 +469,7 @@ Trang 2 of 111
     - `Authorization`: Y, bearer access_token (lấy từ API mục 4.1)
     - `apiKey`: Y, [API KEY]
 - **Request Data (JSON object)**:
-    - `is_act_no`: String, Y, Tài khoản
+    - `is_acnt_no`: String, Y, Tài khoản
     - `is_sub_no`: String, Y, Sub
     - `is_recv_bank`: String, N, Tài khoản ngân hàng nhận
     - `is_send_bank`: String, Y, Tài khoản ngân hàng chuyển
@@ -379,7 +499,7 @@ Trang 2 of 111
     - `is_sub_no`: String, Y, Sub
     - `is_dpo_block`: String, Y, Số tiền nộp ký quỹ
     - `is_in_bank_src`: String, Y, Tài khoản ngân hàng nhận
-    - `is_ante`: String, Y, Diễn giải
+    - `is_cnte`: String, Y, Diễn giải
     - `is_in_bank_dest`: String, Y, Tài khoản ngân hàng chuyển
     - `is_fee_amt`: String, Y, Phí chuyển khoản
     - `is_adj_amt`: String, Y, Số tiền điều chỉnh

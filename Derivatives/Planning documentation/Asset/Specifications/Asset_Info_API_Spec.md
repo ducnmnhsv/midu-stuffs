@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Map 1-1 với Lotte DRACC-031 (dr-balance-securities-info) – không tổng hợp, không thêm/bớt field.
+> **Note:** Lotte-integrated API for **Derivatives only**. Map 1-1 với Lotte DRACC-031 (dr-balance-securities-info) – không tổng hợp, không thêm/bớt field. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) §2.1.5 — DRACC-031 có thêm field `margin_asset_utilization_ratio`, `deposit_nhsv_require`, `net_assets`.
 
 ---
 

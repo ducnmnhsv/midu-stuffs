@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Query transaction history with date range and type filter.
+> **Note:** Lotte-integrated API for **Derivatives only**. Query transaction history with date range and type filter. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — DRACC-023 (dr-payment-history) cho lịch sử thanh toán; nếu có API riêng transaction history thì cập nhật khi có tài liệu.
 
 ---
 
@@ -117,7 +117,7 @@ or
 
 **Endpoint:** `GET /api/v1/derivatives/asset/transactionHistory`
 
-**Lotte Endpoint:** `[RootURL]/tuxsvc/der/account/dr-transaction-history` (DRACC-023)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-payment-history` (DRACC-023 — Lịch sử thanh toán) — Lotte_DR §2.1.4. Request: `acnt`, `next_data`, `date_fr`, `date_to`.
 
 **Query Parameters:**
 

@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Query unrealized P&L for open positions with summary.
+> **Note:** Lotte-integrated API for **Derivatives only**. Query unrealized P&L for open positions with summary. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — dữ liệu có thể lấy từ DRACC-031 (dr-balance-securities-info) hoặc API chuyên biệt nếu Lotte cung cấp.
 
 ---
 
@@ -119,7 +119,7 @@ unrealizedPnLPercent = (unrealizedPnL / costValue) × 100
 
 **Endpoint:** `GET /api/v1/derivatives/asset/unrealizedPnl`
 
-**Lotte Endpoint:** `[RootURL]/tuxsvc/der/account/dr-unrealized-pnl` (DRACC-031)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` (DRACC-031) hoặc endpoint chuyên unrealized P&L nếu có — Lotte_DR §2.1.5.
 
 **Query Parameters:**
 

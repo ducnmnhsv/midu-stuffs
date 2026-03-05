@@ -6,7 +6,7 @@
 **Date:** February 9, 2026  
 **Updated:** February 27, 2026 (thêm API Available Balance – DRACC-xxx)
 
-> **Note:** Internal cash transfer between derivatives sub-accounts (DRACC-019, DRACC-020)
+> **Note:** Internal cash transfer between derivatives sub-accounts (DRACC-019, DRACC-020). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — §2.2.2, 2.2.3.
 
 ---
 
@@ -216,7 +216,7 @@ GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquir
 
 **Endpoint:** `POST /api/v1/derivatives/transfer/cash`
 
-**Lotte Endpoint:** `[Root URL APIKEY]` (specific endpoint TBD - DRACC-019)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/...` (DRACC-019 — chi tiết xem [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.2.2; Lotte doc gốc có request: `snd_actn`, `snd_sub`, `rcv_actn`, `rcv_sub`, `amount`, `remark`)
 
 **Headers:**
 - `Authorization: Bearer {JWT}`

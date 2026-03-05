@@ -21,7 +21,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 |-----------------|-----------------|--------|------------|---------------|
 | **Place** | `/api/v1/derivatives/stopOrder` | POST | DRORD-005, 006 | `sellBuyType=BUY` → dr-stop-order-buy<br>`sellBuyType=SELL` → dr-stop-order-sell |
 | **Modify** | `/api/v1/derivatives/stopOrder/modify` | PUT | DRORD-023, 024 | 1 URL chung `dr-replace-stop-order` |
-| **Cancel** | `/api/v1/derivatives/stopOrder/cancel` | PUT | DRORD-025, 026 | 1 URL chung (cần xác nhận với Lotte) |
+| **Cancel** | `/api/v1/derivatives/stopOrder/cancel` | PUT | DRORD-025, 026 | 1 URL chung: `dr-cancel-stop-order` |
 
 ### 1.3 API Endpoints
 
@@ -209,7 +209,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 **Endpoint:** `PUT /api/v1/derivatives/stopOrder/cancel`
 
-**Lotte Endpoint:** DRORD-025, 026 (URL chưa có trong tài liệu - cần xác nhận Lotte)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-cancel-stop-order` (DRORD-025, 026) — xem [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.3.7
 
 **Request body:** Chỉ cần accountNumber, orderNumber.
 
@@ -244,8 +244,8 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | DRORD-006 | Lệnh điều kiện BÁN | dr-stop-order-sell | Place (sellBuyType=SELL) |
 | DRORD-023 | Sửa lệnh Điều kiện Mua | dr-replace-stop-order | Modify |
 | DRORD-024 | Sửa lệnh Điều kiện Bán | dr-replace-stop-order | Modify |
-| DRORD-025 | Hủy lệnh Điều kiện Mua | (URL cần xác nhận) | Cancel |
-| DRORD-026 | Hủy lệnh Điều kiện Bán | (URL cần xác nhận) | Cancel |
+| DRORD-025 | Hủy lệnh Điều kiện Mua | dr-cancel-stop-order | Cancel |
+| DRORD-026 | Hủy lệnh Điều kiện Bán | dr-cancel-stop-order | Cancel |
 
 ### 6.2 Field Abbreviations (Lotte)
 
@@ -306,11 +306,10 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | Item | Action |
 |------|--------|
 | DRORD-005/006 response structure | Xác nhận field trả về (seq_no, date) |
-| DRORD-025/026 URL | Tài liệu Lotte chưa có URL - cần confirm |
 
 ---
 
 **Document Status:** ✅ Draft Complete  
 **For:** BA/Dev  
-**Next Steps:** Confirm DRORD-025/026 URL với Lotte, implement lotte-bridge routing  
+**Next Steps:** Implement lotte-bridge routing; Lotte URLs theo [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026).  
 **Estimated Effort:** 3-5 days (BE) + 2-3 days (FE) + 2 days (QA)
