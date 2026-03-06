@@ -96,10 +96,11 @@ Each category follows this standard:
 
 ### Creating Implementation Issue
 
-1. Create in Issues/ folder
-2. **Section 1: Executive Summary** - For PM (no code)
-3. **Section 2+: Technical Details** - For developers (code OK)
-4. Clear separation between business and technical
+1. **FE (Frontend) issues:** Tạo và lưu tại **[Derivatives/FE Implementation/](../FE%20Implementation/README.md)** (theo module: Order, Market, Cash transaction). Issues trong Planning documentation/Issues/ có thể là redirect hoặc link tới FE Implementation.
+2. **BE / khác:** Create in category Issues/ folder (e.g. Order/Issues/, Market/Issues/).
+3. **Section 1: Executive Summary** - For PM (no code)
+4. **Section 2+: Technical Details** - For developers (code OK)
+5. Clear separation between business and technical
 
 ---
 

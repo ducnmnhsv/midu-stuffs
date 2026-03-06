@@ -51,7 +51,7 @@
   **Figma – Lệnh thường:** [NHSV-Pro – Lệnh thường](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004971-124721&t=Hkbonf9r1expHBzf-11) (node `40004971-124721`).
 - **Validation quantity:** Khi user nhập quantity > Max buy (chiều Mua) hoặc > Max sell (chiều Bán) → toast tương ứng (xem § Quantity).
 
-*Issue riêng cho tích hợp Max buy/Max sell (nếu tách Jira):* [Max_Buy_Max_Sell_Integration.md](Max_Buy_Max_Sell_Integration.md).
+*Issue riêng cho tích hợp Max buy/Max sell (nếu tách Jira):* [Max_Buy_Max_Sell_Integration](Max_Buy_Max_Sell_Integration.md).
 
 ### Real-time (WebSocket)
 
@@ -61,7 +61,7 @@
 | **Sổ lệnh (Bid/Ask)** | `market.bidoffer.{symbol}` | **`bb`** (bestBids), **`bo`** (bestOffers) – giá từng level (`p`), KL (`v`) để hiển thị bảng Bid/Ask và **tap-to-fill** vào Price. |
 | **CE / REF / FL** | Từ SymbolInfo (REST hoặc cache từ init/quote) | `ceilingPrice` (CE), `floorPrice` (FL), `referencePrice` (REF) – dùng để validate khoảng giá và hiển thị CE/REF/FL trên UI. |
 
-Chi tiết: [Regular_Orders_API_Spec](../Specifications/Regular_Orders_API_Spec.md), [Order_Availability_Check_API_Spec](../Specifications/Order_Availability_Check_API_Spec.md), [TradeX Knowledge – Market Data Channels](../../../TradeX%20Knowledge/System/market-data-channels.md), [Symbol Info API](../../../TradeX%20Knowledge/System/symbol-info-api.md).
+Chi tiết: [Regular_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md), [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md), [TradeX Knowledge – Market Data Channels](../../../../TradeX%20Knowledge/System/market-data-channels.md), [Symbol Info API](../../../../TradeX%20Knowledge/System/symbol-info-api.md).
 
 ---
 
@@ -108,14 +108,14 @@ Xây dựng màn hình **Trade** cho Derivatives (Lệnh thường) trên NHSV P
 
 | Nhu cầu FE | API / Nguồn | Spec / Tài liệu |
 |------------|-------------|------------------|
-| Đặt lệnh Mua/Bán | `POST /api/v1/derivatives/order` | [Regular_Orders_API_Spec](../Specifications/Regular_Orders_API_Spec.md) |
+| Đặt lệnh Mua/Bán | `POST /api/v1/derivatives/order` | [Regular_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md) |
 | Sửa / Hủy lệnh | `PUT .../order/modify`, `.../order/cancel` | Cùng spec trên |
 | Lệnh chờ (unmatch) | `GET .../order/todayUnmatch` | Cùng spec trên |
-| **Sức mua / sức bán** (Max buy, Max sell, validate quantity) | `GET /api/v1/derivatives/order/checkAvailability` | [Order_Availability_Check_API_Spec](../Specifications/Order_Availability_Check_API_Spec.md) |
-| **Giá real-time** (field Price từ giá hiện tại) | WebSocket `market.quote.{symbol}` → field **`c`** | [market-data-channels.md](../../../TradeX%20Knowledge/System/market-data-channels.md) |
-| **CE / REF / FL** (khoảng giá, tap CE/REF/FL) | SymbolInfo: `ceilingPrice`, `floorPrice`, `referencePrice` (REST hoặc cache) | [symbol-info-api.md](../../../TradeX%20Knowledge/System/symbol-info-api.md) |
-| **Bid/Ask** (sổ lệnh, tap giá fill Price) | WebSocket `market.bidoffer.{symbol}` → `bb`, `bo` (p, v) | [market-data-channels.md](../../../TradeX%20Knowledge/System/market-data-channels.md) |
-| **Open position & Unrealized PnL** (block dưới Bid/Ask) | `GET /api/v1/derivatives/asset/openPositions` (optional `symbol`) | [Open_Position_List_API_Spec](../../Asset/Specifications/Open_Position_List_API_Spec.md) |
+| **Sức mua / sức bán** (Max buy, Max sell, validate quantity) | `GET /api/v1/derivatives/order/checkAvailability` | [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) |
+| **Giá real-time** (field Price từ giá hiện tại) | WebSocket `market.quote.{symbol}` → field **`c`** | [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) |
+| **CE / REF / FL** (khoảng giá, tap CE/REF/FL) | SymbolInfo: `ceilingPrice`, `floorPrice`, `referencePrice` (REST hoặc cache) | [symbol-info-api.md](../../../../TradeX%20Knowledge/System/symbol-info-api.md) |
+| **Bid/Ask** (sổ lệnh, tap giá fill Price) | WebSocket `market.bidoffer.{symbol}` → `bb`, `bo` (p, v) | [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) |
+| **Open position & Unrealized PnL** (block dưới Bid/Ask) | `GET /api/v1/derivatives/asset/openPositions` (optional `symbol`) | [Open_Position_List_API_Spec](../../../Planning%20documentation/Asset/Specifications/Open_Position_List_API_Spec.md) |
 
 **Gợi ý cho FE:**  
 - Gọi **checkAvailability** khi vào màn hoặc đổi symbol/chiều (buy/sell) để hiển thị Max buy / Max sell và validate "vượt quá sức mua/bán khả dụng".  
@@ -148,13 +148,13 @@ Xây dựng màn hình **Trade** cho Derivatives (Lệnh thường) trên NHSV P
 
 | Document | Description |
 |----------|-------------|
-| [Regular_Orders_API_Spec](../Specifications/Regular_Orders_API_Spec.md) | API Place/Modify/Cancel, request/response, error format |
-| [Order_Availability_Check_API_Spec](../Specifications/Order_Availability_Check_API_Spec.md) | Sức mua/sức bán (checkAvailability) |
-| [Open_Position_List_API_Spec](../../Asset/Specifications/Open_Position_List_API_Spec.md) | Open position & Unrealized PnL (block dưới Bid/Ask) |
-| [01_Regular_Orders_Business](../Planning/01_Regular_Orders_Business.md) | Business rules, user stories |
-| [Order README](../README.md) | Tổng quan Order, implementation status |
-| [market-data-channels.md](../../../TradeX%20Knowledge/System/market-data-channels.md) | WebSocket quote/bidoffer, field `c`, `bb`, `bo` |
-| [symbol-info-api.md](../../../TradeX%20Knowledge/System/symbol-info-api.md) | CE/REF/FL (ceilingPrice, floorPrice, referencePrice) |
+| [Regular_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md) | API Place/Modify/Cancel, request/response, error format |
+| [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) | Sức mua/sức bán (checkAvailability) |
+| [Open_Position_List_API_Spec](../../../Planning%20documentation/Asset/Specifications/Open_Position_List_API_Spec.md) | Open position & Unrealized PnL (block dưới Bid/Ask) |
+| [01_Regular_Orders_Business](../../../Planning%20documentation/Order/Planning/01_Regular_Orders_Business.md) | Business rules, user stories |
+| [Order README](../../../Planning%20documentation/Order/README.md) | Tổng quan Order, implementation status |
+| [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) | WebSocket quote/bidoffer, field `c`, `bb`, `bo` |
+| [symbol-info-api.md](../../../../TradeX%20Knowledge/System/symbol-info-api.md) | CE/REF/FL (ceilingPrice, floorPrice, referencePrice) |
 | Figma – Lệnh thường | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004971-124721&t=Hkbonf9r1expHBzf-11) |
 | Figma – Lệnh nhanh | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005168-209023&t=Hkbonf9r1expHBzf-11) |
 | Figma – Order confirmation (Buy) | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005409-14865&t=Hkbonf9r1expHBzf-11) |
@@ -230,7 +230,7 @@ Cùng một luồng đặt lệnh (Regular Orders) nhưng hai trải nghiệm gi
 
 **Response (Open Positions):**  
 - `positions[]`: mỗi item có `symbol`, `side` (LONG/SHORT), `totalQuantity`, `unrealizedPnL`, `averagePrice`, …  
-- Chi tiết: [Open_Position_List_API_Spec](../../Asset/Specifications/Open_Position_List_API_Spec.md).
+- Chi tiết: [Open_Position_List_API_Spec](../../../Planning%20documentation/Asset/Specifications/Open_Position_List_API_Spec.md).
 
 **Cách hiển thị gợi ý (theo symbol hiện tại):**
 - **Open position:** Lọc `positions` theo `symbol` = mã đang chọn; nếu có nhiều position (vd: LONG + SHORT) thì tổng hợp net (LONG totalQuantity − SHORT totalQuantity) hoặc hiển thị theo convention design (vd: "+5" = net long 5, "-5" = net short 5). Không có position cho mã đó → hiển thị "0" hoặc "-".

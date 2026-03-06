@@ -3,7 +3,7 @@
 **Issue Type:** Feature Request (Frontend)  
 **Priority:** High  
 **Component:** NHSV Pro – Trade Tab (Derivatives)  
-**Related:** [Trade_Screen_FE_Requirement.md](Trade_Screen_FE_Requirement.md)  
+**Related:** [Trade_Screen_FE_Requirement](Trade_Screen_FE_Requirement.md)  
 **Created:** February 27, 2026  
 **Status:** 📋 Ready for FE Dev
 
@@ -76,7 +76,7 @@ Cùng một API và cùng giá trị Max buy / Max sell dùng để hiển thị
 | **Max buy** | `response.buy.availableQuantity` |
 | **Max sell** | `response.sell.availableQuantity` |
 
-**Spec:** [Order_Availability_Check_API_Spec](../Specifications/Order_Availability_Check_API_Spec.md).
+**Spec:** [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md).
 
 ---
 
@@ -97,8 +97,8 @@ Cùng một API và cùng giá trị Max buy / Max sell dùng để hiển thị
 
 | Document | Description |
 |----------|-------------|
-| [Trade_Screen_FE_Requirement.md](Trade_Screen_FE_Requirement.md) | Màn Trade tổng thể, có section Max buy / Max sell |
-| [Order_Availability_Check_API_Spec.md](../Specifications/Order_Availability_Check_API_Spec.md) | Spec API checkAvailability |
+| [Trade_Screen_FE_Requirement](Trade_Screen_FE_Requirement.md) | Màn Trade tổng thể, có section Max buy / Max sell |
+| [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) | Spec API checkAvailability |
 | Figma – Lệnh thường | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004971-124721&t=Hkbonf9r1expHBzf-11) |
 
 ---

@@ -76,7 +76,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | priceBand | Required, gửi lên Lotte | `FIELD_IS_REQUIRED` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
 
-**Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → [FE Issue](../../../FE%20Implementation/Order/Issues/Derivatives_Stop_Order_Integration.md).
+**Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → FE Issues: [Derivatives_Stop_Order_Integration](../../../FE%20Implementation/Order/Issues/Derivatives_Stop_Order_Integration.md), [Stop_Order_Screen_FE_Requirement](../../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
 
 **Note:** Business rules (margin, price limits) validated by Lotte Core.
 

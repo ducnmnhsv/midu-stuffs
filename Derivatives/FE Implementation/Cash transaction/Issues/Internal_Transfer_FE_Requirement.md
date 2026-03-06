@@ -26,13 +26,13 @@ Màn hình xuất hiện khi user chọn **sub 80** (Derivatives Margin sub-acco
 - **Confirmation Dialog:** [13_06 Internal Transfer – Dialog](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005073-244358&t=Hkbonf9r1expHBzf-11)
 - **History:** [13_05 Internal Transfer – History](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005073-244323&t=Hkbonf9r1expHBzf-11)
 
-### APIs (BE đã implement theo [Internal_Transfer_API_Spec](../Internal%20transfer/Internal_Transfer_API_Spec.md))
+### APIs (BE đã implement theo [Internal_Transfer_API_Spec](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md))
 
 - **Available Balance** — GET `/api/v1/derivatives/account/availableBalance`: lấy Available cash (field `availableBalance`).
 - **Internal Transfer** — POST `/api/v1/derivatives/transfer/cash`: thực hiện chuyển tiền.
 - **Transfer History** — GET `/api/v1/derivatives/transfer/cash/history`: lịch sử chuyển tiền (cho tab History).
 
-> **Note:** FE chỉ gọi TradeX API. Chi tiết request/response, error format xem [Internal_Transfer_API_Spec.md](../Internal%20transfer/Internal_Transfer_API_Spec.md).
+> **Note:** FE chỉ gọi TradeX API. Chi tiết request/response, error format xem [Internal_Transfer_API_Spec.md](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md).
 
 ---
 
@@ -221,7 +221,7 @@ src/screens/InternalTransferScreen/
 - **Endpoint:** `/api/v1/derivatives/account/availableBalance`  
 - **Auth:** JWT Bearer  
 - **Params:** `accountNumber` (required), `inquiryDate` (optional, yyyyMMdd)  
-- **Spec:** [Internal_Transfer_API_Spec.md §3](../Internal%20transfer/Internal_Transfer_API_Spec.md)
+- **Spec:** [Internal_Transfer_API_Spec.md §3](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md)
 
 **Expected response:**
 
@@ -236,7 +236,7 @@ src/screens/InternalTransferScreen/
 - **Method:** POST  
 - **Endpoint:** `/api/v1/derivatives/transfer/cash`  
 - **Auth:** JWT Bearer  
-- **Spec:** [Internal_Transfer_API_Spec.md §4](../Internal%20transfer/Internal_Transfer_API_Spec.md)
+- **Spec:** [Internal_Transfer_API_Spec.md §4](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md)
 
 **Request body:**
 
@@ -280,7 +280,7 @@ src/screens/InternalTransferScreen/
 - **Endpoint:** `/api/v1/derivatives/transfer/cash/history`  
 - **Auth:** JWT Bearer  
 - **Query params:** `accountNumber` (required), `fromDate` (required, yyyyMMdd), `toDate` (required, yyyyMMdd), `nextData` (optional, pagination key)  
-- **Spec:** [Internal_Transfer_API_Spec.md §5](../Internal%20transfer/Internal_Transfer_API_Spec.md)
+- **Spec:** [Internal_Transfer_API_Spec.md §5](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md)
 
 **Response:** `items` (array of transfer objects), `nextData` (string). Mỗi item: `transactionDate`, `sendAccountNumber`, `sendSubNumber`, `sendAccountName`, `sequenceNumber`, `amount`, `receivedAccountNumber`, `receivedSubNumber`, `receivedAccountName`, `note`, `tradingChannel`, `isCanceled`.
 
@@ -309,8 +309,8 @@ src/screens/InternalTransferScreen/
 
 ## 📚 Related Documents
 
-- **Internal Transfer API Spec:** [Internal_Transfer_API_Spec.md](../Internal%20transfer/Internal_Transfer_API_Spec.md)
-- **Cash Transaction README:** [README.md](../README.md)
+- **Internal Transfer API Spec:** [Internal_Transfer_API_Spec.md](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md)
+- **Cash Transaction README:** [README.md](../../../Planning%20documentation/Cash%20transaction/README.md)
 - **Figma – Request Screen:** [node-id=40005073-244395](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005073-244395)
 - **Figma – Confirmation Dialog:** [node-id=40005073-244358](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005073-244358)
 - **Figma – History:** [node-id=40005073-244323](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005073-244323&t=Hkbonf9r1expHBzf-11)
@@ -319,4 +319,4 @@ src/screens/InternalTransferScreen/
 
 **Document Status:** ✅ Ready for FE Implementation  
 **For:** FE Developer  
-**Next Steps:** FE implement màn Internal Transfer (Request + History) theo Figma & use case trên; gọi APIs theo [Internal_Transfer_API_Spec](../Internal%20transfer/Internal_Transfer_API_Spec.md). Confirm open questions (receiving accounts, default date range cho History) khi cần.
+**Next Steps:** FE implement màn Internal Transfer (Request + History) theo Figma & use case trên; gọi APIs theo [Internal_Transfer_API_Spec](../../../Planning%20documentation/Cash%20transaction/Internal%20transfer/Internal_Transfer_API_Spec.md). Confirm open questions (receiving accounts, default date range cho History) khi cần.

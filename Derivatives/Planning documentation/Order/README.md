@@ -136,18 +136,21 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 ### Active Issues (Ready for Development)
 
-**Current Issues:**
+**FE Implementation issues** (Trade, Stop order, Max buy/Max sell, TP/SL tracking) đã chuyển sang **Derivatives/FE Implementation/** – xem [FE Implementation README](../../FE%20Implementation/README.md).
 
-| Issue | Status | Priority | Blocker |
-|-------|--------|----------|---------|
-| [Trade Screen FE Requirement (Normal/Quick Order)](./Issues/Trade_Screen_FE_Requirement.md) | 📋 Ready | High | — |
-| [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | 🔴 BLOCKED | High | Waiting for Core order lifecycle events |
-| [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | 📋 Đề xuất | High | Chờ PM duyệt hướng thiết kế |
+| Issue | Location | Status | Priority |
+|-------|----------|--------|----------|
+| [Trade Screen FE Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Stop Order Screen FE Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Max Buy/Max Sell Integration](../../FE%20Implementation/Order/Issues/Max_Buy_Max_Sell_Integration.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [TP/SL Tracking Mechanism](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md) | FE Implementation/Order/Issues/ | 🔴 BLOCKED | High |
+| [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | Planning documentation/Order/Issues/ | 📋 Đề xuất | High |
 
 **Issue Summary:**
-- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma; logic đặt lệnh dùng chung. Xem [Trade_Screen_FE_Requirement](./Issues/Trade_Screen_FE_Requirement.md).
-- **TP/SL:** Cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
-- **Stop Order:** Lotte thiếu API query/modify/socket → Đề xuất TradeX-Native (lưu & monitor, khi trigger đẩy DRORD-029/030). Xem [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md)
+- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma. → [Trade_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md).
+- **Stop Order Screen FE:** Màn đặt lệnh Stop order – Normal/Quick mode, trigger price, date picker, validation. → [Stop_Order_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
+- **TP/SL:** Cần track order lifecycle (cancel, modify) – Core chưa cung cấp events. → [TPSL_Tracking_Mechanism_Discussion](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md).
+- **Stop Order (TradeX-Native):** Đề xuất thiết kế khi Lotte thiếu API. → [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md).
 
 **Future Issues:**
 - Conditional Orders Implementation (when approved)

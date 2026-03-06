@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 9, 2026
 
-> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
+> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (04/03/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
 
 ---
 
@@ -234,7 +234,7 @@ or
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `accountNumber` | String | ✅ | Số tài khoản |
-| `inquiryDate` | String | ✅ | Ngày tra cứu (yyyyMMdd) |
+| `inquiryDate` | String | ❌ | Ngày tra cứu (yyyyMMdd). Nếu không truyền → mặc định = today khi gọi Lotte |
 
 ### 4.2 Request Mapping
 
@@ -243,14 +243,14 @@ or
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `account_no` | Direct | Số tài khoản |
-| `inquiryDate` | String | ✅ | `inquiry_date` | Direct (yyyyMMdd) | Ngày tra cứu |
+| `inquiryDate` | String | ❌ | `inquiry_date` | Default **today** (yyyyMMdd) nếu không truyền | Ngày tra cứu |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto | User from token |
 
 **Transformation Details:**
 
 | Field | Rule | Example |
 |-------|------|---------|
-| `inquiryDate` | Format: yyyyMMdd | `"20260209"` |
+| `inquiryDate` | Nếu không có → dùng ngày hiện tại (yyyyMMdd); nếu có thì format yyyyMMdd | (empty) → `"20260306"`; `"20260209"` |
 | `hts_user_id` | Auto from JWT token | From authentication |
 
 ### 4.3 Response Mapping
@@ -261,17 +261,19 @@ or
 |-------------|--------------|------|-----------|-------------|
 | `margin_cash_balance_vsd` | `vsdCashBalance` | Number | Parse to number | Số dư tiền ký quỹ tại VSD |
 | `withdrawable_margin_cash` | `withdrawableCash` | Number | Parse to number | Tiền ký quỹ có thể rút |
+| `available_balance` | `availableBalance` | Number | Parse to number | Số dư tiền mặt khả dụng |
 
 **Example Response:**
 ```json
 {
   "vsdCashBalance": 50000000,
-  "withdrawableCash": 30000000
+  "withdrawableCash": 30000000,
+  "availableBalance": 45000000
 }
 ```
 
 **Note:** 
-- Only returns 2 specific fields from DRACC-031 (which has 40+ fields)
+- Returns 3 specific fields from DRACC-031 (which has 40+ fields)
 - Other balance fields available in DRACC-031 but not needed for VSD transactions
 - Parse string amounts to numbers
 
@@ -281,16 +283,17 @@ or
 |-------|-----------|-------------|
 | `vsdCashBalance` | Số dư tiền ký quỹ tại VSD | Total margin cash deposited at VSD |
 | `withdrawableCash` | Tiền ký quỹ có thể rút | Amount available to withdraw from margin |
+| `availableBalance` | Số dư tiền mặt khả dụng | Available cash balance |
 
 ---
 
 ## 5. API: Calculate Deposit Fee
 
-### 4.1 Request
+### 5.1 Request
 
-**Endpoint:** `GET /api/v1/derivatives/transfer/vsd/deposit/fee`
+**Endpoint:** `POST /api/v1/derivatives/transfer/vsd/deposit/fee`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/get_trd_fee` (DRACC-033)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/get_trd_fee` (DRACC-033) — Method: POST
 
 **Lotte Doc:** DRACC-033
 
@@ -299,14 +302,14 @@ or
 - `Content-Type: application/json`
 - `Accept-Language: vi` (optional, default: vi)
 
-### 4.2 Request Mapping
+### 5.2 Request Mapping
 
 **TradeX Request (from FE):**
 
 | TradeX Field | Type | Required | Description |
 |--------------|------|----------|-------------|
 | `accountNumber` | String | ✅ | Tài khoản |
-| `subNumber` | String | ❌ | Sub (default: `"00"`) |
+| `subNumber` | String | ❌ | Sub (default: `"80"`) |
 | `amount` | Number | ✅ | Số tiền nộp |
 
 **Backend Processing (before calling Lotte):**
@@ -321,12 +324,12 @@ or
 
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
-| `accountNumber` | String | ✅ | `is_act_no` | Direct | Tài khoản |
+| `accountNumber` | String | ✅ | `is_acnt_no` | Direct | Tài khoản (Lotte 04/03) |
 | `subNumber` | String | ❌ | `is_sub_no` | Default `"00"` | Sub |
 | `amount` | Number | ✅ | `is_trd_amt` | Convert to String | Số tiền nộp |
-| *(Auto from DRACC-032)* `sourceBankAccountNumber` | String | - | `is_send_bank` | Get from bank list (`.R`) | TK NH chuyển |
-| *(Auto from DRACC-032)* `destinationBankAccountNumber` | String | - | `is_recv_bank` | Get from bank list (`.C`) | TK NH nhận |
-| *(JWT)* `userId` | - | - | `user_id` | Auto | User from token |
+| *(Auto from DRACC-032)* `sourceBankAccountNumber` | String | - | `is_send_bank` | Get from bank list (`.R`) | TK NH chuyển (Y) |
+| *(Auto from DRACC-032)* `destinationBankAccountNumber` | String | - | `is_recv_bank` | Get from bank list (`.C`) | TK NH nhận (N) |
+| *(JWT)* `userId` | - | - | `hts_user_id` | Auto | User from token |
 
 **Transformation Details:**
 
@@ -337,13 +340,13 @@ or
 | `sourceBankAccountNumber` | Auto-select first `.R` bank | `"129000065475"` |
 | `destinationBankAccountNumber` | Auto-select first `.C` bank | `"121000065473"` |
 
-### 4.3 Response Mapping
+### 5.3 Response Mapping
 
 **Success (200):**
 
 | Lotte Field | TradeX Field | Type | Transform | Description |
 |-------------|--------------|------|-----------|-------------|
-| `data_list[0].trade_fee_amt` | `feeAmount` | Number | Parse to number | Phí giao dịch |
+| `data_list[0].trade_fee_amt` | `feeAmount` | Number | Parse to number | Phí chuyển khoản |
 | `data_list[0].adjusted_amt` | `adjustedAmount` | Number | Parse to number | Số tiền điều chỉnh |
 | `data_list[0].real_trd_amt` | `receivedAmount` | Number | Parse to number | Số tiền thực nhận |
 | `data_list[0].fee_type` | `feeType` | String | Direct | Phân loại tính phí |
@@ -364,7 +367,7 @@ or
 
 ## 6. API: Deposit Margin (C05)
 
-### 5.1 Request
+### 6.1 Request
 
 **Endpoint:** `POST /api/v1/derivatives/transfer/vsd/deposit`
 
@@ -377,7 +380,7 @@ or
 - `Content-Type: application/json`
 - `Accept-Language: vi` (optional, default: vi)
 
-### 5.2 Request Mapping
+### 6.2 Request Mapping
 
 **TradeX Request (from FE):**
 
@@ -407,7 +410,7 @@ or
 | `accountNumber` | String | ✅ | `is_acnt_no` | Direct | Tài khoản |
 | `subNumber` | String | ❌ | `is_sub_no` | Default `"00"` | Sub |
 | `amount` | Number | ✅ | `is_dpo_block` | Convert to String | Số tiền nộp |
-| `note` | String | ❌ | `is_ante` | Default `""` | Diễn giải |
+| `note` | String | ❌ | `is_cnte` | Default `""` (Lotte: Y) | Diễn giải (Lotte 04/03) |
 | `feeAmount` | Number | ✅ | `is_fee_amt` | Convert to String | Phí (from DRACC-033) |
 | `adjustedAmount` | Number | ✅ | `is_adj_amt` | Convert to String | Số tiền điều chỉnh (from DRACC-033) |
 | `receivedAmount` | Number | ✅ | `is_acc_amt` | Convert to String | Số thực nhận (from DRACC-033) |
@@ -437,7 +440,7 @@ or
    - `is_in_bank_dest` (dest in Lotte) = **source** in TradeX (NHSV account, `.R`)
    - This is reversed naming in Lotte API!
 
-### 5.3 Response Mapping
+### 6.3 Response Mapping
 
 **Success (200):**
 
@@ -473,20 +476,20 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 
 ## 7. API: Withdraw Margin (C10)
 
-### 6.1 Request
+### 7.1 Request
 
 **Endpoint:** `POST /api/v1/derivatives/transfer/vsd/withdraw`
 
-**Lotte Endpoint:** `[RootURL]/tools/vcs/der/account/dr-withdrawal-deposit` (DRACC-009)
+**Lotte Endpoint:** `[RootURL]/tsol/apikey/tuxsvc/der/account/dr-withdrawal-deposit` (DRACC-009)
 
-**Lotte Doc:** DRACC-009
+**Lotte Doc:** DRACC-009 — **Method Lotte:** GET (TradeX vẫn expose POST cho mutation)
 
 **Headers:**
 - `Authorization: Bearer {JWT}`
 - `Content-Type: application/json`
 - `Accept-Language: vi` (optional, default: vi)
 
-### 6.2 Request Mapping
+### 7.2 Request Mapping
 
 **TradeX Request (from FE):**
 
@@ -508,13 +511,13 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
-| `accountNumber` | String | ✅ | `acnt_no` | Direct | Tài khoản |
+| `accountNumber` | String | ✅ | `acnt_no` | Direct | Tài khoản (Lotte 2.2.1) |
 | `amount` | Number | ✅ | `trd_amt` | Convert to String | Số tiền rút |
-| `note` | String | ❌ | `cnte` | Default `""` | Diễn giải |
+| `note` | String | ❌ | `cnte` | Default `""` (Lotte: Y) | Diễn giải |
 | *(Auto from DRACC-032)* `sourceBankAccountNumber` | String | - | `src_acnt` | Get from bank list (`.C`) | TK NH chuyển |
 | *(Auto from DRACC-032)* `destinationBankAccountNumber` | String | - | `des_acnt` | Get from bank list (`.R`) | TK NH nhận |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto | User from token |
-| *(Fixed)* | - | - | `trd_tp` | Fixed: `"C10"` | Transaction type (Withdraw) |
+| *(Fixed)* | - | - | `trd_tp` | Fixed: `"C10"` | Phân loại (C10 rút tiền) |
 
 **Transformation Details:**
 
@@ -533,7 +536,7 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
   - `sourceBankAccountNumber` = First bank with `.C` suffix (VSD account)
   - `destinationBankAccountNumber` = First bank with `.R` suffix (NHSV account)
 
-### 6.3 Response Mapping
+### 7.3 Response Mapping
 
 **Success (200):**
 
@@ -541,6 +544,7 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 |-------------|--------------|-----------|-------------|
 | `error_code` | - | Check = `"0000"` | Success indicator |
 | `success` | `success` | Direct boolean | `true` if both `error_code="0000"` and `success=true` |
+| `data_list[0].scrt_err_msg` | - | Optional: log/pass | Message thực hiện thành công (Lotte 04/03) |
 
 **Response Logic:**
 
@@ -565,12 +569,13 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 - Only returns `{ "success": true }` when both Lotte conditions met
 - Any other case throws error (422)
 - Method is POST (not GET) for mutation operation
+- Lotte API DRACC-009 uses **GET**; bridge layer maps TradeX POST → Lotte GET
 
 ---
 
 ## 8. API: Query VSD Transaction History
 
-### 7.1 Request
+### 8.1 Request
 
 **Endpoint:** `GET /api/v1/derivatives/transfer/vsd/history`
 
@@ -584,11 +589,12 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 |-----------|------|----------|-------------|
 | `accountNumber` | String | ✅ | Tài khoản |
 | `transactionType` | String | ✅ | `C05` (Deposit), `C10` (Withdraw), `%` (All) |
-| `fromDate` | String | ✅ | Từ ngày (yyyyMMdd) |
-| `toDate` | String | ✅ | Đến ngày (yyyyMMdd) |
+| `fromDate` | String | ❌ | Từ ngày (yyyyMMdd). Nếu không truyền → mặc định = today khi gọi Lotte |
+| `toDate` | String | ❌ | Đến ngày (yyyyMMdd). Nếu không truyền → mặc định = today khi gọi Lotte |
+| `fetchCount` | Number | ❌ | Số bản ghi cần lấy. Map sang Lotte `row_count`; nếu không truyền thì không gửi sang Lotte |
 | `nextData` | String | ❌ | Pagination key |
 
-### 7.2 Request Mapping
+### 8.2 Request Mapping
 
 **TradeX → Lotte:**
 
@@ -596,18 +602,22 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `acnt` | Direct | Tài khoản |
 | `transactionType` | String | ✅ | `type` | Direct | `C05`/`C10`/`%` |
-| `fromDate` | String | ✅ | `date_fr` | Direct (yyyyMMdd) | Từ ngày |
-| `toDate` | String | ✅ | `date_to` | Direct (yyyyMMdd) | Đến ngày |
+| `fromDate` | String | ❌ | `date_fr` | Default **today** (yyyyMMdd) nếu không truyền | Từ ngày |
+| `toDate` | String | ❌ | `date_to` | Default **today** (yyyyMMdd) nếu không truyền | Đến ngày |
+| `fetchCount` | Number | ❌ | `row_count` | Chỉ gửi sang Lotte khi có giá trị; không truyền thì không gửi | Số bản ghi trả về |
 | `nextData` | String | ❌ | `next_data` | Default `"000000000000000"` | Next key |
 
 **Transformation Details:**
 
 | Field | Rule | Example |
 |-------|------|---------|
+| `fromDate` | Nếu không có → dùng ngày hiện tại (yyyyMMdd) | (empty) → `"20260306"` |
+| `toDate` | Nếu không có → dùng ngày hiện tại (yyyyMMdd) | (empty) → `"20260306"` |
+| `fetchCount` | Chỉ gửi `row_count` sang Lotte khi client truyền `fetchCount` | `20` → `row_count: 20`; (empty) → không gửi |
 | `nextData` | Default `"000000000000000"` if not provided | `null` → `"000000000000000"` |
 | `transactionType` | Validate: `C05`, `C10`, or `%` | - |
 
-### 7.3 Response Mapping
+### 8.3 Response Mapping
 
 **Success (200):**
 
@@ -622,45 +632,46 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 |-------------|--------------|------|-----------|-------------|
 | `acnt` | `accountNumber` | String | Direct | Tài khoản |
 | `acnt_sub` | `subNumber` | String | Direct | Số sub |
-| `type` | `transactionType` | String | Direct | Phân loại (C05/C10) |
+| `type` | `transactionType` | String | Pass-through; TradeX response **định nghĩa**: `C05` = Deposit (Nộp), `C10` = Withdraw (Rút) | Phân loại giao dịch |
 | `amount` | `amount` | Number | Parse to number | Số tiền GD |
-| `target_actn` | `targetAccountNumber` | String | Direct | TK đích |
+| `target_acnt` | `targetAccountNumber` | String | Direct | TK đích (Lotte 04/03: target_acnt) |
 | `note` | `note` | String | Direct | Ghi chú |
 | `user_executes` | `executedBy` | String | Direct | User thực hiện |
 | `status_vtb` | `statusVTB` | String | Direct | Trạng thái VTB |
 | `status_bos` | `statusBOS` | String | Direct | Trạng thái BOS |
 | `status_vsd` | `statusVSD` | String | Direct | Trạng thái VSD |
 | `trading_channel` | `tradingChannel` | String | Direct | Kênh GD |
-| `source_actn` | `sourceAccountNumber` | String | Direct | TK nguồn |
+| `source_actn` | `sourceAccountNumber` | String | Direct | TK nguồn (Lotte: source_actn) |
 | `reg_date` | `registrationDate` | String | Direct | Ngày đăng ký |
 | `fees` | `feeAmount` | Number | Parse to number | Phí |
 | `amount_received` | `receivedAmount` | Number | Parse to number | Số tiền thực nhận |
 | `next_data` | - | - | Extract to top level | Next key |
 
+**`transactionType` (TradeX response):**
+
+| Value | Meaning |
+|-------|---------|
+| `C05` | Deposit — Nộp tiền ký quỹ |
+| `C10` | Withdraw — Rút tiền ký quỹ |
+
 **Example Response:**
 ```json
-{
-  "items": [
-    {
+[
+  {
       "accountNumber": "0001234567",
-      "subNumber": "00",
-      "transactionType": "C05",
+      "transactionType": "DEPOSIT",
       "amount": 10000000,
       "targetAccountNumber": "121000065473",
       "note": "Nộp ký quỹ",
-      "executedBy": "USER001",
-      "statusVTB": "SUCCESS",
-      "statusBOS": "APPROVED",
-      "statusVSD": "COMPLETED",
-      "tradingChannel": "WEB",
+      "statusVTB": "Bank từ chối điện",
+      "statusBOS": "Nộp thất bại",
+      "statusVSD": "VSD xác nhận rút tiền",
       "sourceAccountNumber": "129000065475",
       "registrationDate": "20260209",
       "feeAmount": 50000,
       "receivedAmount": 9950000
     }
-  ],
-  "nextData": ""
-}
+]
 ```
 
 **Status Fields:**
@@ -718,10 +729,10 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 
 | TradeX Field | Lotte Field Variations | Transform Rule |
 |--------------|------------------------|----------------|
-| `accountNumber` | `acnt_no`, `acnt`, `is_acnt_no`, `is_act_no` | Direct |
+| `accountNumber` | `acnt_no`, `acnt`, `is_acnt_no` (Lotte 04/03) | Direct |
 | `subNumber` | `sub_no`, `is_sub_no`, `acnt_sub` | Default `"00"` |
 | `amount` | `trd_amt`, `is_trd_amt`, `is_dpo_block`, `amount` | Number → String (request), String → Number (response) |
-| `note` | `cnte`, `is_ante`, `note` | Direct |
+| `note` | `cnte`, `is_cnte` (DRACC-034, Lotte 04/03), `note` | Direct |
 | `feeAmount` | `trade_fee_amt`, `is_fee_amt`, `fees` | Number ↔ String |
 
 ### 10.2 Bank Account Field Mapping
@@ -889,7 +900,7 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 - [ ] Create DTO: `DerivativesVsdBalanceResponse`
 - [ ] Implement endpoint in `rest-proxy`
 - [ ] Implement service method in `lotte-bridge`
-- [ ] Add date format validation
+- [ ] Default `inquiryDate` to today when not provided; validate format when provided
 - [ ] Extract specific fields from large response
 - [ ] Write unit tests
 - [ ] Write integration tests
@@ -942,8 +953,10 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 - [ ] Create DTO: `DerivativesVsdHistoryResponse`
 - [ ] Implement endpoint in `rest-proxy`
 - [ ] Implement service method in `lotte-bridge`
-- [ ] Add pagination support
-- [ ] Add date range validation
+- [ ] Default `fromDate`/`toDate` = today (yyyyMMdd) when not provided
+- [ ] Map `fetchCount` → `row_count` (only send to Lotte when `fetchCount` present)
+- [ ] Add pagination support (`nextData` / `next_data`)
+- [ ] Add date format validation when provided
 - [ ] Write unit tests
 - [ ] Write integration tests
 - [ ] Update Swagger documentation
@@ -954,7 +967,7 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 
 | Document | Location | Description |
 |----------|----------|-------------|
-| Lotte API Specs | `/Derivatives/Documentation/[API specs]Lotte_DR.md` | Section 2.2.1 (DRACC-009), 2.2.4 (DRACC-021), 2.2.5 (DRACC-032), 2.2.6 (DRACC-033), 2.2.7 (DRACC-034) |
+| Lotte API Specs | `/Derivatives/Documentation/[API specs]Lotte_DR.md` | §2.2.1 (DRACC-009), 2.2.4 (DRACC-021), 2.2.5 (DRACC-032), 2.2.6 (DRACC-033), 2.2.7 (DRACC-034). **Sync:** 04/03/2026 — URL DRACC-009 `tsol/apikey/...`, request `is_acnt_no`/`is_cnte`, response `target_acnt`, `scrt_err_msg`. |
 | Internal Transfer API Spec | `../Internal transfer/Internal_Transfer_API_Spec.md` | Similar patterns for cash transaction |
 | TradeX API Conventions | `@TradeX Knowledge/API Standards/tradex-api-conventions.md` | API naming & response standards |
 | Order API Standards | Rule `@tradex-order-api-response-standards` | Response format patterns |
@@ -983,6 +996,6 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 
 ---
 
-**Document Status:** ✅ Complete  
+**Document Status:** ✅ Complete (mapping synced with Lotte_DR 04/03/2026)  
 **For:** BA/Dev  
 **Next Steps:** Implementation by Dev team
