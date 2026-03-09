@@ -109,6 +109,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | 02 | [Order Flow](./Planning/02_Order_Flow.md) | Architecture | PM, BA, Architect | System flow, data flow diagrams |
 | 03 | [Order Types](./Planning/03_Order_Types.md) | Spec | PM, BA, QA | Order types, validation rules |
 | 04 | [TP/SL Orders Business](./Planning/04_TPSL_Orders_Business.md) | BRD | PM, BA, Stakeholders | TP/SL requirements, trigger mechanism, MTL order type |
+| 05 | [Order History DRORD-010 Analysis](./Planning/05_Order_History_DRORD010_Analysis.md) | API Analysis | PM, BA, Dev | DRORD-010 request/response, date default, value mapping |
 
 **⚠️ Important:** Planning/ docs follow `.cursor/rules/derivatives-pm-documentation.mdc`:
 - ✅ Business logic, diagrams, user stories

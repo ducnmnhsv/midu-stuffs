@@ -124,6 +124,21 @@ Lotte WS → market-collector-lotte → Kafka → realtime-v2 + ws-v2 → Client
 
 > **For Order APIs:** See rule `@tradex-order-api-response-standards` for complete response format standards
 
+### GET API optional params (TradeX → Core)
+
+Đối với **API method = GET**, TradeX có 2 query params **optional** (cả hai **không required**):
+
+| TradeX (query) | Core (Lotte) | Required |
+|----------------|--------------|----------|
+| `fetchCount`   | `row_count`  | ❌ No    |
+| `nextKey`      | `next_data` | ❌ No    |
+
+Chi tiết: `TradeX Knowledge/API Standards/tradex-api-conventions.md` — § Common Request Fields → **GET API optional parameters**.
+
+### TradeX naming — không dùng tên/giá trị Core
+
+Request/query params **phải** dùng **tên và giá trị do TradeX định nghĩa** (có nghĩa). **Không** dùng tên field hoặc mã số Core (Lotte) làm tên/giá trị API TradeX. Luôn có **bảng mapping** TradeX → Core (tên param + giá trị → field + code). Ví dụ: `orderSendFilter` (ALL/SENT/PENDING) → Lotte `sent` (0/1/2); `sellBuyType` (ALL/BUY/SELL) → Lotte `sell_buy_tp` (0/1/2).
+
 ### Auto-Populated Fields (FE không cần truyền)
 
 | TradeX Field | Source | Lotte Field |

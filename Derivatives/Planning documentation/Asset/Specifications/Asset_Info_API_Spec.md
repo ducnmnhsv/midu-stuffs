@@ -23,7 +23,7 @@ Asset Info API tra cứu thông tin tài sản và chứng khoán (DRACC-031). R
 
 ### 1.3 Response Format Standards
 
-**Success (Query):** Trả về `dataList` – mỗi item map 1-1 từ Lotte DataResponse (5 fields).
+**Success (Query):** Trả về `dataList` – mỗi item map 1-1 từ Lotte DataResponse (đủ fields theo DRACC-031, gồm `net_assets`).
 
 **Error:**
 ```json
@@ -45,7 +45,7 @@ or
 **Principles:**
 - HTTP status = success indicator (200 = success, 4xx/5xx = error)
 - NO `success: true/false` field
-- Response: `dataList` array, mỗi item map 1-1 từ Lotte (5 fields)
+- Response: `dataList` array, mỗi item map 1-1 từ Lotte (đủ fields DRACC-031, gồm `netAssets`)
 - Pass-through Lotte messages AS-IS
 
 ---
@@ -105,6 +105,7 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 | `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ được chấp nhận tại VSD |
 | `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | String | Direct | Giá trị chứng khoán ký quỹ tại VSD |
 | `value_required_vsd` | `valueRequiredVsd` | String | Direct | Giá trị VSD yêu cầu |
+| `net_assets` | `netAssets` | String | Direct | Tài sản ròng |
 
 ### 2.2 Validation Rules (TradeX)
 
@@ -213,6 +214,7 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 | `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ tại VSD |
 | `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | String | Direct | Giá trị CK ký quỹ tại VSD |
 | `value_required_vsd` | `valueRequiredVsd` | String | Direct | Giá trị VSD yêu cầu |
+| `net_assets` | `netAssets` | String | Direct | Tài sản ròng |
 
 **Response Structure:** Lotte `data_list` thường 1 item (1 tài khoản, 1 ngày). TradeX trả nguyên `dataList` array.
 
@@ -348,7 +350,7 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 
 ### 5.3 Data Transformation (1-1, không parse)
 
-**Rule:** Map từng field trực tiếp. Lotte trả String → TradeX giữ String. Chỉ convert snake_case → camelCase cho toàn bộ 44 fields.
+**Rule:** Map từng field trực tiếp. Lotte trả String → TradeX giữ String. Chỉ convert snake_case → camelCase cho toàn bộ fields (gồm `net_assets` → `netAssets` theo bổ sung Lotte DRACC-031).
 
 ---
 
@@ -375,7 +377,7 @@ Các field còn lại giữ nguyên tên camelCase từ Lotte (1-1), đã đủ 
 - **Gợi ý (tùy chọn):** Các field là số (balance, fee, quantity, value, PnL...) có thể parse sang **Number** ở BE khi trả về, để thống nhất với Cash Statement, Open Position, Unrealized PnL (các API này trả Number cho amount). Nếu giữ String, FE cần parse trước khi tính toán/hiển thị.
 
 **Các field nên xem là numeric (nếu đổi sang Number):**  
-`availableBalance`, `currentBalance`, `quantityStock`, `valueStock`, `currentQuantityStock`, `currentValueStock`, `marginAssetFee`, `shortfallAmount`, `positionFee`, `hnxFee`, `beginMarginBalance`, `marginDepositWithdrawal`, `currentMarginBalance`, `marginWithdrawal`, `valueMarginSecurities`, `realizedPnL`, `fees`, `unrealizedPnL`, `marginShortfall`, `tax`, và tất cả các field còn lại mang giá trị tiền/số lượng/giá trị.
+`availableBalance`, `currentBalance`, `quantityStock`, `valueStock`, `currentQuantityStock`, `currentValueStock`, `marginAssetFee`, `shortfallAmount`, `positionFee`, `hnxFee`, `beginMarginBalance`, `marginDepositWithdrawal`, `currentMarginBalance`, `marginWithdrawal`, `valueMarginSecurities`, `realizedPnL`, `fees`, `unrealizedPnL`, `marginShortfall`, `tax`, `netAssets`, và tất cả các field còn lại mang giá trị tiền/số lượng/giá trị.
 
 ### 6.4 Tóm tắt
 

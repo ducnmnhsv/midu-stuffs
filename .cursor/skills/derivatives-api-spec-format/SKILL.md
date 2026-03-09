@@ -179,6 +179,7 @@ or
 - NO `success: true/false` field
 - Mutation: Minimal response
 - Query: Rich data arrays
+- **GET APIs:** TradeX có 2 query params optional (cả hai **không required**): **fetchCount** → Core `row_count`, **nextKey** → Core `next_data` (hoặc `next_key` tùy API). Xem TradeX Knowledge API Standards § Common Request Fields — GET API optional parameters.
 - Pass-through Lotte messages AS-IS
 ```
 
@@ -265,12 +266,18 @@ or
 
 ### 3.2 Request Mapping
 
+**CRITICAL – TradeX naming (không dùng tên/giá trị Core):**
+
+- **Tên tham số TradeX** phải do TradeX định nghĩa, có nghĩa (vd. `orderSendFilter`, `sellBuyType`). **Không** dùng tên field Core (vd. `sent`, `sell_buy_tp`) làm tên param API TradeX.
+- **Giá trị (enum)** dùng giá trị có nghĩa (vd. `ALL`, `SENT`, `PENDING`, `BUY`, `SELL`). **Không** expose mã Core (0, 1, 2) làm giá trị hợp lệ của API.
+- **Bắt buộc** có bảng mapping: **TradeX parameter + values** → **Core field + codes**. Xem TradeX Knowledge § Common Request Fields — TradeX naming cho request/query parameters.
+
 **CRITICAL:** Use table format with columns:
-- TradeX Field
+- TradeX Field (tên TradeX, không phải tên Lotte)
 - Type
 - Required (✅/❌)
-- Lotte Field
-- Transform
+- Lotte Field (tên field Core khi gửi sang Lotte)
+- Transform (Direct hoặc Map với bảng value mapping)
 - Description
 
 **Format:**
