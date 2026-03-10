@@ -39,18 +39,17 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 ```json
 {
   "message": "[V0307] Message from Lotte",
-  "orderDate": "20260211",
-  "orderSeqNo": "001234"
+  "orderNumber": "20260211-001234"
 }
 ```
 
-**Note:** TradeX map 1-1 theo Core: định danh Stop order bằng hai field `orderDate` (yyyyMMdd) + `orderSeqNo` (số hiệu). Xem §2.4.
+**Note:** `orderNumber` = composite `{date}-{seq_no}` (Stop order Lotte dùng date+seq). TradeX dùng Composite — ưu nhược xem §2.4.
 
 **Success (Query - Stop Order History):**
 ```json
 {
   "totalCount": 10,
-  "orders": [ { "orderDate": "20260211", "orderSeqNo": "00001", "symbolCode": "VN30F2502", ... } ]
+  "orders": [ { "orderNumber": "20260211-00001", "symbolCode": "VN30F2502", ... } ]
 }
 ```
 
@@ -62,7 +61,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 }
 ```
 
-**Principles:** Giống Regular Orders (xem `Regular_Orders_API_Spec.md` §1.3) - HTTP status = success indicator, NO `success: true/false`, pass-through Lotte messages AS-IS, Mutation = minimal (message + orderDate + orderSeqNo).
+**Principles:** Giống Regular Orders (xem `Regular_Orders_API_Spec.md` §1.3) - HTTP status = success indicator, NO `success: true/false`, pass-through Lotte messages AS-IS, Mutation = minimal (message + orderNumber).
 
 ---
 
@@ -78,6 +77,8 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 ### 2.2 Validation Rules (TradeX BE)
 
+**Place (§3):**
+
 | Rule | Description | Error Code |
 |------|-------------|------------|
 | Required Fields | accountNumber, symbolCode, sellBuyType, orderPrice, orderQuantity, priceBand | `FIELD_IS_REQUIRED` |
@@ -86,6 +87,12 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | orderQuantity | > 0, integer | `INVALID_VALUE` |
 | priceBand | Required, gửi lên Lotte | `FIELD_IS_REQUIRED` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
+
+**Modify (§4):** Required: accountNumber, orderNumber, orderPrice, orderQuantity, priceBand — xem §4.4.
+
+**Cancel (§5):** Required: accountNumber, orderNumber — xem §5.4.
+
+**Query History (§6):** Required: accountNumber — xem §6.4.
 
 **Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → FE Issues: [Derivatives_Stop_Order_Integration](../../../FE%20Implementation/Order/Issues/Derivatives_Stop_Order_Integration.md), [Stop_Order_Screen_FE_Requirement](../../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
 
@@ -99,16 +106,20 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 | `en` | `E` |
 | `ko` | `K` |
 
-### 2.4 Order Identification (Stop Order) — Map 1-1 theo Core
+### 2.4 Order Identification (Stop Order) — Composite vs 1-1 theo Core
 
-Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `seqn` (số hiệu). **TradeX map 1-1** — không dùng composite:
+Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `seqn` (số hiệu). TradeX chọn **Composite** (một field `orderNumber`).
 
-| TradeX Field | Type | Lotte Field | Mô tả |
-|--------------|------|-------------|-------|
-| `orderDate` | String | `date` | Ngày đặt lệnh (yyyyMMdd) |
-| `orderSeqNo` | String | `seqn` | Số hiệu lệnh (sequence) |
+**So sánh ưu nhược:**
 
-**Áp dụng:** Place response trả `orderDate` + `orderSeqNo`; Modify/Cancel request nhận `orderDate` + `orderSeqNo`; Query History mỗi item có `orderDate` + `orderSeqNo`. BE pass-through trực tiếp sang Lotte, không parse/composite.
+| Tiêu chí | **Composite** (đang dùng) | **Map 1-1** (orderDate + orderSeqNo) |
+|----------|---------------------------|--------------------------------------|
+| **TradeX API** | Một field `orderNumber` = `"{date}-{seq_no}"` (vd. `20260211-001234`) | Hai field `orderDate`, `orderSeqNo` trả/nhận đúng như Lotte |
+| **Ưu** | FE chỉ xử lý 1 field; đồng nhất với Regular Order (`orderNumber` string); Place/Modify/Cancel/Query dùng chung một định danh; UI hiển thị/hành động đơn giản (copy, gửi lại) | Không transform; BE pass-through; không parse; không phụ thuộc quy ước format (dấu `-`, độ dài seq) |
+| **Nhược** | BE phải parse composite khi gọi Lotte Modify/Cancel (tách `date`, `seqn`); quy ước format cần giữ ổn định (vd. `yyyyMMdd-seq_no`) | FE phải gửi/hiển thị 2 field; API khác với Regular Order; UI thường vẫn ghép chuỗi để hiển thị "số lệnh" |
+| **Áp dụng** | Place response: `orderNumber`; Modify/Cancel request: `orderNumber` (BE parse → date, seqn); Query: mỗi item có `orderNumber` | Place response: `orderDate` + `orderSeqNo`; Modify/Cancel request: 2 field; Query: 2 field mỗi item |
+
+**Khuyến nghị (spec):** Dùng **Composite** để FE và contract API thống nhất với Regular Order (một `orderNumber` cho mọi thao tác). BE parse một lần chuẩn (vd. split `-`, [0]=date, [1]=seq_no) khi gọi Lotte.
 
 ---
 
@@ -164,9 +175,9 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 |-------------|--------------|-----------|-------------|
 | `error_code` | - | Check = `"0000"` | Success indicator |
 | `error_desc` | `message` | Pass-through AS-IS | Lotte message |
-| `data_list` (date, seq_no) | `orderDate`, `orderSeqNo` | Direct 1-1 | Map 1-1 theo Core (§2.4) |
+| `data_list` (date, seq_no) | `orderNumber` | Composite `{date}-{seq_no}` | §2.4 Composite |
 
-**Note:** Lotte DRORD-005/006 DataResponse không mô tả chi tiết. Cần xác nhận field trả về (date, seq_no). TradeX trả đúng hai field `orderDate`, `orderSeqNo` như Lotte.
+**Note:** Lotte DRORD-005/006 DataResponse không mô tả chi tiết. Cần xác nhận field trả về (date, seq_no). TradeX ghép thành `orderNumber` = `"{date}-{seq_no}"`.
 
 **Error (422):** Prefix `STOP_ORDER_PLACE_{LOTTE_CODE}`
 
@@ -202,16 +213,15 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `acno` | Direct | Số tài khoản |
-| `orderDate` | String | ✅ | `date` | Direct | Ngày đặt lệnh (yyyyMMdd) |
-| `orderSeqNo` | String | ✅ | `seqn` | Direct | Số hiệu lệnh |
+| `orderNumber` | String | ✅ | `date`, `seqn` | **Parse composite** `{date}-{seq_no}` → date, seqn | §2.4 Composite |
 | `orderPrice` | Number | ✅ | `jprc` | Direct | Giá mới |
 | `orderQuantity` | Number | ✅ | `jqty` | Direct | Khối lượng mới |
 | `priceBand` | Number | ✅ | `bprc` | Direct | Bước giá mới |
-| `validFromDate` | String | ❌ | `sdate` | Default = orderDate | Ngày bắt đầu (sdate = edate) |
+| `validFromDate` | String | ❌ | `sdate` | Default = date (parse từ orderNumber) | Ngày bắt đầu (sdate = edate) |
 | `validToDate` | String | ❌ | `edate` | Default = validFromDate | Ngày kết thúc |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto | Username from token |
 
-**Order Identification:** Map 1-1 theo Core (§2.4). FE gửi `orderDate` + `orderSeqNo`; BE chuyển thẳng sang Lotte `date`, `seqn`.
+**Order Identification:** Composite (§2.4). FE gửi `orderNumber`; BE parse thành `date` + `seqn` rồi gửi sang Lotte.
 
 ### 4.3 Response Mapping
 
@@ -220,9 +230,22 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 | Lotte Field | TradeX Field |
 |-------------|--------------|
 | `error_desc` | `message` |
-| - | Echo lại `orderDate`, `orderSeqNo` từ request (map 1-1) |
+| - | Echo lại `orderNumber` từ request |
 
-**Error (422):** Prefix `STOP_ORDER_MODIFY_*`
+### 4.4 Error Mapping
+
+**Validation Error (400):**
+
+| Field | Error Code | Condition |
+|-------|------------|-----------|
+| `accountNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `orderNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `orderNumber` | `INVALID_VALUE` | Format không đúng `{date}-{seq_no}` (vd. yyyyMMdd-seq) |
+| `orderPrice` | `FIELD_IS_REQUIRED` | Missing |
+| `orderQuantity` | `FIELD_IS_REQUIRED` | Missing |
+| `priceBand` | `FIELD_IS_REQUIRED` | Missing |
+
+**Auth (401/403):** Xem §8. **Business (422):** Prefix `STOP_ORDER_MODIFY_{LOTTE_CODE}`.
 
 ---
 
@@ -234,15 +257,14 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 **Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-cancel-stop-order` (DRORD-025, 026) — xem [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.3.7
 
-**Request body:** accountNumber, orderDate, orderSeqNo.
+**Request body:** accountNumber, orderNumber.
 
 ### 5.2 Request Mapping
 
 | TradeX Field | Type | Required | Lotte Field | Description |
 |--------------|------|----------|-------------|-------------|
 | `accountNumber` | String | ✅ | `acno` | Số tài khoản |
-| `orderDate` | String | ✅ | `date` | Ngày đặt lệnh (yyyyMMdd) |
-| `orderSeqNo` | String | ✅ | `seqn` | Số hiệu lệnh |
+| `orderNumber` | String | ✅ | `date`, `seqn` | Parse composite `{date}-{seq_no}` → date, seqn (§2.4) |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto |
 
 ### 5.3 Response Mapping
@@ -252,9 +274,19 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 | Lotte Field | TradeX Field |
 |-------------|--------------|
 | `error_desc` | `message` |
-| - | Echo lại `orderDate`, `orderSeqNo` từ request (map 1-1) |
+| - | Echo lại `orderNumber` từ request |
 
-**Error (422):** Prefix `STOP_ORDER_CANCEL_*`
+### 5.4 Error Mapping
+
+**Validation Error (400):**
+
+| Field | Error Code | Condition |
+|-------|------------|-----------|
+| `accountNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `orderNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `orderNumber` | `INVALID_VALUE` | Format không đúng `{date}-{seq_no}` |
+
+**Auth (401/403):** Xem §8. **Business (422):** Prefix `STOP_ORDER_CANCEL_{LOTTE_CODE}`.
 
 ---
 
@@ -329,8 +361,7 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 | Lotte Field (list→) | TradeX Field | Type | Transform | Description |
 | ------------------- | ------------ | ---- | --------- | ----------- |
-| `date` | `orderDate` | String | Direct | Ngày đặt lệnh (yyyyMMdd) — map 1-1 |
-| `seq_no` | `orderSeqNo` | String | Direct | Số hiệu lệnh — map 1-1 |
+| `date` + `seq_no` | `orderNumber` | String | Composite `{date}-{seq_no}` | §2.4 Composite — đồng bộ Place/Modify/Cancel |
 | `acnt_no` | `accountNumber` | String | Direct | Số TK |
 | `acent_nm` | `accountName` | String | Direct | Tên TK |
 | `ctr_code` | `symbolCode` | String | Direct | Mã CK |
@@ -356,7 +387,7 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 **Validation Error (400):** `accountNumber` missing → `FIELD_IS_REQUIRED`.
 
-**Auth (401/403):** Giống §7 (UNAUTHORIZED, TOKEN_EXPIRED, FORBIDDEN, UNAUTHORIZED_ACCOUNT).
+**Auth (401/403):** Xem §8 (UNAUTHORIZED, TOKEN_EXPIRED, FORBIDDEN, UNAUTHORIZED_ACCOUNT).
 
 **Business Error (422) - Lotte Pass-Through:** `STOP_ORDER_HISTORY_{LOTTE_CODE}` (vd. `STOP_ORDER_HISTORY_1005`).
 
@@ -415,6 +446,14 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 | `5002` | Mã không hợp lệ |
 | `6001` | Không tìm thấy lệnh |
 
+### 8.3 Error Response Format
+
+**Validation (400):** `code`: `INVALID_PARAMETER`, `params`: `[{ "code": "FIELD_IS_REQUIRED", "param": "orderNumber" }, ...]`.
+
+**Auth (401/403):** `code`: `UNAUTHORIZED` | `TOKEN_EXPIRED` | `FORBIDDEN` | `UNAUTHORIZED_ACCOUNT`, `message`: string.
+
+**Business (422):** `code`: `STOP_ORDER_PLACE_1005` | `STOP_ORDER_MODIFY_1005` | `STOP_ORDER_CANCEL_1005` | `STOP_ORDER_HISTORY_1005`, `message`: pass-through Lotte.
+
 ---
 
 ## 9. Implementation Notes
@@ -431,7 +470,7 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 1. **Single URI per Operation:** FE chỉ cần gọi 1 endpoint cho Place (giống Regular), 1 cho Modify, 1 cho Cancel, 1 cho Query Stop Order History (GET).
 2. **Routing by sellBuyType:** Place: BUY → DRORD-005, SELL → DRORD-006.
-3. **Order Identification:** Stop order map 1-1 theo Core: `orderDate` + `orderSeqNo` ↔ Lotte `date` + `seqn` (§2.4).
+3. **Order Identification:** Stop order dùng **Composite** `orderNumber` = `{date}-{seq_no}` — đồng nhất với Regular Order; BE parse khi gọi Lotte (§2.4).
 4. **Message Pass-Through:** Lotte messages AS-IS, language via Accept-Language.
 
 ### 9.3 Open Items
