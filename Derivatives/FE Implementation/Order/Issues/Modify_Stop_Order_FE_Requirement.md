@@ -1,78 +1,91 @@
-# [Epic DR-FE-ORD] Story ORD.Sn: Modify Stop Order – FE Implementation
+# Modify Stop Order – FE Requirement
 
-> **Jira:** (key khi tạo, e.g. NHMTS-xxx)  
-> **Epic:** DR-FE-ORD  
-> **Module:** Order  
-> **Priority:** P1  
-> **Status:** 📋 Ready for FE
-
----
-
-## User Story
-
-**As a** Trader (người dùng Derivatives trên NHSV Pro)  
-**I want to** sửa lệnh điều kiện (stop order) đã đặt – trigger price, giá đặt, số lượng, ngày hiệu lực – từ màn Orderbook  
-**So that** tôi có thể điều chỉnh lệnh stop mà không cần hủy và đặt lại.
+> **Epic:** DR-FE-ORD | **Module:** Order | **Priority:** P1 | **Status:** 📋 Ready for FE
 
 ---
 
 ## Background
 
-Trader xem sổ lệnh / lịch sử lệnh Derivatives trên màn **Orderbook**. Khi có **lệnh điều kiện (stop order)** đang chờ, trader bấm **Edit** để mở màn **Modify stop order**. Màn này dùng chung phần layout cao cấp với Modify normal order (thông tin mã, hai tab Bid/Ask và Chart) nhưng **form sửa lệnh** khác: gồm **Trigger price**, **Order price** (giá trong khoảng CE–RE), **Quantity** (tối đa theo checkAvailability, Buy/Sell theo lệnh gốc), **Affected date** (một ngày, không chọn quá khứ, mở date picker khi chọn), và **Max quantity** (read-only từ checkAvailability). Backend cung cấp cùng nhóm API Derivatives: **order/history**, **order/checkAvailability**, **order/modify** (request body riêng cho stop order). FE có thể tham khảo màn **ModifyStopOrder** (Equity) tại `src/screens/ModifyStopOrder/` nhưng phải dùng endpoint Derivatives và bám design Figma. Entry point là nút **Edit** trên một dòng **stop order** trong Orderbook; sau khi sửa thành công, hiển thị message và orderNumber trả về từ API.
+Traders view the order book and order history on the **Orderbook** screen. When a stop order is pending, they can access the **Modify stop order** screen to make changes (trigger price, order price, quantity, affected date).
 
 ---
 
-## Acceptance Criteria
+## Acceptance criteria
 
-- [ ] **AC-01: Điều hướng từ Orderbook sang màn Modify stop order**  
-  Khi user bấm nút **Edit** trên một dòng lệnh **stop order** (lệnh điều kiện) trong màn Orderbook (sổ lệnh Derivatives), app điều hướng tới màn **Modify stop order** và truyền đủ thông tin lệnh cần sửa qua navigation params (ví dụ orderId hoặc object lệnh từ API history). Màn Modify stop order chỉ mở khi Edit được bấm trên lệnh stop; không mở khi bấm Edit trên lệnh thường (normal order).
+1. **Navigation from Orderbook to Modify stop order screen**
 
-- [ ] **AC-02: Hiển thị layout chung và tab Bid/Ask, Chart theo Figma**  
-  Màn Modify stop order có phần **layout chung** giống Modify normal order: thông tin mã (giá hiện tại, change, change rate; CE/FL/RE; vol, basis), hai tab **Bid/Ask** và **Chart** (mặc định Bid/Ask). Tab **Bid/Ask** hiển thị bid/ask top 3; khi chọn tab **Chart** thì hiển thị phần chart thay cho Bid/Ask theo Figma (node 40006583-230683). Giao diện bám design NHSV Pro.
+    *   Display according to UI [https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005008-236104&t=Hkbonf9r1expHBzf-11](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005008-236104&t=Hkbonf9r1expHBzf-11)
 
-- [ ] **AC-03: Form sửa lệnh – Trigger price, Order price, Quantity, Affected date, Max quantity**  
-  **Trigger price:** Có field nhập giá kích hoạt; validation theo spec Derivatives (ví dụ so với giá hiện tại nếu Backend yêu cầu). **Order price:** Giá đặt khi lệnh đã kích hoạt; **bắt buộc** nằm trong khoảng **CE – RE** của mã; nếu nằm ngoài khoảng thì hiển thị toast/error “Giá nằm ngoài khoảng …” thống nhất với các màn khác. **Quantity:** Lớn hơn hoặc bằng 0; tối đa = kết quả từ `GET /api/v1/derivatives/order/checkAvailability` (Buy/Sell theo lệnh gốc); không cho nhập vượt quá. **Affected date:** Chỉ cho chọn **một ngày**; **không** cho chọn ngày trong quá khứ, chỉ ngày hiện tại hoặc tương lai; ngày bắt đầu = ngày kết thúc (một ngày duy nhất). Khi user chọn ngày thì mở **date picker modal** theo design. **Max quantity:** Chỉ đọc; hiển thị sau khi gọi checkAvailability thành công, theo hướng Buy/Sell của lệnh gốc.
+        *   **Information displayed:** current price, change, change rate; CE, FL, RE prices; volume, basis.
 
-- [ ] **AC-04: Validation Affected date – không quá khứ, một ngày**  
-  Date picker **chặn** chọn ngày trong quá khứ (disable hoặc ẩn). Chỉ cho chọn **một ngày** (start date = end date). Sau khi user xác nhận trong date picker, giá trị hiển thị trên form là ngày đã chọn và được gửi trong request modify (format theo spec Backend, ví dụ yyyyMMdd).
+        *   **2 tabs:** Bid/Ask and Chart; default tab is **Bid/Ask**.
 
-- [ ] **AC-05: Thông tin lệnh gốc từ API order/history**  
-  Phần thông tin lệnh gốc (Buy/Sell, giá đặt gốc, quantity, loại Stop order) lấy từ API `GET /api/v1/derivatives/order/history` (hoặc endpoint chi tiết lệnh theo spec). Có xử lý loading và lỗi; khi có dữ liệu thì hiển thị đúng để user biết lệnh đang sửa.
+        *   On the **Bid/Ask** tab, show the bid/ask for the **top 3** transactions.
 
-- [ ] **AC-06: Nút Cancel và nút Modify; hiển thị kết quả**  
-  **Cancel:** Bấm **Cancel** → đóng màn, không gọi API modify. **Modify:** Nút **Modify** chỉ **enable** khi có ít nhất một thay đổi so với lệnh gốc (trigger price, order price, quantity hoặc affected date). Khi bấm **Modify**: (1) Gọi `POST /api/v1/derivatives/order/modify` với payload dành cho stop order (trigger price, order price, quantity, affected date, orderId/params theo spec). (2) Khi thành công, API trả về `message` và `orderNumber` → hiển thị **message** và **orderNumber** trên màn (toast hoặc inline). Khi API lỗi thì hiển thị thông báo lỗi từ response.
+        *   When the user selects the **Chart** tab, replace the Bid/Ask area with the chart according to [https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40006583-230683&t=Hkbonf9r1expHBzf-11](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40006583-230683&t=Hkbonf9r1expHBzf-11)
 
-- [ ] **AC-07: Tích hợp API Derivatives và tách biệt với Equity**  
-  Màn chỉ gọi endpoint **Derivatives**: `/api/v1/derivatives/order/history`, `/api/v1/derivatives/order/checkAvailability`, `POST /api/v1/derivatives/order/modify` (body cho stop order). Request/response theo spec Backend. Không ảnh hưởng flow **ModifyStopOrder** Equity (vẫn dùng API equity).
+    *   When the user clicks the **Edit** button on a stop order in the Orderbook, the app navigates to the **Modify stop order** screen and passes all necessary information for the order to be modified.
 
----
+2. **Display original order information & input new order information**
 
-## Tasks (Implementation)
+    *   The "original order" section displays:
 
-- [ ] **T1** Thêm/xác định route và params màn Modify stop order (Derivatives); xử lý navigate từ Orderbook khi bấm Edit (chỉ với stop order).
-- [ ] **T2** Implement layout chung (symbol info, tab Bid/Ask & Chart) tái dùng hoặc đồng bộ với Modify normal order.
-- [ ] **T3** Implement form: Trigger price, Order price (validate CE–RE), Quantity (max từ checkAvailability), Affected date (date picker, một ngày, không quá khứ), Max quantity (read-only).
-- [ ] **T4** Gọi order/history và binding thông tin lệnh gốc; gọi checkAvailability và hiển thị Max quantity.
-- [ ] **T5** Gọi order/modify khi bấm Modify; hiển thị message và orderNumber khi thành công; xử lý lỗi.
+        *   **Current order type** (Buy or Sell)
 
----
+        *   **Original order price** (and trigger price if applicable)
 
-## Technical Notes
+        *   **Quantity** (orderQuantity)
 
-- **APIs:** `GET /api/v1/derivatives/order/history`, `GET /api/v1/derivatives/order/checkAvailability`, `POST /api/v1/derivatives/order/modify` (request body cho stop order theo spec).
-- **FE tham khảo:** `src/screens/ModifyStopOrder/` (Equity) – Trigger price, Order price, Quantity, From/To date; **không** dùng API equity trong màn Derivatives.
-- **Date:** Affected date = một ngày; format gửi API theo spec (ví dụ yyyyMMdd).
+        *   **Order type** (Stop order)
 
----
+        *   Data fetched from API GET /api/v1/derivatives/order/history **(TBD)**
 
-## References
+    *   The modify form includes: **Trigger price**, **Order price**, **Quantity**, **Affected date**, **Max quantity** (read-only).
 
-- Figma – Modify order (layout chung + form): [NHSV-Pro – Modify order](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005008-236104) (node `40005008-236104`).
-- Figma – Tab Chart: [NHSV-Pro – Modify order Chart](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40006583-230683) (node `40006583-230683`).
-- [Stop Orders API Spec](../../../Planning%20documentation/Order/Specifications/Stop_Orders_API_Spec.md) – Modify/Cancel stop order.
-- [Order Availability Check API Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md)
+3. **Validation fields**
 
----
+    *   **Trigger price**
 
-**Document Status:** 📋 Ready for FE  
-**Next Steps:** Backend cung cấp chi tiết API order/history và modify cho stop order; FE triển khai theo AC.
+        *   Must follow validation rules per Derivatives spec (e.g. vs current price if required by Backend).
+
+    *   **Order price**
+
+        *   Must have a value; if the user leaves it blank or null, show an error toast message **Giá đặt ngoài khung cho phép**.
+
+        *   Order price must be within the **CE–RE** range of the symbol.
+
+            *   If outside this range, display an error toast message **Giá đặt ngoài khung cho phép**.
+
+    *   **Quantity**
+
+        *   Cannot be less than 0 | cannot be null.
+
+        *   Maximum quantity allowed = result from API GET /api/v1/derivatives/order/checkAvailability.
+
+            *   Buy/sell type passed to the API according to the original order.
+
+            *   If the user enters an amount exceeding the available quantity, show an error toast message **Vượt quá sức mua khả dụng**.
+
+    *   **Affected date**
+
+        *   User cannot select a date in the past; only today or future dates.
+
+        *   Only **one day** is selectable (start date = end date).
+
+        *   When the user taps to select a date, open the **date picker modal** per design.
+
+    *   **Max quantity:** Display maximum quantity immediately after successfully calling checkAvailability.
+
+4. **Place order**
+
+    *   When the user clicks the **Cancel** button → return to the Trade screen, without calling any modify API.
+
+    *   **Modify** button
+
+        *   Only enabled when there is input for Trigger price | Order price | Quantity | Affected date from the user.
+
+        *   When the user clicks **Modify** → Call POST /api/v1/derivatives/stopOrder/modify (request body per API spec).
+
+            *   On successful order placement: show a successful snackbar **Modify order for {symbol} has been executed successfully**.
+
+            *   If there is an error: display the message from the API.

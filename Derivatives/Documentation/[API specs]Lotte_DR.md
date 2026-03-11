@@ -199,6 +199,8 @@
     - `accepted_margin_securities_vsd`: String, Giá trị CK KQ được chấp nhận tại VSD
     - `margin_securities_value_vsd`: String, Giá trị chứng khoán ký quỹ tại VSD
     - `value_required_vsd`: String, Giá trị VSD yêu cầu
+    - `margin_asset_utilization_ratio`: String, Tỷ lệ sử dụng tài sản ký quỹ
+    - `deposit_nhsv_require`: String, Số tiền ký quỹ NHSV yêu cầu
     - `net_assets`: String, Tài sản ròng
 
 #### 2.1.6 DRACC-035: Cung cấp các giao dịch tiền phát sinh trên tài khoản nhà đầu tư
@@ -531,7 +533,7 @@
     - `ord_band_pri`: String, Y, Bước giá
     - `from_dt`: String, Y, yyyyMMdd (Ngày bắt đầu và Ngày kết thúc phải cùng giá trị)
     - `end_dt`: String, Y, yyyyMMdd (Ngày kết thúc)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -556,7 +558,7 @@
     - `ord_band_pri`: String, Y, Bước giá
     - `from_dt`: String, Y, yyyyMMdd (Ngày bắt đầu và Ngày kết thúc phải cùng giá trị)
     - `end_dt`: String, Y, yyyyMMdd (Ngày kết thúc)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -763,7 +765,7 @@
     - `lm_ord_price`: float, Y, Giá đặt
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, Y, Địa chỉ MAC
+    - `mac_addr`: String, **Y (bắt buộc)**, Địa chỉ MAC / device unique ID (TradeX: FE truyền `deviceUniqueId` → map sang field này)
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -790,7 +792,7 @@
     - `lm_ord_price`: float, Y, Giá đặt
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, Y, Địa chỉ MAC
+    - `mac_addr`: String, **Y (bắt buộc)**, Địa chỉ MAC / device unique ID (TradeX: FE truyền `deviceUniqueId` → map sang field này)
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -816,7 +818,7 @@
     - `validity`: String, Y, 0:DAY
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -845,7 +847,7 @@
     - `un_mth_qty`: double, Y, Khối lượng chưa khớp
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user_id)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -985,7 +987,7 @@
         - `hts_user_id`: String, N, Tài khoản người thực hiện
         - `hts_user_nm`: String, N, Tên người thực hiện
         - `cli_ip_addr`: String, N, Địa chỉ IP người thực hiện
-        - `cli_mac_addr`: String, N, Địa chỉ MAC người thực hiện. Giá trị này sẽ sử dụng cho định danh thiết bị sau này.
+        - `mac_addr`: String, N, Địa chỉ MAC người thực hiện. Giá trị này sẽ sử dụng cho định danh thiết bị sau này.
         - `row_count`: String, N, 40 (Số lượng bản ghi trả về)
         - `mdm_tp`: String, N, Không bắt buộc, hoặc phải nhập các giá trị bên dưới:
             - 9: Dùng cho đối tác FTL của SHS

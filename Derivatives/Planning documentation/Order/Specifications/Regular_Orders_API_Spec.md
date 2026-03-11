@@ -87,12 +87,15 @@ or
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
-| Required Fields | accountNumber, symbolCode, sellBuyType, orderType, orderQuantity | `FIELD_IS_REQUIRED` |
+| Required Fields | accountNumber, symbolCode, sellBuyType, orderType, orderQuantity, **deviceUniqueId** | `FIELD_IS_REQUIRED` |
 | Price for LO | orderPrice MUST be provided if orderType = LO | `FIELD_IS_REQUIRED` |
 | Price for Market | orderPrice MUST be null if orderType in [MOK, MAK, MTL] | `INVALID_VALUE` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
 
 **Note:** Business rules (price limits, margin, position limits) are validated by Lotte Core.
+
+**Lotte requirement — Device identifier (Place Order):**  
+Lotte API yêu cầu field **`mac_addr`** (Core) **bắt buộc** khi đặt lệnh (DRORD-029 Buy, DRORD-030 Sell). TradeX expose thành field **`deviceUniqueId`**; **FE bắt buộc truyền** `deviceUniqueId` trong request body. TradeX map `deviceUniqueId` → Lotte `mac_addr`.
 
 ### 2.3 Language Mapping
 
@@ -131,7 +134,7 @@ or
 | `orderType` | String | ✅ | `ord_type` | Map (see below) | Loại lệnh |
 | `orderPrice` | Number | ❌ | `lm_ord_price` | Direct | Giá (null for market orders) |
 | `orderQuantity` | Number | ✅ | `ord_qty` | Direct | Khối lượng |
-| `deviceUniqueId` | String | ✅ | `cli_mac_addr` | Direct | Device ID |
+| `deviceUniqueId` | String | ✅ | `mac_addr` | Direct | **Bắt buộc.** Lotte Core yêu cầu mac_addr; FE truyền deviceUniqueId, TradeX map sang Lotte `mac_addr`. |
 | *(Request IP)* | - | - | `ip_addr` | Auto | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Auto | Username from token (max 15 chars) |
 | *(Header)* | - | - | `lang_code` | Map (§2.3) | Language code (V/E/K) |
@@ -169,7 +172,25 @@ or
 |-------------|--------------|-----------|-------------|
 | `error_code` | - | Check = `"0000"` | Success indicator |
 | `error_desc` | `message` | Pass-through AS-IS | `"[V0307] Bạn đã thực hiện lệnh Mua..."` |
-| `data_list[0].order_no` | `orderNumber` | Direct | `"2026020500012"` |
+| `data_list[0].order_no` | `orderNumber` | Direct | Số hiệu lệnh (ví dụ `"1000016"`) |
+
+**Ví dụ response Lotte khi đặt lệnh thành công (raw):**
+```json
+{
+    "error_code": "0000",
+    "error_desc": "[V0307]Bạn đã thực hiện lệnh Mua. Hãy kiểm tra Trạng thái lệnh!",
+    "success": true,
+    "total_record": "",
+    "data_list": [
+        {
+            "order_no": "1000016"
+        }
+    ]
+}
+```
+
+**TradeX success response (200):**  
+`message` = Lotte `error_desc` (pass-through); `orderNumber` = `data_list[0].order_no`.
 
 **Note:** 
 - Message format: `"[{LANG}{CODE}] {Message}"`
@@ -209,6 +230,7 @@ or
 | `orderPrice` | `MUST_BE_NULL` | `["orderPrice"]` | Provided for MOK/MAK/MTL |
 | `orderQuantity` | `FIELD_IS_REQUIRED` | `["orderQuantity"]` | Missing |
 | `orderQuantity` | `INVALID_VALUE` | `["orderQuantity", "value", ">0"]` | ≤ 0 |
+| `deviceUniqueId` | `FIELD_IS_REQUIRED` | `["deviceUniqueId"]` | Missing (Lotte Core yêu cầu `mac_addr` bắt buộc; FE truyền `deviceUniqueId`) |
 
 **Auth Error (401):**
 
@@ -246,7 +268,7 @@ or
 | `orderPrice` | Number | ✅ | `ord_price` | Giá mới |
 | `orderQuantity` | Number | ✅ | `ord_qty` | Khối lượng mới |
 | `unmatchedQuantity` | Number | ✅ | `un_mth_qty` | Khối lượng chưa khớp |
-| `deviceUniqueId` | String | ❌ | `cli_mac_addr` | Device ID (optional) |
+| `deviceUniqueId` | String | ❌ | `mac_addr` | Device ID (optional) |
 | *(Request IP)* | - | - | `ip_addr` | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Username from token |
 | *(Header)* | - | - | `lang_code` | Language code |
@@ -288,7 +310,7 @@ or
 | `accountNumber` | String | ✅ | `acnt_no` | Số tài khoản |
 | `orderNumber` | String | ✅ | `ord_no` | Số lệnh cần hủy |
 | `symbolCode` | String | ✅ | `ft_code` | Mã hợp đồng |
-| `deviceUniqueId` | String | ❌ | `cli_mac_addr` | Device ID (optional) |
+| `deviceUniqueId` | String | ❌ | `mac_addr` | Device ID (optional) |
 | *(Request IP)* | - | - | `ip_addr` | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Username from token |
 | *(Header)* | - | - | `lang_code` | Language code |

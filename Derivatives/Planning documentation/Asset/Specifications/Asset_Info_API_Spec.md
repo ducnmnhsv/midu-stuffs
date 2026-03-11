@@ -105,6 +105,8 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 | `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ được chấp nhận tại VSD |
 | `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | String | Direct | Giá trị chứng khoán ký quỹ tại VSD |
 | `value_required_vsd` | `valueRequiredVsd` | String | Direct | Giá trị VSD yêu cầu |
+| `margin_asset_utilization_ratio` | `marginAssetUtilizationRatio` | String | Direct | Tỷ lệ sử dụng tài sản ký quỹ |
+| `deposit_nhsv_require` | `depositNhsvRequire` | String | Direct | Số tiền ký quỹ NHSV yêu cầu |
 | `net_assets` | `netAssets` | String | Direct | Tài sản ròng |
 
 ### 2.2 Validation Rules (TradeX)
@@ -214,6 +216,8 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 | `accepted_margin_securities_vsd` | `acceptedMarginSecuritiesVsd` | String | Direct | Giá trị CK KQ tại VSD |
 | `margin_securities_value_vsd` | `marginSecuritiesValueVsd` | String | Direct | Giá trị CK ký quỹ tại VSD |
 | `value_required_vsd` | `valueRequiredVsd` | String | Direct | Giá trị VSD yêu cầu |
+| `margin_asset_utilization_ratio` | `marginAssetUtilizationRatio` | String | Direct | Tỷ lệ sử dụng tài sản ký quỹ |
+| `deposit_nhsv_require` | `depositNhsvRequire` | String | Direct | Số tiền ký quỹ NHSV yêu cầu |
 | `net_assets` | `netAssets` | String | Direct | Tài sản ròng |
 
 **Response Structure:** Lotte `data_list` thường 1 item (1 tài khoản, 1 ngày). TradeX trả nguyên `dataList` array.
