@@ -407,6 +407,31 @@ app:
 
 ---
 
+## Nhận biết danh sách mã cổ phiếu thuộc VN30 (và index khác)
+
+Init job **market-collector-lotte** chỉ download **symbolNames** (tất cả mã + type, exchange), **không** có bước “lọc mã thuộc VN30” — vì Lotte symbolNames không trả về quan hệ symbol ↔ index.
+
+**Nguồn danh sách mã VN30** là job riêng trên **lotte-bridge**:
+
+| Bước | Service | Mô tả |
+|------|---------|--------|
+| 1 | **lotte-bridge** | Cron `0,15,30,55 1 * * MON-FRI` (1:00, 1:15, 1:30, 1:55) chạy `IndexService.getIndexList()` |
+| 2 | Lotte API | `getIndexList` (mkt_tp=ALL) → danh sách index (symbol/code/exchange: VN30, HNX30, …) |
+| 3 | Lotte API | Với mỗi index: `getIndexStockList(mkt_tp=exchange, idx=code)` → danh sách mã cổ phiếu thành phần |
+| 4 | Kafka | Gửi topic `indexStockListUpdate`, payload `{ indexCode: "VN30", stockList: ["VCB","VNM",...] }` |
+| 5 | **realtime-v2** | `IndexStockListUpdateHandler` consume → `IndexStockService.updateIndexList()` → lưu DB (IndexStockListRepository) |
+| 6 | Khi init / cache | **realtime-v2** `CacheService` (sau khi xử lý symbolInfoUpdate) đọc `indexStockListRepository.findById("VN30")` → `getStockList()` để có set mã VN30 (vd: setVn30Trade, ranking…) |
+
+**Kết luận:**
+
+- **Trong init job (market-collector-lotte):** Không có bước “nhận biết danh sách VN30”. Chỉ có download symbolNames + indexList (tên index) + symbolPrices + bestBidAsks.
+- **Để có danh sách mã VN30:** Phải dựa vào dữ liệu đã được **lotte-bridge** đồng bộ trước đó (job 1h sáng) qua Kafka → realtime-v2 lưu DB. Khi init/cache, **realtime-v2** đọc từ `IndexStockListRepository` (DB) với `indexCode = "VN30"`.
+- **API cho client:** `GET /api/v2/market/indexStockList/{indexCode}` (market-query-v2) đọc từ MongoDB collection `c_index_stock_list` (cùng nguồn do realtime-v2 ghi).
+
+**Thứ tự thực tế:** Job index list (1h sáng) chạy **trước** init job (~8:30) → khi init chạy, DB đã có sẵn VN30/HNX30.
+
+---
+
 ## Related Topics
 
 - **[Symbol Info API](./symbol-info-api.md)**: Cách client query symbol info sau khi init

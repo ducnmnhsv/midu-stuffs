@@ -26,7 +26,8 @@
 | Sửa lệnh | PUT | `/api/v1/derivatives/order/modify` | DRORD-032 |同上 |
 | Hủy lệnh | PUT | `/api/v1/derivatives/order/cancel` | DRORD-031 | 同上 |
 | Danh sách lệnh chưa khớp (trong ngày) | GET | `/api/v1/derivatives/order/todayUnmatch` | DRORD-011 | 同上 |
-| Lịch sử đặt lệnh | GET | `/api/v1/derivatives/order/history` | DRORD-010 | 同上 |
+| Sổ lệnh (orderBook — trong ngày T0) | GET | `/api/v1/derivatives/order/orderBook` | DRORD-010 | [Regular_Orders_API_Spec](../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md) §7 |
+| Lịch sử đặt lệnh (từ ngày – đến ngày) | GET | `/api/v1/derivatives/order/history` | DRORD-033 | [Regular_Orders_API_Spec](../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md) §8 |
 | Tra cứu khả năng đặt lệnh | GET | `/api/v1/derivatives/order/checkAvailability` | DRORD-028 | [Order_Availability_Check_API_Spec](../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) |
 | Đặt lệnh điều kiện (Stop) | POST | `/api/v1/derivatives/stopOrder` | DRORD-005, DRORD-006 | [Stop_Orders_API_Spec](../Planning%20documentation/Order/Specifications/Stop_Orders_API_Spec.md) |
 | Sửa lệnh điều kiện | PUT | `/api/v1/derivatives/stopOrder/modify` | DRORD-023, DRORD-024 | 同上 |
@@ -85,6 +86,7 @@ POST   /api/v1/derivatives/order
 PUT    /api/v1/derivatives/order/modify
 PUT    /api/v1/derivatives/order/cancel
 GET    /api/v1/derivatives/order/todayUnmatch
+GET    /api/v1/derivatives/order/orderBook
 GET    /api/v1/derivatives/order/history
 GET    /api/v1/derivatives/order/checkAvailability
 

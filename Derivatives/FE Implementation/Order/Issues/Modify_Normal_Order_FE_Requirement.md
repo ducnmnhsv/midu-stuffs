@@ -38,7 +38,7 @@ Traders view the order book and order history on the **Orderbook** screen. When 
 
         *   **Order type** (Normal order)
 
-        *   Data fetched from API GET /api/v1/derivatives/order/history **(TBD)**
+        *   Data fetched from API GET /api/v1/derivatives/order/orderBook (sổ lệnh trong ngày T0 — DRORD-010) **(TBD)**
 
 3. **Validation fields**
 

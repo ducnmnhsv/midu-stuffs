@@ -26,12 +26,9 @@ Open Positions API tra cứu danh sách vị thế mở (positions) đang nắm 
 **Success (Query):**
 ```json
 {
-  "positions": [...],
-  "pagination": {
-    "hasMore": true,
-    "nextKey": "...",
-    "totalRecords": 150
-  }
+  "profitLoss": 0,
+  "totalOpenPosition": 0,
+  "positions": [...]
 }
 ```
 
@@ -62,29 +59,26 @@ or
 
 ## 2. Business Rules
 
-### 2.1 Position Types
+### 2.1 Position Types (sellBuyType)
 
-| Side | Description | P&L Calculation |
-|------|-------------|-----------------|
-| `LONG` | Mua/Nắm giữ | (currentPrice - averagePrice) × quantity |
-| `SHORT` | Bán khống | (averagePrice - currentPrice) × quantity |
+| sellBuyType | Description | P&L Calculation |
+|-------------|-------------|-----------------|
+| `BUY` | Mua/Nắm giữ | (currentPrice - averagePrice) × quantity |
+| `SELL` | Bán khống | (averagePrice - currentPrice) × quantity |
 
-### 2.2 Quantity Types
+### 2.2 Quantity Fields
 
 | Field | Description |
 |-------|-------------|
-| `totalQuantity` | Tổng KL nắm giữ |
-| `availableQuantity` | KL khả dụng (có thể đóng ngay) |
-| `blockedQuantity` | KL bị khóa (có lệnh chờ) |
-
-**Formula:** `totalQuantity = availableQuantity + blockedQuantity`
+| `quantity` | Khối lượng vị thế hiện tại |
+| `previousQuantity` | Khối lượng kỳ trước / trước giao dịch |
+| `closableQuantity` | KL khả dụng đóng (available_qty_closed) |
 
 ### 2.3 Validation Rules (TradeX)
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
-| Required Fields | accountNumber, subNumber | `FIELD_IS_REQUIRED` |
-| Fetch Count | 1 ≤ fetchCount ≤ 100 | `INVALID_FETCH_COUNT` |
+| Required Fields | accountNumber (bắt buộc; subNumber tùy chọn theo spec) | `FIELD_IS_REQUIRED` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
 
 ### 2.4 Language Mapping
@@ -103,113 +97,141 @@ or
 
 **Endpoint:** `GET /api/v1/derivatives/asset/openPositions`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-open-positions` (DRACC-003) — Lotte_DR §2.1.1. Method POST; request: `acnt`, `next_data`, `hts_user_id`.
+**Lotte (DRACC-003):** [Lotte_DR.md §2.1.1](../../../Documentation/[API%20specs]Lotte_DR.md) — URL: `[Root URL APIKEY]/tuxsvc/der/account/dr-open-positions`; Method: POST; Request body: `acnt`, `next_data`, `hts_user_id`.
 
-**Query Parameters:**
+**Query Parameters (TradeX):**
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `accountNumber` | String | ✅ | Số tài khoản phái sinh |
-| `subNumber` | String | ✅ | Tiểu khoản |
-| `symbol` | String | ❌ | Filter by symbol (optional) |
-| `nextKey` | String | ❌ | Pagination token |
-| `fetchCount` | Number | ❌ | Records per page (default: 50, max: 100) |
+| `accountNumber` | String | ✅ | Số tài khoản phái sinh → gửi sang Lotte `acnt` |
+| `subNumber` | String | ❌ | Tiểu khoản (Lotte DRACC-003 không có field tương ứng; dùng cho validation/display nếu cần) |
+| `nextKey` | String | ❌ | Pagination: lần đầu gửi `"0"`; trang tiếp gửi đúng giá trị nhận từ response trước. Map sang Lotte `next_data`. |
 
-### 3.2 Request Mapping
+### 3.2 Request Mapping (TradeX → Lotte DRACC-003)
 
-**TradeX → Lotte:**
+**Theo Lotte_DR.md §2.1.1 — Request Data (JSON) chỉ có 3 field:**
 
-| TradeX Field | Type | Required | Lotte Field | Transform | Description |
-|--------------|------|----------|-------------|-----------|-------------|
-| `accountNumber` | String | ✅ | `acnt_no` | Direct | Số tài khoản |
-| `subNumber` | String | ✅ | `sub` | Direct | Tiểu khoản |
-| `symbol` | String | ❌ | `sym` | Direct | Filter symbol |
-| `nextKey` | String | ❌ | `next_key` | Direct | Pagination token |
-| `fetchCount` | Number | ❌ | `row_count` | Default: 50 | Records per page |
-| *(JWT)* `userId` | - | - | `user_id` | Auto | Username from token |
-| *(JWT)* `name` | - | - | `hts_user_nm` | Auto | Name from token |
-| *(JWT)* `identifierNumber` | - | - | `idno` | Auto | ID from token |
-| *(Request IP)* | - | - | `cli_ip_addr` | Auto | Client IP |
-| *(Header)* | - | - | `lang_code` | Map (§2.4) | Language code (V/E/K) |
+| Lotte Field | Type | Required | Mô tả (Lotte_DR) |
+|-------------|------|----------|-------------------|
+| `acnt` | String | Y | Số TK |
+| `next_data` | String | Y | 0 (không bỏ trống); tra cứu trang tiếp thì nhập đúng next_data trả trong output lần trước |
+| `hts_user_id` | String | Y | hts_user_id của TK tra cứu (vd. lhptgwapi) |
+
+**Mapping TradeX → Lotte:**
+
+| TradeX (query / context) | Lotte Field | Transform |
+|--------------------------|-------------|-----------|
+| `accountNumber` | `acnt` | Direct |
+| `nextKey` (hoặc không truyền) | `next_data` | Lần đầu gửi `"0"`; lần sau gửi đúng `nextKey` nhận từ response (vd. từ `positions[].nextKey` cuối hoặc từ Lotte) |
+| User đăng nhập (JWT/session) | `hts_user_id` | Auto — lấy từ user đang gọi API |
+
+*Lotte DRACC-003 không có:* `sub`, `sym`, `row_count` / `fetchCount`. Các tham số này không gửi xuống Lotte; nếu TradeX vẫn nhận thì dùng cho validation hoặc filter phía TradeX.
 
 ### 3.3 Response Mapping
 
-**Success (200):**
+**Lotte_DR §2.1.1 — Response Data:** `error_code`, `error_desc`, `success`, `data_list`.  
+**Object Types (DataResponse)** — mỗi phần tử trong `data_list`:
 
-**Position Object:**
+| Lotte Field (trong data_list[]) | Type | Mô tả (Lotte_DR) |
+|---------------------------------|------|-------------------|
+| `acnt` | String | Tài khoản |
+| `acnt_name` | String | Tên tài khoản |
+| `contract_code` | String | Mã hợp đồng |
+| `type` | String | Loại Mua/Bán (1. Mua, 2. Bán) |
+| `volume` | String | Khối lượng |
+| `previous_volume` | String | Khối lượng trước |
+| `average_price` | String | Giá trung bình |
+| `current_price` | String | Giá hiện tại |
+| `unrealized_profit_loss` | String | Lãi lỗ chưa thực hiện |
+| `available_qty_closed` | String | Số lượng có thể đóng |
+| `next_data` | String | next data |
 
-| Lotte Field | TradeX Field | Type | Transform | Description |
-|-------------|--------------|------|-----------|-------------|
-| `sym` | `symbol` | String | Direct | Mã hợp đồng |
-| `sym_nm` | `symbolName` | String | Direct | Tên hợp đồng |
-| `side` | `side` | Enum | `L→LONG`, `S→SHORT` | Long/Short |
-| `tot_qty` | `totalQuantity` | Number | Parse int | Tổng KL |
-| `aval_qty` | `availableQuantity` | Number | Parse int | KL khả dụng |
-| `blk_qty` | `blockedQuantity` | Number | Parse int | KL bị khóa |
-| `avg_prc` | `averagePrice` | Number | Parse float | Giá mua TB |
-| `cur_prc` | `currentPrice` | Number | Parse float | Giá hiện tại |
-| `mkt_val` | `marketValue` | Number | Parse float | Giá trị thị trường |
-| `cost_val` | `costValue` | Number | Parse float | Giá vốn |
-| `upnl` | `unrealizedPnL` | Number | Parse float | Lãi/lỗ chưa thực hiện |
-| `upnl_rt` | `unrealizedPnLPercent` | Number | Parse float | % lãi/lỗ |
-| `mrgn_req` | `marginRequired` | Number | Parse float | Ký quỹ yêu cầu |
-| `open_dt` | `openDate` | String | Direct | Ngày mở (yyyyMMdd) |
-| `upd_dt` | `lastUpdated` | String | ISO 8601 | Thời điểm cập nhật |
-
-**Pagination:**
-
-| Lotte Field | TradeX Field | Type | Description |
-|-------------|--------------|------|-------------|
-| `has_more` | `pagination.hasMore` | Boolean | Còn trang sau |
-| `next_key` | `pagination.nextKey` | String | Next page token |
-| `tot_rec` | `pagination.totalRecords` | Number | Tổng số records |
-
-**Side Mapping:**
-
-| Lotte Code | TradeX Enum | Vietnamese |
-|------------|-------------|------------|
-| `L` | `LONG` | Mua/Nắm giữ |
-| `S` | `SHORT` | Bán/Bán khống |
-
-**Response Structure:**
+**Lotte sample response (reference):**
 ```json
 {
+  "error_code": "0000",
+  "error_desc": "",
+  "success": true,
+  "total_record": "",
+  "data_list": [
+    {
+      "acnt": "039C200321",
+      "acnt_name": "Nguyễn Thị Minh Phương",
+      "contract_code": "41I2FC000",
+      "type": "1",
+      "volume": "     30",
+      "previous_volume": "     30",
+      "average_price": "1000.00",
+      "current_price": "1000.00",
+      "unrealized_profit_loss": "0.000",
+      "available_qty_closed": "     30",
+      "next_data": "0"
+    }
+  ]
+}
+```
+
+**Success (200) – TradeX response:**
+
+**Aggregate fields (BE-computed, trả ở root):**
+
+| TradeX Field | Type | Description | Công thức BE |
+|--------------|------|-------------|--------------|
+| `profitLoss` | Number | Tổng lãi/lỗ chưa thực hiện | Σ `unrealizedPL` của tất cả bản ghi trong `positions` (bao gồm số dương và số âm) |
+| `totalOpenPosition` | Number | Tổng khối lượng vị thế mở | Σ `quantity` của tất cả bản ghi trong `positions` |
+
+**Position Object (Lotte `data_list[]` DataResponse → TradeX `positions[]`):**
+
+| Lotte Field (Lotte_DR §2.1.1) | TradeX Field | Type | Transform | Description |
+|-------------------------------|--------------|------|-----------|-------------|
+| `contract_code` | `code` | String | Direct | Mã hợp đồng |
+| `type` | `sellBuyType` | Enum | `1`→`BUY`, `2`→`SELL` (bảng dưới) | Loại Mua/Bán |
+| `volume` | `quantity` | Number | Trim + parse int | Khối lượng (Lotte: string có thể có space) |
+| `previous_volume` | `previousQuantity` | Number | Trim + parse int | Khối lượng trước |
+| `average_price` | `averagePrice` | Number | Parse float | Giá trung bình |
+| `current_price` | `currentPrice` | Number | Parse float | Giá hiện tại |
+| `unrealized_profit_loss` | `unrealizedPL` | Number | Parse float | Lãi lỗ chưa thực hiện |
+| `available_qty_closed` | `closableQuantity` | Number | Trim + parse int | Số lượng có thể đóng |
+| `next_data` | `nextKey` | String | Direct | next data (pagination) |
+
+*Các field Lotte không map sang TradeX (có trong response):* `acnt`, `acnt_name` — dùng nội bộ hoặc bỏ qua.
+
+**sellBuyType mapping (Lotte `type` → TradeX):**
+
+| Lotte type | TradeX sellBuyType | Vietnamese |
+|------------|--------------------|------------|
+| `1` | `BUY` | Mua/Nắm giữ |
+| `2` | `SELL` | Bán/Bán khống |
+
+*Lưu ý:* Lotte trả `volume`, `previous_volume`, `available_qty_closed` dạng string có thể có leading spaces — BE trim rồi parse số. Khi có phân trang (Lotte `next_data`), `profitLoss` và `totalOpenPosition` là tổng trên **đúng các bản ghi trong `positions` của response hiện tại**.
+
+**Response Structure (TradeX):**
+```json
+{
+  "profitLoss": 2360000,
+  "totalOpenPosition": 20,
   "positions": [
     {
-      "symbol": "VN30F2403",
-      "symbolName": "VN30 Future Mar 2024",
-      "side": "LONG",
-      "totalQuantity": 20,
-      "availableQuantity": 15,
-      "blockedQuantity": 5,
-      "averagePrice": 1250.5,
-      "currentPrice": 1280.0,
-      "marketValue": 102400000,
-      "costValue": 100040000,
-      "unrealizedPnL": 2360000,
-      "unrealizedPnLPercent": 2.36,
-      "marginRequired": 25000000,
-      "openDate": "20260210",
-      "lastUpdated": "2026-02-13T10:30:00Z"
+      "code": "41I1G3000",
+      "sellBuyType": "BUY",
+      "quantity": 10,
+      "previousQuantity": 8,
+      "averagePrice": 1285.5,
+      "currentPrice": 1290.2,
+      "unrealizedPL": 47000,
+      "closableQuantity": 10,
+      "nextKey": "sample 123"
     }
-  ],
-  "pagination": {
-    "hasMore": false,
-    "nextKey": null,
-    "totalRecords": 1
-  }
+  ]
 }
 ```
 
 **Empty Result:**
 ```json
 {
-  "positions": [],
-  "pagination": {
-    "hasMore": false,
-    "nextKey": null,
-    "totalRecords": 0
-  }
+  "profitLoss": 0,
+  "totalOpenPosition": 0,
+  "positions": []
 }
 ```
 
@@ -220,8 +242,6 @@ or
 | Field | Error Code | messageParams | Condition |
 |-------|------------|---------------|-----------|
 | `accountNumber` | `FIELD_IS_REQUIRED` | `["accountNumber"]` | Missing |
-| `subNumber` | `FIELD_IS_REQUIRED` | `["subNumber"]` | Missing |
-| `fetchCount` | `INVALID_FETCH_COUNT` | `["fetchCount", "1", "100"]` | < 1 or > 100 |
 
 **Auth Error (401):**
 
@@ -339,37 +359,35 @@ or
 - `lang_code` → From `Accept-Language` header
 
 **5. Pagination:**
-- Default page size: 50 records
-- Max page size: 100 records
-- Use `nextKey` pattern (map to Lotte `next_key`)
-- Sort: By symbol ASC (alphabetical)
+- Lotte trả `next_data` trong từng phần tử `data_list` (cursor cho trang/record tiếp theo). TradeX map sang `nextKey` trong từng object `positions[]`.
+- Root response không có object `pagination`; phân trang (nếu có) dựa trên `nextKey` của record cuối hoặc theo quy ước Lotte.
 
 **6. Real-time Data:**
-- `currentPrice`: Get from market data service
-- `unrealizedPnL`: Calculate in real-time based on current price
-- Update frequency: Real-time during trading hours
+- `currentPrice`: Lấy từ Lotte hoặc market data service.
+- `unrealizedPL`: Lotte trả `unrealized_profit_loss`; BE có thể tính lại real-time nếu cần.
 
 ### 5.3 Data Transformation
 
-**Numbers:**
+**Lotte data_list item → TradeX position:**
 ```typescript
-return {
-  totalQuantity: parseInt(lotteResponse.tot_qty),
-  averagePrice: parseFloat(lotteResponse.avg_prc),
-  unrealizedPnL: parseFloat(lotteResponse.upnl),
-  // ... etc
-};
+const sellBuyTypeMap = { '1': 'BUY', '2': 'SELL' };
+const toPosition = (item: LotteDataListItem) => ({
+  code: item.contract_code,
+  sellBuyType: sellBuyTypeMap[item.type] ?? item.type,
+  quantity: parseInt(String(item.volume).trim(), 10),
+  previousQuantity: parseInt(String(item.previous_volume).trim(), 10),
+  averagePrice: parseFloat(item.average_price),
+  currentPrice: parseFloat(item.current_price),
+  unrealizedPL: parseFloat(item.unrealized_profit_loss),
+  closableQuantity: parseInt(String(item.available_qty_closed).trim(), 10),
+  nextKey: item.next_data ?? null,
+});
 ```
 
-**Enums:**
+**Aggregate (BE-computed):**
 ```typescript
-const sideMap = { 'L': 'LONG', 'S': 'SHORT' };
-const side = sideMap[lotteResponse.side];
-```
-
-**Timestamps:**
-```typescript
-const lastUpdated = new Date(lotteResponse.upd_dt).toISOString();
+profitLoss: positions.reduce((sum, p) => sum + (p.unrealizedPL ?? 0), 0),
+totalOpenPosition: positions.reduce((sum, p) => sum + (p.quantity ?? 0), 0),
 ```
 
 ---

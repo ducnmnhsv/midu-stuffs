@@ -856,6 +856,53 @@
 - **Object Types (DataResponse)**:
     - `order_no`: String, Số hiệu lệnh
 
+#### 2.3.13 DRORD-033: Tra cứu lịch sử đặt lệnh thường (từ ngày – đến ngày)
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-order-history-range` (hoặc theo tài liệu Lotte cung cấp)
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `hts_user_id`: String, Y, Tài khoản thực hiện
+    - `acnt`: String, Y, Số TK
+    - `date_fr`: String, Y, Từ ngày (yyyyMMdd)
+    - `date_to`: String, Y, Đến ngày (yyyyMMdd)
+    - `next_data`: String, Y, Lần đầu khoảng trắng hoặc "0" (Next key)
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true/false)
+    - `total_record`: String, N (có thể rỗng; TradeX không cần trả total items)
+    - `data_list`: DataResponse (array of Object Types)
+- **Object Types (DataResponse)** — mỗi phần tử trong `data_list` (response thực tế dùng prefix `os_`):
+    - `os_date`: String, Ngày (yyyyMMdd)
+    - `os_jcgb`: String, Loại thao tác (1: New, …; map New/Cancel/Edit)
+    - `os_mdtp`: String, Mã loại (vd. 06)
+    - `os_fcm_ord_no`: String, Số lệnh FCM
+    - `os_mth_atm`: String, (nội bộ)
+    - `os_mprc`: String, Giá khớp (có thể space)
+    - `os_acno`: String, Số TK
+    - `os_acnm`: String, Tên TK
+    - `os_jmno`: String, Số hiệu lệnh
+    - `os_ojno`: String, Số hiệu lệnh gốc (có thể có leading space)
+    - `os_code`: String, Mã HĐ
+    - `os_mdms`: String, Buy/Sell (1: Mua, 2: Bán)
+    - `os_jqty`: String, Khối lượng (có thể có leading space)
+    - `os_cqty`: String, Khối lượng khớp (có thể có leading space)
+    - `os_mqty`: String, Khối lượng chưa khớp (có thể có leading space)
+    - `os_cncl_qty`: String, Khối lượng đã hủy
+    - `os_type`: String, Loại lệnh (1: xem thêm os_jmgb → ATO/MAK/MOK/ATC/MTL; 2: LO, bỏ qua os_jmgb)
+    - `os_jprc`: String, Giá đặt
+    - `os_time`: String, Giờ (HHMMSS)
+    - `os_user`: String, User
+    - `os_jmgb`: String, 0:DAY, 2:ATO, 3:MAK, 4:MOK, 7:ATC, 9:MTL (dùng khi os_type=1)
+    - `os_ord_style`: String, (nội bộ)
+    - `os_ipad`: String, IP
+    - `os_msg_rsn`: String, Lý do từ chối (có thể space)
+    - `os_ord_stat`: String, Trạng thái lệnh (0: Tiếp nhận; 1: Xác nhận tiếp nhận; 2: Khớp 1 phần; 3: Khớp toàn bộ; 4: Từ chối)
+    - `os_next_key`: String, Next key (pagination)
+
 ### 2.4 DERIVATIVE MARKET DATA
 
 #### 2.4.1 DRMKT-001: Lấy ds các mã phái sinh

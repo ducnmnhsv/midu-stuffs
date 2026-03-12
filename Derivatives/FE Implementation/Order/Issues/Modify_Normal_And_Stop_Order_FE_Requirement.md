@@ -11,7 +11,7 @@
 
 ## Executive Summary
 
-Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify normal order** và **Modify stop order**. Từ màn **Orderbook** (lịch sử/sổ lệnh Derivatives), khi user bấm nút **Edit** sẽ điều hướng tới màn tương ứng (sửa lệnh thường hoặc sửa lệnh điều kiện). Màn hình hiển thị theo Figma, tích hợp API **order/history**, **order/checkAvailability** và **order/modify** của Derivatives; validation giá (trần–sàn cho lệnh thường, CE–RE cho lệnh điều kiện), số lượng tối đa, và với stop order thêm trigger price và ngày hiệu lực (không chọn quá khứ, chỉ một ngày). Sau khi gọi modify thành công, hiển thị message và orderNumber trả về từ API.
+Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify normal order** và **Modify stop order**. Từ màn **Orderbook** (lịch sử/sổ lệnh Derivatives), khi user bấm nút **Edit** sẽ điều hướng tới màn tương ứng (sửa lệnh thường hoặc sửa lệnh điều kiện). Màn hình hiển thị theo Figma, tích hợp API **order/orderBook** (sổ lệnh trong ngày), **order/checkAvailability** và **order/modify** của Derivatives; validation giá (trần–sàn cho lệnh thường, CE–RE cho lệnh điều kiện), số lượng tối đa, và với stop order thêm trigger price và ngày hiệu lực (không chọn quá khứ, chỉ một ngày). Sau khi gọi modify thành công, hiển thị message và orderNumber trả về từ API.
 
 **Phạm vi:** Chỉ **sửa lệnh (Modify)** từ Orderbook Derivatives; entry point là nút Edit trên màn Orderbook.
 
@@ -21,7 +21,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 
 - User cần **sửa lệnh** đã đặt (normal order hoặc stop order) từ màn Orderbook.
 - Click **Edit** trên một dòng lệnh → mở màn **Modify normal order** hoặc **Modify stop order** tùy loại lệnh.
-- Backend cung cấp: `/api/v1/derivatives/order/history` (chi tiết lệnh), `/api/v1/derivatives/order/checkAvailability` (max quantity), `/api/v1/derivatives/order/modify` (gửi sửa lệnh).
+- Backend cung cấp: `/api/v1/derivatives/order/orderBook` (sổ lệnh trong ngày — chi tiết lệnh), `/api/v1/derivatives/order/checkAvailability` (max quantity), `/api/v1/derivatives/order/modify` (gửi sửa lệnh).
 - FE hiện có tham chiếu: **Equity** màn `ModifyOrderBook` (`src/screens/ModifyOrderBook`), **Equity** màn `ModifyStopOrder` (`src/screens/ModifyStopOrder`) – có thể tham khảo cấu trúc, nhưng Derivatives dùng API và endpoint riêng.
 
 ---
@@ -45,7 +45,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 | Tham khảo Modify (Equity) | `src/screens/ModifyOrderBook/` – cấu trúc màn, Price/Quantity/Max, Cancel/Modify button. |
 | Tham khảo Modify Stop (Equity) | `src/screens/ModifyStopOrder/` – Trigger price, Order price, Quantity, From/To date, Confirm. |
 | Navigation / Screen params | `src/navigation/ScreenParamList.ts` – có `ModifyOrderBook`, `ModifyStopOrder` (equity). Derivatives có thể thêm screen mới hoặc reuse với context Derivatives. |
-| Redux / API | `src/config/api.ts` – hiện equity: `/lotte/equity/order/...`. Derivatives: dùng endpoint `/api/v1/derivatives/order/...` (history, checkAvailability, modify). |
+| Redux / API | `src/config/api.ts` – hiện equity: `/lotte/equity/order/...`. Derivatives: dùng endpoint `/api/v1/derivatives/order/...` (orderBook, checkAvailability, modify). |
 
 ---
 
@@ -72,14 +72,14 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 - **Bid/Ask:** Hiển thị bid/ask của **top 3** giao dịch.
 - **Chart:** Khi chọn tab Chart, hiển thị phần chart thay cho Bid/Ask – theo [Modify order Chart](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40006583-230683&t=Hkbonf9r1expHBzf-11).
 
-**Thông tin lệnh gốc (từ API order/history):**
+**Thông tin lệnh gốc (từ API order/orderBook — sổ lệnh trong ngày):**
 
 - Loại lệnh hiện tại: Buy / Sell.
 - Giá đặt lệnh gốc.
 - Số lượng (orderQuantity).
 - Loại lệnh: Normal order.
 
-*(Chi tiết response API `/api/v1/derivatives/order/history` sẽ do Backend cung cấp riêng.)*
+*(Chi tiết response API `/api/v1/derivatives/order/orderBook` xem [Regular_Orders_API_Spec §7](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md#7-api-query-orderbook-trong-ngày-t0).)*
 
 **Khu vực nhập thông tin sửa lệnh:**
 
@@ -100,7 +100,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 
 | Mục đích | Method | Endpoint |
 |----------|--------|----------|
-| Chi tiết lệnh gốc | GET (hoặc theo spec) | `/api/v1/derivatives/order/history` |
+| Chi tiết lệnh gốc (sổ lệnh trong ngày) | GET | `/api/v1/derivatives/order/orderBook` |
 | Số lượng tối đa (max quantity) | GET | `/api/v1/derivatives/order/checkAvailability` |
 | Gửi sửa lệnh | POST | `/api/v1/derivatives/order/modify` |
 
@@ -140,7 +140,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 
 ## 2.5 APIs (Stop Order)
 
-- Cùng nhóm endpoint: **order/history**, **order/checkAvailability**, **order/modify** (request body khác cho stop order theo spec Backend).
+- Cùng nhóm endpoint: **order/orderBook**, **order/checkAvailability**, **order/modify** (request body khác cho stop order theo spec Backend).
 
 ---
 
@@ -151,7 +151,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 - [ ] Click **Edit** trên Orderbook (normal order) → mở màn Modify normal order với đúng params.
 - [ ] Hiển thị đúng layout Figma (symbol info, CE/FL/RE, vol, basis; tab Bid/Ask mặc định).
 - [ ] Tab Bid/Ask: top 3 bid/ask; Tab Chart: hiển thị chart theo Figma.
-- [ ] Thông tin lệnh gốc lấy từ API order/history (Buy/Sell, giá đặt, orderQuantity, Normal order).
+- [ ] Thông tin lệnh gốc lấy từ API order/orderBook (Buy/Sell, giá đặt, orderQuantity, Normal order).
 - [ ] Price: validate trần–sàn; null → "không hợp lệ"; ngoài range → toast "Giá nằm ngoài khoảng trần - sàn".
 - [ ] Quantity: ≥ 0; max từ checkAvailability (Buy/Sell theo lệnh gốc); hiển thị Max quantity sau khi gọi checkAvailability.
 - [ ] Cancel → thoát màn. Modify enable khi có thay đổi; click Modify → gọi order/modify; hiển thị message và orderNumber.
@@ -165,7 +165,7 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 
 ### Chung
 
-- [ ] APIs: derivatives/order/history, derivatives/order/checkAvailability, derivatives/order/modify (request/response theo spec Backend khi có).
+- [ ] APIs: derivatives/order/orderBook, derivatives/order/checkAvailability, derivatives/order/modify (request/response theo spec Backend khi có).
 
 ---
 
@@ -179,4 +179,4 @@ Xây dựng **hai màn hình sửa lệnh Derivatives** cho NHSV Pro: **Modify n
 
 **Document Status:** 📋 Ready for FE Dev  
 **For:** FE Developers, PM, QA  
-**Next Steps:** Backend cung cấp chi tiết API order/history (request/response) cho từng loại lệnh; FE triển khai màn và tích hợp API.
+**Next Steps:** Backend cung cấp chi tiết API order/orderBook (request/response) cho từng loại lệnh; FE triển khai màn và tích hợp API.
