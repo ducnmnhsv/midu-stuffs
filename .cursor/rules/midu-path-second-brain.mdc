@@ -1,0 +1,32 @@
+# Midu-path — Second Brain & Career
+
+## Purpose
+
+Repo **Midu-path** là repo cá nhân: (1) learnings trong Knowledge/, (2) CV & Portfolio trong Career/. AI hỗ trợ ghi chép, đề xuất cập nhật, validate profile/skills.
+
+## Repo Midu-path
+
+| Item | Path |
+|------|------|
+| **Repo** | `/Users/nguyenduc/Personal/Repositories/Midu-path` |
+| **Profile (SSOT)** | `Career/Profile.md` — profile, skills, achievements (mới nhất) |
+| **Knowledge** | `Knowledge/` — learnings theo chủ đề |
+| **Case studies** | `Career/Case_Studies/` — PM/fintech (NHSV Pro, …) |
+| **Archive** | `Career/Archive/` — CV & portfolio designer-era |
+
+## Khi user yêu cầu
+
+- **"Ghi vào Midu-path" / "Second brain" / "Ghi learning"**  
+  → Đề xuất nội dung và đường dẫn (Knowledge/ hoặc Career/). Không commit/push.
+
+- **"Cập nhật CV" / "Thêm thành tích"**  
+  → Đề xuất chỉnh `Career/Profile.md` (phần Profile, Skills hoặc Achievements).
+
+- **"Cập nhật Portfolio" / "Thêm case study"**  
+  → Đề xuất thêm/sửa file trong `Career/Case_Studies/`.
+
+## Rules
+
+- Chỉ đề xuất nội dung và vị trí file; user review, commit, push.
+- Dùng đường dẫn tuyệt đối khi tham chiếu Midu-path.
+- Validate skills/achievements theo profile hiện tại (NH SV, Senior PM, NHSV Pro) và ngữ cảnh tradex-monitoring.

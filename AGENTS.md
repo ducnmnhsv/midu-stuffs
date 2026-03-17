@@ -50,6 +50,16 @@ TradeX Knowledge/
 
 Khi tạo issue FE cho Derivatives: đọc cấu trúc/screens/components trong `nhsv-mts-rn` để viết issue chính xác; artifact (issue text, AC) lưu trong tradex-monitoring hoặc Jira/Bitbucket.
 
+### Second brain & Midu-path
+
+| Item | Value |
+|------|--------|
+| **Repo** | Midu-path (cá nhân) — learnings + CV + Portfolio |
+| **Path** | `/Users/nguyenduc/Personal/Repositories/Midu-path` |
+| **Rule** | `.cursor/rules/midu-path-second-brain.mdc` |
+
+Khi user yêu cầu ghi vào Midu-path, cập nhật CV/portfolio, hoặc "second brain": đề xuất nội dung và đường dẫn trong Midu-path — **Career/Profile.md** (SSOT), **Career/Case_Studies/** (case studies), **Knowledge/** (learnings); không commit/push.
+
 ## Skill/Rule Ecosystem
 
 > **Orchestrator Rule:** `.cursor/rules/ecosystem-orchestrator.mdc` — Always applied. Routes every task to the correct skill/rule combination.
