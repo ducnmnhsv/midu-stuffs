@@ -5,7 +5,7 @@
 Add the VSD flow in Cash Transaction (Derivatives): **VSD Balance** + **Deposit** (nộp tiền ký quỹ) + **Withdraw** (rút tiền ký quỹ) + **History**.
 
 **Figma:** [Deposit Form+Fee](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005124-206373) · [Deposit Confirm](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005124-206526) · [Withdraw](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005260-222646) · [History](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005084-245190)  
-**API Spec:** [VSD_Transaction_API_Spec](../VSD%20transaction/VSD_Transaction_API_Spec.md)
+**API Spec:** [VSD_Transaction_API_Spec](../../../Planning%20documentation/Cash%20transaction/VSD%20transaction/VSD_Transaction_API_Spec.md)
 
 ---
 
@@ -60,11 +60,11 @@ Add the VSD flow in Cash Transaction (Derivatives): **VSD Balance** + **Deposit*
 **General**
 
 - Account/sub: use the account (and sub if needed) that user selected before entering this feature
-- All APIs: use JWT (Authorization header). See [VSD_Transaction_API_Spec](../VSD%20transaction/VSD_Transaction_API_Spec.md) for request/response and error format. FE does not send bank accounts; BE resolves them.
+- All APIs: use JWT (Authorization header). See [VSD_Transaction_API_Spec](../../../Planning%20documentation/Cash%20transaction/VSD%20transaction/VSD_Transaction_API_Spec.md) for request/response and error format. FE does not send bank accounts; BE resolves them.
 
 ---
 
 ## References
 
-- **API spec:** [VSD_Transaction_API_Spec.md](../VSD%20transaction/VSD_Transaction_API_Spec.md)
+- **API spec:** [VSD_Transaction_API_Spec.md](../../../Planning%20documentation/Cash%20transaction/VSD%20transaction/VSD_Transaction_API_Spec.md)
 - **FE repo (reference):** `nhsv-mts-rn` → `src/screens/CashFlowScreen/` (HeaderCashFlow, BodyCashFlow, InternalTransferRequest, WithdrawRequest, WithdrawHistory). Add VSD tab/section and VSD Balance, Deposit, Withdraw, History components.

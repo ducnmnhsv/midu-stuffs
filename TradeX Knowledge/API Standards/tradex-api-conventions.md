@@ -610,6 +610,45 @@ const lang_code =
 | `orderQuantity` | Number | **Yes** | Số lượng (shares/contracts) |
 | `orderPrice` | Number | **Yes*** | Giá đặt (*not for MOK/MAK) |
 
+### 3. GET API optional parameters (TradeX → Core)
+
+Đối với **các API có method = GET** (ví dụ Order History, Cash Statement, Asset list…), TradeX có **2 query parameter optional** (cả hai **không required** từ TradeX):
+
+| TradeX (query param) | Type | Required | Core (Lotte) field | Description |
+|---------------------|------|----------|---------------------|-------------|
+| `fetchCount` | Number | ❌ No | `row_count` | Số bản ghi mỗi trang; không truyền thì không gửi sang Core hoặc dùng default Core |
+| `nextKey` | String | ❌ No | `next_data` (hoặc `next_key` tùy API Lotte) | Pagination token; trang đầu không gửi hoặc ""; trang sau = giá trị trả về lần trước |
+
+**Mapping khi gọi Core:**
+
+- **fetchCount** → **row_count** (chỉ gửi sang Core khi client truyền `fetchCount`; không truyền thì không gửi hoặc để Core dùng default).
+- **nextKey** → **next_data** (hoặc `next_key` theo đặc tả từng API Lotte). Trang đầu: "" hoặc khoảng trắng; trang tiếp: giá trị từ response lần trước (vd. `os_next_key` / `next_key`).
+
+**Lưu ý:** Cả hai field **không required** từ phía TradeX — client có thể bỏ qua; khi đó TradeX không gửi `row_count` (hoặc gửi default) và gửi `next_data` rỗng cho trang đầu.
+
+### 4. TradeX naming cho request/query parameters — không dùng tên hoặc mã Core
+
+**Nguyên tắc:** TradeX API **phải** dùng **tên tham số và tập giá trị do TradeX định nghĩa**, dễ hiểu với client (PM, FE). **Không** dùng trực tiếp tên field hoặc mã số của Core (Lotte) làm tên/giá trị tham số TradeX.
+
+| ❌ Sai | ✅ Đúng |
+|--------|--------|
+| Query param `sent` với giá trị `0`, `1`, `2` (theo Lotte) | TradeX param `orderSendFilter` với giá trị `ALL`, `SENT`, `PENDING`; mapping: ALL→0, SENT→1, PENDING→2 |
+| Param `sell_buy_tp` (tên Lotte) | TradeX param `sellBuyType`: `ALL`, `BUY`, `SELL`; mapping sang Lotte `sell_buy_tp` (0/1/2) |
+| Mô tả "0=all, 1=đã gửi, 2=chưa gửi" không kèm tên TradeX | Định nghĩa TradeX (tên + giá trị có nghĩa), sau đó bảng mapping TradeX → Core |
+
+**Quy tắc:**
+
+1. **Tên tham số:** Dùng camelCase, tên có nghĩa (ví dụ `orderSendFilter`, `sellBuyType`). Không dùng tên Core (vd. `sent`, `sell_buy_tp`, `ctr_cd`) làm tên param TradeX.
+2. **Giá trị (enum):** Dùng giá trị có nghĩa (vd. `ALL`, `SENT`, `PENDING`, `BUY`, `SELL`). Không expose mã số Core (0, 1, 2) làm giá trị hợp lệ của API TradeX.
+3. **Mapping bắt buộc:** Mỗi param TradeX (và mỗi giá trị) phải có **bảng mapping rõ ràng** sang Core: **TradeX parameter name** → **Core field name**, **TradeX value** → **Core value**. Ví dụ:
+
+| TradeX parameter | TradeX values (có nghĩa) | Core (Lotte) field | Core values |
+|------------------|---------------------------|----------------------|-------------|
+| `orderSendFilter` | `ALL`, `SENT`, `PENDING` | `sent` | `0`, `1`, `2` |
+| `sellBuyType` | `ALL`, `BUY`, `SELL` | `sell_buy_tp` | `0`, `1`, `2` |
+
+**Áp dụng:** Mọi API spec (Order, Asset, Cash, …) khi có filter/option trùng với field Core phải định nghĩa tên và giá trị TradeX riêng, rồi mới map sang Core trong phần Request Mapping.
+
 ---
 
 ## Response Format Standards

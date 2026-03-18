@@ -44,7 +44,7 @@
 
 Tính năng **TP/SL** cho Derivatives cho phép thiết lập giá hoặc offset để tự động đóng vị thế. Nội dung UI đã chuẩn hóa trong **TP/SL UI Copy**. FE áp dụng đúng copy và quy tắc hiển thị khi màn TP/SL được triển khai.
 
-**Blocked:** Cơ chế track order lifecycle (hủy/sửa lệnh ảnh hưởng TP/SL) đang thảo luận. Xem [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md). FE có thể chuẩn bị UI copy và validation trước; triển khai màn hình khi BE/Core sẵn sàng.
+**Blocked:** Cơ chế track order lifecycle (hủy/sửa lệnh ảnh hưởng TP/SL) đang thảo luận. Xem [TPSL_Tracking_Mechanism_Discussion](TPSL_Tracking_Mechanism_Discussion.md). FE có thể chuẩn bị UI copy và validation trước; triển khai màn hình khi BE/Core sẵn sàng.
 
 ---
 
@@ -52,7 +52,7 @@ Tính năng **TP/SL** cho Derivatives cho phép thiết lập giá hoặc offset
 
 - **UI Copy:** [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
 - **Planning:** [04_TPSL_Orders_Business](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
-- **Blocking:** [TPSL_Tracking_Mechanism_Discussion](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)
+- **Blocking:** [TPSL_Tracking_Mechanism_Discussion](TPSL_Tracking_Mechanism_Discussion.md)
 
 **Nội dung TP_SL_UI_Copy:**  
 I. Tooltip – II. Validation Error – III. Warning – IV. Inline Hint – V. Confirmation/Summary – VI. Pro-level Warning – VII. UI Usage (ⓘ, màu vàng/đỏ).
@@ -83,4 +83,4 @@ I. Tooltip – II. Validation Error – III. Warning – IV. Inline Hint – V. 
 
 - [TP_SL_UI_Copy.md](../../../Planning%20documentation/Order/Specifications/TP_SL_UI_Copy.md)
 - [04_TPSL_Orders_Business.md](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
-- [TPSL_Tracking_Mechanism_Discussion.md](../../../Planning%20documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md)
+- [TPSL_Tracking_Mechanism_Discussion.md](TPSL_Tracking_Mechanism_Discussion.md)

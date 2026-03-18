@@ -109,6 +109,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | 02 | [Order Flow](./Planning/02_Order_Flow.md) | Architecture | PM, BA, Architect | System flow, data flow diagrams |
 | 03 | [Order Types](./Planning/03_Order_Types.md) | Spec | PM, BA, QA | Order types, validation rules |
 | 04 | [TP/SL Orders Business](./Planning/04_TPSL_Orders_Business.md) | BRD | PM, BA, Stakeholders | TP/SL requirements, trigger mechanism, MTL order type |
+| 05 | [Order History DRORD-010 Analysis](./Planning/05_Order_History_DRORD010_Analysis.md) | API Analysis | PM, BA, Dev | DRORD-010 request/response, date default, value mapping |
 
 **⚠️ Important:** Planning/ docs follow `.cursor/rules/derivatives-pm-documentation.mdc`:
 - ✅ Business logic, diagrams, user stories
@@ -119,7 +120,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 | Document | Focus Area | Target Audience | Lines |
 |----------|------------|-----------------|-------|
-| [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte) | BE Developers | ~750 |
+| [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte): §7 OrderBook (DRORD-010), §8 Order History fromDate–toDate (DRORD-033), Place/Modify/Cancel, todayUnmatch | BE Developers | ~800 |
 | [Order Availability Check API Spec](./Specifications/Order_Availability_Check_API_Spec.md) | DRORD-028 - Check max order quantity before placing order | BE Developers | ~600 |
 | [Stop Orders API Spec](./Specifications/Stop_Orders_API_Spec.md) | DRORD-005/006/023/024/025/026 - Stop order (Place/Modify/Cancel) | BE Developers | ~300 |
 | [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
@@ -136,18 +137,25 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 
 ### Active Issues (Ready for Development)
 
-**Current Issues:**
+**FE Implementation issues** (Trade, Stop order, Max buy/Max sell, TP/SL tracking) đã chuyển sang **Derivatives/FE Implementation/** – xem [FE Implementation README](../../FE%20Implementation/README.md).
 
-| Issue | Status | Priority | Blocker |
-|-------|--------|----------|---------|
-| [Trade Screen FE Requirement (Normal/Quick Order)](./Issues/Trade_Screen_FE_Requirement.md) | 📋 Ready | High | — |
-| [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | 🔴 BLOCKED | High | Waiting for Core order lifecycle events |
-| [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | 📋 Đề xuất | High | Chờ PM duyệt hướng thiết kế |
+| Issue | Location | Status | Priority |
+|-------|----------|--------|----------|
+| [Trade Screen FE Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Stop Order Screen FE Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Max Buy/Max Sell Integration](../../FE%20Implementation/Order/Issues/Max_Buy_Max_Sell_Integration.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Modify Normal Order FE Requirement](../../FE%20Implementation/Order/Issues/Modify_Normal_Order_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [Modify Stop Order FE Requirement](../../FE%20Implementation/Order/Issues/Modify_Stop_Order_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
+| [TP/SL Tracking Mechanism](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md) | FE Implementation/Order/Issues/ | 🔴 BLOCKED | High |
+| [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | Planning documentation/Order/Issues/ | 📋 Đề xuất | High |
 
 **Issue Summary:**
-- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma; logic đặt lệnh dùng chung. Xem [Trade_Screen_FE_Requirement](./Issues/Trade_Screen_FE_Requirement.md).
-- **TP/SL:** Cần track order lifecycle (cancel, modify) nhưng Core không cung cấp events
-- **Stop Order:** Lotte thiếu API query/modify/socket → Đề xuất TradeX-Native (lưu & monitor, khi trigger đẩy DRORD-029/030). Xem [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md)
+- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma. → [Trade_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md).
+- **Stop Order Screen FE:** Màn đặt lệnh Stop order – Normal/Quick mode, trigger price, date picker, validation. → [Stop_Order_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
+- **Modify Normal Order FE:** Màn sửa lệnh thường từ Orderbook (Edit → Modify); Price (trần–sàn), Quantity/Max (checkAvailability), order/modify. → [Modify_Normal_Order_FE_Requirement](../../FE%20Implementation/Order/Issues/Modify_Normal_Order_FE_Requirement.md).
+- **Modify Stop Order FE:** Màn sửa lệnh điều kiện từ Orderbook; Trigger price, Order price (CE–RE), Quantity, Affected date (date picker, một ngày), order/modify. → [Modify_Stop_Order_FE_Requirement](../../FE%20Implementation/Order/Issues/Modify_Stop_Order_FE_Requirement.md).
+- **TP/SL:** Cần track order lifecycle (cancel, modify) – Core chưa cung cấp events. → [TPSL_Tracking_Mechanism_Discussion](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md).
+- **Stop Order (TradeX-Native):** Đề xuất thiết kế khi Lotte thiếu API. → [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md).
 
 **Future Issues:**
 - Conditional Orders Implementation (when approved)

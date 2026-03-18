@@ -17,13 +17,14 @@ Regular Orders (Derivatives) là các lệnh mua/bán thông thường (LO, ATO,
 
 ### 1.2 API Endpoints
 
-| Operation | Method | Endpoint |
-|-----------|--------|----------|
-| Place Order | POST | `/api/v1/derivatives/order` |
-| Modify Order | PUT | `/api/v1/derivatives/order/modify` |
-| Cancel Order | PUT | `/api/v1/derivatives/order/cancel` |
-| Query Unmatch | GET | `/api/v1/derivatives/order/todayUnmatch` |
-| Query History | GET | `/api/v1/derivatives/order/history` |
+| Operation | Method | Endpoint | Lotte |
+|-----------|--------|----------|-------|
+| Place Order | POST | `/api/v1/derivatives/order` | DRORD-029, 030 |
+| Modify Order | PUT | `/api/v1/derivatives/order/modify` | DRORD-032 |
+| Cancel Order | PUT | `/api/v1/derivatives/order/cancel` | DRORD-031 |
+| Query Unmatch | GET | `/api/v1/derivatives/order/todayUnmatch` | DRORD-011 |
+| Query OrderBook (trong ngày T0) | GET | `/api/v1/derivatives/order/orderBook` | DRORD-010 |
+| Query History (lịch sử từ ngày – đến ngày) | GET | `/api/v1/derivatives/order/history` | DRORD-033 — §8 bên dưới |
 
 ### 1.3 Response Format Standards
 
@@ -65,6 +66,7 @@ or
 - NO `success: true/false` field
 - Mutation: Minimal response (message from Lotte + orderNumber)
 - Query: Rich data arrays
+- **GET APIs** (e.g. Order History): client có thể truyền thêm **fetchCount** hoặc **nextKey** (cả hai **không required**)
 - Pass-through Lotte messages AS-IS (including `[CODE]` prefix)
 
 ---
@@ -86,12 +88,15 @@ or
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
-| Required Fields | accountNumber, symbolCode, sellBuyType, orderType, orderQuantity | `FIELD_IS_REQUIRED` |
+| Required Fields | accountNumber, symbolCode, sellBuyType, orderType, orderQuantity, **deviceUniqueId** | `FIELD_IS_REQUIRED` |
 | Price for LO | orderPrice MUST be provided if orderType = LO | `FIELD_IS_REQUIRED` |
 | Price for Market | orderPrice MUST be null if orderType in [MOK, MAK, MTL] | `INVALID_VALUE` |
 | Account Ownership | Account must belong to authenticated user | `UNAUTHORIZED_ACCOUNT` |
 
 **Note:** Business rules (price limits, margin, position limits) are validated by Lotte Core.
+
+**Lotte requirement — Device identifier (Place Order):**  
+Lotte API yêu cầu field **`mac_addr`** (Core) **bắt buộc** khi đặt lệnh (DRORD-029 Buy, DRORD-030 Sell). TradeX expose thành field **`deviceUniqueId`**; **FE bắt buộc truyền** `deviceUniqueId` trong request body. TradeX map `deviceUniqueId` → Lotte `mac_addr`.
 
 ### 2.3 Language Mapping
 
@@ -130,7 +135,7 @@ or
 | `orderType` | String | ✅ | `ord_type` | Map (see below) | Loại lệnh |
 | `orderPrice` | Number | ❌ | `lm_ord_price` | Direct | Giá (null for market orders) |
 | `orderQuantity` | Number | ✅ | `ord_qty` | Direct | Khối lượng |
-| `deviceUniqueId` | String | ✅ | `cli_mac_addr` | Direct | Device ID |
+| `deviceUniqueId` | String | ✅ | `mac_addr` | Direct | **Bắt buộc.** Lotte Core yêu cầu mac_addr; FE truyền deviceUniqueId, TradeX map sang Lotte `mac_addr`. |
 | *(Request IP)* | - | - | `ip_addr` | Auto | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Auto | Username from token (max 15 chars) |
 | *(Header)* | - | - | `lang_code` | Map (§2.3) | Language code (V/E/K) |
@@ -168,7 +173,25 @@ or
 |-------------|--------------|-----------|-------------|
 | `error_code` | - | Check = `"0000"` | Success indicator |
 | `error_desc` | `message` | Pass-through AS-IS | `"[V0307] Bạn đã thực hiện lệnh Mua..."` |
-| `data_list[0].order_no` | `orderNumber` | Direct | `"2026020500012"` |
+| `data_list[0].order_no` | `orderNumber` | Direct | Số hiệu lệnh (ví dụ `"1000016"`) |
+
+**Ví dụ response Lotte khi đặt lệnh thành công (raw):**
+```json
+{
+    "error_code": "0000",
+    "error_desc": "[V0307]Bạn đã thực hiện lệnh Mua. Hãy kiểm tra Trạng thái lệnh!",
+    "success": true,
+    "total_record": "",
+    "data_list": [
+        {
+            "order_no": "1000016"
+        }
+    ]
+}
+```
+
+**TradeX success response (200):**  
+`message` = Lotte `error_desc` (pass-through); `orderNumber` = `data_list[0].order_no`.
 
 **Note:** 
 - Message format: `"[{LANG}{CODE}] {Message}"`
@@ -208,6 +231,7 @@ or
 | `orderPrice` | `MUST_BE_NULL` | `["orderPrice"]` | Provided for MOK/MAK/MTL |
 | `orderQuantity` | `FIELD_IS_REQUIRED` | `["orderQuantity"]` | Missing |
 | `orderQuantity` | `INVALID_VALUE` | `["orderQuantity", "value", ">0"]` | ≤ 0 |
+| `deviceUniqueId` | `FIELD_IS_REQUIRED` | `["deviceUniqueId"]` | Missing (Lotte Core yêu cầu `mac_addr` bắt buộc; FE truyền `deviceUniqueId`) |
 
 **Auth Error (401):**
 
@@ -245,7 +269,7 @@ or
 | `orderPrice` | Number | ✅ | `ord_price` | Giá mới |
 | `orderQuantity` | Number | ✅ | `ord_qty` | Khối lượng mới |
 | `unmatchedQuantity` | Number | ✅ | `un_mth_qty` | Khối lượng chưa khớp |
-| `deviceUniqueId` | String | ❌ | `cli_mac_addr` | Device ID (optional) |
+| `deviceUniqueId` | String | ❌ | `mac_addr` | Device ID (optional) |
 | *(Request IP)* | - | - | `ip_addr` | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Username from token |
 | *(Header)* | - | - | `lang_code` | Language code |
@@ -287,7 +311,7 @@ or
 | `accountNumber` | String | ✅ | `acnt_no` | Số tài khoản |
 | `orderNumber` | String | ✅ | `ord_no` | Số lệnh cần hủy |
 | `symbolCode` | String | ✅ | `ft_code` | Mã hợp đồng |
-| `deviceUniqueId` | String | ❌ | `cli_mac_addr` | Device ID (optional) |
+| `deviceUniqueId` | String | ❌ | `mac_addr` | Device ID (optional) |
 | *(Request IP)* | - | - | `ip_addr` | Client IP |
 | *(JWT)* `userId` | - | - | `user_id` | Username from token |
 | *(Header)* | - | - | `lang_code` | Language code |
@@ -378,80 +402,336 @@ or
 
 ---
 
-## 7. API: Query Order History
+## 7. API: Query OrderBook (trong ngày T0)
+
+API này map **DRORD-010** — dùng cho **sổ lệnh (orderBook)**: tra cứu lệnh **chỉ trong một ngày** (T0). Không hỗ trợ khoảng ngày (from–to). Để tra cứu lịch sử lệnh theo khoảng ngày (từ ngày – đến ngày), dùng `GET /api/v1/derivatives/order/history` — xem §8 (DRORD-033).
 
 ### 7.1 Request
 
-**Endpoint:** `GET /api/v1/derivatives/order/history`
+**Endpoint:** `GET /api/v1/derivatives/order/orderBook`
 
-**Lotte Endpoint:** `[RootURL]/tuxsvc/der/order/dr-order-history` (DRORD-010)
+**Lotte (DRORD-010):** [Lotte_DR.md §2.3.3](../../../Documentation/[API%20specs]Lotte_DR.md) — URL: `[Root URL APIKEY]/tuxsvc/der/order/dr-order-history`; Method: POST. Request body: `hts_user_id`, `acnt`, `date`, `next_data`. **Chỉ tra cứu trong ngày** (một `date` duy nhất).
 
-**Lotte Doc:** DRORD-010
+**Headers:**
+
+- `Authorization: Bearer {JWT}`
+- `Content-Type: application/json`
+- `Accept-Language: vi` (optional, default: vi)
 
 **Query Parameters:**
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `accountNumber` | String | ✅ | Số tài khoản |
-| `date` | String | ✅ | Ngày tra cứu (yyyymmdd) |
+Đối với API GET (Order History), TradeX có thể nhận thêm **fetchCount** và **nextKey** (cả hai **không required**).
+
+| Parameter | Type | Required | Default | Description |
+| --------- | ---- | -------- | ------- | ----------- |
+| `accountNumber` | String | ✅ | - | Số tài khoản (→ Lotte `acnt`) |
+| `date` | String | ❌ | **Today** | Ngày tra cứu (yyyyMMdd) → Lotte `date`; không truyền → TradeX gửi Lotte = **today** |
+| `fetchCount` | Number | ❌ | - | Số bản ghi mỗi trang (optional; map sang Lotte nếu API hỗ trợ, không truyền = dùng default) |
+| `nextKey` | String | ❌ | "" | Pagination; lần đầu không gửi hoặc "" (→ Lotte `next_data`). Optional. |
 
 ### 7.2 Request Mapping
 
-| TradeX Field | Lotte Field | Description |
-|--------------|-------------|-------------|
-| `accountNumber` | `acnt` | Số tài khoản |
-| `date` | `date` | Ngày (yyyymmdd) |
-| *(JWT)* `userId` | `hts_user_id` | Username from token |
-| - | `next_data` | Fixed: "" (empty for first request) |
+**TradeX → Lotte (DRORD-010):**
+
+| TradeX Field | Type | Required | Lotte Field | Transform | Description |
+| ------------ | ---- | -------- | ----------- | --------- | ----------- |
+| `accountNumber` | String | ✅ | `acnt` | Direct | Số tài khoản |
+| `date` | String | ❌ | `date` | **Default: today** (yyyyMMdd) | Ngày tra cứu |
+| `fetchCount` | Number | ❌ | (nếu Lotte hỗ trợ) | Optional | Số bản ghi mỗi trang; không truyền = dùng default Lotte/TradeX |
+| `nextKey` | String | ❌ | `next_data` | Default: "" (first page) | Pagination; trang sau = giá trị `os_next_key` lần trước. Optional. |
+| *(JWT)* | - | - | `hts_user_id` | Auto | Username from token |
+
+**Default Logic (khi TradeX gọi Lotte):**
+
+- `date`: client không truyền → mặc định **today** (yyyyMMdd) gửi sang Lotte.
+- `fetchCount`: không required; nếu client gửi thì TradeX có thể map sang Lotte (nếu API hỗ trợ) hoặc dùng cho giới hạn phía TradeX.
+- `next_data`: client không gửi `nextKey` hoặc rỗng → gửi "" hoặc khoảng trắng (trang đầu); có `nextKey` → gửi nguyên giá trị (trang tiếp).
 
 ### 7.3 Response Mapping
 
-**Success (200):**
+**Success (200):** Map Lotte `data_list` (DRORD-010 DataResponse) → wrapper `{ totalCount, orders }`.
 
-| TradeX Field | Type | Description |
-|--------------|------|-------------|
-| `totalCount` | Number | Tổng số lệnh |
-| `orders` | Array | Danh sách lệnh (see Order Object) |
-
-**Order Object:**
+**Order History Object (Lotte → TradeX) — map giá trị có nghĩa (không trả raw code Lotte):**
 
 | Lotte Field | TradeX Field | Type | Transform | Description |
-|-------------|--------------|------|-----------|-------------|
+| ----------- | ------------ | ---- | --------- | ----------- |
 | `jmno` | `orderNumber` | String | Direct | Số hiệu lệnh |
-| `ojno` | `originalOrderNumber` | String | Direct | Số lệnh gốc (nếu là sửa/hủy) |
+| `ojno` | `originalOrderNumber` | String | Direct | Số lệnh gốc (nếu sửa/hủy) |
 | `code` | `symbolCode` | String | Direct | Mã hợp đồng |
-| `mdms` | `sellBuyType` | String | `1→BUY`, `2→SELL` | Chiều |
-| `type` | `orderType` | String | See below | Loại lệnh |
+| `mdms` | `sellBuyType` | String | **1→BUY, 2→SELL** | Chiều lệnh (value mapping) |
 | `jprc` | `orderPrice` | Number | Direct | Giá |
 | `jqty` | `orderQuantity` | Number | Direct | KL đặt |
 | `cmqt` | `matchedQuantity` | Number | Direct | KL khớp |
 | `mqty` | `unmatchedQuantity` | Number | Direct | KL chưa khớp |
 | `dqty` | `cumulativeQuantity` | Number | Direct | KL khớp tích lũy |
-| `jcgb` | `operation` | String | `New`/`Cancel`/`Edit` | Loại thao tác |
-| `jmgb` | `validity` | String | See below | Loại lệnh (validity) |
+| `jcgb` | `operation` | String | **New/Cancel/Edit** (map raw → có nghĩa) | Loại thao tác (value mapping) |
+| `type` + `jmgb` | `orderType` | String | **Xem logic bên dưới** (phụ thuộc `type`) | Loại lệnh — BE xử lý theo §7.3 Value mapping orderType |
+| `jmgb` | (dùng khi type=1) | String | Chỉ dùng khi `type` = 1 | 2→ATO, 3→MAK, 4→MOK, 7→ATC, 9→MTL |
 | `time` | `orderTime` | String | ISO 8601 | Thời gian |
 | `user` | `user` | String | Direct | User đặt lệnh |
 | `rmsg` | `rejectReason` | String | Direct | Lý do từ chối (nếu có) |
 
-**Order Type Mapping (from `jmgb`):**
+**Value mapping (response):**
 
-| Lotte `jmgb` | TradeX `orderType` | Description |
-|--------------|-------------------|-------------|
-| `0` | `LO` | Day Order (Limit) |
-| `2` | `ATO` | At The Open |
-| `3` | `MOK` | 1OC (Market Or Kill) |
-| `4` | `MAK` | FOK (Market At Kill) |
-| `7` | `ATC` | At The Close |
+| Lotte value | TradeX (có nghĩa) |
+| ----------- | ------------------ |
+| `mdms`: 1 | `sellBuyType`: **BUY** |
+| `mdms`: 2 | `sellBuyType`: **SELL** |
+| `jcgb` (raw) | `operation`: **New** / **Cancel** / **Edit** (xác nhận mã với Lotte) |
 
-**Note:** 
-- `type` field in response có thể khác với request (Lotte internal mapping)
-- Recommend dùng `jmgb` để map order type (consistent với request)
+**orderType (chỉ áp dụng cho OrderBook DRORD-010):** TradeX xử lý theo `type` trước, sau đó mới dùng `jmgb` nếu cần:
+
+| Điều kiện Lotte | TradeX `orderType` |
+|-----------------|---------------------|
+| `type` = **2** | **LO** (không quan tâm field `jmgb`) |
+| `type` = **1** | Đọc field `jmgb` và map: **2→ATO**, **3→MAK**, **4→MOK**, **7→ATC**, **9→MTL** |
+
+*Tóm tắt:* type=2 → LO; type=1 → orderType = f(jmgb): 2=ATO, 3=MAK, 4=MOK, 7=ATC, 9=MTL.
+
+**Pagination:**
+
+| Lotte Field | TradeX | Description |
+| ----------- | ------ | ----------- |
+| `os_next_key` (trong response) | Response header `X-Next-Key` | Token trang tiếp — client gửi lại qua query param `nextKey`. Absent hoặc "" = hết trang. |
+
+**Response structure (body):**
+
+```json
+{
+  "totalCount": 10,
+  "orders": [
+    {
+      "orderNumber": "2026020500012",
+      "originalOrderNumber": "",
+      "symbolCode": "VN30F2502",
+      "sellBuyType": "BUY",
+      "orderType": "LO",
+      "orderPrice": 1250.5,
+      "orderQuantity": 10,
+      "matchedQuantity": 0,
+      "unmatchedQuantity": 10,
+      "cumulativeQuantity": 0,
+      "operation": "New",
+      "orderTime": "2026-02-05T09:15:00.000Z",
+      "user": "USER01",
+      "rejectReason": null
+    }
+  ]
+}
+```
+
+**Empty result (no data from Lotte):** HTTP 200, `totalCount: 0`, `orders: []`.
+
+**Load more:** Client gửi `nextKey` (từ header `X-Next-Key` lần trước). Không truyền hoặc "" = trang đầu.
+
+### 7.4 Error Mapping
+
+**Validation Error (400) - TradeX:**
+
+| Field | Error Code | messageParams | Condition |
+| ----- | ---------- | ------------- | --------- |
+| `accountNumber` | `FIELD_IS_REQUIRED` | `["accountNumber"]` | Missing |
+| `date` | `INVALID_DATE_FORMAT` | `["date"]` | Wrong format (not yyyyMMdd) |
+
+**Auth Error (401):**
+
+| Error Code | Message | Condition |
+| ---------- | ------- | --------- |
+| `UNAUTHORIZED` | Token không hợp lệ hoặc đã hết hạn | Invalid token |
+| `TOKEN_EXPIRED` | Phiên đăng nhập đã hết hạn | Token expired |
+
+**Auth Error (403):**
+
+| Error Code | Message | Condition |
+| ---------- | ------- | --------- |
+| `FORBIDDEN` | Không có quyền truy cập | No permission |
+| `UNAUTHORIZED_ACCOUNT` | Tài khoản không thuộc quyền sở hữu của bạn | Account ownership check failed |
+
+**Business Error (422) - Lotte Pass-Through:**
+
+| Lotte Code | TradeX Code | Description |
+| ---------- | ----------- | ----------- |
+| `1005` | `ORDER_HISTORY_1005` | Lỗi hệ thống / không thành công |
 
 ---
 
-## 8. Error Handling Summary
+## 8. API: Query Order History (từ ngày – đến ngày)
 
-### 8.1 Error Response Format
+API này map **DRORD-033** — tra cứu **lịch sử đặt lệnh thường** theo **khoảng ngày** (fromDate – toDate). Dùng khi cần xem lệnh đã đặt trong nhiều ngày (vd. báo cáo, lịch sử giao dịch). Trong ngày (T0) dùng §7 OrderBook.
+
+### 8.1 Request
+
+**Endpoint:** `GET /api/v1/derivatives/order/history`
+
+**Lotte (DRORD-033):** [Lotte_DR.md §2.3.13](../../../Documentation/[API%20specs]Lotte_DR.md) — Tra cứu lịch sử đặt lệnh thường (fromdate – todate). Method: POST. Request body: `hts_user_id`, `acnt`, `date_fr`, `date_to`, `next_data`.
+
+**Headers:** `Authorization: Bearer {JWT}`, `Content-Type: application/json`, `Accept-Language: vi` (optional)
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `accountNumber` | String | ✅ | Số tài khoản (→ Lotte `acnt`) |
+| `fromDate` | String | ✅ | Từ ngày (yyyyMMdd) → Lotte `date_fr` |
+| `toDate` | String | ✅ | Đến ngày (yyyyMMdd) → Lotte `date_to` |
+| `nextKey` | String | ❌ | Pagination; lần đầu không gửi hoặc "". Trang tiếp = giá trị nhận từ response (vd. header `X-Next-Key`). → Lotte `next_data`. |
+| `fetchCount` | Number | ❌ | Số bản ghi mỗi trang (optional; nếu Lotte hỗ trợ) |
+
+### 8.2 Request Mapping (TradeX → Lotte DRORD-033)
+
+**Theo Lotte_DR §2.3.13:**
+
+| Lotte Field | Type | Required | Mô tả |
+|-------------|------|----------|-------|
+| `hts_user_id` | String | Y | Tài khoản thực hiện |
+| `acnt` | String | Y | Số TK |
+| `date_fr` | String | Y | Từ ngày (yyyyMMdd) |
+| `date_to` | String | Y | Đến ngày (yyyyMMdd) |
+| `next_data` | String | Y | Lần đầu khoảng trắng hoặc "0"; trang tiếp = giá trị `os_next_key` lần trước |
+
+**Mapping:**
+
+| TradeX (query) | Lotte Field | Transform |
+|----------------|-------------|-----------|
+| `accountNumber` | `acnt` | Direct |
+| `fromDate` | `date_fr` | Direct (yyyyMMdd) |
+| `toDate` | `date_to` | Direct (yyyyMMdd) |
+| `nextKey` (hoặc empty) | `next_data` | Lần đầu "" hoặc "0"; lần sau = `nextKey` từ response |
+| JWT / session | `hts_user_id` | Auto |
+
+### 8.3 Response Mapping
+
+**Lotte_DR §2.3.13 — Response thực tế:** `error_code`, `error_desc`, `success`, `total_record` (có thể rỗng), `data_list`.  
+**Object Types (DataResponse)** — mỗi phần tử trong `data_list` dùng prefix `os_` (theo response thực tế DRORD-033):
+
+| Lotte Field | Type | Mô tả (Lotte) |
+|-------------|------|----------------|
+| `os_date` | String | Ngày (yyyyMMdd) |
+| `os_jcgb` | String | Loại thao tác (1: New, … → New/Cancel/Edit) |
+| `os_mdtp` | String | Mã loại (vd. 06) |
+| `os_fcm_ord_no` | String | Số lệnh FCM |
+| `os_mth_atm` | String | (nội bộ) |
+| `os_mprc` | String | Giá khớp (có thể space) |
+| `os_acno` | String | Số TK |
+| `os_acnm` | String | Tên TK |
+| `os_jmno` | String | Số hiệu lệnh |
+| `os_ojno` | String | Số hiệu lệnh gốc (có thể leading space) |
+| `os_code` | String | Mã HĐ |
+| `os_mdms` | String | Buy/Sell (1: Mua, 2: Bán) |
+| `os_jqty` | String | Khối lượng (có thể leading space) |
+| `os_cqty` | String | Khối lượng khớp |
+| `os_mqty` | String | Khối lượng chưa khớp |
+| `os_cncl_qty` | String | Khối lượng đã hủy |
+| `os_type` | String | Loại lệnh (vd. 2 = LO) |
+| `os_jprc` | String | Giá đặt |
+| `os_time` | String | Giờ (HHMMSS) |
+| `os_user` | String | User |
+| `os_jmgb` | String | 0:DAY, 2:ATO, 3:1OC, 4:FOK, 7:ATC |
+| `os_ord_style` | String | (nội bộ) |
+| `os_ipad` | String | IP |
+| `os_msg_rsn` | String | Lý do từ chối (có thể space) |
+| `os_ord_stat` | String | Trạng thái lệnh (0: Tiếp nhận; 1: Xác nhận tiếp nhận; 2: Khớp 1 phần; 3: Khớp toàn bộ; 4: Từ chối) |
+| `os_next_key` | String | Next key (pagination) |
+
+**Success (200):** Map Lotte `data_list` → wrapper `{ "orders": [...] }`. **TradeX không trả total items** (bỏ qua Lotte `total_record`).
+
+**Order object (Lotte → TradeX) — mapping theo response thực tế DRORD-033:**
+
+| Lotte Field | TradeX Field | Type | Transform | Description |
+| ----------- | ------------ | ---- | --------- | ----------- |
+| `os_jmno` | `orderNumber` | String | Direct | Số hiệu lệnh |
+| `os_ojno` | `originalOrderNumber` | String | Trim | Số lệnh gốc (nếu sửa/hủy) |
+| `os_code` | `symbolCode` | String | Direct | Mã hợp đồng |
+| `os_mdms` | `sellBuyType` | String | **1→BUY, 2→SELL** | Chiều lệnh |
+| `os_jprc` | `orderPrice` | Number | Parse float | Giá đặt |
+| `os_jqty` | `orderQuantity` | Number | Trim + parse int | KL đặt |
+| `os_cqty` | `matchedQuantity` | Number | Trim + parse int | KL khớp |
+| `os_mqty` | `unmatchedQuantity` | Number | Trim + parse int | KL chưa khớp |
+| `os_jcgb` | `operation` | String | **1→New, …** (map raw → New/Cancel/Edit; xác nhận mã với Lotte) | Loại thao tác |
+| `os_type` + `os_jmgb` | `orderType` | String | **Xem logic orderType bên dưới** (giống OrderBook §7.3) | Loại lệnh — os_type=2→LO; os_type=1→map os_jmgb |
+| `os_date` + `os_time` | `orderTime` | String | Ghép os_date + os_time → ISO 8601 hoặc format hiển thị (vd. yyyyMMdd HHMMSS) | Thời gian |
+| `os_user` | `user` | String | Direct | User đặt lệnh |
+| `os_msg_rsn` | `rejectReason` | String | Trim; rỗng/space → null | Lý do từ chối |
+| `os_ord_stat` | `orderStatus` | String | **0→Tiếp nhận, 1→…, 4→Từ chối** (xem value mapping) | Trạng thái lệnh |
+
+*Các field Lotte không map sang TradeX (có trong response):* `os_acno`, `os_acnm`, `os_mdtp`, `os_fcm_ord_no`, `os_mth_atm`, `os_mprc`, `os_cncl_qty`, `os_ord_style`, `os_ipad` — dùng nội bộ hoặc bỏ qua.
+
+**Value mapping (response):**
+
+| Lotte value | TradeX (có nghĩa) |
+| ----------- | ------------------ |
+| `os_mdms`: 1 | `sellBuyType`: **BUY** |
+| `os_mdms`: 2 | `sellBuyType`: **SELL** |
+| `os_jcgb`: 1 | `operation`: **New** (xác nhận mã với Lotte cho Cancel/Edit) |
+| `os_ord_stat`: 0 | `orderStatus`: **Tiếp nhận** |
+| `os_ord_stat`: 1 | `orderStatus`: **Xác nhận tiếp nhận** |
+| `os_ord_stat`: 2 | `orderStatus`: **Khớp 1 phần** |
+| `os_ord_stat`: 3 | `orderStatus`: **Khớp toàn bộ** |
+| `os_ord_stat`: 4 | `orderStatus`: **Từ chối** |
+
+**orderType (DRORD-033 — giống logic OrderBook §7.3):** TradeX xử lý theo `os_type` trước, sau đó mới dùng `os_jmgb` nếu cần:
+
+| Điều kiện Lotte | TradeX `orderType` |
+|-----------------|---------------------|
+| `os_type` = **2** | **LO** (không quan tâm field `os_jmgb`) |
+| `os_type` = **1** | Đọc field `os_jmgb` và map: **2→ATO**, **3→MAK**, **4→MOK**, **7→ATC**, **9→MTL** |
+
+*Tóm tắt:* os_type=2 → LO; os_type=1 → orderType = f(os_jmgb): 2=ATO, 3=MAK, 4=MOK, 7=ATC, 9=MTL.
+
+**Pagination:**
+
+| Lotte Field | TradeX | Description |
+| ----------- | ------ | ----------- |
+| `os_next_key` (trong từng item hoặc response) | Response header `X-Next-Key` hoặc field trong order cuối | Token trang tiếp — client gửi lại qua query param `nextKey`. "0" hoặc rỗng = hết trang. |
+
+**Response structure (body) — TradeX không trả totalCount/total items:**
+```json
+{
+  "orders": [
+    {
+      "orderNumber": "1000007",
+      "originalOrderNumber": "0",
+      "symbolCode": "41I1FA000",
+      "sellBuyType": "BUY",
+      "orderType": "LO",
+      "orderStatus": "Xác nhận tiếp nhận",
+      "orderPrice": 1200,
+      "orderQuantity": 1,
+      "matchedQuantity": 0,
+      "unmatchedQuantity": 0,
+      "operation": "New",
+      "orderTime": "2025-10-06T14:38:07.000Z",
+      "user": "039c666777",
+      "rejectReason": null
+    }
+  ]
+}
+```
+
+**Empty result:** HTTP 200, `{ "orders": [] }`.
+
+### 8.4 Error Mapping (Order History DRORD-033)
+
+**Validation Error (400):**
+
+| Field | Error Code | Condition |
+|-------|------------|-----------|
+| `accountNumber` | `FIELD_IS_REQUIRED` | Missing |
+| `fromDate` | `FIELD_IS_REQUIRED` / `INVALID_DATE_FORMAT` | Missing hoặc không đúng yyyyMMdd |
+| `toDate` | `FIELD_IS_REQUIRED` / `INVALID_DATE_FORMAT` | Missing hoặc không đúng yyyyMMdd |
+| — | `INVALID_DATE_RANGE` | fromDate > toDate |
+
+**Auth (401/403):** `UNAUTHORIZED`, `TOKEN_EXPIRED`, `FORBIDDEN`, `UNAUTHORIZED_ACCOUNT`
+
+**Business (422) — Lotte pass-through:** `ORDER_HISTORY_1005` (vd. Lotte 1005 → TradeX `ORDER_HISTORY_1005` hoặc prefix `ORDER_HISTORY_RANGE_` tùy quy ước)
+
+**Server (500):** `INTERNAL_ERROR`
+
+---
+
+## 9. Error Handling Summary
+
+### 9.1 Error Response Format
 
 **Validation Error (400):**
 ```
@@ -487,7 +767,7 @@ or
 }
 ```
 
-### 8.2 Error Code Patterns
+### 9.2 Error Code Patterns
 
 | Error Source | Code Pattern | Example | HTTP |
 |--------------|--------------|---------|------|
@@ -496,9 +776,9 @@ or
 | Lotte Business | `ORDER_{OP}_{LOTTE_CODE}` | `ORDER_PLACE_1005`, `ORDER_MODIFY_6001` | 422 |
 | System Error | `INTERNAL_ERROR` | Lotte API down | 500 |
 
-**Note:** `{OP}` values: `PLACE`, `MODIFY`, `CANCEL`
+**Note:** `{OP}` values: `PLACE`, `MODIFY`, `CANCEL`, `HISTORY` (e.g. `ORDER_HISTORY_1005`)
 
-### 8.3 Common Lotte Error Codes
+### 9.3 Common Lotte Error Codes
 
 | Code | Description (VI) | Description (EN) |
 |------|------------------|------------------|
@@ -513,9 +793,9 @@ or
 
 ---
 
-## 9. Implementation Notes
+## 10. Implementation Notes
 
-### 9.1 Service Architecture
+### 10.1 Service Architecture
 
 | Component | Role |
 |-----------|------|
@@ -524,7 +804,7 @@ or
 | `order-v2` | Business logic, validation (for TradeX-native features) |
 | **Kafka** | Service communication |
 
-### 9.2 Key Principles
+### 10.2 Key Principles
 
 **1. Validation Strategy:**
 - TradeX validates: Required fields, data types, format, account ownership

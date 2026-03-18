@@ -274,8 +274,8 @@ Response:
 
 ### 6.2 Related Documents
 
-- Business Requirements: `../Planning/04_TPSL_Orders_Business.md`
-- API Specification: `../Specifications/TPSL_Orders_API_Spec.md`
+- Business Requirements: [04_TPSL_Orders_Business](../../../Planning%20documentation/Order/Planning/04_TPSL_Orders_Business.md)
+- API Specification: [TPSL_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/TPSL_Orders_API_Spec.md)
 - TradeX API Conventions: `@TradeX Knowledge/API Standards/tradex-api-conventions.md`
 
 ---

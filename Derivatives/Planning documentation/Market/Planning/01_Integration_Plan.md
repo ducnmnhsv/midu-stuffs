@@ -6,6 +6,12 @@
 > **Status:** Draft  
 > **Author:** PM Team
 
+**Tài liệu tham chiếu Lotte DR (mới nhất):**  
+- **PDF:** `18032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (18/03/2026)  
+- **Đồng bộ trong repo:** `Derivatives/Documentation/[API specs]Lotte_DR.md`  
+- Trong PDF: **Mục 4** = Kết nối WebSocket nhận dữ liệu REALTIME thị trường; **4.1** = Cấu trúc dữ liệu REALTIME (Order events `sub/bos.evt.ord.sts.*/`, Account events `sub/bos.evt.acc.inf.*/`, JSON).  
+- **Market data WebSocket** (giá, sổ lệnh: `auto.dr.qt`, `auto.dr.bo`, pipe-separated) không mô tả trong mục 4.1 của PDF; định dạng trong doc này (§4.3.2) tham chiếu từ **message thực tế** Lotte gửi.
+
 ---
 
 ## Table of Contents
@@ -633,72 +639,141 @@ Lotte DR WebSocket
 
 #### 4.3.2 Lotte DR WebSocket Channels
 
-**Future Quote Channel (RMK-011)**
+**Future Quote Channel (`auto.dr.qt`)**
+
+**Subscribe:** `sub/pro.pub.auto.dr.qt./41I1FA000` (code thay đổi theo mã hợp đồng).
+
+**Message Format (pipe-separated) — Spec [0]–[33]:**
+
+| Index | Field (Spec) | Ví dụ trong spec | Ghi chú |
+|-------|--------------|------------------|--------|
+| [0] | service | "auto.dr.qt.41I1FA000" | Dạng `auto.dr.qt.{code}` |
+| [1] | success | "1" | 1 = success, 0 = fail |
+| [2] | time | "103025" | HHmmss |
+| [3] | code | "41I1FA000" | Mã hợp đồng |
+| [4] | highTime | "094532" | HHmmss |
+| [5] | lowTime | "101245" | HHmmss |
+| [6] | open.value | "1275.0" | Giá mở cửa (điểm) |
+| [7] | open.type | "2" | Mã loại giá |
+| [8] | high.value | "1290.0" | Giá cao nhất |
+| [9] | high.type | "1" | Mã loại giá |
+| [10] | low.value | "1270.0" | Giá thấp nhất |
+| [11] | low.type | "4" | Mã loại giá |
+| [12] | last.value | "1285.5" | Giá hiện tại (khớp cuối) |
+| [13] | last.type | "2" | Mã loại giá |
+| [14] | change.value | "12.5" | Thay đổi so với tham chiếu |
+| [15] | changeRate | "0.98" | % thay đổi |
+| [16] | averagePrice | "1280.0" | Giá trung bình |
+| [17] | referencePrice | "1273.0" | Giá tham chiếu |
+| [18] | value | "16000000000" | Giá trị GD |
+| [19] | volume | "125000" | Khối lượng GD |
+| [20] | matchedVolume.value | "500" | KL khớp lệnh cuối |
+| [21] | matchedVolume.type | "66" | **Map TradeX:** 66 → BUY (BID), 83 → SELL (ASK) |
+| [22] | bid.value | "1285.0" | Giá bid 1 |
+| [23] | bid.type | "2" | Mã loại giá |
+| [24] | offer.value | "1285.5" | Giá offer 1 |
+| [25] | offer.type | "2" | Mã loại giá |
+| [26] | bid_size | "1200" | KL bid 1 |
+| [27] | offer_size | "1000" | KL offer 1 |
+| [28] | total_bid_size | "5000" | Tổng KL dư mua |
+| [29] | total_offer_size | "4500" | Tổng KL dư bán |
+| [30] | total_bid_count | "150" | Số lệnh mua |
+| [31] | total_offer_count | "120" | Số lệnh bán |
+| [32] | foreignerBuySize | "5000" | ĐTNN mua |
+| [33] | foreignerSellSize | "3000" | ĐTNN bán |
+
+**Mapping Spec ↔ Real message** (đối chiếu với message thực tế đã gửi):
+
+| Index | Field (Spec) | Giá trị trong real message |
+|-------|--------------|----------------------------|
+| [0] | service | auto.dr.qt.41I1FA000 |
+| [1] | success | 1 |
+| [2] | time | 90000 |
+| [3] | code | 41I1FA000 |
+| [4] | highTime | 90000 |
+| [5] | lowTime | 90000 |
+| [6] | open.value | 1116.00 |
+| [7] | open.type | 5 |
+| [8] | high.value | 1116.00 |
+| [9] | high.type | 5 |
+| [10] | low.value | 1116.00 |
+| [11] | low.type | 5 |
+| [12] | last.value | 1116.00 |
+| [13] | last.type | 5 |
+| [14] | change.value | -84.00 |
+| [15] | changeRate | -7.00 |
+| [16] | averagePrice | 0.00 |
+| [17] | referencePrice | 1200.00 |
+| [18] | value | 111.6 |
+| [19] | volume | 1 |
+| [20] | matchedVolume.value | 1.0 |
+| [21] | matchedVolume.type | 66 → map **BID** (BUY) |
+| [22] | bid.value | 1116.00 |
+| [23] | bid.type | 5 |
+| [24] | offer.value | 1200.00 |
+| [25] | offer.type | 3 |
+| [26] | bid_size | 530 |
+| [27] | offer_size | 506 |
+| [28] | total_bid_size | 1045 |
+| [29] | total_offer_size | 1055 |
+| [30] | total_bid_count | 1015 |
+| [31] | total_offer_count | 1010 |
+| [32] | foreignerBuySize | 0 |
+| [33] | foreignerSellSize | 0 |
+
+**Real message (raw) — tham chiếu:**
 
 ```
-Subscribe: sub/pro.pub.auto.dr.qt./VN30F2501
-
-Message Format (pipe-separated):
-[0]  service: "pro.pub.auto.dr.qt"
-[1]  success: "Y"
-[2]  time: "103025"
-[3]  code: "VN30F2501"
-[4]  highTime: "094532"
-[5]  lowTime: "101245"
-[6]  open.value: "1275.0"
-[7]  open.type: "2"
-[8]  high.value: "1290.0"
-[9]  high.type: "1"
-[10] low.value: "1270.0"
-[11] low.type: "4"
-[12] last.value: "1285.5"
-[13] last.type: "2"
-[14] change.value: "12.5"
-[15] changeRate: "0.98"
-[16] averagePrice: "1280.0"
-[17] referencePrice: "1273.0"
-[18] value: "16000000000"
-[19] volume: "125000"
-[20] matchedVolume.value: "500"
-[21] matchedVolume.type: "B"    // B=Buy, S=Sell
-[22] bid.value: "1285.0"
-[23] bid.type: "2"
-[24] offer.value: "1285.5"
-[25] offer.type: "2"
-[26] bid_size: "1200"
-[27] offer_size: "1000"
-[28] total_bid_size: "5000"
-[29] total_offer_size: "4500"
-[30] total_bid_count: "150"
-[31] total_offer_count: "120"
-[32] foreignerBuySize: "5000"
-[33] foreignerSellSize: "3000"
+auto.dr.qt.41I1FA000|1|90000|41I1FA000|90000|90000|1116.00|5|1116.00|5|1116.00|5|1116.00|5|-84.00|-7.00|0.00|1200.00|111.6|1|1.0|66|1116.00|5|1200.00|3|530|506|1045|1055|1015|1010|0|0|0|0|0.00|0.00|0.00|0.00|0.00|0.00
 ```
 
-**Future Bid/Offer Channel (RMK-012)**
+**Fields [34]–[41]:** Message thực tế có thêm 8 field (0, 0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00). Chưa có trong spec chính thức — bỏ qua hoặc lưu raw cho đến khi Lotte xác nhận.
+
+**Future Bid/Offer Channel (`auto.dr.bo`)**
+
+Định dạng dưới đây **tham chiếu từ message thực tế** Lotte gửi (pipe-separated). Ưu tiên bảng này khi implement parser.
+
+**Sample message thực tế (raw):**
 
 ```
-Subscribe: sub/pro.pub.auto.dr.bo./VN30F2501
-
-Message Format (pipe-separated):
-[0]  service: "pro.pub.auto.dr.bo"
-[1]  success: "Y"
-[2]  time: "103025"
-[3]  code: "VN30F2501"
-[4]  control_code: "O"           // Market status
-[5]  project_open.value: "0"     // Expected price (ATO/ATC only)
-[6]  project_open.type: "0"
-[7]  bid.value: "1285.0"
-[8]  bid.type: "2"
-[9]  bidSize: "1200"
-[10] offer.value: "1285.5"
-[11] offer.type: "2"
-[12] offerSize: "1000"
-[13-72] 10 price levels (6 fields each)
-[73] totalBidSize
-[74] totalOfferSize
-[75] bidOfferSizeDiff
+auto.dr.bo.41I1FA000|1|104652|41I1FA000|O|1116.0|5|1125.0|5|5|1200.0|3|3614|1125.0|5|5|1200.0|3|3614|1124.0|5|4|0.0|3|0|1123.0|5|3|0.0|3|0|1122.0|5|3|0.0|3|0|1121.0|5|2|0.0|3|0|1120.0|5|1|0.0|3|0|0.0|3|0|0.0|3|0|0.0|3|0|0.0|3|0|0.0|3|0|0.0|3|0|12|3614|-3602|17|3614|-3597|18|3614|-3596|9548|9536|3614|3614
 ```
+
+**Message Format (pipe-separated) — theo message thực tế (80 field, index 0–79):**
+
+| Index | Tên field | Sample | Ghi chú |
+|-------|------------|--------|--------|
+| [0] | channel/service | auto.dr.bo.41I1FA000 | Dạng `auto.dr.bo.{code}` |
+| [1] | success | 1 | 1 = success, 0 = fail |
+| [2] | time | 104652 | HHmmss (10:46:52) |
+| [3] | code | 41I1FA000 | Mã hợp đồng |
+| [4] | control_code | O | Trạng thái phiên (O = LO, A = ATC, …) |
+| [5] | project_open.value | 1116.0 | Giá dự kiến (ATO/ATC); có thể = best bid khi LO |
+| [6] | project_open.type | 5 | Mã loại giá |
+| **[7]–[66]** | **10 price levels** | *(xem bảng dưới)* | Mỗi level **6 field**: `bid_value`, `bid_type`, `bid_size`, `offer_value`, `offer_type`, `offer_size` |
+| [67]–[69] | (triplet 1) | 12, 3614, -3602 | Ý nghĩa xác nhận với Lotte (VD: count/size/diff) |
+| [70]–[72] | (triplet 2) | 17, 3614, -3597 | |
+| [73]–[75] | (triplet 3) | 18, 3614, -3596 | |
+| [76] | totalBidSize | 9548 | Tổng KL dư mua |
+| [77] | totalOfferSize | 9536 | Tổng KL dư bán |
+| [78] | (reserved) | 3614 | Chưa xác nhận |
+| [79] | (reserved) | 3614 | Chưa xác nhận |
+
+**Cấu trúc 10 level ([7]–[66]):** mỗi level = 6 field liên tiếp:
+
+| Trong 1 level (6 field) | Vị trí tương đối | Sample level 1 | Sample level 2 |
+|------------------------|------------------|----------------|----------------|
+| bid_value | +0 | 1125.0 | 1125.0 |
+| bid_type | +1 | 5 | 5 |
+| bid_size | +2 | 5 | 3614 |
+| offer_value | +3 | 1200.0 | 1200.0 |
+| offer_type | +4 | 3 | 3 |
+| offer_size | +5 | 3614 | 3614 |
+
+- Level 1: index [7]–[12]; Level 2: [13]–[18]; …; Level 10: [61]–[66].
+- Các level trống (giá = 0): offer_value/offer_type/offer_size có thể 0.0, 3, 0.
+
+**Subscribe:** Theo tài liệu Lotte (VD: `sub/pro.pub.auto.dr.bo./VN30F2501`). Channel name trong message = [0].
 
 #### 4.3.3 TradeX WebSocket Channel Design
 
@@ -740,28 +815,28 @@ Message Format (pipe-separated):
 
 #### 4.3.4 Channel `market.quote.dr.{code}` - Field Mapping & Sample
 
-**Mapping: Lotte `auto.dr.qt` → TradeX `market.quote.dr`**
+**Mapping: Lotte `auto.dr.qt` (theo message thực tế §4.3.2) → TradeX `market.quote.dr`**
 
-| TradeX Field | Lotte Field | Index | Transform | Description |
-|--------------|-------------|-------|-----------|-------------|
-| `s` | code | [3] | Direct | Mã hợp đồng |
-| `t` | - | - | Hardcode `"DERIVATIVES"` | Loại sản phẩm |
-| `ti` | time | [2] | VN→UTC | Thời gian (HHmmss) |
-| `o` | open.value | [6] | parseDouble | Giá mở cửa (điểm) |
-| `h` | high.value | [8] | parseDouble | Giá cao nhất |
-| `l` | low.value | [10] | parseDouble | Giá thấp nhất |
-| `c` | last.value | [12] | parseDouble | Giá hiện tại |
-| `ch` | change.value | [14] | parseDouble | Thay đổi |
-| `ra` | changeRate | [15] | parseDouble | % thay đổi |
-| `vo` | volume | [19] | parseLong | Khối lượng GD |
-| `va` | value | [18] | parseLong | Giá trị GD |
-| `mv` | matchedVolume.value | [20] | parseLong | KL khớp cuối |
-| `a` | averagePrice | [16] | parseDouble | Giá trung bình |
-| `mb` | matchedVolume.type | [21] | B→`"BID"`, S→`"ASK"` | Bên khớp |
-| `tb` | total_bid_size | [28] | parseLong | Tổng KL mua |
-| `to` | total_offer_size | [29] | parseLong | Tổng KL bán |
-| `fr.bv` | foreignerBuySize | [32] | parseLong | ĐTNN mua |
-| `fr.sv` | foreignerSellSize | [33] | parseLong | ĐTNN bán |
+| TradeX Field | Lotte Index | Transform | Description |
+|--------------|-------------|-----------|-------------|
+| `s` | [3] | Direct | Mã hợp đồng (code) |
+| `t` | - | Hardcode `"DERIVATIVES"` | Loại sản phẩm |
+| `ti` | [2] | VN→UTC nếu cần | Thời gian (HHmmss) |
+| `o` | [6] | parseDouble | Giá mở cửa (điểm) |
+| `h` | [8] | parseDouble | Giá cao nhất |
+| `l` | [10] | parseDouble | Giá thấp nhất |
+| `c` | [12] | parseDouble | Giá hiện tại |
+| `ch` | [14] | parseDouble | Thay đổi |
+| `ra` | [15] | parseDouble | % thay đổi |
+| `vo` | [19] | parseLong | Khối lượng GD (xác nhận đơn vị: lot/lệnh) |
+| `va` | [18] | parseDouble/parseLong | Giá trị GD (xác nhận đơn vị với Lotte) |
+| `mv` | [20] | parseDouble → long | KL khớp cuối |
+| `a` | [16] | parseDouble | Giá trung bình |
+| `mb` | [21] | **66** → `"BID"` (BUY), **83** → `"ASK"` (SELL) | Bên khớp (matchedVolume.type) |
+| `tb` | [28] | parseLong | Tổng KL mua |
+| `to` | [29] | parseLong | Tổng KL bán |
+| `fr.bv` | [32] | parseLong | ĐTNN mua |
+| `fr.sv` | [33] | parseLong | ĐTNN bán |
 
 **Fields KHÔNG CÓ trong Lotte WS (bỏ hoặc set null):**
 
@@ -800,21 +875,21 @@ Message Format (pipe-separated):
 
 #### 4.3.5 Channel `market.bidoffer.dr.{code}` - Field Mapping & Sample
 
-**Mapping: Lotte `auto.dr.bo` → TradeX `market.bidoffer.dr`**
+**Mapping: Lotte `auto.dr.bo` (theo message thực tế §4.3.2) → TradeX `market.bidoffer.dr`**
 
-| TradeX Field | Lotte Field | Index | Transform | Description |
-|--------------|-------------|-------|-----------|-------------|
-| `s` | code | [3] | Direct | Mã hợp đồng |
-| `t` | - | - | Hardcode `"DERIVATIVES"` | Loại sản phẩm |
-| `ti` | time | [2] | VN→UTC | Thời gian (HHmmss) |
-| `ss` | control_code | [4] | Mapping (xem bảng) | Phiên GD |
-| `ep` | project_open.value | [5] | parseDouble | Giá dự kiến (ATO/ATC) |
-| `tb` | totalBidSize | [73] | parseLong | Tổng KL mua |
-| `to` | totalOfferSize | [74] | parseLong | Tổng KL bán |
-| `bb` | bid1-10 | [13-72] | Parse 10 levels | Sổ lệnh mua |
-| `bo` | offer1-10 | [13-72] | Parse 10 levels | Sổ lệnh bán |
+| TradeX Field | Lotte Index | Transform | Description |
+|--------------|-------------|-----------|-------------|
+| `s` | [3] | Direct | Mã hợp đồng |
+| `t` | - | Hardcode `"DERIVATIVES"` | Loại sản phẩm |
+| `ti` | [2] | VN→UTC nếu cần | Thời gian (HHmmss) |
+| `ss` | [4] | Map control_code → session (bảng dưới) | Phiên GD |
+| `ep` | [5] | parseDouble | Giá dự kiến (project_open.value; ATO/ATC) |
+| `tb` | [76] | parseLong | Tổng KL mua (totalBidSize) |
+| `to` | [77] | parseLong | Tổng KL bán (totalOfferSize) |
+| `bb` | [7]–[66] | Parse 10 level (6 field/level) | Sổ lệnh mua |
+| `bo` | [7]–[66] | Parse 10 level (6 field/level) | Sổ lệnh bán |
 
-**Mapping `control_code` → `ss` (session):**
+**Mapping `control_code` [4] → `ss` (session):**
 
 | Lotte control_code | TradeX ss | Description |
 |--------------------|-----------|-------------|
@@ -825,17 +900,18 @@ Message Format (pipe-separated):
 | `C` | `"PLO"` | Post Limit Order |
 | `K`, `G` | `"CLOSED"` | Đóng cửa |
 
-**Parsing 10 bước giá (index [13] đến [72]):**
+**Parsing 10 bước giá (index [7]–[66], mỗi level 6 field):**
 
-Mỗi bước giá có 6 fields:
-```
-[13 + i*6] bid[i].value      → bb[i].p
-[14 + i*6] bid[i].type       → (price status, optional)
-[15 + i*6] bid[i]Size        → bb[i].v
-[16 + i*6] offer[i].value    → bo[i].p
-[17 + i*6] offer[i].type     → (price status, optional)
-[18 + i*6] offer[i]Size      → bo[i].v
-```
+Level `i` (i = 0..9) bắt đầu tại index `base = 7 + i*6`:
+
+| Index | Field | TradeX |
+|-------|--------|--------|
+| base+0 | bid_value | `bb[i].p` |
+| base+1 | bid_type | (bỏ qua hoặc lưu optional) |
+| base+2 | bid_size | `bb[i].v` |
+| base+3 | offer_value | `bo[i].p` |
+| base+4 | offer_type | (bỏ qua hoặc lưu optional) |
+| base+5 | offer_size | `bo[i].v` |
 
 **Sample Response - Channel: `market.bidoffer.dr.VN30F2502`**
 

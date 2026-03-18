@@ -1,7 +1,7 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
 **Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
-**Cập nhật từ file:** `04032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (04/03/2026)
+**Cập nhật từ file:** `18032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (18/03/2026)
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
+| 2026-03-18 | Doc sync  | Cursor          | Đồng bộ từ PDF 18/03/2026: Thêm **Mục 4 – WebSocket REALTIME** (4.1 Cấu trúc dữ liệu REALTIME: Order events, Account events); đánh số lại Mục quy tắc chung thành **5** (5.1 Cấu trúc dữ liệu, 5.2 Bảng mã) |
 | 2026-03-05 | Doc sync  | Cursor          | Đồng bộ từ PDF 04/03/2026: URL DRACC-009/019, tham số snd_acnt/rcv_acnt, is_acnt_no, is_cnte; DRACC-032 tsol; DRACC-031 net_assets; response scrt_err_msg |
 | 2026-03-04 | Doc sync  | Cursor          | Đồng bộ từ bản spec 27/02/2026: thêm DRACC-035/036/037, DRORD-033; bổ sung URL DRORD-025/026, DRORD-028 |
 
@@ -199,6 +200,8 @@
     - `accepted_margin_securities_vsd`: String, Giá trị CK KQ được chấp nhận tại VSD
     - `margin_securities_value_vsd`: String, Giá trị chứng khoán ký quỹ tại VSD
     - `value_required_vsd`: String, Giá trị VSD yêu cầu
+    - `margin_asset_utilization_ratio`: String, Tỷ lệ sử dụng tài sản ký quỹ
+    - `deposit_nhsv_require`: String, Số tiền ký quỹ NHSV yêu cầu
     - `net_assets`: String, Tài sản ròng
 
 #### 2.1.6 DRACC-035: Cung cấp các giao dịch tiền phát sinh trên tài khoản nhà đầu tư
@@ -531,7 +534,7 @@
     - `ord_band_pri`: String, Y, Bước giá
     - `from_dt`: String, Y, yyyyMMdd (Ngày bắt đầu và Ngày kết thúc phải cùng giá trị)
     - `end_dt`: String, Y, yyyyMMdd (Ngày kết thúc)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -556,7 +559,7 @@
     - `ord_band_pri`: String, Y, Bước giá
     - `from_dt`: String, Y, yyyyMMdd (Ngày bắt đầu và Ngày kết thúc phải cùng giá trị)
     - `end_dt`: String, Y, yyyyMMdd (Ngày kết thúc)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -763,7 +766,7 @@
     - `lm_ord_price`: float, Y, Giá đặt
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, Y, Địa chỉ MAC
+    - `mac_addr`: String, **Y (bắt buộc)**, Địa chỉ MAC / device unique ID (TradeX: FE truyền `deviceUniqueId` → map sang field này)
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -790,7 +793,7 @@
     - `lm_ord_price`: float, Y, Giá đặt
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, Y, Địa chỉ MAC
+    - `mac_addr`: String, **Y (bắt buộc)**, Địa chỉ MAC / device unique ID (TradeX: FE truyền `deviceUniqueId` → map sang field này)
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -816,7 +819,7 @@
     - `validity`: String, Y, 0:DAY
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user id)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -845,7 +848,7 @@
     - `un_mth_qty`: double, Y, Khối lượng chưa khớp
     - `ip_addr`: String, Y, IP
     - `user_id`: String, Y, Max 15 kí tự, nhập đúng user được phân quyền đặt lệnh cho TK (user_id)
-    - `cli_mac_addr`: String, N, Địa chỉ MAC
+    - `mac_addr`: String, N, Địa chỉ MAC
 - **Response Data**:
     - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
     - `error_desc`: String, Y
@@ -853,6 +856,53 @@
     - `data_list`: DataResponse
 - **Object Types (DataResponse)**:
     - `order_no`: String, Số hiệu lệnh
+
+#### 2.3.13 DRORD-033: Tra cứu lịch sử đặt lệnh thường (từ ngày – đến ngày)
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-order-history-range` (hoặc theo tài liệu Lotte cung cấp)
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `hts_user_id`: String, Y, Tài khoản thực hiện
+    - `acnt`: String, Y, Số TK
+    - `date_fr`: String, Y, Từ ngày (yyyyMMdd)
+    - `date_to`: String, Y, Đến ngày (yyyyMMdd)
+    - `next_data`: String, Y, Lần đầu khoảng trắng hoặc "0" (Next key)
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thành công, 1005: Không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true/false)
+    - `total_record`: String, N (có thể rỗng; TradeX không cần trả total items)
+    - `data_list`: DataResponse (array of Object Types)
+- **Object Types (DataResponse)** — mỗi phần tử trong `data_list` (response thực tế dùng prefix `os_`):
+    - `os_date`: String, Ngày (yyyyMMdd)
+    - `os_jcgb`: String, Loại thao tác (1: New, …; map New/Cancel/Edit)
+    - `os_mdtp`: String, Mã loại (vd. 06)
+    - `os_fcm_ord_no`: String, Số lệnh FCM
+    - `os_mth_atm`: String, (nội bộ)
+    - `os_mprc`: String, Giá khớp (có thể space)
+    - `os_acno`: String, Số TK
+    - `os_acnm`: String, Tên TK
+    - `os_jmno`: String, Số hiệu lệnh
+    - `os_ojno`: String, Số hiệu lệnh gốc (có thể có leading space)
+    - `os_code`: String, Mã HĐ
+    - `os_mdms`: String, Buy/Sell (1: Mua, 2: Bán)
+    - `os_jqty`: String, Khối lượng (có thể có leading space)
+    - `os_cqty`: String, Khối lượng khớp (có thể có leading space)
+    - `os_mqty`: String, Khối lượng chưa khớp (có thể có leading space)
+    - `os_cncl_qty`: String, Khối lượng đã hủy
+    - `os_type`: String, Loại lệnh (1: xem thêm os_jmgb → ATO/MAK/MOK/ATC/MTL; 2: LO, bỏ qua os_jmgb)
+    - `os_jprc`: String, Giá đặt
+    - `os_time`: String, Giờ (HHMMSS)
+    - `os_user`: String, User
+    - `os_jmgb`: String, 0:DAY, 2:ATO, 3:MAK, 4:MOK, 7:ATC, 9:MTL (dùng khi os_type=1)
+    - `os_ord_style`: String, (nội bộ)
+    - `os_ipad`: String, IP
+    - `os_msg_rsn`: String, Lý do từ chối (có thể space)
+    - `os_ord_stat`: String, Trạng thái lệnh (0: Tiếp nhận; 1: Xác nhận tiếp nhận; 2: Khớp 1 phần; 3: Khớp toàn bộ; 4: Từ chối)
+    - `os_next_key`: String, Next key (pagination)
 
 ### 2.4 DERIVATIVE MARKET DATA
 
@@ -975,9 +1025,59 @@
         - `last_status`, `change_status`, `open_status`, `high_status`, `low_status`: Byte (Mục "Quy định bảng mã" -> Mã trạng thái giá - price status)
         - `change_rate`: Double
 
-## 3. MỤC QUY TẮC CHUNG
+## 3. KẾT NỐI WEB SOCKET ĐỂ NHẬN DỮ LIỆU REALTIME THỊ TRƯỜNG
 
-### 3.1 CẤU TRÚC DỮ LIỆU
+*(Theo tài liệu 18/03/2026 – Mục 4 trong PDF)*
+
+### 3.1 Cấu trúc dữ liệu REALTIME data
+
+#### 3.1.1 Order events
+
+- **Đăng ký nhận dữ liệu:** `sub/bos.evt.ord.sts.*/`
+- **Cấu trúc dữ liệu sự kiện:** JSON
+
+| FieldName    | FieldType | Valid Values | Format   | Description           |
+|--------------|-----------|--------------|----------|------------------------|
+| event_code   | String    | F15302       |          | Mã sự kiện (Khớp lệnh phái sinh) |
+| event_seqno  | String    |              |          | Số sequence           |
+| date         | String    |              | yyyymmdd | Ngày sự kiện          |
+| acnt_no      | String    |              |          | Số TK                 |
+| series       | String    |              |          | Mã hợp đồng           |
+| sb_tp        | String    |              |          | Phân loại lệnh mua bán |
+| mth_qty      | String    |              |          | Số lượng khớp lệnh    |
+| mth_pri      | String    |              |          | Giá khớp              |
+
+#### 3.1.2 Account events
+
+- **Đăng ký nhận dữ liệu:** `sub/bos.evt.acc.inf.*/`
+- **Cấu trúc dữ liệu sự kiện:** JSON (nhiều loại event_code)
+
+| event_code | Mô tả |
+|------------|--------|
+| F15102 | Đóng tài khoản phái sinh |
+| F15201 | Cảnh báo ngưỡng giới hạn vị thế 1 |
+| F15202 | Cảnh báo ngưỡng giới hạn vị thế 2 |
+| F15401 | Thanh toán lãi VM |
+| F15402 | Thanh toán lỗ VM |
+| F15403 | Nộp tiền bổ sung khi chạm cảnh báo 2 |
+| F15404 | Nộp tiền bổ sung khi TK chạm ngưỡng W3 |
+| F15405 | Nộp tiền bổ sung khi TK chạm ngưỡng W3 (short_dpo, target_dt) |
+| F15701 | Nộp tiền ký quỹ |
+| F15702 | Rút tiền ký quỹ |
+
+Các field chung: `event_code`, `event_seqno`, `date`, `acnt_no`; mỗi event có thêm field riêng (trd_amt, trd_dt, new_vsd_dpo, W2, commd_cd, CU, short_dpo, target_dt, v.v.) — chi tiết xem PDF trang 128–132.
+
+---
+
+**Lưu ý:** Dữ liệu **market data realtime** (giá, sổ lệnh phái sinh) qua WebSocket **auto.dr.qt** / **auto.dr.bo** (format pipe-separated) không nằm trong mục 4.1 của tài liệu này; định dạng đang dùng theo message thực tế và được mô tả trong **Derivatives/Planning documentation/Market/Planning/01_Integration_Plan.md** (§4.3.2).
+
+---
+
+## 4. MỤC QUY TẮC CHUNG
+
+*(Trong PDF 18/03/2026 là Mục 5)*
+
+### 4.1 CẤU TRÚC DỮ LIỆU
 - **Cấu trúc chung của request**:
     - Request JSON: `{ [header-fields] [function-fields] }`
     - **Danh sách header-fields (JSON object)**:
@@ -985,7 +1085,7 @@
         - `hts_user_id`: String, N, Tài khoản người thực hiện
         - `hts_user_nm`: String, N, Tên người thực hiện
         - `cli_ip_addr`: String, N, Địa chỉ IP người thực hiện
-        - `cli_mac_addr`: String, N, Địa chỉ MAC người thực hiện. Giá trị này sẽ sử dụng cho định danh thiết bị sau này.
+        - `mac_addr`: String, N, Địa chỉ MAC người thực hiện. Giá trị này sẽ sử dụng cho định danh thiết bị sau này.
         - `row_count`: String, N, 40 (Số lượng bản ghi trả về)
         - `mdm_tp`: String, N, Không bắt buộc, hoặc phải nhập các giá trị bên dưới:
             - 9: Dùng cho đối tác FTL của SHS
@@ -1008,7 +1108,7 @@
     }
     ```
 
-### 3.2 QUY ĐỊNH BẢNG MÃ
+### 4.2 QUY ĐỊNH BẢNG MÃ
 - **Ngôn ngữ - lang_code**:
     - `V`: Tiếng Việt
     - `E`: Tiếng Anh

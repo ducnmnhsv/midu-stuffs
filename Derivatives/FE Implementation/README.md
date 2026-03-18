@@ -57,15 +57,23 @@ FE Implementation/
 ├── Multi_Agent_Review_Report.md ← BMAD multi-agent review (PM, Analyst, UX, Dev)
 ├── Market/                      ← Epic DR-FE-MKT
 │   ├── Issues/                  ← Stories MKT.S1, MKT.S2
-│   │   ├── Derivatives_Market_Display.md      ← Gộp S1+S2: Index name, Search, Current price, Home, Market, Price table
+│   │   ├── Derivatives_Market_Display.md
 │   │   └── Derivatives_Current_Price_Screen.md
 │   └── References/              ← Figma, API links
 ├── Order/                       ← Epic DR-FE-ORD
-│   └── Issues/                  ← Stories ORD.S1, ORD.S2, ORD.S3, ORD.S4
+│   └── Issues/
 │       ├── Order_Availability_Check_Integration.md
 │       ├── Derivatives_Order_Entry_Integration.md
+│       ├── Trade_Screen_FE_Requirement.md       ← Màn Trade Normal/Quick (chi tiết)
+│       ├── Max_Buy_Max_Sell_Integration.md      ← Max buy/Max sell (checkAvailability)
+│       ├── Stop_Order_Screen_FE_Requirement.md  ← Màn đặt lệnh Stop (chi tiết)
+│       ├── Derivatives_Stop_Order_Integration.md
 │       ├── TP_SL_UI_Copy_Implementation.md
-│       └── Derivatives_Stop_Order_Integration.md
+│       └── TPSL_Tracking_Mechanism_Discussion.md ← Design discussion (blocked)
+├── Cash transaction/            ← Epic DR-FE-CASH
+│   └── Issues/
+│       ├── Internal_Transfer_FE_Requirement.md
+│       └── VSD_Transaction_FE_Requirement.md
 └── Archive/                     ← Issue đã hoàn thành / deprecated
 ```
 
@@ -86,8 +94,19 @@ FE Implementation/
 |-------|------|------------|---------|--------|
 | **ORD.S1** | [Order_Availability_Check_Integration](./Order/Issues/Order_Availability_Check_Integration.md) | Check max quantity khi đặt lệnh Derivatives | Order entry | 📋 Ready |
 | **ORD.S2** | [Derivatives_Order_Entry_Integration](./Order/Issues/Derivatives_Order_Entry_Integration.md) | Đặt lệnh / hủy / sửa / Unmatch Derivatives | Order entry, Unmatch list | 📋 Ready |
+| **ORD.S2b** | [Trade_Screen_FE_Requirement](./Order/Issues/Trade_Screen_FE_Requirement.md) | Màn Trade Normal/Quick (chi tiết UI, Real-time price, Max buy/sell) | Trade tab | 📋 Ready |
+| **ORD.S2c** | [Max_Buy_Max_Sell_Integration](./Order/Issues/Max_Buy_Max_Sell_Integration.md) | Tích hợp checkAvailability, Max buy/Max sell | Trade tab | 📋 Ready |
 | **ORD.S3** | [TP_SL_UI_Copy_Implementation](./Order/Issues/TP_SL_UI_Copy_Implementation.md) | TP/SL UI copy & validation (EN/VI) | TP/SL setup | 🔴 Blocked |
-| **ORD.S4** | [Derivatives_Stop_Order_Integration](./Order/Issues/Derivatives_Stop_Order_Integration.md) | Stop Order Place/Modify/Cancel (lệnh điều kiện) | Đặt lệnh Stop, Sửa/Hủy | 📋 Ready |
+| **ORD.S4** | [Derivatives_Stop_Order_Integration](./Order/Issues/Derivatives_Stop_Order_Integration.md) | Stop Order Place/Modify/Cancel (Jira story) | Đặt lệnh Stop, Sửa/Hủy | 📋 Ready |
+| **ORD.S4b** | [Stop_Order_Screen_FE_Requirement](./Order/Issues/Stop_Order_Screen_FE_Requirement.md) | Màn Stop order (chi tiết Figma, date picker, validation) | Stop order screen | 📋 Ready |
+| — | [TPSL_Tracking_Mechanism_Discussion](./Order/Issues/TPSL_Tracking_Mechanism_Discussion.md) | Thảo luận cơ chế track TP/SL (blocked) | — | 🔴 Blocked |
+
+### Cash transaction (Epic DR-FE-CASH)
+
+| Story | File | Mô tả ngắn | Screens | Status |
+|-------|------|------------|---------|--------|
+| **CASH.S1** | [VSD_Transaction_FE_Requirement](./Cash%20transaction/Issues/VSD_Transaction_FE_Requirement.md) | VSD Balance, Deposit, Withdraw, History | Cash – VSD | 📋 Ready |
+| **CASH.S2** | [Internal_Transfer_FE_Requirement](./Cash%20transaction/Issues/Internal_Transfer_FE_Requirement.md) | Internal Transfer (sub 80), Request + History | Cash – Internal transfer | 📋 Ready |
 
 ---
 

@@ -81,7 +81,7 @@ or
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
-| Required Fields | accountNumber, subNumber, receivedAccountNumber, receivedSubNumber, amount, note | `FIELD_IS_REQUIRED` |
+| Required Fields (FE) | accountNumber, subNumber, receivedSubNumber, amount, note. `receivedAccountNumber` optional from FE — BE auto-populates (xử lý giống accountNumber) | `FIELD_IS_REQUIRED` |
 | Positive Amount | amount > 0 | `INVALID_VALUE` |
 | Sufficient Balance | Sender must have sufficient balance | Lotte validates |
 | Same Sub Restriction | Cannot transfer to same account+sub | Lotte validates |
@@ -231,7 +231,7 @@ GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquir
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `snd_actn` | Uppercase | Số TK chuyển |
 | `subNumber` | String | ✅ | `snd_sub` | Default `"00"` | Sub chuyển |
-| `receivedAccountNumber` | String | ✅ | `rcv_actn` | Uppercase | Số TK nhận |
+| `receivedAccountNumber` | String | ❌ *(BE)* | `rcv_actn` | Uppercase | Số TK nhận (FE không bắt buộc; BE auto-populate, xử lý giống accountNumber) |
 | `receivedSubNumber` | String | ✅ | `rcv_sub` | Direct | Sub nhận |
 | `amount` | Number | ✅ | `amount` | Direct | Số tiền |
 | `note` | String | ✅ | `remark` | Direct | Nội dung |
@@ -289,7 +289,6 @@ GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquir
 |-------|------------|---------------|-----------|
 | `accountNumber` | `FIELD_IS_REQUIRED` | `["accountNumber"]` | Missing |
 | `subNumber` | `FIELD_IS_REQUIRED` | `["subNumber"]` | Missing |
-| `receivedAccountNumber` | `FIELD_IS_REQUIRED` | `["receivedAccountNumber"]` | Missing |
 | `receivedSubNumber` | `FIELD_IS_REQUIRED` | `["receivedSubNumber"]` | Missing |
 | `amount` | `FIELD_IS_REQUIRED` | `["amount"]` | Missing |
 | `amount` | `INVALID_VALUE` | `["amount", "value", ">0"]` | ≤ 0 |
@@ -544,6 +543,7 @@ GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquir
 - `userId` → From JWT token
 - `sourceIp` → From request IP
 - `lang_code` → From `Accept-Language` header
+- `receivedAccountNumber` → Khi FE không gửi: BE auto-populate (xử lý giống `accountNumber`: uppercase, map sang `rcv_actn`); logic cụ thể do BE quyết định (ví dụ mặc định cùng account chuyển khi chuyển nội bộ)
 
 **5. Amount Precision:**
 - Maintain full precision when parsing string to number
