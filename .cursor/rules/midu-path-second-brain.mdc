@@ -10,6 +10,7 @@ Repo **Midu-path** là repo cá nhân: (1) learnings trong Knowledge/, (2) CV & 
 |------|------|
 | **Repo** | `/Users/nguyenduc/Personal/Repositories/Midu-path` |
 | **Profile (SSOT)** | `Career/Profile.md` — profile, skills, achievements (mới nhất) |
+| **Work Tracking** | `Career/Work_Tracking/` — công việc đã/đang/plan + impact (cơ sở performance review) |
 | **Knowledge** | `Knowledge/` — learnings theo chủ đề |
 | **Case studies** | `Career/Case_Studies/` — PM/fintech (NHSV Pro, …) |
 | **Archive** | `Career/Archive/` — CV & portfolio designer-era |
@@ -24,6 +25,9 @@ Repo **Midu-path** là repo cá nhân: (1) learnings trong Knowledge/, (2) CV & 
 
 - **"Cập nhật Portfolio" / "Thêm case study"**  
   → Đề xuất thêm/sửa file trong `Career/Case_Studies/`.
+
+- **"Tracking công việc" / "Performance review" / "Đã làm gì / impact"**  
+  → Gợi ý cập nhật `Career/Work_Tracking/` (file theo quarter, VD: `2025-Q1.md`); có thể trích dẫn doc/issue từ tradex-monitoring.
 
 ## Rules
 
