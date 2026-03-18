@@ -225,9 +225,9 @@ or
 
 **Endpoint:** `GET /api/v1/derivatives/transfer/vsd/balance`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` (DRACC-031)
+**Lotte Endpoints:** DRACC-031 `dr-balance-securities-info` (vsdCashBalance, withdrawableCash); DRACC-018 (availableBalance ← `total_deposit`).
 
-**Lotte Doc:** DRACC-031
+**Lotte Doc:** DRACC-031, DRACC-018
 
 **Query Parameters:**
 
@@ -257,11 +257,11 @@ or
 
 **Success (200):**
 
-| Lotte Field | TradeX Field | Type | Transform | Description |
-|-------------|--------------|------|-----------|-------------|
-| `margin_cash_balance_vsd` | `vsdCashBalance` | Number | Parse to number | Số dư tiền ký quỹ tại VSD |
-| `withdrawable_margin_cash` | `withdrawableCash` | Number | Parse to number | Tiền ký quỹ có thể rút |
-| `available_balance` | `availableBalance` | Number | Parse to number | Số dư tiền mặt khả dụng |
+| Lotte Field | API | TradeX Field | Type | Transform | Description |
+|-------------|-----|--------------|------|-----------|-------------|
+| `margin_cash_balance_vsd` | DRACC-031 | `vsdCashBalance` | Number | Parse to number | Số dư tiền ký quỹ tại VSD |
+| `withdrawable_margin_cash` | DRACC-031 | `withdrawableCash` | Number | Parse to number | Tiền ký quỹ có thể rút |
+| `total_deposit` | DRACC-018 | `availableBalance` | Number | Parse to number | Số dư tiền mặt khả dụng |
 
 **Example Response:**
 ```json
@@ -273,17 +273,17 @@ or
 ```
 
 **Note:** 
-- Returns 3 specific fields from DRACC-031 (which has 40+ fields)
-- Other balance fields available in DRACC-031 but not needed for VSD transactions
-- Parse string amounts to numbers
+- `vsdCashBalance`, `withdrawableCash` từ DRACC-031; `availableBalance` từ DRACC-018 (`total_deposit`).
+- DRACC-031 có 40+ fields; chỉ lấy 2 field balance cần thiết.
+- Parse string amounts to numbers.
 
 **Field Details:**
 
 | Field | Vietnamese | Description |
 |-------|-----------|-------------|
-| `vsdCashBalance` | Số dư tiền ký quỹ tại VSD | Total margin cash deposited at VSD |
-| `withdrawableCash` | Tiền ký quỹ có thể rút | Amount available to withdraw from margin |
-| `availableBalance` | Số dư tiền mặt khả dụng | Available cash balance |
+| `vsdCashBalance` | Số dư tiền ký quỹ tại VSD | Total margin cash deposited at VSD (DRACC-031: `margin_cash_balance_vsd`) |
+| `withdrawableCash` | Tiền ký quỹ có thể rút | Amount available to withdraw from margin (DRACC-031: `withdrawable_margin_cash`) |
+| `availableBalance` | Số dư tiền mặt khả dụng | Available cash balance (DRACC-018: `total_deposit`) |
 
 ---
 

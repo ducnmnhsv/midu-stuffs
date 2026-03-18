@@ -1,7 +1,7 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
 **Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
-**Cập nhật từ file:** `04032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (04/03/2026)
+**Cập nhật từ file:** `18032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (18/03/2026)
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
+| 2026-03-18 | Doc sync  | Cursor          | Đồng bộ từ PDF 18/03/2026: Thêm **Mục 4 – WebSocket REALTIME** (4.1 Cấu trúc dữ liệu REALTIME: Order events, Account events); đánh số lại Mục quy tắc chung thành **5** (5.1 Cấu trúc dữ liệu, 5.2 Bảng mã) |
 | 2026-03-05 | Doc sync  | Cursor          | Đồng bộ từ PDF 04/03/2026: URL DRACC-009/019, tham số snd_acnt/rcv_acnt, is_acnt_no, is_cnte; DRACC-032 tsol; DRACC-031 net_assets; response scrt_err_msg |
 | 2026-03-04 | Doc sync  | Cursor          | Đồng bộ từ bản spec 27/02/2026: thêm DRACC-035/036/037, DRORD-033; bổ sung URL DRORD-025/026, DRORD-028 |
 
@@ -1024,9 +1025,59 @@
         - `last_status`, `change_status`, `open_status`, `high_status`, `low_status`: Byte (Mục "Quy định bảng mã" -> Mã trạng thái giá - price status)
         - `change_rate`: Double
 
-## 3. MỤC QUY TẮC CHUNG
+## 3. KẾT NỐI WEB SOCKET ĐỂ NHẬN DỮ LIỆU REALTIME THỊ TRƯỜNG
 
-### 3.1 CẤU TRÚC DỮ LIỆU
+*(Theo tài liệu 18/03/2026 – Mục 4 trong PDF)*
+
+### 3.1 Cấu trúc dữ liệu REALTIME data
+
+#### 3.1.1 Order events
+
+- **Đăng ký nhận dữ liệu:** `sub/bos.evt.ord.sts.*/`
+- **Cấu trúc dữ liệu sự kiện:** JSON
+
+| FieldName    | FieldType | Valid Values | Format   | Description           |
+|--------------|-----------|--------------|----------|------------------------|
+| event_code   | String    | F15302       |          | Mã sự kiện (Khớp lệnh phái sinh) |
+| event_seqno  | String    |              |          | Số sequence           |
+| date         | String    |              | yyyymmdd | Ngày sự kiện          |
+| acnt_no      | String    |              |          | Số TK                 |
+| series       | String    |              |          | Mã hợp đồng           |
+| sb_tp        | String    |              |          | Phân loại lệnh mua bán |
+| mth_qty      | String    |              |          | Số lượng khớp lệnh    |
+| mth_pri      | String    |              |          | Giá khớp              |
+
+#### 3.1.2 Account events
+
+- **Đăng ký nhận dữ liệu:** `sub/bos.evt.acc.inf.*/`
+- **Cấu trúc dữ liệu sự kiện:** JSON (nhiều loại event_code)
+
+| event_code | Mô tả |
+|------------|--------|
+| F15102 | Đóng tài khoản phái sinh |
+| F15201 | Cảnh báo ngưỡng giới hạn vị thế 1 |
+| F15202 | Cảnh báo ngưỡng giới hạn vị thế 2 |
+| F15401 | Thanh toán lãi VM |
+| F15402 | Thanh toán lỗ VM |
+| F15403 | Nộp tiền bổ sung khi chạm cảnh báo 2 |
+| F15404 | Nộp tiền bổ sung khi TK chạm ngưỡng W3 |
+| F15405 | Nộp tiền bổ sung khi TK chạm ngưỡng W3 (short_dpo, target_dt) |
+| F15701 | Nộp tiền ký quỹ |
+| F15702 | Rút tiền ký quỹ |
+
+Các field chung: `event_code`, `event_seqno`, `date`, `acnt_no`; mỗi event có thêm field riêng (trd_amt, trd_dt, new_vsd_dpo, W2, commd_cd, CU, short_dpo, target_dt, v.v.) — chi tiết xem PDF trang 128–132.
+
+---
+
+**Lưu ý:** Dữ liệu **market data realtime** (giá, sổ lệnh phái sinh) qua WebSocket **auto.dr.qt** / **auto.dr.bo** (format pipe-separated) không nằm trong mục 4.1 của tài liệu này; định dạng đang dùng theo message thực tế và được mô tả trong **Derivatives/Planning documentation/Market/Planning/01_Integration_Plan.md** (§4.3.2).
+
+---
+
+## 4. MỤC QUY TẮC CHUNG
+
+*(Trong PDF 18/03/2026 là Mục 5)*
+
+### 4.1 CẤU TRÚC DỮ LIỆU
 - **Cấu trúc chung của request**:
     - Request JSON: `{ [header-fields] [function-fields] }`
     - **Danh sách header-fields (JSON object)**:
@@ -1057,7 +1108,7 @@
     }
     ```
 
-### 3.2 QUY ĐỊNH BẢNG MÃ
+### 4.2 QUY ĐỊNH BẢNG MÃ
 - **Ngôn ngữ - lang_code**:
     - `V`: Tiếng Việt
     - `E`: Tiếng Anh

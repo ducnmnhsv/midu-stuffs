@@ -36,7 +36,6 @@ Tài liệu tích hợp Asset management cho phái sinh, bao gồm:
 | [Transaction_History_API_Spec](./Specifications/Transaction_History_API_Spec.md) | DRACC-023 | ✅ Complete |
 | [Unrealized_PnL_API_Spec](./Specifications/Unrealized_PnL_API_Spec.md) | DRACC-031 | ✅ Complete |
 | [Daily_PnL_API_Spec](./Specifications/Daily_PnL_API_Spec.md) | DRACC-037 | ✅ Complete |
-| [Daily_PnL_API_Analysis](./Specifications/Daily_PnL_API_Analysis.md) | DRACC-037 | Phân tích Lotte ↔ TradeX |
 | [MU_Breach_Account_API_Spec](./Specifications/MU_Breach_Account_API_Spec.md) | DRACC-036 | ✅ Complete |
 
 **Note:** All specs follow template format from `Regular_Orders_API_Spec.md`
