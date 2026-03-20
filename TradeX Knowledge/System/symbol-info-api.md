@@ -11,6 +11,7 @@
 | Document | Relationship |
 |----------|--------------|
 | [_index.md](./_index.md) | Parent - System overview |
+| [symbolinfo-api-fields-guide.md](./symbolinfo-api-fields-guide.md) | **Field reference** — Giải thích từng field response symbolInfo/symbol/latest |
 | [market-data-channels.md](./market-data-channels.md) | Related - Real-time data sources |
 | [init-job.md](./init-job.md) | Related - Daily init job, initial data population |
 

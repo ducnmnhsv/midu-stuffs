@@ -23,6 +23,7 @@ Documents về **cơ chế thực tế** đang chạy trong TradeX production sy
 |----------|----------|-------------|--------|
 | [market-data-channels.md](./market-data-channels.md) | Market Data | WebSocket channels, data flow, Lotte → Client | ✅ Live |
 | [symbol-info-api.md](./symbol-info-api.md) | Market Data | SymbolInfo API aggregation mechanism | ✅ Live |
+| [symbolinfo-api-fields-guide.md](./symbolinfo-api-fields-guide.md) | Market Data | **Field reference** — Giải thích từng field response `/api/v2/market/symbolInfo` | ✅ Live |
 | [init-job.md](./init-job.md) | System | Daily init job, symbol_static.json generation | ✅ Live |
 | [ekyc-flow-upload-lotte-fpt-econtract.md](./ekyc-flow-upload-lotte-fpt-econtract.md) | eKYC | Luồng đầy đủ: upload ảnh Lotte + khởi tạo HĐĐT FPT | ✅ Live |
 | [ekyc-signature-from-fpt-econtract.md](./ekyc-signature-from-fpt-econtract.md) | eKYC | Luồng lấy ảnh chữ ký từ FPT eContract → ekyc-admin → Lotte | ✅ Live |

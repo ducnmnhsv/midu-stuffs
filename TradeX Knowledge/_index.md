@@ -27,6 +27,7 @@ TradeX Knowledge/
 |----------|----------|-------------|
 | [market-data-channels.md](./System/market-data-channels.md) | Market Data | WebSocket channels, Lotte → Client flow |
 | [symbol-info-api.md](./System/symbol-info-api.md) | Market Data | SymbolInfo aggregation mechanism |
+| [symbolinfo-api-fields-guide.md](./System/symbolinfo-api-fields-guide.md) | Market Data | **Field reference** — Các field của `/api/v2/market/symbolInfo` |
 | [init-job.md](./System/init-job.md) | System | Daily init job, symbol_static.json |
 | [ekyc-flow-upload-lotte-fpt-econtract.md](./System/ekyc-flow-upload-lotte-fpt-econtract.md) | eKYC | Upload ảnh Lotte + khởi tạo HĐĐT FPT (full flow) |
 
