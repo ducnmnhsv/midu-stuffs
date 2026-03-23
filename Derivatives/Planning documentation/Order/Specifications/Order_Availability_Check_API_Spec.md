@@ -2,10 +2,10 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Orders - Pre-Order Validation  
-**Version:** 1.0  
-**Date:** February 10, 2026
+**Version:** 1.2  
+**Date:** March 23, 2026
 
-> **Note:** Check maximum order quantity before placing order (DRORD-028). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.3.8 (27/02/2026).
+> **Note:** Check maximum order quantity before placing order (DRORD-028). Response đồng thời bổ sung **buying power** từ DRACC-031 (`value_withdrawable_collateral_assets`). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5 (DRACC-031), §2.3.8 (DRORD-028).
 
 ---
 
@@ -18,11 +18,15 @@ Order Availability Check cho phép trader kiểm tra **khả năng đặt lệnh
 - Position limits
 - Thanh khoản thị trường (market liquidity)
 
+Cùng một response trả thêm **`buyingPower`** (giá trị tài sản đảm bảo có thể rút theo Lotte — map từ DRACC-031) để FE không phải gọi thêm API asset khi đang ở màn đặt lệnh.
+
 ### 1.2 API Endpoints
 
 | Operation | Method | Endpoint |
 |-----------|--------|----------|
 | Check Availability | GET | `/api/v1/derivatives/order/checkAvailability` |
+
+*(Trên gateway có thể expose dưới dạng `GET /rest/api/v1/derivatives/order/checkAvailability` — cùng contract.)*
 
 ### 1.3 Response Format Standards
 
@@ -30,7 +34,8 @@ Order Availability Check cho phép trader kiểm tra **khả năng đặt lệnh
 ```json
 {
   "availableQuantity": 100,
-  "availableLiquidity": 150
+  "availableLiquidity": 150,
+  "buyingPower": 125000000
 }
 ```
 
@@ -44,7 +49,8 @@ Order Availability Check cho phép trader kiểm tra **khả năng đặt lệnh
   "sell": {
     "availableQuantity": 50,
     "availableLiquidity": 200
-  }
+  },
+  "buyingPower": 125000000
 }
 ```
 
@@ -68,10 +74,10 @@ or
 **Principles:**
 - HTTP status = success indicator (200 = success, 4xx/5xx = error)
 - NO `success: true/false` field
-- Return only Lotte-provided values (no calculated fields)
-- If `sellBuyType` provided → flat response
-- If `sellBuyType` omitted → nested response with `buy` and `sell`
-- Pass-through Lotte messages AS-IS for errors
+- Return only Lotte-provided values (no calculated fields); `buyingPower` map trực tiếp từ DRACC-031 (cùng nguyên tắc parse số)
+- If `sellBuyType` provided → flat response cho quantity/liquidity + **root-level** `buyingPower`
+- If `sellBuyType` omitted → nested `buy` / `sell` + **root-level** `buyingPower` (một giá trị theo tài khoản, không tách Buy/Sell)
+- **Composite (DRORD-028 + DRACC-031):** xem **§3.3.1** — thiếu data / lỗi không có payload hợp lệ → field tương ứng **`null`** (200 nếu còn nguồn kia dùng được); lỗi Core **có** `error_desc` → **pass-through** message (422), không trả partial success cho nhánh đó
 
 ---
 
@@ -122,7 +128,14 @@ Real-time market liquidity:
 
 **Endpoint:** `GET /api/v1/derivatives/order/checkAvailability`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-available-order-qty` (DRORD-028) — Lotte_DR §2.3.8. Method POST, request: `acnt_no`, `code`, `sell_buy_type` (1: Buy, 2: Sell). Response: `avail_order_qty`, `avail_liq_qty`.
+**Lotte endpoints (composite):**
+
+| Lotte API | URL (pattern) | Role |
+|-----------|----------------|------|
+| **DRORD-028** | `[Root URL APIKEY]/tuxsvc/der/order/dr-available-order-qty` | `avail_order_qty`, `avail_liq_qty` — Lotte_DR §2.3.8. POST body: `acnt_no`, `code`, `sell_buy_type` (1: Buy, 2: Sell). |
+| **DRACC-031** | `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` | `value_withdrawable_collateral_assets` → TradeX `buyingPower` — Lotte_DR §2.1.5. POST body: `account_no`, `inquiry_date` (yyyymmdd), `hts_user_id`. |
+
+Mỗi request TradeX `checkAvailability` gọi **DRACC-031 đúng một lần** (theo tài khoản + ngày tra cứu), song song hoặc sau khi có đủ tham số; gọi **DRORD-028** một hoặc hai lần như hiện tại.
 
 **Headers:**
 - `Authorization: Bearer {JWT}`
@@ -152,20 +165,24 @@ Real-time market liquidity:
 ```
 Parse query parameters from URL
   ↓
+Start DRACC-031 (account balance/securities) in parallel with DRORD-028 flow
+  - DRACC-031: account_no ← accountNumber, inquiry_date ← server date (trade day yyyymmdd), hts_user_id per Lotte/bridge convention
+  ↓
 IF sellBuyType is provided:
-  - Call Lotte once with specified type
-  - Return flat response
+  - Call DRORD-028 once with specified type
+  - Merge: flat availability + buyingPower from DRACC-031
   
 ELSE (sellBuyType omitted):
-  - Call Lotte twice (once for BUY=1, once for SELL=2)
-  - Aggregate results
-  - Return nested response with "buy" and "sell" keys
+  - Call DRORD-028 twice (BUY=1, SELL=2) — prefer Promise.all with DRACC-031
+  - Aggregate buy/sell
+  - Return nested response + root-level buyingPower
 ```
 
 **Note:**
-- Lotte API uses POST with JSON body
+- Lotte APIs use POST with JSON body
 - TradeX converts query params → Lotte JSON body
 - `sellBuyType` empty string ("") treated as omitted (get both)
+- **DRACC-031** chỉ phụ thuộc `accountNumber` (và ngày tra cứu), không phụ thuộc `symbol` / `sellBuyType`
 
 **Request Example:**
 
@@ -215,13 +232,20 @@ Lotte Requests (2 calls):
 
 | Lotte Field | TradeX Field | Type | Transform | Description |
 |-------------|--------------|------|-----------|-------------|
-| `error_code` | - | - | Check = `"0000"` | Success indicator |
+| `error_code` | - | - | Check = `"0000"` | Success indicator (DRORD-028) |
 | `data_list.avail_order_qty` | `availableQuantity` | Number | String→Number | Số lượng có thể đặt |
 | `data_list.avail_liq_qty` | `availableLiquidity` | Number | String→Number | Thanh khoản khả dụng |
 
+**Success (200) - Buying power (DRACC-031, mọi response thành công):**
+
+| Lotte Field | TradeX Field | Type | Transform | Description |
+|-------------|--------------|------|-----------|-------------|
+| `error_code` | - | - | Check = `"0000"` | Success indicator (DRACC-031) |
+| `data_list.value_withdrawable_collateral_assets` | `buyingPower` | Number | String→Number | Giá trị TSKQ có thể rút (hiển thị nghiệp vụ dưới nhãn *Buying power* / sức mua tương ứng theo app) |
+
 **Success (200) - Both Types:**
 
-When `sellBuyType` is omitted, backend calls Lotte twice and aggregates:
+When `sellBuyType` is omitted, backend calls DRORD-028 twice and aggregates:
 
 | Response Structure | Description |
 |--------------------|-------------|
@@ -229,6 +253,7 @@ When `sellBuyType` is omitted, backend calls Lotte twice and aggregates:
 | `buy.availableLiquidity` | Market liquidity for BUY |
 | `sell.availableQuantity` | Available quantity for SELL orders |
 | `sell.availableLiquidity` | Market liquidity for SELL |
+| `buyingPower` | Một field ở **root**, từ DRACC-031 (không lồng trong `buy`/`sell`) |
 
 **Response Examples:**
 
@@ -251,7 +276,8 @@ TradeX Response:
 ```json
 {
   "availableQuantity": 100,
-  "availableLiquidity": 150
+  "availableLiquidity": 150,
+  "buyingPower": 125000000
 }
 ```
 
@@ -289,14 +315,39 @@ TradeX Response (aggregated):
   "sell": {
     "availableQuantity": 50,
     "availableLiquidity": 200
-  }
+  },
+  "buyingPower": 125000000
 }
 ```
 
 **Note:**
-- Lotte returns strings, convert to numbers
-- **Performance:** Both types request takes ~2x time (sequential Lotte calls)
-- Consider parallel calls using `Promise.all()` to reduce latency
+- Lotte returns strings, convert to numbers (DRORD-028 và DRACC-031)
+- **Performance:** Both types = 2× DRORD-028 + 1× DRACC-031; chạy **DRACC-031 song song** với (các) DRORD-028 để latency gần max(2 DRORD, 1 DRACC) thay vì cộng tuần tự
+- **Partial vs pass-through:** xử lý lỗi từng nhánh theo **§3.3.1** (không còn mở option “fail cả request hay null” — đã cố định trong bảng lớp A/B)
+
+### 3.3.1 Composite corner cases (DRORD-028 + DRACC-031)
+
+Hai nguồn độc lập. Mỗi response Lotte được xếp vào một trong hai **lớp**:
+
+| Lớp | Ý nghĩa | Hành vi TradeX |
+|-----|---------|----------------|
+| **A — Không có data / không dùng được payload** | Timeout, lỗi network/bridge, body rỗng, thiếu `data_list`, `error_code === "0000"` nhưng thiếu field cần map hoặc không parse được số, v.v. — tức **không** có lỗi nghiệp vụ Core kèm `error_desc` theo lớp B. | **HTTP 200** nếu nhánh còn lại **không** ở lớp B. Phần dữ liệu từ API hỏng = **`null`**: single type → `availableQuantity` / `availableLiquidity` và/hoặc `buyingPower`; both types → `buy` hoặc `sell` = **`null`** nếu đúng một trong hai lần DRORD gặp A; `buyingPower` = **`null`** nếu DRACC gặp A. |
+| **B — Core trả lỗi nghiệp vụ có message** | `error_code !== "0000"` **và** có `error_desc` từ Lotte cho nhánh đó. | **Pass-through** `error_desc` **nguyên văn**, **HTTP 422**, `code` theo §3.4 (DRORD: `ORDER_AVAILABILITY_{code}`; DRACC: `DERIVATIVES_ACCOUNT_BALANCE_{code}`). **Không** trả body success 200 cho request đó. |
+
+**Cả hai nhánh đều lỗi B:** trả **một** response **422**, ưu tiên `message` / context từ **DRORD-028**; log đầy đủ cả DRACC.
+
+**Both types (bỏ `sellBuyType`):** xét riêng từng lần DRORD (BUY / SELL). Một lần **B** → **422** pass-through từ lần đó (fail-fast khuyến nghị). Một lần **A** → `buy` hoặc `sell` tương ứng = **`null`**, lần kia map bình thường; `buyingPower` xử lý độc lập theo DRACC (A → `null` trong 200; B → **422** cho toàn request).
+
+**Ví dụ nhanh**
+
+| DRORD | DRACC | HTTP | TradeX (rút gọn) |
+|-------|-------|------|------------------|
+| OK | OK | 200 | Đủ field số |
+| OK | A | 200 | Có qty/liquidity; `buyingPower: null` |
+| A | OK | 200 | `availableQuantity` / `availableLiquidity` = `null` (single) hoặc `buy`/`sell` = `null` (both); có `buyingPower` |
+| OK | B | 422 | `code`: `DERIVATIVES_ACCOUNT_BALANCE_{code}`, `message`: `error_desc` DRACC |
+| B | * | 422 | `code`: `ORDER_AVAILABILITY_{code}`, `message`: `error_desc` DRORD |
+| B | B | 422 | Một response; ưu tiên message/context **DRORD-028**; log cả DRACC |
 
 ### 3.4 Error Mapping
 
@@ -324,10 +375,20 @@ TradeX Response (aggregated):
 
 **Business Error (422) - Lotte Pass-Through:**
 
+**Từ DRORD-028 (availability):**
+
 | Lotte Code | TradeX Code | Description (VI) |
 |------------|-------------|------------------|
 | `1005` | `ORDER_AVAILABILITY_1005` | Tài khoản không hợp lệ hoặc bị khóa |
 | `5002` | `ORDER_AVAILABILITY_5002` | Mã hợp đồng không hợp lệ |
+
+*(Các mã khác từ DRORD: `ORDER_AVAILABILITY_{error_code}` — `message` luôn = `error_desc` Lotte nguyên văn.)*
+
+**Từ DRACC-031 (buying power) — lớp B, §3.3.1:**
+
+| Lotte `error_code` | TradeX Code | Ghi chú |
+|--------------------|-------------|---------|
+| *bất kỳ* | `DERIVATIVES_ACCOUNT_BALANCE_{error_code}` | `message` = `error_desc` AS-IS |
 
 **Error Response Format:**
 
@@ -340,11 +401,19 @@ Lotte Error:
 }
 ```
 
-TradeX Response (422):
+TradeX Response (422) — DRORD:
 ```json
 {
   "code": "ORDER_AVAILABILITY_1005",
   "message": "[V1005] Tài khoản không hợp lệ"
+}
+```
+
+TradeX Response (422) — DRACC (khi DRORD thành công, DRACC lớp B):
+```json
+{
+  "code": "DERIVATIVES_ACCOUNT_BALANCE_1005",
+  "message": "[V1005] …"
 }
 ```
 
@@ -375,7 +444,8 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
 ```json
 {
   "availableQuantity": 100,
-  "availableLiquidity": 150
+  "availableLiquidity": 150,
+  "buyingPower": 125000000
 }
 ```
 
@@ -384,6 +454,7 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Đặt lệnh MUA VN30F2402
 
+Buying power: 125,000,000 (theo label app)
 Số lượng tối đa: 100 hợp đồng
 Thanh khoản TT: 150 hợp đồng
 
@@ -421,7 +492,8 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
   "sell": {
     "availableQuantity": 50,
     "availableLiquidity": 200
-  }
+  },
+  "buyingPower": 125000000
 }
 ```
 
@@ -430,6 +502,7 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Đặt lệnh VN30F2402
 
+Buying power: 125,000,000
 [MUA ✓]  [BÁN]
 
 Số lượng tối đa: 100 hợp đồng
@@ -466,14 +539,14 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
 {
   "availableQuantity": 50,
   "availableLiquidity": 200,
-  "marginPerContract": 25000000,
-  "estimatedMarginRequired": 1250000000
+  "buyingPower": 125000000
 }
 ```
 
 **Interpretation:**
 - Can sell up to 50 lots (current long position or margin for short)
 - Market has good liquidity (200 lots)
+- `buyingPower` reflects DRACC-031 `value_withdrawable_collateral_assets` (account-level, same as BUY case)
 
 ### 4.4 Use Case: Zero Available Quantity
 
@@ -488,7 +561,8 @@ GET /api/v1/derivatives/order/checkAvailability?accountNumber=0001234567&symbol=
 ```json
 {
   "availableQuantity": 0,
-  "availableLiquidity": 150
+  "availableLiquidity": 150,
+  "buyingPower": 125000000
 }
 ```
 
@@ -553,13 +627,22 @@ Place order
 }
 ```
 
-**Business Error (422) - Lotte Pass-Through:**
+**Business Error (422) - Lotte Pass-Through (composite):**
 ```json
 {
   "code": "ORDER_AVAILABILITY_{LOTTE_CODE}",
-  "message": "[V1005] Lotte error message"
+  "message": "[V1005] Lotte error message (DRORD)"
 }
 ```
+hoặc khi lỗi từ DRACC-031 (lớp B):
+```json
+{
+  "code": "DERIVATIVES_ACCOUNT_BALANCE_{LOTTE_CODE}",
+  "message": "Lotte error_desc AS-IS (DRACC)"
+}
+```
+
+**Partial success (200) — lớp A:** một hoặc nhiều field **`null`** theo §3.3.1; không có `code`/`message` lỗi Lotte trong body success.
 
 **Server Error (500):**
 ```json
@@ -575,7 +658,9 @@ Place order
 |--------------|--------------|---------|------|
 | TradeX Validation | `INVALID_PARAMETER`, `FIELD_IS_REQUIRED` | Missing required field | 400 |
 | TradeX Auth | `UNAUTHORIZED`, `TOKEN_EXPIRED`, `FORBIDDEN` | Invalid JWT | 401/403 |
-| Lotte Business | `ORDER_AVAILABILITY_{LOTTE_CODE}` | `ORDER_AVAILABILITY_1005` | 422 |
+| Lotte Business (DRORD) | `ORDER_AVAILABILITY_{LOTTE_CODE}` | `ORDER_AVAILABILITY_1005` | 422 |
+| Lotte Business (DRACC) | `DERIVATIVES_ACCOUNT_BALANCE_{LOTTE_CODE}` | `DERIVATIVES_ACCOUNT_BALANCE_1005` | 422 |
+| Partial no-data (lớp A) | — | field(s) `null` trong body 200 | 200 |
 | System Error | `INTERNAL_ERROR` | Lotte API down | 500 |
 
 ### 5.3 Common Lotte Error Codes
@@ -608,17 +693,21 @@ Place order
 - Lotte calculates: Available quantity, liquidity
 - NO duplicate business logic
 
+**1b. Composite error handling (DRORD + DRACC):**
+- Phân loại mỗi response Lotte vào **lớp A** (không có data / payload không dùng được) hoặc **lớp B** (`error_code` ≠ `0000` + `error_desc`) — chi tiết **§3.3.1**
+- Merge vào một response TradeX: **A** → field tương ứng `null` trong **200**; **B** → **422** pass-through, không merge partial success
+
 **2. Caching Strategy:**
 - **Cache Key (Single Type):** `order_availability:{accountNumber}:{symbol}:{sellBuyType}`
 - **Cache Key (Both Types):** `order_availability:{accountNumber}:{symbol}:both`
-- **TTL:** 30 seconds
+- **TTL:** 30 seconds (cùng entry cache có thể gồm `buyingPower` từ DRACC-031; hoặc cache tách `dracc031_balance:{accountNumber}:{inquiry_date}` với TTL tương tự rồi merge — tránh stale không đồng bộ giữa hai nguồn)
 - **Invalidation:** After order placed, margin deposit/withdrawal, position closed
-- **Rationale:** Balance and positions change frequently
+- **Rationale:** Balance and positions change frequently; `buyingPower` nhạy cảm tương tự margin — không cache lâu hơn availability nếu gộp một response
 
 **3. Performance:**
-- **Single Type:** 200-500ms (Lotte) + 50ms (TradeX) = 250-550ms
-- **Both Types:** 2 * (200-500ms) + 50ms = 450-1050ms (sequential calls)
-- **Optimization:** Use `Promise.all()` for parallel Lotte calls → reduce to ~300-600ms
+- **Single Type:** max(DRORD-028, DRACC-031) khi song song + overhead TradeX (~250–600ms typ.)
+- **Both Types:** max(2× DRORD-028 parallel, DRACC-031) + overhead — ưu tiên `Promise.all` cho cả DRACC-031 và hai DRORD-028
+- **Optimization:** DRACC-031 luôn song song với luồng DRORD-028; không chờ tuần tự trừ khi bắt buộc dependency
 - Pre-fetch on form open, debounce on symbol change
 - **Trade-off:** Both types = slower but better UX (no tab switching delay)
 
@@ -679,6 +768,7 @@ if (!userAccounts.includes(accountNumber)) {
 | API Code | Name | Relationship |
 |----------|------|--------------|
 | DRACC-014 | Thông tin tài khoản phái sinh | Shows margin, position data |
+| **DRACC-031** | **Tra cứu tài sản & CK (balance/securities)** | **Nguồn `buyingPower` trong response checkAvailability** |
 | DRACC-034 | Nộp tiền ký quỹ | Increases margin, affects availability |
 
 ---
@@ -691,7 +781,13 @@ if (!userAccounts.includes(accountNumber)) {
 |-----------|-------|-----------------|
 | Valid BUY request | accountNumber, symbol, sellBuyType=BUY | Return availableQuantity > 0 |
 | Valid SELL request | accountNumber, symbol, sellBuyType=SELL | Return availableQuantity (may differ from BUY) |
-| Both types request | accountNumber, symbol (no sellBuyType) | Return nested { buy: {...}, sell: {...} } |
+| Both types request | accountNumber, symbol (no sellBuyType) | Return nested { buy, sell, buyingPower } |
+| buyingPower present | DRACC-031 lớp OK | Root `buyingPower` là number |
+| DRACC lớp A, DRORD OK | Timeout / thiếu data DRACC | 200, `buyingPower: null`, qty/liquidity bình thường |
+| DRACC lớp B, DRORD OK | `error_code` ≠ 0000 + `error_desc` DRACC | 422, `DERIVATIVES_ACCOUNT_BALANCE_{code}`, message AS-IS |
+| DRORD lớp A, DRACC OK | Thiếu data một lần DRORD (both types) | 200, `buy` hoặc `sell` = `null`, phía còn lại + `buyingPower` OK |
+| DRORD lớp B | Core từ chối availability | 422, `ORDER_AVAILABILITY_{code}`, message AS-IS |
+| Cả DRORD B và DRACC B | Cả hai Core lỗi B | 422, ưu tiên DRORD trong `message`/`code` (§3.3.1) |
 | Missing accountNumber | No accountNumber | 400 FIELD_IS_REQUIRED |
 | Invalid sellBuyType | sellBuyType="INVALID" | 400 INVALID_VALUE |
 | Invalid account | Not user's account | 403 UNAUTHORIZED_ACCOUNT |
@@ -723,13 +819,14 @@ if (!userAccounts.includes(accountNumber)) {
 
 - [ ] Create TradeX API endpoint: `GET /api/v1/derivatives/order/checkAvailability`
 - [ ] Implement request mapping (query params → Lotte JSON body)
-- [ ] Implement response mapping (Lotte → TradeX)
+- [ ] Implement response mapping (Lotte → TradeX), gồm **DRACC-031 → `buyingPower`**
+- [ ] Gọi **DRACC-031** mỗi request (hoặc merge từ cache đồng bộ TTL với entry availability)
 - [ ] Handle optional `sellBuyType` parameter
 - [ ] Implement "both types" logic (call Lotte twice when sellBuyType omitted)
-- [ ] Use `Promise.all()` for parallel Lotte calls (optimize both types latency)
+- [ ] Use `Promise.all()` for parallel Lotte calls (DRACC-031 + DRORD-028 ×1 hoặc ×2)
 - [ ] Implement caching (30s TTL, different keys for single/both)
 - [ ] Add validation (required fields, account ownership)
-- [ ] Implement error handling (pass-through + validation)
+- [ ] Implement error handling: **§3.3.1** (lớp A → `null`, lớp B → 422 pass-through; prefix `ORDER_AVAILABILITY_*` vs `DERIVATIVES_ACCOUNT_BALANCE_*`)
 - [ ] Add monitoring (metrics, alerts)
 - [ ] Write unit tests
 - [ ] Write integration tests
@@ -751,6 +848,9 @@ if (!userAccounts.includes(accountNumber)) {
 - [ ] Validate user input against appropriate max
 
 **Common Tasks:**
+- [ ] Hiển thị **buyingPower** từ cùng response (format số tiền theo locale)
+- [ ] **200 + `null`:** ẩn hoặc placeholder khi `buyingPower` / `availableQuantity` / `buy`/`sell` là `null` (lớp A — không có data)
+- [ ] **422:** hiển thị `message` pass-through; phân biệt `code` prefix `ORDER_AVAILABILITY_*` (DRORD) vs `DERIVATIVES_ACCOUNT_BALANCE_*` (DRACC) nếu cần copy/telemetry
 - [ ] Show liquidity indicator (optional: "High/Medium/Low" based on availableLiquidity)
 - [ ] Handle zero availability (display warning)
 - [ ] Error handling (user-friendly messages)
@@ -763,6 +863,7 @@ if (!userAccounts.includes(accountNumber)) {
 - [ ] Test validation errors (missing fields, invalid values)
 - [ ] Test auth errors (invalid token, wrong account)
 - [ ] Test Lotte errors (invalid symbol, account)
+- [ ] Test composite §3.3.1: lớp A (null partial), lớp B DRORD, lớp B DRACC, cả hai B
 - [ ] Test zero availability scenario
 - [ ] Test cache behavior (30s TTL)
 - [ ] Test real-time update (symbol change)
@@ -779,7 +880,7 @@ if (!userAccounts.includes(accountNumber)) {
 
 ---
 
-**Document Status:** ✅ Complete  
+**Document Status:** 🔄 Updated v1.2 — composite + corner cases lớp A/B (null vs pass-through)  
 **For:** BA/Dev  
-**Next Steps:** Implementation by Dev team  
-**Estimated Effort:** 3-5 days (BE) + 2-3 days (FE) + 2 days (QA)
+**Next Steps:** BE implement phân lớp A/B và mã `DERIVATIVES_ACCOUNT_BALANCE_*`; FE xử lý `null` vs 422  
+**Estimated Effort:** +0.5–1 day (BE) so với baseline v1.0; FE +0.5 day
