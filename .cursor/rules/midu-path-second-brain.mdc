@@ -10,10 +10,13 @@ Repo **Midu-path** là repo cá nhân: (1) learnings trong Knowledge/, (2) CV & 
 |------|------|
 | **Repo** | `/Users/nguyenduc/Personal/Repositories/Midu-path` |
 | **Profile (SSOT)** | `Career/Profile.md` — profile, skills, achievements (mới nhất) |
+| **Work Context** | `Career/Work_Context.md` — Jira board, epic trọng tâm, snapshot PO/PM |
 | **Work Tracking** | `Career/Work_Tracking/` — công việc đã/đang/plan + impact (cơ sở performance review) |
+| **Metrics Registry** | `Career/Metrics_Registry.md` — metric & lợi ích feature/project do user định nghĩa |
+| **Baseline CV (cũ)** | `Career/Archive/Baseline_CV_Source.md` — nền so sánh với Profile hiện tại |
 | **Knowledge** | `Knowledge/` — learnings theo chủ đề |
 | **Case studies** | `Career/Case_Studies/` — PM/fintech (NHSV Pro, …) |
-| **Archive** | `Career/Archive/` — CV & portfolio designer-era |
+| **Archive** | `Career/Archive/` — CV & portfolio designer-era (+ baseline CV source) |
 
 ## Khi user yêu cầu
 
@@ -28,6 +31,15 @@ Repo **Midu-path** là repo cá nhân: (1) learnings trong Knowledge/, (2) CV & 
 
 - **"Tracking công việc" / "Performance review" / "Đã làm gì / impact"**  
   → Gợi ý cập nhật `Career/Work_Tracking/` (file theo quarter, VD: `2025-Q1.md`); có thể trích dẫn doc/issue từ tradex-monitoring.
+
+- **"Tổng hợp tuần" / "Summary tuần" / "Công việc tuần này"**  
+  → Áp dụng rule `@personal-work-assistant`: hỏi Jira từ user nếu thiếu; tổng hợp Việc / Học / Metric; đề xuất ghi `Work_Tracking/{quarter}.md` + `Knowledge/` khi có learning.
+
+- **"Tổng kết năm" / "Year in review" / "Review lương" / "Growth năm"**  
+  → `@personal-work-assistant`: đọc `Work_Tracking/`, `Metrics_Registry.md`, `Profile.md`; output bullet + điểm nhấn cho review lương.
+
+- **"Đánh giá feature" / "Lợi ích feature" / "Metric feature" / "Impact project"**  
+  → `@personal-work-assistant`: ưu tiên `Metrics_Registry.md`; hỏi user nếu chưa ghi; tiêu chí mặc định khi không có metric: released thành công.
 
 ## Rules
 
