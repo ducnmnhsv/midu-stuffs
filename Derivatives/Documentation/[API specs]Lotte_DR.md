@@ -630,7 +630,7 @@
     - `jprc`: String, Giá
     - `cqty`: String, Khối lượng khớp
     - `mqty`: String, Khối lượng chưa khớp
-    - `jmgb`: String, 0:DAY, 2:ATO, 3:1OC, 4:FOK, 7:ATC
+    - `jmgb`: String, 0:DAY, 2:ATO, 3:MAK, 4:MOK, 7:ATC, 9:MTL
     - `ord_style`: String, Không dùng
     - `os_next_key`: String, Không dùng
 
