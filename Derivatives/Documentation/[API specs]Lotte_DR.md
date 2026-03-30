@@ -1,7 +1,7 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
 **Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
-**Cập nhật từ file:** `18032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (18/03/2026)
+**Cập nhật từ file:** `Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties 8.docx` (30/03/2026); trước đó: PDF 18/03/2026.
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
+| 2026-03-30 | Doc sync  | Cursor          | Đồng bộ từ Word Tsolution Derivatives 8: thêm **DRORD-034 – DRORD-038** (lệnh đặt trước mua/bán, huỷ, tra cứu danh sách, danh sách có thể huỷ) tại **§2.3.14 – §2.3.18** |
 | 2026-03-18 | Doc sync  | Cursor          | Đồng bộ từ PDF 18/03/2026: Thêm **Mục 4 – WebSocket REALTIME** (4.1 Cấu trúc dữ liệu REALTIME: Order events, Account events); đánh số lại Mục quy tắc chung thành **5** (5.1 Cấu trúc dữ liệu, 5.2 Bảng mã) |
 | 2026-03-05 | Doc sync  | Cursor          | Đồng bộ từ PDF 04/03/2026: URL DRACC-009/019, tham số snd_acnt/rcv_acnt, is_acnt_no, is_cnte; DRACC-032 tsol; DRACC-031 net_assets; response scrt_err_msg |
 | 2026-03-04 | Doc sync  | Cursor          | Đồng bộ từ bản spec 27/02/2026: thêm DRACC-035/036/037, DRORD-033; bổ sung URL DRORD-025/026, DRORD-028 |
@@ -903,6 +904,172 @@
     - `os_msg_rsn`: String, Lý do từ chối (có thể space)
     - `os_ord_stat`: String, Trạng thái lệnh (0: Tiếp nhận; 1: Xác nhận tiếp nhận; 2: Khớp 1 phần; 3: Khớp toàn bộ; 4: Từ chối)
     - `os_next_key`: String, Next key (pagination)
+
+#### 2.3.14 DRORD-034: Lệnh đặt trước mua
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-adv-buy`
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `lang_code`: String, N, mặc định V (V/E/K — cùng quy ước Accept-Language Lotte)
+    - `row_count`: Int, N
+    - `next_key`: String, N (lần đầu để trống; lần sau lấy từ output)
+    - `acnt_no`: String, Y, Số TK
+    - `msec`: String, Y, Phiên: 1 — ATO; 2 — KLLT sáng; 3 — KLLT chiều; 4 — ATC
+    - `code`: String, Y, Mã hợp đồng
+    - `jtyp`: String, Y, Loại lệnh: 1 — Market; 2 — Limit
+    - `jmgb`: String, Y, Hiệu lực: 0 — Day; 2 — ATO; 3 — MAK; 4 — MOK; 7 — ATC; 9 — MTL  
+        - Nếu `jtyp` = 2 (Limit) → `jmgb` = 0 và `msec` ∈ {1,2,3,4}  
+        - Nếu `jtyp` = 1 (Market): `jmgb` = 2 ↔ `msec` = 1; `jmgb` = 7 ↔ `msec` = 4; `jmgb` ∈ {3,4,9} ↔ `msec` ∈ {2,3}
+    - `jqty`: String, Y, Khối lượng
+    - `jprc`: String, Y, Giá đặt
+    - `sdate`: String, Y, yyyymmdd — Ngày hiệu lực (phải trùng ngày làm việc hiện tại)
+    - `hts_user_id`: String, Y, Max 15 ký tự, user được phân quyền đặt lệnh cho TK
+    - `cli_mac_addr`: String, N, Địa chỉ MAC
+- **Response Data**:
+    - `error_code`: String, Y (0000 / 1005)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y
+    - `total_record`: String, N (có thể rỗng)
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `registerd`: String, Theo mẫu output tài liệu Lotte (ghi chú: tên field theo đúng spec nguồn)
+
+#### 2.3.15 DRORD-035: Lệnh đặt trước bán
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-adv-sell`
+- **Method**: POST
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `lang_code`, `row_count`, `next_key`: giống DRORD-034
+    - `acnt_no`: String, Y, Số TK
+    - `msec`: String, Y (1 — ATO; 2 — KLLT sáng; 3 — KLLT chiều; 4 — ATC)
+    - `code`: String, Y, Mã hợp đồng
+    - `jtyp`: String, Y (1 — Market; 2 — Limit)
+    - `jmgb`: String, Y — quy tắc ràng buộc `msec` giống DRORD-034
+    - `jqty`: String, Y, Khối lượng
+    - `jprc`: String, N/Y theo bảng Lotte (sample input có giá — cần xác nhận khi Market)
+    - `sdate`: String, N, yyyymmdd — Ngày bắt đầu / hiệu lực (theo tài liệu Tsolution)
+    - `user_id`: String, Y, Max 15 ký tự (field tên **`user_id`**, khác `hts_user_id` của DRORD-034)
+    - `cli_mac_addr`: String, N
+- **Response Data**: giống DRORD-034 (`error_code`, `error_desc`, `success`, `total_record`, `data_list`)
+- **Object Types (DataResponse)**:
+    - `order_no`: String, Số hiệu lệnh
+
+#### 2.3.16 DRORD-036: Huỷ lệnh đặt trước
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-adv-buy`
+- **Method**: POST
+- **Ghi chú:** Theo tài liệu Tsolution Derivatives 8, **cùng path** với DRORD-034 (`dr-adv-buy`); payload huỷ dùng `seqn` — cần lấy `seqn` từ **DRORD-038** (và `msec` khớp phiên lệnh).
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `lang_code`, `row_count`, `next_key`: N, giống các API khác
+    - `acnt_no`: String, Y, Số TK
+    - `msec`: String, Y, Phiên (1–4; lấy từ DRORD-038)
+    - `code`: String, Y, Mã hợp đồng
+    - `seqn`: String, Y, Số seq lệnh cần huỷ (từ DRORD-038)
+    - `user_id`: String, Y, User được phân quyền
+- **Response Data**:
+    - `error_code`: String, Y
+    - `error_desc`: String, Y
+    - `success`: boolean, Y
+    - `total_record`: String, N
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `dummy`: String, Message thành công (theo mẫu output tài liệu)
+
+#### 2.3.17 DRORD-037: Danh sách lệnh đặt trước
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-history`
+- **Method**: GET
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)** — tài liệu mô tả dạng JSON; khi tích hợp xác nhận cách truyền (query vs body) với Lotte:
+    - `lang_code`: String, N
+    - `row_count`: Int, N, tối đa 90
+    - `next_key`: String, N
+    - `acnt_no`: String, N, Số TK
+    - `mdms`: String, N, 0 — Tất cả; 1 — Mua; 2 — Bán
+    - `code`: String, N (tất cả → khoảng trắng)
+    - `sdgb`: String, N, 0 — Tất cả; 1 — Xử lý; 2 — Chưa xử lý; 3 — Từ chối; 4 — Huỷ
+    - `mtch`: String, N, mặc định 0 (phân loại khớp)
+    - `vali`: String, N, 0 — Tất cả; 1 — Còn hiệu lực; 2 — Hết hiệu lực
+    - `brcd`: String, N (chi nhánh; tất cả → khoảng trắng)
+    - `agcd`: String, N (phòng GD; tất cả → khoảng trắng)
+    - `sdate`: String, Y, Ngày bắt đầu
+    - `edate`: String, Y, Ngày kết thúc
+    - `hts_user_id`: String, N
+    - `qry_tp`: String, N, lần đầu `Q`, các lần sau `N`
+- **Ghi chú:** Sample trong tài liệu nguồn dùng tên `account_no`, `from_dt`, `to_dt` — đối chiếu với bảng chính thức (`acnt_no`, `sdate`, `edate`) khi implement.
+- **Response Data**:
+    - `error_code`: String, Y
+    - `error_desc`: String, Y
+    - `success`: boolean, Y
+    - `total_record`: String, N
+    - `data_list`: DataResponse (các phần tử có tiền tố `os_`)
+- **Object Types (DataResponse)**:
+    - `os_date`: String, yyyymmdd, Ngày xử lý lệnh
+    - `os_sdate`, `os_edate`: String, Ngày bắt đầu / kết thúc
+    - `os_seqn`: String, Số hiệu lệnh đặt
+    - `os_msec`: String, Phiên (1–4)
+    - `os_acno`, `os_acnm`: String, TK / Chủ TK
+    - `os_code`, `os_name`: String, Mã / Tên HĐ
+    - `os_mdms`: String, 1 — Mua; 2 — Bán
+    - `os_jtyp`: String, 1 — MP; 2 — LO
+    - `os_jmgb`: String, Hiệu lực (0,2,3,4,7,9)
+    - `os_jqty`, `os_jprc`: String, KL / Giá
+    - `os_mdtp`: String, Kênh đặt
+    - `os_user`: String, ID đặt lệnh
+    - `os_sdgb`: String, Phân loại xử lý (1–4)
+    - `os_mtch`: String, Phân loại khớp (1 — Chưa khớp; 2 — Khớp 1 phần; 3 — Khớp tất cả)
+    - `os_cqty`, `os_fprc`, `os_uqty`, `os_cmqty`: String, KL khớp / Giá TB / KL chờ / KL huỷ
+    - `os_cmtime`, `os_cmid`: String, Thời gian huỷ / ID huỷ
+    - `os_vali`: String, Hiệu lực
+    - `os_jmno`: String, SHL xử lý
+    - `os_ercd`, `os_ermsg`: String, Mã / lý do từ chối
+    - `os_reg_date`, `os_ipaddr`, `os_udat`: String, Ngày giờ đặt / IP / Thời gian cập nhật
+    - `os_next_key`: String, Gợi ý phân trang (khác `next_key` request → còn dữ liệu)
+
+#### 2.3.18 DRORD-038: Danh sách lệnh đặt trước có thể huỷ
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-able-can`
+- **Method**: GET
+- **Authenticate**: API KEY
+- **Request Header**:
+    - `apiKey`: Y, [API KEY]
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `lang_code`: String, N
+    - `row_count`, `next_key`: String/Int, N
+    - `account_no`: String, Y, Số TK (tài liệu dùng **`account_no`** cho API này)
+    - `from_dt`: String, Y, Từ ngày
+    - `to_dt`: String, Y, Đến ngày
+    - `code`: String, N, Mã HĐ
+    - `mdms`: String, N, 0 — Tất cả; 1 — Mua; 2 — Bán
+    - `qry_tp`: String, N, lần đầu `Q`, sau `N`
+    - `hts_user_id`: String, N
+- **Response Data**: giống DRORD-037 (`error_code`, `error_desc`, `success`, `data_list`, có `total_record` nếu Lotte trả)
+- **Object Types (DataResponse)** — các field `os_*` trong data_list:
+    - `os_sdate`, `os_edate`: String, Ngày bắt đầu / kết thúc
+    - `os_seqn`: String, SHL (dùng cho **`seqn`** khi gọi DRORD-036)
+    - `os_msec`: String, Phiên (truyền lại khi huỷ)
+    - `os_code`: String, Mã hợp đồng
+    - `os_mdms`: String, Phân loại đặt lệnh
+    - `os_jtyp`: String, 1 — MP; 2 — LO
+    - `os_jmgb`: String, Hiệu lực
+    - `os_jqty`, `os_jprc`: String, Khối lượng / Giá
+    - `os_sdgb`: String, Phân loại xử lý (1–4)
+    - `os_mtch`: String, KL xử lý (theo mô tả cột tài liệu)
+    - `os_cqty`, `os_fprc`, `os_uqty`, `os_cmqty`: String
+    - `os_vali`: String, Hiệu lực
+    - `os_date`: String, Ngày
+    - `os_next_key`: String, Phân trang
 
 ### 2.4 DERIVATIVE MARKET DATA
 

@@ -123,6 +123,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | [Regular Orders API Spec](./Specifications/Regular_Orders_API_Spec.md) | Complete API mapping (TradeX → Lotte): §7 OrderBook (DRORD-010), §8 Order History fromDate–toDate (DRORD-033), Place/Modify/Cancel, todayUnmatch | BE Developers | ~800 |
 | [Order Availability Check API Spec](./Specifications/Order_Availability_Check_API_Spec.md) | DRORD-028 - Check max order quantity before placing order | BE Developers | ~600 |
 | [Stop Orders API Spec](./Specifications/Stop_Orders_API_Spec.md) | DRORD-005/006/023/024/025/026 - Stop order (Place/Modify/Cancel) | BE Developers | ~300 |
+| [Advance Order API Spec](./Specifications/Advance_Order_API_Spec.md) | DRORD-034–038 — Lệnh đặt trước (Place/Cancel/History/Cancellable), map TradeX `advanceOrder` | BE Developers, BA | ~350 |
 | [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
 
 **📄 Design Decisions & Technical Analysis:**
