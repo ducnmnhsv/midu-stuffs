@@ -1,7 +1,7 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
 **Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
-**Cập nhật từ file:** `Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties 8.docx` (30/03/2026); trước đó: PDF 18/03/2026.
+**Cập nhật từ file:** `Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties 1.docx` (31/03/2026, `dcterms:modified` trong doc); trước đó: Derivaties 8 (30/03/2026).
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
+| 2026-03-31 | Doc sync  | Cursor          | **Derivaties 1 / DRORD-036:** URL **`dr-adv-can`**; request thêm **`date`** (yyyyMMdd); `user_id` hoặc `hts_user_id`; sample I/O UAT + response `data_list[].dummy` — §2.3.16 |
 | 2026-03-30 | Doc sync  | Cursor          | Đồng bộ từ Word Tsolution Derivatives 8: thêm **DRORD-034 – DRORD-038** (lệnh đặt trước mua/bán, huỷ, tra cứu danh sách, danh sách có thể huỷ) tại **§2.3.14 – §2.3.18** |
 | 2026-03-18 | Doc sync  | Cursor          | Đồng bộ từ PDF 18/03/2026: Thêm **Mục 4 – WebSocket REALTIME** (4.1 Cấu trúc dữ liệu REALTIME: Order events, Account events); đánh số lại Mục quy tắc chung thành **5** (5.1 Cấu trúc dữ liệu, 5.2 Bảng mã) |
 | 2026-03-05 | Doc sync  | Cursor          | Đồng bộ từ PDF 04/03/2026: URL DRACC-009/019, tham số snd_acnt/rcv_acnt, is_acnt_no, is_cnte; DRACC-032 tsol; DRACC-031 net_assets; response scrt_err_msg |
@@ -961,9 +962,9 @@
     - `order_no`: String, Số hiệu lệnh
 
 #### 2.3.16 DRORD-036: Huỷ lệnh đặt trước
-- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-adv-buy`
+- **URL**: `[Root URL APIKEY]/tuxsvc/der/order/dr-adv-can`
 - **Method**: POST
-- **Ghi chú:** Theo tài liệu Tsolution Derivatives 8, **cùng path** với DRORD-034 (`dr-adv-buy`); payload huỷ dùng `seqn` — cần lấy `seqn` từ **DRORD-038** (và `msec` khớp phiên lệnh).
+- **Ghi chú:** Theo tài liệu Tsolution **Derivaties 1** (31/03/2026), huỷ lệnh đặt trước dùng path **`dr-adv-can`** (khác DRORD-034 `dr-adv-buy`). Payload: `seqn` lấy từ **DRORD-038**, `msec` khớp phiên lệnh.
 - **Authenticate**: API KEY
 - **Request Header**:
     - `apiKey`: Y, [API KEY]
@@ -974,7 +975,34 @@
     - `msec`: String, Y, Phiên (1–4; lấy từ DRORD-038)
     - `code`: String, Y, Mã hợp đồng
     - `seqn`: String, Y, Số seq lệnh cần huỷ (từ DRORD-038)
-    - `user_id`: String, Y, User được phân quyền
+    - `date`: String, Y, **yyyyMMdd** — ngày tham chiếu lệnh đặt trước (theo sample UAT)
+    - `user_id` **hoặc** `hts_user_id`: String, Y — user được phân quyền *(sample UAT dùng `hts_user_id`; tài liệu Tsolution thường ghi `user_id` — BE map JWT theo gateway)*
+- **Sample I/O (UAT / tham khảo)**  
+  **Request:**
+  ```json
+  {
+      "acnt_no": "039C110257",
+      "hts_user_id": "039c110257",
+      "msec": "3",
+      "code": "41I1FB000",
+      "seqn": "1280000004",
+      "date": "20251028"
+  }
+  ```
+  **Response:**
+  ```json
+  {
+      "error_code": "0000",
+      "error_desc": "[V0320]Bạn đã thực hiện lệnh Huỷ, hãy kiểm tra trạng thái Phân loại Huỷ/Sửa!",
+      "success": true,
+      "total_record": "",
+      "data_list": [
+          {
+              "dummy": "Y"
+          }
+      ]
+  }
+  ```
 - **Response Data**:
     - `error_code`: String, Y
     - `error_desc`: String, Y
@@ -982,7 +1010,7 @@
     - `total_record`: String, N
     - `data_list`: DataResponse
 - **Object Types (DataResponse)**:
-    - `dummy`: String, Message thành công (theo mẫu output tài liệu)
+    - `dummy`: String, Placeholder thành công — mẫu thực tế `"Y"`
 
 #### 2.3.17 DRORD-037: Danh sách lệnh đặt trước
 - **URL**: `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-history`

@@ -2,8 +2,8 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Cash Transaction - Cash Statement  
-**Version:** 1.1  
-**Date:** March 9, 2026
+**Version:** 1.5  
+**Date:** April 3, 2026
 
 > **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu **các giao dịch tiền phát sinh** trên tài khoản (monetary transactions) theo khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) **§2.1.6 DRACC-035** — `dr-monetary-transaction`.
 
@@ -22,6 +22,8 @@ Cash Statement API tra cứu **các giao dịch tiền phát sinh** (monetary tr
 
 Khác với DRACC-023 (Lịch sử thanh toán – P/L, phí, thuế theo ngày), DRACC-035 là **danh sách từng dòng giao dịch tiền** (tăng/giảm, lũy kế).
 
+**Lọc theo loại (query `transactionType`):** Mỗi giá trị TradeX map sang một hoặc nhiều lần gọi Lotte với field `type`. Riêng `OTHERS` → **7 lần gọi** Lotte với `type` lần lượt `03`, `10`, `11`, `12`, `13`, `14`, `15`, sau đó **gộp** kết quả thành một mảng. Trên **mọi dòng** response, field `transactionType` **trùng** giá trị `transactionType` client gửi lên (không map lại từ `trans_type`).
+
 ### 1.2 API Endpoints
 
 | Operation | Method | Endpoint |
@@ -33,14 +35,14 @@ Khác với DRACC-023 (Lịch sử thanh toán – P/L, phí, thuế theo ngày)
 **Success (200):**
 - **Body:** Array of monetary transaction objects directly (no wrapper). Map từ Lotte DRACC-035 `data_list`.
 - **Empty result:** Return `[]` with HTTP 200 (no data from Lotte = empty array).
-- **Pagination:** When Lotte returns `next_key`, TradeX returns it in response header `X-Next-Key`. Client sends `nextKey` query param for load more.
+- **Pagination:** Khi Lotte trả `next_key`, TradeX trả header `X-Next-Key`; client gửi lại `nextKey`. Với `transactionType` = `OTHERS`, `nextKey` là **opaque** (trạng thái 7 luồng) — §2.5.4.
 
 ```json
 [
   {
     "transactionDate": "20260220",
     "transactionId": "12345",
-    "transactionType": "01",
+    "transactionType": "CASH_DEPOSIT",
     "moneyIncrease": 1500000,
     "moneyDecrease": 0,
     "cumulative": 50000000,
@@ -99,7 +101,7 @@ or
 | `account_no` | ✅ | - | Số tài khoản |
 | `sub_no` | ❌ | **"80"** | Tiểu khoản |
 | `bank_code` | ❌ | **"%"** | Mã ngân hàng cho vay |
-| `type` | ✅ | - | Phân loại tra cứu |
+| `type` | ✅ | (sinh từ query `transactionType`, §2.5.2) | Phân loại tra cứu — mỗi lần gọi Lotte một giá trị |
 | `next_key` | ❌ | "0" | Pagination |
 | `hts_user_id` | Auto | (config) | Từ JWT/config |
 
@@ -116,7 +118,8 @@ or
 
 | Rule | Description | Error Code |
 |------|-------------|------------|
-| Required Fields | accountNumber, type | `FIELD_IS_REQUIRED` |
+| Required Fields | `accountNumber`, `transactionType` | `FIELD_IS_REQUIRED` |
+| `transactionType` | Phải thuộc enum §2.5 | `INVALID_PARAMETER` + `INVALID_VALUE` |
 | Date Format | Must be yyyyMMdd | `INVALID_DATE_FORMAT` |
 | Date Range | fromDate ≤ toDate | `INVALID_DATE_RANGE` |
 | Date Range Limit | Max 30 days | `DATE_RANGE_EXCEEDED` |
@@ -129,6 +132,51 @@ or
 | `vi` | `V` | `"[V3120] Lỗi đã xảy ra..."` |
 | `en` | `E` | `"[E3120] Error occurred..."` |
 | `ko` | `K` | `"[K3120] 오류 발생..."` |
+
+### 2.5 Query `transactionType` → Lotte `type` và response
+
+#### 2.5.1 Giá trị hợp lệ (query)
+
+Enum **SCREAMING_SNAKE** (query param `transactionType`):
+
+`CASH_DEPOSIT` | `CASH_WITHDRAW` | `MARGIN_DEPOSIT` | `MARGIN_WITHDRAW` | `PROFIT_SETTLEMENT` | `LOSS_SETTLEMENT` | `DAILY_FEE_SETTLEMENT` | `TAX_SETTLEMENT` | `OTHERS`
+
+#### 2.5.2 Map sang Lotte field `type` (DRACC-035)
+
+**Giả định:** Lotte dùng **cùng bộ mã** cho request `type` với `trans_type` trên từng dòng (`01`…`15`, chuỗi 2 ký tự). **Cần xác nhận với Lotte/Core** khi tích hợp; nếu khác, chỉ sửa bảng dưới, không đổi contract TradeX.
+
+| TradeX `transactionType` (query) | Hành vi TradeX → Lotte |
+|----------------------------------|------------------------|
+| `CASH_DEPOSIT` | 1 lần gọi, `type` = `01` |
+| `CASH_WITHDRAW` | 1 lần gọi, `type` = `02` |
+| `MARGIN_DEPOSIT` | 1 lần gọi, `type` = `04` |
+| `MARGIN_WITHDRAW` | 1 lần gọi, `type` = `05` |
+| `PROFIT_SETTLEMENT` | 1 lần gọi, `type` = `06` |
+| `LOSS_SETTLEMENT` | 1 lần gọi, `type` = `07` |
+| `DAILY_FEE_SETTLEMENT` | 1 lần gọi, `type` = `08` |
+| `TAX_SETTLEMENT` | 1 lần gọi, `type` = `09` |
+| `OTHERS` | **7 lần gọi** với `type` lần lượt: `03`, `10`, `11`, `12`, `13`, `14`, `15` (cùng `start_date`, `end_date`, `account_no`, `sub_no`, `bank_code`, `hts_user_id`; `next_key` theo §2.5.4) |
+
+#### 2.5.3 Gộp kết quả khi `transactionType` = `OTHERS`
+
+1. Thu `data_list` từ cả 7 response (bỏ qua response lỗi nghiệp vụ theo quy tắc chung API — hoặc fail fast nếu một lần gọi lỗi; **mặc định khuyến nghị:** nếu bất kỳ lần gọi nào lỗi → trả lỗi cho client, không gộp một phần).
+2. **Dedupe:** khóa gợi ý `date_and_id_trans`; nếu trùng, giữ một bản (log cảnh báo nếu cần).
+3. **Sort:** `trans_date` tăng dần, cùng ngày thì `trans_id` tăng dần (hoặc theo quy ước sản phẩm — ghi rõ trong code cho đồng nhất FE).
+
+#### 2.5.4 Pagination (`nextKey` / `X-Next-Key`)
+
+| `transactionType` | Cách xử lý |
+|-------------------|------------|
+| Một trong 8 loại đơn | Passthrough: client `nextKey` → Lotte `next_key`; header `X-Next-Key` = `next_key` Lotte trả về (như hiện tại). |
+| `OTHERS` | Mỗi mã Lotte (`03`, `10`, …) có `next_key` riêng. TradeX dùng **`nextKey` opaque** (do BE định nghĩa, ví dụ encode JSON/base64 hoặc blob đã ký) lưu trạng thái 7 luồng. Khi còn trang ở **bất kỳ** luồng nào → trả header `X-Next-Key`; khi cả 7 đều hết → không trả hoặc giá trị terminal (vd. rỗng / `0` theo quy ước BE). |
+
+#### 2.5.5 Response — field `transactionType` trên từng dòng
+
+Với **mọi** phần tử trong mảng response, TradeX set:
+
+`transactionType` = **đúng** giá trị query `transactionType` của request hiện tại (echo input).
+
+**Không** map lại từ Lotte `trans_type` trên body response (kể cả khi Lotte trả `trans_type` khác lệ thuyết — client chỉ tin nhãn filter đã chọn).
 
 ---
 
@@ -150,7 +198,7 @@ or
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | `accountNumber` | String | ✅ | - | Số tài khoản phái sinh (→ Lotte `account_no`) |
-| `type` | String | ✅ | - | Phân loại tra cứu (→ Lotte `type`) |
+| `transactionType` | String | ✅ | - | Loại giao dịch cần tra (enum §2.5.1) → TradeX map sang Lotte `type` (§2.5.2) |
 | `fromDate` | String | ❌ | Today | Ngày bắt đầu (yyyyMMdd) → Lotte `start_date` |
 | `toDate` | String | ❌ | Today | Ngày kết thúc (yyyyMMdd) → Lotte `end_date` |
 | `subNo` | String | ❌ | `"80"` | Tiểu khoản (→ Lotte `sub_no`) |
@@ -164,7 +212,7 @@ or
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `account_no` | Direct | Số tài khoản |
-| `type` | String | ✅ | `type` | Direct | Phân loại tra cứu |
+| `transactionType` | String | ✅ | `type` | Map (§2.5.2): 1 hoặc 7 lần gọi | Lọc loại → giá trị Lotte `type` mỗi lần gọi |
 | `fromDate` | String | ❌ | `start_date` | **Default: today** (yyyyMMdd) | Từ ngày |
 | `toDate` | String | ❌ | `end_date` | **Default: today** (yyyyMMdd) | Đến ngày |
 | `subNo` | String | ❌ | `sub_no` | **Default: "80"** | Tiểu khoản |
@@ -187,8 +235,15 @@ const next_key = request.nextKey ?? '0';
 
 const daysDiff = calculateDaysDiff(start_date, end_date);
 if (daysDiff > 30) throw new ValidationError('DATE_RANGE_EXCEEDED');
-if (!request.accountNumber || !request.type) {
+if (!request.accountNumber || !request.transactionType) {
   throw new ValidationError('FIELD_IS_REQUIRED');
+}
+const ALLOWED = new Set([
+  'CASH_DEPOSIT', 'CASH_WITHDRAW', 'MARGIN_DEPOSIT', 'MARGIN_WITHDRAW',
+  'PROFIT_SETTLEMENT', 'LOSS_SETTLEMENT', 'DAILY_FEE_SETTLEMENT', 'TAX_SETTLEMENT', 'OTHERS',
+]);
+if (!ALLOWED.has(request.transactionType)) {
+  throw new ValidationError('INVALID_VALUE', { param: 'transactionType' });
 }
 ```
 
@@ -204,7 +259,7 @@ if (!request.accountNumber || !request.type) {
 |-------------|--------------|------|-----------|-------------|
 | `trans_date` | `transactionDate` | String | Direct | Ngày phát sinh |
 | `trans_id` | `transactionId` | String | Direct | Số thứ tự giao dịch |
-| `trans_type` | `transactionType` | String | Direct | Phân loại nghiệp vụ |
+| `trans_type` | `transactionType` | String | **Override** | Luôn = query `transactionType` của request (echo), **không** dùng `trans_type` Lotte trên body |
 | `money_increase` | `moneyIncrease` | String/Number | As-is or parse | Tiền phát sinh tăng |
 | `money_decrease` | `moneyDecrease` | String/Number | As-is or parse | Tiền phát sinh giảm |
 | `cumulative` | `cumulative` | String | Direct | Lũy kế |
@@ -223,7 +278,7 @@ if (!request.accountNumber || !request.type) {
 
 | Lotte Field | TradeX | Description |
 |-------------|--------|-------------|
-| `next_key` (trong response) | Response header `X-Next-Key` | Token trang tiếp – client gửi lại qua query param `nextKey`. "0" hoặc absent = hết trang. |
+| `next_key` (trong response) | Response header `X-Next-Key` | Token trang tiếp – client gửi lại `nextKey`. Với 8 loại đơn: như Lotte. Với `OTHERS`: token opaque (§2.5.4). |
 
 **Response Structure (body = array):**
 ```json
@@ -231,7 +286,7 @@ if (!request.accountNumber || !request.type) {
   {
     "transactionDate": "20260220",
     "transactionId": "12345",
-    "transactionType": "01",
+    "transactionType": "CASH_DEPOSIT",
     "moneyIncrease": 1500000,
     "moneyDecrease": 0,
     "cumulative": "50000000",
@@ -259,7 +314,8 @@ if (!request.accountNumber || !request.type) {
 
 | Field | Error Code | messageParams | Condition |
 |-------|------------|---------------|-----------|
-| `accountNumber` / `type` | `FIELD_IS_REQUIRED` | `["<field>"]` | Missing |
+| `accountNumber` / `transactionType` | `FIELD_IS_REQUIRED` | `["<field>"]` | Missing |
+| `transactionType` | `INVALID_PARAMETER` | `INVALID_VALUE` + `transactionType` | Không thuộc enum §2.5.1 |
 | `fromDate` / `toDate` | `INVALID_DATE_FORMAT` | `["fromDate"]` | Wrong format (not yyyyMMdd) |
 | `fromDate` / `toDate` | `INVALID_DATE_RANGE` | `["fromDate", "toDate"]` | fromDate > toDate |
 | `fromDate` / `toDate` | `DATE_RANGE_EXCEEDED` | `["30"]` | Range > 30 days |
@@ -378,6 +434,7 @@ if (!request.accountNumber || !request.type) {
 
 **5. Pagination (Load More):**
 - `nextKey`: Token trang tiếp – không truyền hoặc "0" = trang đầu; giá trị từ response header `X-Next-Key` = load more
+- `transactionType` = `OTHERS`: `nextKey`/`X-Next-Key` opaque (§2.5.4), không phải một `next_key` Lotte đơn
 - Response body = array; pagination token in header `X-Next-Key`. No data from Lotte → 200 với body `[]`
 - Lotte DRACC-035: `next_key` trong request/response
 
@@ -387,13 +444,28 @@ if (!request.accountNumber || !request.type) {
 
 ### 5.3 Data Transformation
 
-**DRACC-035 data_list item → TradeX object (camelCase, optional number parse):**
+**Lotte `type` từ query `transactionType` (mỗi lần gọi một mã):**
 ```typescript
-function mapMonetaryTransaction(item: LotteDataResponse) {
+const TX_TO_LOTTE_TYPE: Record<string, string[]> = {
+  CASH_DEPOSIT: ['01'],
+  CASH_WITHDRAW: ['02'],
+  MARGIN_DEPOSIT: ['04'],
+  MARGIN_WITHDRAW: ['05'],
+  PROFIT_SETTLEMENT: ['06'],
+  LOSS_SETTLEMENT: ['07'],
+  DAILY_FEE_SETTLEMENT: ['08'],
+  TAX_SETTLEMENT: ['09'],
+  OTHERS: ['03', '10', '11', '12', '13', '14', '15'],
+};
+```
+
+**`data_list` item → TradeX row** — `transactionType` **luôn** = `request.transactionType`:
+```typescript
+function mapMonetaryTransaction(item: LotteDataResponse, requestTransactionType: string) {
   return {
     transactionDate: item.trans_date,
     transactionId: item.trans_id,
-    transactionType: item.trans_type,
+    transactionType: requestTransactionType,
     moneyIncrease: item.money_increase,
     moneyDecrease: item.money_decrease,
     cumulative: item.cumulative,
@@ -434,8 +506,8 @@ function mapMonetaryTransaction(item: LotteDataResponse) {
 
 ## 7. Clarification Needed
 
-1. **`type` (phân loại tra cứu):** Giá trị hợp lệ từ Lotte cho DRACC-035 – cần bảng mã hoặc default khi triển khai.
-2. **Pagination:** Lotte trả `next_key` ở đâu (root response hay trong từng item)? Set header `X-Next-Key` tương ứng.
+1. **Lotte `type` vs `trans_type`:** Xác nhận request `type` có đúng bộ mã `01`…`15` như §2.5.2 hay khác (nếu khác → cập nhật bảng map, giữ nguyên enum TradeX).
+2. **Pagination:** Lotte trả `next_key` ở root response; với `OTHERS` cần thống nhất **format opaque** `nextKey` (BE) và test load-more đủ 7 luồng.
 3. **Số dư (start_balance, end_balance):** Lotte trả String – giữ nguyên hay parse number tùy FE hiển thị.
 
 ---
@@ -443,5 +515,5 @@ function mapMonetaryTransaction(item: LotteDataResponse) {
 **Document Status:** ✅ Complete (mapped to DRACC-035)  
 **Lotte Reference:** [API specs]Lotte_DR.md §2.1.6 DRACC-035 — dr-monetary-transaction  
 **For:** BA/Dev  
-**Next Steps:** Implementation by Dev team; clarify `type` (phân loại tra cứu) với Lotte/Business nếu cần  
-**Estimated Effort:** 2-3 days (BE) + 1-2 days (FE) + 1 day (QA)
+**Next Steps:** BE: 7-way merge + opaque pagination cho `OTHERS`; xác nhận mã `type` với Lotte  
+**Estimated Effort:** 3-5 days (BE, do `OTHERS`) + 1-2 days (FE) + 1-2 days (QA)

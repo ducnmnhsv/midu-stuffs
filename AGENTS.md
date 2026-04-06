@@ -50,6 +50,16 @@ TradeX Knowledge/
 
 Khi tạo issue FE cho Derivatives: đọc cấu trúc/screens/components trong `nhsv-mts-rn` để viết issue chính xác; artifact (issue text, AC) lưu trong tradex-monitoring hoặc Jira/Bitbucket.
 
+### gstack (engineering workflow)
+
+| Item | Value |
+|------|--------|
+| **Checkout** | `gstack/` tại root repo (clone [garrytan/gstack](https://github.com/garrytan/gstack)) |
+| **Legacy path** | `.agents/skills/gstack` → symlink tới `gstack/` (preamble Codex / công cụ cũ) |
+| **Setup** | `cd gstack && ./setup --host codex` (hoặc `--host auto` nếu dùng nhiều agent) |
+
+Skill paths cho Cursor: `gstack/<skill>/SKILL.md` (ví dụ `gstack/codex/SKILL.md`).
+
 ### Second brain & Midu-path
 
 | Item | Value |
@@ -130,29 +140,45 @@ AI executes: With optimized prompt ✅
 
 **Learn more:** See `.cursor/skills/prompt-enhance-workflow/QUICK_GUIDE.md`
 
-## Available Agents
+## Agent model (orchestrator-first)
 
-### Current Agents (3)
+Mục tiêu: **một điểm vào** điều phối công việc, các agent còn lại là **chuyên gia** chỉ được gọi khi cần — tránh cảm giác “quá nhiều agent” phải chọn tay.
 
-Dự án này có 3 specialized agents. Sử dụng `@` mention để activate:
+### Orchestrator (điểm vào mặc định)
 
-| Agent | Rule File | Use Case |
-|-------|-----------|----------|
-| TradeX Analyst | `@tradex-analyst` | Phân tích API, nghiệp vụ chứng khoán, trace system |
-| Agile Developer | `@agile-developer` | Quy trình Agile, BMAD workflows, story development |
-| **TradeX QA Postman** | `@tradex-qa-postman` | Test API TradeX qua Postman MCP; request trong folder "TradeX QA session", tài liệu trong `QA sessions/` |
+| Vai trò | Cách hoạt động trong repo này |
+|---------|-------------------------------|
+| **Điều phối** | Rule `.cursor/rules/ecosystem-orchestrator.mdc` (**always apply**) đóng vai trò orchestrator: map loại task → skill/rule cần bật. Bạn **không cần** liệt kê hết agent khi giao việc thông thường. |
+| **Hành vi mong muốn** | Session (hoặc bạn) mô tả mục tiêu; orchestrator/kỹ thuật routing quyết định có cần `@tradex-analyst`, BMAD, QA, v.v. hay chỉ dùng skill derivatives. |
+| **Đề xuất mở rộng** | Persona `@orchestrator` và output `/_orchestrator-output/` trong `.cursor/rules/agent-architecture-proposal.md` — dùng khi cần workflow đa bước rõ ràng. |
 
-### Proposed Agents (3)
+### Specialist agents (gọi có chủ đích)
 
-Đề xuất thêm 3 agents mới để tạo multi-agent system với Orchestrator điều phối. Xem chi tiết tại `.cursor/rules/agent-architecture-proposal.md`
+Chỉ `@` khi task **thuộc đúng domain** của agent đó, hoặc khi orchestrator đã chỉ ra cần chuyên sâu.
 
-| Agent | Activation | Primary Responsibility |
-|-------|-----------|----------------------|
-| **Orchestrator** | `@orchestrator` | Coordinate all agents, route tasks, manage workflows |
-| **Documentation** | `@documentation-agent` | Technical docs, runbooks, guides |
-| **Test** | `@test-agent` | Testing, QA automation, validation |
+| Agent | Rule / activation | Khi nào dùng |
+|-------|-------------------|---------------|
+| **TradeX Analyst** | `@tradex-analyst` | Phân tích API, nghiệp vụ CK, trace hệ thống TradeX |
+| **Agile Developer** | `@agile-developer` | Agile, BMAD, story / epic |
+| **TradeX QA Postman** | `@tradex-qa-postman` | Test API qua Postman MCP; collection “TradeX QA session”; docs trong `QA sessions/` |
+| **Documentation** (đề xuất) | `@documentation-agent` * | Runbook, kỹ thuật doc, index tài liệu |
+| **Test** (đề xuất) | `@test-agent` * | Test design, automation, validation ngoài Postman |
 
-**Quick Reference**: Xem `AGENTS_QUICK_REFERENCE.md` để biết cách sử dụng và ví dụ tương tác.
+\* Chưa có rule riêng trong repo — tham chiếu kiến trúc đầy đủ: `.cursor/rules/agent-architecture-proposal.md`
+
+**Quick reference tương tác:** `AGENTS_QUICK_REFERENCE.md`
+
+### So sánh với Claude Code Agent Teams
+
+Nếu bạn dùng **Claude Code** (CLI) thay vì chỉ Cursor: Anthropic có chế độ **agent teams** — một session **team lead** spawn nhiều teammate, task list chung, teammate nhắn trực tiếp (khác subagent chỉ báo cáo về main). Tính năng **experimental**, cần bật `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` trong [settings / env](https://code.claude.com/docs/en/agent-teams); yêu cầu Claude Code **v2.1.32+**.
+
+| | Cursor (repo này) | Claude Code agent teams |
+|--|-------------------|---------------------------|
+| Điều phối | `ecosystem-orchestrator.mdc` + hội thoại một session | Team lead + task list + nhiều session song song |
+| Song song | Một context; phân vai bằng `@` / skill | Nhiều instance Claude; token cost cao hơn |
+| Tài liệu | [Agent teams](https://code.claude.com/docs/en/agent-teams) | Best practice: tách file/workstream để tránh conflict |
+
+**Gợi ý:** Với TradeX Monitoring, giữ **orchestrator (rule) làm mặc định** trong Cursor; cân nhắc agent teams trên Claude Code khi task **nghiên cứu / review song song** (ví dụ nhiều góc PR) — đúng tinh thần “parallel exploration” trong tài liệu Anthropic.
 
 ## Quick Reference
 
