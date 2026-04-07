@@ -430,7 +430,7 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `toDate` | String | ✅ | Cuối khoảng ngày tra cứu **yyyyMMdd** | `edate` |
 | `orderSide` | String | ❌ | Lọc chiều lệnh: `ALL` \| `BUY` \| `SELL` — xem bảng enum §5.1.1 | `mdms` |
 | `processingStage` | String | ❌ | Trạng thái xử lý trên Core: `ALL` \| `PROCESSED` \| `UNPROCESSED` \| `REJECTED` \| `CANCELLED` — §5.1.1 | `sdgb` |
-| `orderMatchScope` | String | ❌ | Phân loại khớp; mặc định BE gửi `0` (theo Lotte). Giá trị TradeX gợi ý: `ALL` → `0` *(mở rộng khi Lotte có thêm mã)* | `mtch` |
+| `orderMatchScope` | String | ❌ | Phân loại khớp; mặc định BE gửi `0`. Enum TradeX ↔ Lotte **§5.1.1** (`ALL`, `UNMATCHED`, `PARTIALLY_MATCHED`, `FULLY_MATCHED`) | `mtch` |
 | `orderValidity` | String | ❌ | Hiệu lực lệnh: `ALL` \| `ACTIVE` \| `EXPIRED` — §5.1.1 | `vali` |
 | `branchCode` | String | ❌ | Mã chi nhánh; bỏ trống = tất cả | `brcd` |
 | `tradingDeskCode` | String | ❌ | Mã phòng giao dịch; bỏ trống = tất cả | `agcd` |
@@ -469,13 +469,16 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `ACTIVE` | `1` | Còn hiệu lực |
 | `EXPIRED` | `2` | Hết hiệu lực |
 
-**`orderMatchScope` → `mtch`**
+**`orderMatchScope` → `mtch`** *(đối xứng decode `os_mtch` — Lotte_DR §2.3.17)*
 
-| TradeX `orderMatchScope` | Lotte `mtch` |
-|--------------------------|--------------|
-| `ALL` *(mặc định)* | `0` |
+| TradeX `orderMatchScope` | Lotte `mtch` | Ý nghĩa (Lotte) |
+|--------------------------|--------------|-----------------|
+| `ALL` *(mặc định)* | `0` | Tất cả |
+| `UNMATCHED` | `1` | Chưa khớp |
+| `PARTIALLY_MATCHED` | `2` | Khớp một phần |
+| `FULLY_MATCHED` | `3` | Khớp hết |
 
-*Khi Lotte bổ sung mã `mtch` khác, mở rộng bảng và enum TradeX.*
+*Mã `mtch` khác (nếu Lotte bổ sung) — mở rộng bảng và enum TradeX.*
 
 **`historyPageMode` → `qry_tp`**
 
@@ -543,7 +546,7 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `os_acno` | `accountNumber` | String | Direct | Số TK |
 | `os_acnm` | `accountName` | String | Direct | Tên chủ TK |
 | `os_date` | `orderDate` | String | Direct yyyyMMdd | Ngày xử lý / ngày dòng lệnh |
-| `os_seqn` | `sequenceNumber` | String | Direct | Seq lệnh đặt trước (huỷ §4) |
+| `os_seqn` | `sequenceNumber` | String | **Trim** (Lotte hay pad khoảng trắng); sau đó giữ chuỗi | Seq lệnh đặt trước (huỷ §4) |
 | `os_jmno` | `orderNumber` | String | Direct | Số hiệu lệnh xử lý (nếu có) |
 | `os_code` | `symbolCode` | String | Direct | Mã HĐ |
 | `os_name` | `symbolName` | String | Direct | Tên HĐ |
@@ -554,7 +557,7 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `os_jprc` | `orderPrice` | Number | Parse | Giá đặt |
 | `os_sdgb` | `processingStage` | String | **Decode §5.3.1** | Trạng thái xử lý |
 | `os_vali` | `orderValidity` | String | **Decode §5.3.1** | ALL / ACTIVE / EXPIRED |
-| `os_mtch` | `orderMatchScope` | String | **Decode §5.3.1** hoặc raw | Phân loại khớp |
+| `os_mtch` | `orderMatchScope` | String | **Decode §5.3.1** | Phân loại khớp |
 | `os_cqty` | `matchedQuantity` | Number | Parse | KL khớp |
 | `os_fprc` | `averageMatchedPrice` | Number | Parse | Giá khớp TB |
 | `os_uqty` | `pendingQuantity` | Number | Parse | KL chờ |
@@ -568,7 +571,7 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `os_mdtp` | `orderChannelCode` | String | Direct | Kênh đặt |
 | `os_sdate` | `effectiveFrom` | String | Direct yyyyMMdd | Đầu hiệu lực |
 | `os_edate` | `effectiveTo` | String | Direct yyyyMMdd | Cuối hiệu lực |
-| `os_next_key` | *(pagination)* | — | `X-Next-Key` / envelope | Trang sau |
+| `os_next_key` | *(pagination)* | — | Trim; **rỗng hoặc `"0"`** → hết trang (không set `X-Next-Key` / không trả `nextKey`); giá trị khác → trang sau | Gợi ý phân trang |
 
 **§5.3.1 Lotte → TradeX (chuỗi có nghĩa)** — đối xứng **§5.1.1**:
 
@@ -589,8 +592,11 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 | `os_mtch` | `orderMatchScope` |
 |-----------|---------------------|
 | `0` | `ALL` |
+| `1` | `UNMATCHED` |
+| `2` | `PARTIALLY_MATCHED` |
+| `3` | `FULLY_MATCHED` |
 
-*Mã Lotte khác — bổ sung khi có tài liệu.*
+*Theo Lotte_DR §2.3.17. DRORD-038 mô tả cột khác biệt nhưng **UAT** trả cùng mã 0–3 như mẫu thực tế.*
 
 **Success (200) — body (ví dụ):**
 ```json
@@ -674,11 +680,118 @@ API map **DRORD-038** — danh sách lệnh đặt trước **có thể huỷ**;
 
 ### 6.3 Response Mapping
 
-**Lotte `data_list`:** các field `os_*` theo §2.3.18 Lotte_DR (tương tự history nhưng tập nhỏ hơn; **bắt buộc** có `os_seqn`, `os_msec`, `os_code` cho luồng huỷ).
+**Lotte envelope:** `error_code`, `error_desc`, `success`, `total_record`, `data_list` (prefix `os_*`) — cùng dạng §5.3.
 
-**Order object (TradeX):** cùng hướng map như §5.3; **ưu tiên** trả `sequenceNumber` (= `os_seqn`) và `tradingSession` cho FE gọi §4.
+**Mẫu `data_list` thực tế (DRORD-038 / UAT)** — BE map sang TradeX theo bảng dưới; các field Lotte không gửi thì **không** đưa vào object (hoặc `null` nếu team chốt schema cố định).
 
-**Success (200):** `{ "orders": [ ... ] }`
+```json
+{
+  "os_sdate": "20251028",
+  "os_edate": "20251028",
+  "os_seqn": "     1280000003",
+  "os_msec": "2",
+  "os_code": "41I1FB000",
+  "os_mdms": "1",
+  "os_jtyp": "2",
+  "os_jmgb": "0",
+  "os_jqty": "1",
+  "os_jprc": "1500.0",
+  "os_sdgb": "2",
+  "os_mtch": "1",
+  "os_cqty": "0",
+  "os_fprc": "0.00",
+  "os_uqty": "0",
+  "os_cmqty": "0",
+  "os_vali": "1",
+  "os_date": "20251028",
+  "os_next_key": "0"
+}
+```
+
+**Lotte `data_list` (DRORD-038):** Lotte_DR §2.3.18 liệt kê tập tối thiểu; **UAT** thường trả đủ các cột như mẫu trên *(không có `os_acno` / `os_name` trong nhiều bản ghi)*. **`os_seqn`**, **`os_msec`**, **`os_code`**, **`os_date`** cần cho huỷ §4 (`sequenceNumber`, `tradingSession`, `symbolCode`, `orderDate`).
+
+| Lotte Field | Trong mẫu UAT | Ghi chú |
+|-------------|---------------|---------|
+| `os_date` | ✅ | `orderDate` + `orderDate` khi huỷ |
+| `os_sdate`, `os_edate` | ✅ | `effectiveFrom` / `effectiveTo` |
+| `os_seqn` | ✅ *(có pad khoảng trắng)* | **Trim** → `sequenceNumber` |
+| `os_msec` | ✅ | `tradingSession` §2.1 |
+| `os_code` | ✅ | `symbolCode` |
+| `os_acno`, `os_acnm` | ❌ *(thường không có)* | Nếu có → map như §5.3 |
+| `os_name` | ❌ | Nếu có → `symbolName` |
+| `os_mdms` | ✅ | `sellBuyType` |
+| `os_jtyp`, `os_jmgb` | ✅ | `orderType` §2.2 |
+| `os_jqty`, `os_jprc` | ✅ | Parse số (`"1500.0"` → `1500`) |
+| `os_sdgb`, `os_vali`, `os_mtch` | ✅ | Decode **§5.3.1** |
+| `os_cqty`, `os_fprc`, `os_uqty`, `os_cmqty` | ✅ | Parse số |
+| `os_next_key` | ✅ | `"0"` / rỗng = hết trang *(giống §5.3)* |
+| Các `os_*` khác §5.3 | Tuỳ môi trường | Map cùng quy tắc History khi Lotte trả |
+
+**Order object (Lotte + request → TradeX)** — cùng tên field với §5.3 / History; **ưu tiên** đủ field để FE gọi huỷ.
+
+| Nguồn | Lotte / Request | TradeX Field | Type | Transform | Description |
+|-------|-----------------|--------------|------|-----------|-------------|
+| Lotte hoặc request | `os_acno` **hoặc** query `accountNumber` | `accountNumber` | String | Nếu không có `os_acno` → lấy **đúng** `accountNumber` từ request GET §6.1 *(đồng nhất schema với History)* | Số TK |
+| Lotte | `os_acnm` | `accountName` | String | Direct | Tên chủ TK |
+| Lotte | `os_date` | `orderDate` | String | Direct yyyyMMdd | Ngày lệnh *(huỷ §4)* |
+| Lotte | `os_seqn` | `sequenceNumber` | String | **Trim** | Seq đặt trước *(huỷ §4)* |
+| Lotte | `os_jmno` | `orderNumber` | String | Direct | SHL xử lý *(nếu có)* |
+| Lotte | `os_code` | `symbolCode` | String | Direct | Mã HĐ |
+| Lotte | `os_name` | `symbolName` | String | Direct | Tên HĐ |
+| Lotte | `os_mdms` | `sellBuyType` | String | 1→**BUY**, 2→**SELL** | Chiều lệnh |
+| Lotte | `os_msec` | `tradingSession` | String | Map ngược §2.1 | Phiên |
+| Lotte | `os_jtyp` + `os_jmgb` | `orderType` | String | Decode §2.2 | LO / DAY / … |
+| Lotte | `os_jqty` | `orderQuantity` | Number | Parse int/decimal | KL đặt |
+| Lotte | `os_jprc` | `orderPrice` | Number | Parse *(LO)* | Giá đặt |
+| Lotte | `os_sdgb` | `processingStage` | String | **§5.3.1** | Ví dụ `2` → `UNPROCESSED` |
+| Lotte | `os_vali` | `orderValidity` | String | **§5.3.1** | Ví dụ `1` → `ACTIVE` |
+| Lotte | `os_mtch` | `orderMatchScope` | String | **§5.3.1** | Ví dụ `1` → `UNMATCHED` |
+| Lotte | `os_cqty` | `matchedQuantity` | Number | Parse | KL khớp |
+| Lotte | `os_fprc` | `averageMatchedPrice` | Number | Parse | Giá khớp TB |
+| Lotte | `os_uqty` | `pendingQuantity` | Number | Parse | KL chờ |
+| Lotte | `os_cmqty` | `cancelledQuantity` | Number | Parse | KL huỷ |
+| Lotte | `os_cmtime` | `cancelledAt` | String | Direct | *(nếu có)* |
+| Lotte | `os_ercd` | `rejectCode` | String | Direct | *(nếu có)* |
+| Lotte | `os_ermsg` | `rejectReason` | String | Trim; rỗng → null | *(nếu có)* |
+| Lotte | `os_reg_date` | `placedAt` | String | Direct | *(nếu có)* |
+| Lotte | `os_user` | `placedByUserId` | String | Direct | *(nếu có)* |
+| Lotte | `os_ipaddr` | `clientIp` | String | Direct | *(nếu có)* |
+| Lotte | `os_mdtp` | `orderChannelCode` | String | Direct | *(nếu có)* |
+| Lotte | `os_sdate` | `effectiveFrom` | String | Direct yyyyMMdd | Đầu hiệu lực |
+| Lotte | `os_edate` | `effectiveTo` | String | Direct yyyyMMdd | Cuối hiệu lực |
+| Lotte | `os_next_key` | *(pagination)* | — | Giống cột `os_next_key` **§5.3** | Response list: hợp nhất từ phần tử cuối hoặc envelope |
+
+**Decode `os_sdgb` / `os_vali` / `os_mtch`:** **§5.3.1** (đã bao gồm `orderMatchScope` 0–3).
+
+**Success (200) — body (map từ mẫu Lotte trên, `accountNumber` từ request):**
+```json
+{
+  "orders": [
+    {
+      "accountNumber": "039C222333",
+      "orderDate": "20251028",
+      "sequenceNumber": "1280000003",
+      "symbolCode": "41I1FB000",
+      "sellBuyType": "BUY",
+      "tradingSession": "MORNING_KLLT",
+      "orderType": "LO",
+      "orderQuantity": 1,
+      "orderPrice": 1500,
+      "processingStage": "UNPROCESSED",
+      "orderValidity": "ACTIVE",
+      "orderMatchScope": "UNMATCHED",
+      "matchedQuantity": 0,
+      "averageMatchedPrice": 0,
+      "pendingQuantity": 0,
+      "cancelledQuantity": 0,
+      "effectiveFrom": "20251028",
+      "effectiveTo": "20251028"
+    }
+  ]
+}
+```
+
+**Empty:** `{ "orders": [] }`
 
 ### 6.4 Error Mapping
 
