@@ -2,8 +2,8 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Cash Transaction - Cash Statement  
-**Version:** 1.5  
-**Date:** April 3, 2026
+**Version:** 1.7  
+**Date:** April 7, 2026
 
 > **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu **các giao dịch tiền phát sinh** trên tài khoản (monetary transactions) theo khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) **§2.1.6 DRACC-035** — `dr-monetary-transaction`.
 
@@ -22,7 +22,7 @@ Cash Statement API tra cứu **các giao dịch tiền phát sinh** (monetary tr
 
 Khác với DRACC-023 (Lịch sử thanh toán – P/L, phí, thuế theo ngày), DRACC-035 là **danh sách từng dòng giao dịch tiền** (tăng/giảm, lũy kế).
 
-**Lọc theo loại (query `transactionType`):** Mỗi giá trị TradeX map sang một hoặc nhiều lần gọi Lotte với field `type`. Riêng `OTHERS` → **7 lần gọi** Lotte với `type` lần lượt `03`, `10`, `11`, `12`, `13`, `14`, `15`, sau đó **gộp** kết quả thành một mảng. Trên **mọi dòng** response, field `transactionType` **trùng** giá trị `transactionType` client gửi lên (không map lại từ `trans_type`).
+**Lọc theo loại (query `transactionType`):** Mỗi giá trị TradeX map **1-1** sang đúng **một** mã Lotte `type` và **một lần gọi** DRACC-035 (§2.5.2). Trên **mọi dòng** response, field `transactionType` **trùng** giá trị query client gửi lên (không map lại từ `trans_type`).
 
 ### 1.2 API Endpoints
 
@@ -35,7 +35,7 @@ Khác với DRACC-023 (Lịch sử thanh toán – P/L, phí, thuế theo ngày)
 **Success (200):**
 - **Body:** Array of monetary transaction objects directly (no wrapper). Map từ Lotte DRACC-035 `data_list`.
 - **Empty result:** Return `[]` with HTTP 200 (no data from Lotte = empty array).
-- **Pagination:** Khi Lotte trả `next_key`, TradeX trả header `X-Next-Key`; client gửi lại `nextKey`. Với `transactionType` = `OTHERS`, `nextKey` là **opaque** (trạng thái 7 luồng) — §2.5.4.
+- **Pagination:** Passthrough Lotte: `next_key` → header `X-Next-Key`; client gửi lại `nextKey` — §2.5.3.
 
 ```json
 [
@@ -139,38 +139,41 @@ or
 
 Enum **SCREAMING_SNAKE** (query param `transactionType`):
 
-`CASH_DEPOSIT` | `CASH_WITHDRAW` | `MARGIN_DEPOSIT` | `MARGIN_WITHDRAW` | `PROFIT_SETTLEMENT` | `LOSS_SETTLEMENT` | `DAILY_FEE_SETTLEMENT` | `TAX_SETTLEMENT` | `OTHERS`
+`CASH_DEPOSIT` | `CASH_WITHDRAW` | `CASH_ACCOUNT_ADJUSTMENT` | `MARGIN_DEPOSIT` | `MARGIN_WITHDRAW` | `PROFIT_SETTLEMENT` | `LOSS_SETTLEMENT` | `DAILY_FEE_SETTLEMENT` | `TAX_SETTLEMENT` | `OPTION_PREMIUM_CASH` | `PHYSICAL_SETTLEMENT_CASH` | `ADDITIONAL_FEE_CASH` | `VM_RELATED_CASH` | `FINANCING_INTEREST_CASH` | `OTHER_MONETARY`
 
 #### 2.5.2 Map sang Lotte field `type` (DRACC-035)
 
-**Giả định:** Lotte dùng **cùng bộ mã** cho request `type` với `trans_type` trên từng dòng (`01`…`15`, chuỗi 2 ký tự). **Cần xác nhận với Lotte/Core** khi tích hợp; nếu khác, chỉ sửa bảng dưới, không đổi contract TradeX.
+**Giả định:** Lotte dùng **cùng bộ mã** cho request `type` với `trans_type` trên từng dòng (`01`…`15`, chuỗi 2 ký tự). **Cần xác nhận với Lotte/Core** khi tích hợp; nếu khác, chỉ sửa bảng dưới.
 
-| TradeX `transactionType` (query) | Hành vi TradeX → Lotte |
-|----------------------------------|------------------------|
-| `CASH_DEPOSIT` | 1 lần gọi, `type` = `01` |
-| `CASH_WITHDRAW` | 1 lần gọi, `type` = `02` |
-| `MARGIN_DEPOSIT` | 1 lần gọi, `type` = `04` |
-| `MARGIN_WITHDRAW` | 1 lần gọi, `type` = `05` |
-| `PROFIT_SETTLEMENT` | 1 lần gọi, `type` = `06` |
-| `LOSS_SETTLEMENT` | 1 lần gọi, `type` = `07` |
-| `DAILY_FEE_SETTLEMENT` | 1 lần gọi, `type` = `08` |
-| `TAX_SETTLEMENT` | 1 lần gọi, `type` = `09` |
-| `OTHERS` | **7 lần gọi** với `type` lần lượt: `03`, `10`, `11`, `12`, `13`, `14`, `15` (cùng `start_date`, `end_date`, `account_no`, `sub_no`, `bank_code`, `hts_user_id`; `next_key` theo §2.5.4) |
+Mỗi hàng: **một** request DRACC-035, field `type` = cột `Lotte`.
 
-#### 2.5.3 Gộp kết quả khi `transactionType` = `OTHERS`
+**Tên TradeX** dưới đây là **đặt tên có nghĩa nghiệp vụ** (tiếng Anh chuẩn API) cho FE/PM; **Lotte_DR §2.1.6 không mô tả chi tiết** từng mã `03`, `10`–`15`. Cột *Mô tả gợi ý* là hướng dẫn tra cứu — **bắt buộc đối chiếu** bảng mã chính thức từ Core/Lotte và chỉnh tên hoặc mô tả khi có SSOT.
 
-1. Thu `data_list` từ cả 7 response (bỏ qua response lỗi nghiệp vụ theo quy tắc chung API — hoặc fail fast nếu một lần gọi lỗi; **mặc định khuyến nghị:** nếu bất kỳ lần gọi nào lỗi → trả lỗi cho client, không gộp một phần).
-2. **Dedupe:** khóa gợi ý `date_and_id_trans`; nếu trùng, giữ một bản (log cảnh báo nếu cần).
-3. **Sort:** `trans_date` tăng dần, cùng ngày thì `trans_id` tăng dần (hoặc theo quy ước sản phẩm — ghi rõ trong code cho đồng nhất FE).
+| TradeX `transactionType` (query) | Lotte `type` | Mô tả gợi ý (VI — xác nhận Core) |
+|----------------------------------|--------------|-----------------------------------|
+| `CASH_DEPOSIT` | `01` | Nộp tiền mặt |
+| `CASH_WITHDRAW` | `02` | Rút tiền mặt |
+| `CASH_ACCOUNT_ADJUSTMENT` | `03` | Điều chỉnh / bút toán tiền mặt tài khoản (vùng nghiệp vụ giữa rút tiền và nộp KQ) |
+| `MARGIN_DEPOSIT` | `04` | Nộp tiền ký quỹ |
+| `MARGIN_WITHDRAW` | `05` | Rút tiền ký quỹ |
+| `PROFIT_SETTLEMENT` | `06` | Tất toán lãi |
+| `LOSS_SETTLEMENT` | `07` | Tất toán lỗ |
+| `DAILY_FEE_SETTLEMENT` | `08` | Tất toán phí ngày |
+| `TAX_SETTLEMENT` | `09` | Tất toán thuế |
+| `OPTION_PREMIUM_CASH` | `10` | Dòng tiền liên quan phí quyền chọn (premium) |
+| `PHYSICAL_SETTLEMENT_CASH` | `11` | Tiền tất toán / giao nhận vật chất (nếu có phái sinh giao vật chất) |
+| `ADDITIONAL_FEE_CASH` | `12` | Phí, lệ phí bổ sung (ngoài nhóm phí ngày `08`) |
+| `VM_RELATED_CASH` | `13` | Biến đổi ký quỹ / VM liên quan tiền |
+| `FINANCING_INTEREST_CASH` | `14` | Lãi / chi phí tài trợ trên số dư tiền |
+| `OTHER_MONETARY` | `15` | Giao dịch tiền phát sinh khác |
 
-#### 2.5.4 Pagination (`nextKey` / `X-Next-Key`)
+*Gộp nhiều loại trong một view (trước đây `OTHERS`): do phía **client** gọi lần lượt từng `transactionType` cần hiển thị và hợp nhất/dedupe nếu UX yêu cầu — BE chỉ một lần gọi Lotte mỗi request.*
 
-| `transactionType` | Cách xử lý |
-|-------------------|------------|
-| Một trong 8 loại đơn | Passthrough: client `nextKey` → Lotte `next_key`; header `X-Next-Key` = `next_key` Lotte trả về (như hiện tại). |
-| `OTHERS` | Mỗi mã Lotte (`03`, `10`, …) có `next_key` riêng. TradeX dùng **`nextKey` opaque** (do BE định nghĩa, ví dụ encode JSON/base64 hoặc blob đã ký) lưu trạng thái 7 luồng. Khi còn trang ở **bất kỳ** luồng nào → trả header `X-Next-Key`; khi cả 7 đều hết → không trả hoặc giá trị terminal (vd. rỗng / `0` theo quy ước BE). |
+#### 2.5.3 Pagination (`nextKey` / `X-Next-Key`)
 
-#### 2.5.5 Response — field `transactionType` trên từng dòng
+Mọi `transactionType` §2.5.1: **passthrough** — client `nextKey` → Lotte `next_key`; response header `X-Next-Key` = `next_key` Lotte trả về (không encode opaque, không gộp nhiều luồng).
+
+#### 2.5.4 Response — field `transactionType` trên từng dòng
 
 Với **mọi** phần tử trong mảng response, TradeX set:
 
@@ -212,7 +215,7 @@ Với **mọi** phần tử trong mảng response, TradeX set:
 | TradeX Field | Type | Required | Lotte Field | Transform | Description |
 |--------------|------|----------|-------------|-----------|-------------|
 | `accountNumber` | String | ✅ | `account_no` | Direct | Số tài khoản |
-| `transactionType` | String | ✅ | `type` | Map (§2.5.2): 1 hoặc 7 lần gọi | Lọc loại → giá trị Lotte `type` mỗi lần gọi |
+| `transactionType` | String | ✅ | `type` | Map §2.5.2: **1 lần** gọi, một mã `type` | Lọc loại → Lotte `type` |
 | `fromDate` | String | ❌ | `start_date` | **Default: today** (yyyyMMdd) | Từ ngày |
 | `toDate` | String | ❌ | `end_date` | **Default: today** (yyyyMMdd) | Đến ngày |
 | `subNo` | String | ❌ | `sub_no` | **Default: "80"** | Tiểu khoản |
@@ -239,8 +242,10 @@ if (!request.accountNumber || !request.transactionType) {
   throw new ValidationError('FIELD_IS_REQUIRED');
 }
 const ALLOWED = new Set([
-  'CASH_DEPOSIT', 'CASH_WITHDRAW', 'MARGIN_DEPOSIT', 'MARGIN_WITHDRAW',
-  'PROFIT_SETTLEMENT', 'LOSS_SETTLEMENT', 'DAILY_FEE_SETTLEMENT', 'TAX_SETTLEMENT', 'OTHERS',
+  'CASH_DEPOSIT', 'CASH_WITHDRAW', 'CASH_ACCOUNT_ADJUSTMENT', 'MARGIN_DEPOSIT', 'MARGIN_WITHDRAW',
+  'PROFIT_SETTLEMENT', 'LOSS_SETTLEMENT', 'DAILY_FEE_SETTLEMENT', 'TAX_SETTLEMENT',
+  'OPTION_PREMIUM_CASH', 'PHYSICAL_SETTLEMENT_CASH', 'ADDITIONAL_FEE_CASH', 'VM_RELATED_CASH',
+  'FINANCING_INTEREST_CASH', 'OTHER_MONETARY',
 ]);
 if (!ALLOWED.has(request.transactionType)) {
   throw new ValidationError('INVALID_VALUE', { param: 'transactionType' });
@@ -278,7 +283,7 @@ if (!ALLOWED.has(request.transactionType)) {
 
 | Lotte Field | TradeX | Description |
 |-------------|--------|-------------|
-| `next_key` (trong response) | Response header `X-Next-Key` | Token trang tiếp – client gửi lại `nextKey`. Với 8 loại đơn: như Lotte. Với `OTHERS`: token opaque (§2.5.4). |
+| `next_key` (trong response) | Response header `X-Next-Key` | Token trang tiếp – client gửi lại `nextKey` (passthrough Lotte, §2.5.3). |
 
 **Response Structure (body = array):**
 ```json
@@ -433,8 +438,7 @@ if (!ALLOWED.has(request.transactionType)) {
 - `lang_code` → From `Accept-Language` header
 
 **5. Pagination (Load More):**
-- `nextKey`: Token trang tiếp – không truyền hoặc "0" = trang đầu; giá trị từ response header `X-Next-Key` = load more
-- `transactionType` = `OTHERS`: `nextKey`/`X-Next-Key` opaque (§2.5.4), không phải một `next_key` Lotte đơn
+- `nextKey`: Token trang tiếp – không truyền hoặc "0" = trang đầu; giá trị từ response header `X-Next-Key` = load more (passthrough Lotte cho mọi `transactionType`, §2.5.3)
 - Response body = array; pagination token in header `X-Next-Key`. No data from Lotte → 200 với body `[]`
 - Lotte DRACC-035: `next_key` trong request/response
 
@@ -444,18 +448,24 @@ if (!ALLOWED.has(request.transactionType)) {
 
 ### 5.3 Data Transformation
 
-**Lotte `type` từ query `transactionType` (mỗi lần gọi một mã):**
+**Lotte `type` từ query `transactionType` (1-1, một mã mỗi request):**
 ```typescript
-const TX_TO_LOTTE_TYPE: Record<string, string[]> = {
-  CASH_DEPOSIT: ['01'],
-  CASH_WITHDRAW: ['02'],
-  MARGIN_DEPOSIT: ['04'],
-  MARGIN_WITHDRAW: ['05'],
-  PROFIT_SETTLEMENT: ['06'],
-  LOSS_SETTLEMENT: ['07'],
-  DAILY_FEE_SETTLEMENT: ['08'],
-  TAX_SETTLEMENT: ['09'],
-  OTHERS: ['03', '10', '11', '12', '13', '14', '15'],
+const TX_TO_LOTTE_TYPE: Record<string, string> = {
+  CASH_DEPOSIT: '01',
+  CASH_WITHDRAW: '02',
+  CASH_ACCOUNT_ADJUSTMENT: '03',
+  MARGIN_DEPOSIT: '04',
+  MARGIN_WITHDRAW: '05',
+  PROFIT_SETTLEMENT: '06',
+  LOSS_SETTLEMENT: '07',
+  DAILY_FEE_SETTLEMENT: '08',
+  TAX_SETTLEMENT: '09',
+  OPTION_PREMIUM_CASH: '10',
+  PHYSICAL_SETTLEMENT_CASH: '11',
+  ADDITIONAL_FEE_CASH: '12',
+  VM_RELATED_CASH: '13',
+  FINANCING_INTEREST_CASH: '14',
+  OTHER_MONETARY: '15',
 };
 ```
 
@@ -506,14 +516,13 @@ function mapMonetaryTransaction(item: LotteDataResponse, requestTransactionType:
 
 ## 7. Clarification Needed
 
-1. **Lotte `type` vs `trans_type`:** Xác nhận request `type` có đúng bộ mã `01`…`15` như §2.5.2 hay khác (nếu khác → cập nhật bảng map, giữ nguyên enum TradeX).
-2. **Pagination:** Lotte trả `next_key` ở root response; với `OTHERS` cần thống nhất **format opaque** `nextKey` (BE) và test load-more đủ 7 luồng.
-3. **Số dư (start_balance, end_balance):** Lotte trả String – giữ nguyên hay parse number tùy FE hiển thị.
+1. **Lotte `type` vs `trans_type`:** Xác nhận request `type` có đúng bộ mã `01`…`15` như §2.5.2 hay khác (nếu khác → cập nhật bảng map). Đối chiếu **cột mô tả gợi ý** §2.5.2 với bảng mã nghiệp vụ chính thức từ Core; chỉnh tên enum TradeX hoặc copy UI nếu lệch.
+2. **Số dư (start_balance, end_balance):** Lotte trả String – giữ nguyên hay parse number tùy FE hiển thị.
 
 ---
 
 **Document Status:** ✅ Complete (mapped to DRACC-035)  
 **Lotte Reference:** [API specs]Lotte_DR.md §2.1.6 DRACC-035 — dr-monetary-transaction  
 **For:** BA/Dev  
-**Next Steps:** BE: 7-way merge + opaque pagination cho `OTHERS`; xác nhận mã `type` với Lotte  
-**Estimated Effort:** 3-5 days (BE, do `OTHERS`) + 1-2 days (FE) + 1-2 days (QA)
+**Next Steps:** BE: map 1-1 §2.5.2 + pagination passthrough; Core xác nhận đúng nghiệp vụ từng mã `03`, `10`–`15` và nhãn hiển thị  
+**Estimated Effort:** ~2 days (BE) + 1-2 days (FE) + 1-2 days (QA)
