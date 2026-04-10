@@ -1,0 +1,44 @@
+Section,Seq.,Task,Duration (days),Start Week,Notes
+LOTTE IMPLEMENTATION (Common for both options),,,,
+,1.1,Analysis: Review & confirm Smart OTP API requirements,3,1,Sequential: Must complete before implementation
+,1.2,Implementation: API Development & Unit Testing,7,2,Sequential: Starts after analysis complete
+,1.3,Test: Internal Testing & Provide Sandbox API to NHSV,4,3,Sequential: Starts after implementation
+,,,,,
+OPTION 1: SMART OTP FOR TRANSACTIONS ONLY,,,,
+,2.1,UI/UX Design for Smart OTP flows,3,4,Can run parallel with API Spec
+,2.2,Define TradeX API specifications & integration plan,2,4,Can run parallel with UI/UX Design
+,2.3,Backend API Implementation (integrate Lotte Smart OTP),5,5,Sequential: Must wait for Lotte Sandbox (Week 3) + API Spec complete
+,2.4,Frontend Implementation on NHSV Pro (iOS & Android),7,6,Sequential: Starts after Backend API complete
+,2.5,Internal Testing + Joint UAT with Lotte,5,8,Sequential: Starts after Frontend complete
+,2.6,Bug fixing & Optimization,3,9,Sequential: Starts after Testing complete
+,2.7,Go-Live Smart OTP on NHSV Pro,1,10,Sequential: Final deployment
+,,,,,
+OPTION 1 SUMMARY,,,,
+Total NHSV Duration:,26 days (~5 weeks),,
+Total Project Duration:,~10 weeks (Lotte Week 1-3 + NHSV Week 4-10),,
+Risk Level:,Low 🟢,,
+Complexity:,Medium ⭐⭐,,
+,,,,,
+OPTION 2: SMART OTP WITH LOGIN INTEGRATION (FULL),,,,
+,2.1,UI/UX Design for Smart OTP flows (login + transaction),5,4,Parallel: Design both login and transaction flows
+,2.2,Define TradeX API specifications & integration plan,3,5,Parallel: Can overlap with design
+,2.3,Backend API Implementation - Login flow with Smart OTP,5,5,Sequential: After API spec; Can run parallel with 2.4
+,2.4,Backend API Implementation - Transaction authorization,4,6,Sequential: After login flow started; Can run parallel
+,2.5,Frontend Implementation - Login screens (iOS & Android),5,7,Sequential: After Backend Login API complete
+,2.6,Frontend Implementation - Transaction flows,5,8,Sequential: After Backend Transaction API complete
+,2.7,Session management & security hardening,3,9,Sequential: After both login + transaction complete
+,2.8,Internal Testing + Joint UAT with Lotte,7,9,Parallel: Can overlap with security hardening
+,2.9,Bug fixing & Optimization,5,11,Sequential: After testing complete
+,2.10,Go-Live Smart OTP on NHSV Pro,1,12,Sequential: Final deployment
+,,,,,
+OPTION 2 SUMMARY,,,,
+Total NHSV Duration:,43 days (~8.5 weeks),,
+Total Project Duration:,~12 weeks (Lotte Week 1-3 + NHSV Week 4-12),,
+Risk Level:,Medium 🟡,,
+Complexity:,High ⭐⭐⭐⭐,,
+,,,,,
+KEY DEPENDENCIES,,,,
+Lotte → NHSV:,NHSV cannot start Backend implementation until Lotte provides Sandbox (Week 3),,
+Backend → Frontend:,Frontend cannot start until Backend APIs are complete and tested,,
+Development → Testing:,Testing cannot start until both Backend and Frontend are complete,,
+Testing → Go-Live:,Go-Live requires successful UAT and bug fixes,,

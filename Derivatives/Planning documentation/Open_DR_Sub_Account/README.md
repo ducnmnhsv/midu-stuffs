@@ -1,0 +1,48 @@
+# Open DR Sub Account — Derivatives Planning Documentation
+
+**Category:** Mở tiểu khoản phái sinh (sub 80) online  
+**Project:** TradeX Derivatives — NHSV Pro  
+**Status:** Planning  
+**Last Updated:** April 9, 2026
+
+---
+
+## Overview
+
+Tài liệu nhóm nghiệp vụ cho phép **khách hàng đăng ký mở tiểu khoản phái sinh trực tuyến**, gồm: kiểm tra điều kiện tài khoản, khởi tạo và ký **hợp đồng điện tử (FPT eContract)**, xác thực **OTP email**, và **quản lý trạng thái trên admin**.  
+
+**Phạm vi hiện tại:** Không chi tiết hóa API Lotte (tạo sub 80, mapping KV thanh toán) cho đến khi đối tác cung cấp tài liệu — xem mục Out of scope trong PRD.
+
+---
+
+## Quick Access
+
+| Document | Description |
+|----------|-------------|
+| [PRD — Mở tiểu khoản phái sinh online](./Planning/PRD_Open_Derivatives_Sub_Account_Online.md) | Product Requirements Document (đầy đủ) |
+
+### Folder structure (chuẩn Derivatives)
+
+| Folder | Purpose |
+|--------|---------|
+| **Planning/** | PRD, BRD — PM-friendly, không code triển khai |
+| **Specifications/** | API / tích hợp chi tiết (sẽ bổ sung sau khi chốt thiết kế) |
+| **Issues/** | Issue triển khai theo feature |
+| **Archive/** | Tài liệu lịch sử |
+
+Các thư mục `Specifications/`, `Issues/`, `Archive/` sẽ được điền khi có spec kỹ thuật và ticket implementation.
+
+---
+
+## Scope tóm tắt
+
+| In scope | Out of scope (tạm) |
+|----------|---------------------|
+| Kiểm tra đủ điều kiện mở sub (USR 002, EKY 007, quy tắc TKCK, trạng thái sub) | API Lotte tạo sub 80, mapping KV, thông báo sau provisioning |
+| Khởi tạo HĐĐT FPT (tên tài liệu, ký ảnh, hiệu lực 90 ngày, OTP email) | Chi tiết template FPT từng field (theo file đính kèm nghiệp vụ) |
+| Callback / cập nhật trạng thái ký; quản trị trên admin | Triển khai code, schema DB |
+
+---
+
+**Maintained By:** PM/BA  
+**Related:** TradeX Knowledge — luồng FPT eContract (eKYC) là tham chiếu kiến trúc tương tự, không thay thế BRD riêng của tính năng này.

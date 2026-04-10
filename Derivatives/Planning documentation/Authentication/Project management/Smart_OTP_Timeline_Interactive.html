@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart OTP Timeline - Sequential Planning</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1700px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #1a73e8;
+            border-bottom: 3px solid #1a73e8;
+            padding-bottom: 15px;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        
+        .option-section {
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .option-section h2 {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .option-section.option1 h2 {
+            background: linear-gradient(135deg, #1a73e8, #4285f4);
+            color: white;
+        }
+        
+        .option-section.option2 h2 {
+            background: linear-gradient(135deg, #ea4335, #ff6b6b);
+            color: white;
+        }
+        
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0 25px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .summary-item {
+            padding: 10px;
+        }
+        
+        .summary-item strong {
+            display: block;
+            color: #1a73e8;
+            margin-bottom: 5px;
+        }
+        
+        .instructions {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            margin-left: 20px;
+        }
+        
+        .instructions li {
+            margin: 5px 0;
+        }
+        
+        .example {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .example strong {
+            color: #856404;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        
+        th {
+            background: #1a73e8;
+            color: white;
+            padding: 12px 6px;
+            text-align: center;
+            font-weight: 600;
+            border: 1px solid #1557b0;
+            vertical-align: middle;
+        }
+        
+        td {
+            padding: 8px 6px;
+            border: 1px solid #ddd;
+            vertical-align: middle;
+        }
+        
+        tr:hover td {
+            background: #f0f7ff;
+        }
+        
+        .section-header td {
+            background: #34a853 !important;
+            color: white !important;
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+            padding: 12px;
+        }
+        
+        .progress-bar {
+            height: 24px;
+            background: #e8eaed;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1a73e8, #4285f4);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .task-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+        }
+        
+        .task-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+            background: #f0f7ff;
+        }
+        
+        .duration-input, .start-week-input {
+            width: 60px;
+            padding: 6px 4px;
+            border: 2px solid #1a73e8;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: bold;
+            background: #fff9e6;
+        }
+        
+        .duration-input:focus, .start-week-input:focus {
+            outline: none;
+            border-color: #ea4335;
+            background: #fff;
+        }
+        
+        .start-week-input {
+            border-color: #34a853;
+            background: #e8f5e9;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .btn-up { background: #4285f4; color: white; }
+        .btn-down { background: #34a853; color: white; }
+        .btn-insert { background: #fbbc04; color: #333; }
+        .btn-delete { background: #ea4335; color: white; }
+        .btn-add {
+            background: #34a853;
+            color: white;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+        
+        .seq-col { width: 45px; text-align: center; font-weight: bold; }
+        .task-col { width: 26%; }
+        .duration-col { width: 75px; text-align: center; }
+        .start-week-col { width: 75px; text-align: center; }
+        .actions-col { width: 110px; text-align: center; }
+        .week-col { width: 5.5%; }
+        
+        .dragging {
+            opacity: 0.5;
+            background: #e3f2fd !important;
+        }
+        
+        .drag-over {
+            border-top: 3px solid #1a73e8 !important;
+        }
+        
+        @media print {
+            .instructions, .example, .action-buttons, .btn { display: none !important; }
+            .actions-col, .start-week-col { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Smart OTP Timeline - Sequential Task Planning</h1>
+        <p class="subtitle">Schedule tasks sequentially or in parallel with Start Week control</p>
+        
+        <div class="instructions">
+            <h3>📝 How to Use:</h3>
+            <ul>
+                <li><strong>Duration:</strong> Number of working days for the task</li>
+                <li><strong>Start Week:</strong> Which week the task begins (1, 2, 3...)</li>
+                <li><strong>Sequential Tasks:</strong> Task A ends Week 2 → Set Task B "Start Week" = 3</li>
+                <li><strong>Parallel Tasks:</strong> Set same "Start Week" for tasks running simultaneously</li>
+                <li><strong>Auto-calculation:</strong> Progress bars update automatically based on Duration + Start Week</li>
+            </ul>
+        </div>
+
+        <div class="example">
+            <strong>💡 Example - Sequential Flow:</strong><br>
+            • Task A: Duration 5 days, Start Week 1 → Runs Week 1-2<br>
+            • Task B: Duration 7 days, Start Week 3 → Runs Week 3-4 (starts after A)<br>
+            • Task C: Duration 3 days, Start Week 5 → Runs Week 5 (starts after B)<br>
+            <br>
+            <strong>💡 Example - Parallel Flow:</strong><br>
+            • Backend: Duration 7 days, Start Week 1 → Runs Week 1-2<br>
+            • Frontend: Duration 7 days, Start Week 1 → Runs Week 1-2 (same time as Backend)
+        </div>
+
+        <!-- Lotte Implementation -->
+        <div class="option-section" style="background: #f0f7ff;">
+            <h2 style="background: linear-gradient(135deg, #34a853, #5bb974); color: white;">
+                <span>🏢 Lotte Implementation (Common)</span>
+                <button class="btn btn-add" onclick="addTask('lotte')">+ Add Task</button>
+            </h2>
+            
+            <div class="summary">
+                <div class="summary-item">
+                    <strong>Total Duration:</strong>
+                    <span id="lotte-total">14 days (~3 weeks)</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Timeline Span:</strong>
+                    <span id="lotte-span">Week 1 - Week 3</span>
+                </div>
+            </div>
+
+            <table id="lotte-table">
+                <thead>
+                    <tr>
+                        <th class="seq-col">Seq.</th>
+                        <th class="task-col">Task</th>
+                        <th class="duration-col">Duration<br>(days)</th>
+                        <th class="start-week-col">Start<br>Week</th>
+                        <th class="actions-col">Actions</th>
+                        <th class="week-col">W1</th>
+                        <th class="week-col">W2</th>
+                        <th class="week-col">W3</th>
+                        <th class="week-col">W4</th>
+                        <th class="week-col">W5</th>
+                        <th class="week-col">W6</th>
+                        <th class="week-col">W7</th>
+                        <th class="week-col">W8</th>
+                    </tr>
+                </thead>
+                <tbody id="lotte-tbody">
+                    <tr data-task="lotte-1" draggable="true">
+                        <td class="seq-col">1.1</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Analysis: Review & confirm requirements">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="3" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="1" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="1"></td>
+                        <td class="week-col week-cell" data-week="2"></td>
+                        <td class="week-col week-cell" data-week="3"></td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                    </tr>
+                    <tr data-task="lotte-2" draggable="true">
+                        <td class="seq-col">1.2</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Implementation: API Development & Testing">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="7" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="2" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="1"></td>
+                        <td class="week-col week-cell" data-week="2"></td>
+                        <td class="week-col week-cell" data-week="3"></td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                    </tr>
+                    <tr data-task="lotte-3" draggable="true">
+                        <td class="seq-col">1.3</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Test: Provide Sandbox API to NHSV">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="4" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="3" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="1"></td>
+                        <td class="week-col week-cell" data-week="2"></td>
+                        <td class="week-col week-cell" data-week="3"></td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Option 1 -->
+        <div class="option-section option1">
+            <h2>
+                <span>📱 Option 1: Transaction Only</span>
+                <button class="btn btn-add" onclick="addTask('option1')">+ Add Task</button>
+            </h2>
+            
+            <div class="summary">
+                <div class="summary-item">
+                    <strong>NHSV Duration:</strong>
+                    <span id="option1-total">26 days</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Timeline Span:</strong>
+                    <span id="option1-span">Week 4 - Week 8</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Total Project:</strong>
+                    <span id="option1-project-total">~8 weeks</span>
+                </div>
+            </div>
+
+            <table id="option1-table">
+                <thead>
+                    <tr>
+                        <th class="seq-col">Seq.</th>
+                        <th class="task-col">Task</th>
+                        <th class="duration-col">Duration<br>(days)</th>
+                        <th class="start-week-col">Start<br>Week</th>
+                        <th class="actions-col">Actions</th>
+                        <th class="week-col">W4</th>
+                        <th class="week-col">W5</th>
+                        <th class="week-col">W6</th>
+                        <th class="week-col">W7</th>
+                        <th class="week-col">W8</th>
+                        <th class="week-col">W9</th>
+                        <th class="week-col">W10</th>
+                        <th class="week-col">W11</th>
+                    </tr>
+                </thead>
+                <tbody id="option1-tbody">
+                    <tr data-task="opt1-1" draggable="true">
+                        <td class="seq-col">2.1</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="UI/UX Design for Smart OTP flows">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="3" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="4" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-2" draggable="true">
+                        <td class="seq-col">2.2</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Define TradeX API specifications">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="2" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="4" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-3" draggable="true">
+                        <td class="seq-col">2.3</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Backend API Implementation">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="5" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="5" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-4" draggable="true">
+                        <td class="seq-col">2.4</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Frontend Implementation (iOS & Android)">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="7" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="6" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-5" draggable="true">
+                        <td class="seq-col">2.5</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Testing + UAT with Lotte">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="5" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="8" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-6" draggable="true">
+                        <td class="seq-col">2.6</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Bug fixing & Optimization">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="3" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="9" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                    <tr data-task="opt1-7" draggable="true">
+                        <td class="seq-col">2.7</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="Go-Live">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="1" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="10" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Option 2 - Similar structure, abbreviated for space -->
+        <div class="option-section option2">
+            <h2>
+                <span>🚀 Option 2: Login Integration (Full)</span>
+                <button class="btn btn-add" onclick="addTask('option2')">+ Add Task</button>
+            </h2>
+            
+            <div class="summary">
+                <div class="summary-item">
+                    <strong>NHSV Duration:</strong>
+                    <span id="option2-total">43 days</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Timeline Span:</strong>
+                    <span id="option2-span">Week 4 - Week 12</span>
+                </div>
+                <div class="summary-item">
+                    <strong>Total Project:</strong>
+                    <span id="option2-project-total">~12 weeks</span>
+                </div>
+            </div>
+
+            <table id="option2-table">
+                <thead>
+                    <tr>
+                        <th class="seq-col">Seq.</th>
+                        <th class="task-col">Task</th>
+                        <th class="duration-col">Duration<br>(days)</th>
+                        <th class="start-week-col">Start<br>Week</th>
+                        <th class="actions-col">Actions</th>
+                        <th class="week-col">W4</th>
+                        <th class="week-col">W5</th>
+                        <th class="week-col">W6</th>
+                        <th class="week-col">W7</th>
+                        <th class="week-col">W8</th>
+                        <th class="week-col">W9</th>
+                        <th class="week-col">W10</th>
+                        <th class="week-col">W11</th>
+                        <th class="week-col">W12</th>
+                        <th class="week-col">W13</th>
+                    </tr>
+                </thead>
+                <tbody id="option2-tbody">
+                    <!-- Similar structure to Option 1, with more tasks -->
+                    <tr data-task="opt2-1" draggable="true">
+                        <td class="seq-col">2.1</td>
+                        <td class="task-col">
+                            <input type="text" class="task-input" value="UI/UX Design (login + transaction)">
+                        </td>
+                        <td class="duration-col">
+                            <input type="number" class="duration-input" value="5" min="1" max="30">
+                        </td>
+                        <td class="start-week-col">
+                            <input type="number" class="start-week-input" value="4" min="1" max="20">
+                        </td>
+                        <td class="actions-col">
+                            <div class="action-buttons">
+                                <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                                <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                                <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                                <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                            </div>
+                        </td>
+                        <td class="week-col week-cell" data-week="4"></td>
+                        <td class="week-col week-cell" data-week="5"></td>
+                        <td class="week-col week-cell" data-week="6"></td>
+                        <td class="week-col week-cell" data-week="7"></td>
+                        <td class="week-col week-cell" data-week="8"></td>
+                        <td class="week-col week-cell" data-week="9"></td>
+                        <td class="week-col week-cell" data-week="10"></td>
+                        <td class="week-col week-cell" data-week="11"></td>
+                        <td class="week-col week-cell" data-week="12"></td>
+                        <td class="week-col week-cell" data-week="13"></td>
+                    </tr>
+                    <!-- Add more Option 2 tasks here - keeping abbreviated for readability -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Calculate which weeks a task occupies based on start week and duration
+        function calculateTaskWeeks(startWeek, duration) {
+            const daysPerWeek = 5;
+            const weeks = [];
+            let remainingDays = duration;
+            let currentWeek = startWeek;
+            
+            while (remainingDays > 0) {
+                const daysThisWeek = Math.min(remainingDays, daysPerWeek);
+                const percentage = (daysThisWeek / daysPerWeek) * 100;
+                weeks.push({
+                    week: currentWeek,
+                    percentage: percentage,
+                    days: daysThisWeek
+                });
+                remainingDays -= daysThisWeek;
+                currentWeek++;
+            }
+            
+            return weeks;
+        }
+
+        // Update progress bars for a task based on start week + duration
+        function updateTaskProgress(taskRow) {
+            const durationInput = taskRow.querySelector('.duration-input');
+            const startWeekInput = taskRow.querySelector('.start-week-input');
+            
+            const duration = parseInt(durationInput.value) || 0;
+            const startWeek = parseInt(startWeekInput.value) || 1;
+            
+            const weekCells = taskRow.querySelectorAll('.week-cell');
+            
+            // Clear all cells
+            weekCells.forEach(cell => cell.innerHTML = '');
+            
+            // Calculate task weeks
+            const taskWeeks = calculateTaskWeeks(startWeek, duration);
+            
+            // Fill in the appropriate week cells
+            taskWeeks.forEach(taskWeek => {
+                weekCells.forEach(cell => {
+                    const cellWeek = parseInt(cell.getAttribute('data-week'));
+                    if (cellWeek === taskWeek.week) {
+                        const progressBar = document.createElement('div');
+                        progressBar.className = 'progress-bar';
+                        
+                        const progressFill = document.createElement('div');
+                        progressFill.className = 'progress-fill';
+                        progressFill.style.width = taskWeek.percentage + '%';
+                        
+                        if (taskWeek.percentage >= 20) {
+                            progressFill.textContent = taskWeek.days + 'd';
+                        }
+                        
+                        progressBar.appendChild(progressFill);
+                        cell.appendChild(progressBar);
+                    }
+                });
+            });
+        }
+
+        // Update sequence numbers
+        function updateSequenceNumbers(tbody) {
+            const rows = tbody.querySelectorAll('tr[data-task]');
+            const tableId = tbody.closest('table').id;
+            const prefix = tableId === 'lotte-table' ? '1.' : '2.';
+            
+            rows.forEach((row, index) => {
+                const seqCell = row.querySelector('.seq-col');
+                seqCell.textContent = prefix + (index + 1);
+            });
+        }
+
+        // Calculate totals and timeline span
+        function updateTotals(tableId, totalId, spanId, projectTotalId = null) {
+            const tbody = document.getElementById(tableId.replace('-table', '-tbody'));
+            const inputs = tbody.querySelectorAll('.duration-input');
+            const startWeekInputs = tbody.querySelectorAll('.start-week-input');
+            
+            let totalDays = 0;
+            let minWeek = 999;
+            let maxWeek = 0;
+            
+            const rows = tbody.querySelectorAll('tr[data-task]');
+            rows.forEach(row => {
+                const duration = parseInt(row.querySelector('.duration-input').value) || 0;
+                const startWeek = parseInt(row.querySelector('.start-week-input').value) || 1;
+                
+                totalDays += duration;
+                minWeek = Math.min(minWeek, startWeek);
+                
+                // Calculate end week
+                const weeksNeeded = Math.ceil(duration / 5);
+                const endWeek = startWeek + weeksNeeded - 1;
+                maxWeek = Math.max(maxWeek, endWeek);
+            });
+            
+            document.getElementById(totalId).textContent = `${totalDays} days (~${Math.ceil(totalDays/5)} weeks)`;
+            if (spanId) {
+                document.getElementById(spanId).textContent = `Week ${minWeek} - Week ${maxWeek}`;
+            }
+            
+            // Update project total if applicable
+            if (projectTotalId) {
+                // Find max week across all tables
+                let projectMaxWeek = 0;
+                ['lotte-tbody', 'option1-tbody', 'option2-tbody'].forEach(tbodyId => {
+                    const tb = document.getElementById(tbodyId);
+                    if (tb) {
+                        const tRows = tb.querySelectorAll('tr[data-task]');
+                        tRows.forEach(row => {
+                            const dur = parseInt(row.querySelector('.duration-input').value) || 0;
+                            const start = parseInt(row.querySelector('.start-week-input').value) || 1;
+                            const weeks = Math.ceil(dur / 5);
+                            const end = start + weeks - 1;
+                            projectMaxWeek = Math.max(projectMaxWeek, end);
+                        });
+                    }
+                });
+                document.getElementById(projectTotalId).textContent = `~${projectMaxWeek} weeks`;
+            }
+        }
+
+        // Move, delete, insert functions
+        function moveUp(button) {
+            const row = button.closest('tr');
+            const prevRow = row.previousElementSibling;
+            if (prevRow && prevRow.hasAttribute('data-task')) {
+                row.parentNode.insertBefore(row, prevRow);
+                const tbody = row.parentNode;
+                updateSequenceNumbers(tbody);
+                recalculateAll(tbody);
+            }
+        }
+
+        function moveDown(button) {
+            const row = button.closest('tr');
+            const nextRow = row.nextElementSibling;
+            if (nextRow && nextRow.hasAttribute('data-task')) {
+                row.parentNode.insertBefore(nextRow, row);
+                const tbody = row.parentNode;
+                updateSequenceNumbers(tbody);
+                recalculateAll(tbody);
+            }
+        }
+
+        function deleteTask(button) {
+            if (!confirm('Delete this task?')) return;
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            row.remove();
+            updateSequenceNumbers(tbody);
+            recalculateAll(tbody);
+        }
+
+        function insertTask(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            const tableId = tbody.closest('table').id;
+            const newRow = createNewTaskRow(tableId);
+            tbody.insertBefore(newRow, row);
+            updateSequenceNumbers(tbody);
+            recalculateAll(tbody);
+            newRow.querySelector('.task-input').focus();
+        }
+
+        function addTask(section) {
+            const tbody = document.getElementById(section + '-tbody');
+            const tableId = section + '-table';
+            const newRow = createNewTaskRow(tableId);
+            tbody.appendChild(newRow);
+            updateSequenceNumbers(tbody);
+            recalculateAll(tbody);
+            newRow.querySelector('.task-input').focus();
+        }
+
+        function createNewTaskRow(tableId) {
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('draggable', 'true');
+            newRow.setAttribute('data-task', 'new-' + Date.now());
+            
+            const table = document.getElementById(tableId);
+            const weekCellsCount = table.querySelectorAll('thead th.week-col').length;
+            const firstWeekNumber = parseInt(table.querySelector('thead th.week-col').textContent.replace('W', ''));
+            
+            let weekCells = '';
+            for (let i = 0; i < weekCellsCount; i++) {
+                weekCells += `<td class="week-col week-cell" data-week="${firstWeekNumber + i}"></td>`;
+            }
+            
+            newRow.innerHTML = `
+                <td class="seq-col">X.X</td>
+                <td class="task-col">
+                    <input type="text" class="task-input" value="New Task">
+                </td>
+                <td class="duration-col">
+                    <input type="number" class="duration-input" value="1" min="1" max="30">
+                </td>
+                <td class="start-week-col">
+                    <input type="number" class="start-week-input" value="${firstWeekNumber}" min="1" max="20">
+                </td>
+                <td class="actions-col">
+                    <div class="action-buttons">
+                        <button class="btn btn-up" onclick="moveUp(this)">↑</button>
+                        <button class="btn btn-down" onclick="moveDown(this)">↓</button>
+                        <button class="btn btn-insert" onclick="insertTask(this)">➕</button>
+                        <button class="btn btn-delete" onclick="deleteTask(this)">✕</button>
+                    </div>
+                </td>
+                ${weekCells}
+            `;
+            
+            setupRowEventListeners(newRow);
+            return newRow;
+        }
+
+        function setupRowEventListeners(row) {
+            const durationInput = row.querySelector('.duration-input');
+            const startWeekInput = row.querySelector('.start-week-input');
+            
+            [durationInput, startWeekInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    updateTaskProgress(row);
+                    const tbody = row.parentNode;
+                    recalculateAll(tbody);
+                });
+                
+                input.addEventListener('change', function() {
+                    if (parseInt(this.value) < 1) {
+                        this.value = 1;
+                        this.dispatchEvent(new Event('input'));
+                    }
+                });
+            });
+            
+            // Drag and drop
+            row.addEventListener('dragstart', handleDragStart);
+            row.addEventListener('dragover', handleDragOver);
+            row.addEventListener('drop', handleDrop);
+            row.addEventListener('dragend', handleDragEnd);
+        }
+
+        function recalculateAll(tbody) {
+            const rows = tbody.querySelectorAll('tr[data-task]');
+            rows.forEach(row => updateTaskProgress(row));
+            
+            const tableId = tbody.closest('table').id;
+            if (tableId === 'lotte-table') {
+                updateTotals('lotte-table', 'lotte-total', 'lotte-span');
+                updateTotals('option1-table', 'option1-total', 'option1-span', 'option1-project-total');
+                updateTotals('option2-table', 'option2-total', 'option2-span', 'option2-project-total');
+            } else if (tableId === 'option1-table') {
+                updateTotals('option1-table', 'option1-total', 'option1-span', 'option1-project-total');
+            } else if (tableId === 'option2-table') {
+                updateTotals('option2-table', 'option2-total', 'option2-span', 'option2-project-total');
+            }
+        }
+
+        // Drag and drop handlers
+        let draggedRow = null;
+
+        function handleDragStart(e) {
+            draggedRow = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            const target = e.target.closest('tr[data-task]');
+            if (target && target !== draggedRow) {
+                target.classList.add('drag-over');
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            const target = e.target.closest('tr[data-task]');
+            if (target && draggedRow && target !== draggedRow) {
+                const tbody = target.parentNode;
+                tbody.insertBefore(draggedRow, target);
+                updateSequenceNumbers(tbody);
+                recalculateAll(tbody);
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        }
+
+        // Initialize all
+        function initializeAll() {
+            ['lotte-tbody', 'option1-tbody', 'option2-tbody'].forEach(tbodyId => {
+                const tbody = document.getElementById(tbodyId);
+                if (!tbody) return;
+                
+                const rows = tbody.querySelectorAll('tr[data-task]');
+                rows.forEach(row => {
+                    setupRowEventListeners(row);
+                    updateTaskProgress(row);
+                });
+            });
+            
+            updateTotals('lotte-table', 'lotte-total', 'lotte-span');
+            updateTotals('option1-table', 'option1-total', 'option1-span', 'option1-project-total');
+            updateTotals('option2-table', 'option2-total', 'option2-span', 'option2-project-total');
+        }
+
+        initializeAll();
+    </script>
+</body>
+</html>

@@ -2,8 +2,8 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Cash Transaction - VSD (Vietnam Securities Depository)  
-**Version:** 1.0  
-**Date:** February 9, 2026
+**Version:** 1.2  
+**Date:** April 8, 2026
 
 > **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (04/03/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
 
@@ -624,7 +624,30 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 | TradeX Field | Type | Description |
 |--------------|------|-------------|
 | `items` | Array | Transaction history list (see Transaction Object) |
-| `nextData` | String | Next pagination key |
+| `nextData` | String \| null | Next pagination key (Lotte `next_data`; thường lấy từ phần tử cuối `data_list` hoặc theo contract Core) |
+
+**Core / Lotte raw — ví dụ một dòng `data_list` (DRACC-021):**
+
+```json
+{
+  "acnt": "039C110257",
+  "acnt_sub": "80",
+  "type": "C05",
+  "amount": "31673210",
+  "target_acnt": "121000065473",
+  "note": "AUTO DEPOSIT MR",
+  "user_executes": "AUTO",
+  "status_vtb": "Bank chuyển khoản",
+  "status_bos": "04.Nộp thành công",
+  "status_vsd": "VSD nhận tiền",
+  "trading_channel": "Tại quầy",
+  "source_acnt": "129000065475",
+  "reg_date": "2025/10/29",
+  "fees": "5500",
+  "amount_received": "31673210",
+  "next_data": "202510290000003"
+}
+```
 
 **Transaction Object:**
 
@@ -632,20 +655,30 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 |-------------|--------------|------|-----------|-------------|
 | `acnt` | `accountNumber` | String | Direct | Tài khoản |
 | `acnt_sub` | `subNumber` | String | Direct | Số sub |
-| `type` | `transactionType` | String | Pass-through; TradeX response **định nghĩa**: `C05` = Deposit (Nộp), `C10` = Withdraw (Rút) | Phân loại giao dịch |
+| `type` | `transactionType` | String | Direct | `C05` = Deposit (Nộp), `C10` = Withdraw (Rút); dùng kèm mã BOS để tra bảng ý nghĩa |
 | `amount` | `amount` | Number | Parse to number | Số tiền GD |
-| `target_acnt` | `targetAccountNumber` | String | Direct | TK đích (Lotte 04/03: target_acnt) |
+| `target_acnt` | `targetAccountNumber` | String | Direct | TK đích |
 | `note` | `note` | String | Direct | Ghi chú |
 | `user_executes` | `executedBy` | String | Direct | User thực hiện |
-| `status_vtb` | `statusVTB` | String | Direct | Trạng thái VTB |
-| `status_bos` | `statusBOS` | String | Direct | Trạng thái BOS |
+| `status_vtb` | `statusVTB` | String | Direct | Trạng thái VTB (chuỗi hiển thị từ Core) |
+| `status_bos` | *(internal)* | String | — | Chuỗi gốc dạng `{mã}.{mô tả}`; BE parse nội bộ |
+| *(parsed từ `status_bos`)* | *(internal `bosStatusCode`)* | String \| null | **`parseBosCode`** — §rule bên dưới | Hai chữ số trước dấu `.` (vd. `"04"`); **không** trả riêng field này cho client trừ khi product bật optional `statusBOSCode` |
+| *(`type` + `bosStatusCode`)* | `statusBOS` | String | Tra **§8.3.1 — cột TradeX `statusBOS`** | Hằng có nghĩa dạng **SCREAMING_SNAKE_CASE** (vd. `DEPOSIT_SUCCESSFULLY`); dùng cho điều kiện FE/i18n key — **không** trả mã `"04"` tại field này |
+| *(`type` + `bosStatusCode`)* | `statusBOSDescriptionVi` | String \| null | Cùng dòng §8.3.1 | Ý nghĩa tiếng Việt chuẩn hoá |
+| *(`type` + `bosStatusCode`)* | `statusBOSDescriptionEn` | String \| null | Cùng dòng §8.3.1 | Ý nghĩa tiếng Anh |
 | `status_vsd` | `statusVSD` | String | Direct | Trạng thái VSD |
 | `trading_channel` | `tradingChannel` | String | Direct | Kênh GD |
-| `source_actn` | `sourceAccountNumber` | String | Direct | TK nguồn (Lotte: source_actn) |
-| `reg_date` | `registrationDate` | String | Direct | Ngày đăng ký |
+| `source_acnt` | `sourceAccountNumber` | String | Direct | TK nguồn (Core: `source_acnt`; alias cũ `source_actn` nếu environment khác → BE chuẩn hoá một field) |
+| `reg_date` | `registrationDate` | String | Chuẩn hoá **yyyyMMdd** | Core có thể trả `yyyy/MM/dd` (vd. `2025/10/29` → `"20251029"`) |
 | `fees` | `feeAmount` | Number | Parse to number | Phí |
 | `amount_received` | `receivedAmount` | Number | Parse to number | Số tiền thực nhận |
-| `next_data` | - | - | Extract to top level | Next key |
+| `next_data` | *(→ root `nextData`)* | String \| null | Đưa lên root response / theo dòng cuối | Phân trang |
+
+**Rule `parseBosCode` (Lotte / Core — mặc định):**
+
+- Lấy **đúng hai ký tự số** ngay **trước dấu `.`** đầu tiên trong `status_bos`.
+- Ví dụ: `"04.Nộp thành công"` → **`"04"`**; `"01.Tạo mới"` → **`"01"`**.
+- Gợi ý: regex `^(\d{2})\.` sau `trim`. Không khớp hoặc cặp `(type, bosStatusCode)` không có trong §8.3.1 → `statusBOS` = **`UNKNOWN_BOS`** (hoặc `null` nếu convention API — chốt một giá trị duy nhất toàn hệ thống); `statusBOSDescriptionVi` / `…En` = `null`.
 
 **`transactionType` (TradeX response):**
 
@@ -654,30 +687,62 @@ if (lotteResponse.error_code === "0000" && lotteResponse.success === true) {
 | `C05` | Deposit — Nộp tiền ký quỹ |
 | `C10` | Withdraw — Rút tiền ký quỹ |
 
-**Example Response:**
+#### 8.3.1 Bảng mapping: Lotte `type` + mã BOS (2 số) → TradeX `statusBOS` + mô tả
+
+Tra theo **`(transactionType` / Lotte `type`, `bosStatusCode`)** sau `parseBosCode`. Giá trị **`statusBOS`** là **chuỗi cố định** do TradeX định nghĩa (ổn định cho FE, không đổi theo ngôn ngữ Core).
+
+| Mã nghiệp vụ | Mã BOS (Lotte) | TradeX `statusBOS` | Ý nghĩa (VI) | Ý nghĩa (EN) |
+|--------------|----------------|----------------------|--------------|--------------|
+| C10 | 01 | `WITHDRAW_NEW` | Tạo mới | New |
+| C10 | 02 | `WITHDRAW_APPROVED_TO_VSD` | Duyệt gửi VSD | Approved sending to VSD |
+| C10 | 03 | `WITHDRAW_CANCELED` | Hủy giao dịch | Canceled |
+| C10 | 04 | `WITHDRAW_SUCCESSFULLY` | Rút thành công | Finish withdrawing successfully |
+| C10 | 05 | `WITHDRAW_FAILED` | Rút thất bại | Finish withdrawing failed |
+| C10 | 10 | `WITHDRAW_ACCOUNTED` | Hạch toán thành công | Accounted |
+| C05 | 01 | `DEPOSIT_NEW` | Tạo mới | New |
+| C05 | 02 | `DEPOSIT_APPROVED_TO_BANK` | Duyệt gửi bank | Approved sending to bank |
+| C05 | 03 | `DEPOSIT_CANCELED` | Hủy giao dịch | Canceled |
+| C05 | 04 | `DEPOSIT_SUCCESSFULLY` | Nộp thành công | Finish depositing successfully |
+| C05 | 05 | `DEPOSIT_FAILED` | Nộp thất bại | Finish depositing failed |
+| C05 | 10 | `DEPOSIT_ACCOUNTED` | Hạch toán thành công | Accounted |
+
+**Quy ước đặt tên:** `DEPOSIT_*` cho C05, `WITHDRAW_*` cho C10 — tránh trùng ý nghĩa khi cùng mã số BOS (vd. `04` nộp vs rút).
+
+**Example Response (TradeX):**
+
 ```json
-[
-  {
-      "accountNumber": "0001234567",
-      "transactionType": "DEPOSIT",
-      "amount": 10000000,
+{
+  "items": [
+    {
+      "accountNumber": "039C110257",
+      "subNumber": "80",
+      "transactionType": "C05",
+      "amount": 31673210,
       "targetAccountNumber": "121000065473",
-      "note": "Nộp ký quỹ",
-      "statusVTB": "Bank từ chối điện",
-      "statusBOS": "Nộp thất bại",
-      "statusVSD": "VSD xác nhận rút tiền",
+      "note": "AUTO DEPOSIT MR",
+      "executedBy": "AUTO",
+      "statusVTB": "Bank chuyển khoản",
+      "statusBOS": "DEPOSIT_SUCCESSFULLY",
+      "statusBOSDescriptionVi": "Nộp thành công",
+      "statusBOSDescriptionEn": "Finish depositing successfully",
+      "statusVSD": "VSD nhận tiền",
+      "tradingChannel": "Tại quầy",
       "sourceAccountNumber": "129000065475",
-      "registrationDate": "20260209",
-      "feeAmount": 50000,
-      "receivedAmount": 9950000
+      "registrationDate": "20251029",
+      "feeAmount": 5500,
+      "receivedAmount": 31673210
     }
-]
+  ],
+  "nextData": "202510290000003"
+}
 ```
 
-**Status Fields:**
-- `statusVTB`: VTB system status
-- `statusBOS`: Back Office System status
-- `statusVSD`: VSD system status
+**Status fields (tóm tắt):**
+
+- **`statusVTB` / `statusVSD`:** chuỗi hiển thị từ Core (direct).
+- **`statusBOS`:** hằng TradeX (**SCREAMING_SNAKE_CASE**, vd. `DEPOSIT_SUCCESSFULLY`) — map từ `(transactionType, bosStatusCode)` theo §8.3.1; **không** trả `"04"` tại field này.
+- **`statusBOSDescriptionVi` / `statusBOSDescriptionEn`:** copy chuẩn từ cùng dòng bảng — UI có thể dùng hoặc map từ `statusBOS` qua i18n app.
+- **(Optional)** `statusBOSCode`: `"04"` — chỉ nếu product cần hiển thị/audit mã gốc; mặc định spec không bắt buộc.
 
 ---
 
@@ -996,6 +1061,6 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 
 ---
 
-**Document Status:** ✅ Complete (mapping synced with Lotte_DR 04/03/2026)  
+**Document Status:** ✅ Complete (Lotte_DR 04/03/2026; §8.3: `statusBOS` = hằng TradeX §8.3.1, không mã số)  
 **For:** BA/Dev  
-**Next Steps:** Implementation by Dev team
+**Next Steps:** Implementation — `parseBosCode` → map §8.3.1 → `DEPOSIT_*` / `WITHDRAW_*`; Core `source_acnt`; `reg_date` → `yyyyMMdd`

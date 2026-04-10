@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart OTP Timeline - Option 2 (Login + Transaction)</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #ea4335;
+            border-bottom: 3px solid #ea4335;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #fbbc04;
+            margin-top: 30px;
+        }
+        .summary {
+            background: #fef7e0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .summary strong {
+            color: #ea4335;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 13px;
+        }
+        th {
+            background: #ea4335;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        td {
+            padding: 10px 8px;
+            border: 1px solid #ddd;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr:hover {
+            background: #fef7e0;
+        }
+        .section-header {
+            background: #fbbc04 !important;
+            color: #000 !important;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ea4335, #ff6b6b);
+            transition: width 0.3s;
+        }
+        .editable {
+            background: #fff9e6;
+            border: 1px dashed #ffa000;
+            cursor: pointer;
+        }
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 15px 0;
+        }
+        .instructions {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #155724;
+        }
+        .seq-col { width: 50px; text-align: center; font-weight: bold; }
+        .task-col { width: 35%; }
+        .duration-col { width: 10%; text-align: center; }
+        .week-col { width: 8%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Smart OTP Implementation Timeline</h1>
+        <h2>Option 2: Smart OTP with Login Integration</h2>
+        
+        <div class="summary">
+            <strong>Total Duration:</strong> ~10 weeks<br>
+            <strong>Scope:</strong> Full Smart OTP (login + transaction authorization)<br>
+            <strong>Risk Level:</strong> 🟡 Medium<br>
+            <strong>Complexity:</strong> ⭐⭐⭐⭐ High
+        </div>
+
+        <div class="instructions">
+            <h3>📝 How to Edit:</h3>
+            <ul>
+                <li><strong>In Browser:</strong> Right-click → Inspect → Edit values in HTML</li>
+                <li><strong>Copy to Excel:</strong> Select table → Ctrl+C → Paste into Excel</li>
+                <li><strong>Copy to Google Sheets:</strong> Select table → Copy → Paste into Google Sheets</li>
+                <li><strong>Edit HTML:</strong> Open this file in text editor, modify values, save, refresh browser</li>
+            </ul>
+        </div>
+
+        <table contenteditable="false">
+            <thead>
+                <tr>
+                    <th class="seq-col">Seq.</th>
+                    <th class="task-col">Task</th>
+                    <th class="duration-col">Expected<br>Duration</th>
+                    <th class="week-col">4th week<br>(Feb.)</th>
+                    <th class="week-col">1st week<br>(Mar.)</th>
+                    <th class="week-col">2nd week<br>(Mar.)</th>
+                    <th class="week-col">3rd week<br>(Mar.)</th>
+                    <th class="week-col">4th week<br>(Mar.)</th>
+                    <th class="week-col">1st week<br>(Apr.)</th>
+                    <th class="week-col">2nd week<br>(Apr.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Part 1: Lotte Implementation -->
+                <tr>
+                    <td colspan="10" class="section-header">Part 1: Lotte Implementation</td>
+                </tr>
+                <tr>
+                    <td class="seq-col">1.1</td>
+                    <td class="task-col">Receiving & Review final API specification from Lotte</td>
+                    <td class="duration-col editable" contenteditable="true">3 days</td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">1.2</td>
+                    <td class="task-col">Assign staff in charge (Lotte side)</td>
+                    <td class="duration-col editable" contenteditable="true">1 day</td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">1.3</td>
+                    <td class="task-col">Review & confirm Smart OTP API contract (incl. login)</td>
+                    <td class="duration-col editable" contenteditable="true">3 days</td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">1.4</td>
+                    <td class="task-col">Lotte API Development & Internal Testing</td>
+                    <td class="duration-col editable" contenteditable="true">10 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 80%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">1.5</td>
+                    <td class="task-col">Lotte provides Sandbox API for NHSV</td>
+                    <td class="duration-col editable" contenteditable="true">1 day</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                
+                <!-- Part 2: NHSV Implementation -->
+                <tr>
+                    <td colspan="10" class="section-header">Part 2: NHSV Implementation</td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.1</td>
+                    <td class="task-col">UI/UX Design for Smart OTP flows (login + transaction)</td>
+                    <td class="duration-col editable" contenteditable="true">5 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.2</td>
+                    <td class="task-col">Define TradeX API specifications & integration plan</td>
+                    <td class="duration-col editable" contenteditable="true">3 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.3</td>
+                    <td class="task-col">API Implementation - Login flow with Smart OTP</td>
+                    <td class="duration-col editable" contenteditable="true">5 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.4</td>
+                    <td class="task-col">API Implementation - Transaction authorization</td>
+                    <td class="duration-col editable" contenteditable="true">4 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 60%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.5</td>
+                    <td class="task-col">Frontend Implementation - Login screens (iOS & Android)</td>
+                    <td class="duration-col editable" contenteditable="true">5 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.6</td>
+                    <td class="task-col">Frontend Implementation - Transaction flows</td>
+                    <td class="duration-col editable" contenteditable="true">5 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 70%"></div></div>
+                    </td>
+                    <td class="week-col"></td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.7</td>
+                    <td class="task-col">Session management & security hardening</td>
+                    <td class="duration-col editable" contenteditable="true">3 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 40%"></div></div>
+                    </td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 20%"></div></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.8</td>
+                    <td class="task-col">Internal Testing + Joint UAT with Lotte</td>
+                    <td class="duration-col editable" contenteditable="true">7 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 70%"></div></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.9</td>
+                    <td class="task-col">Bug fixing & Optimization</td>
+                    <td class="duration-col editable" contenteditable="true">5 days</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 30%"></div></div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="seq-col">2.10</td>
+                    <td class="task-col">Go-Live Smart OTP on NHSV Pro</td>
+                    <td class="duration-col editable" contenteditable="true">1 day</td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col"></td>
+                    <td class="week-col">
+                        <div class="progress-bar"><div class="progress-fill" style="width: 10%"></div></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="note">
+            <strong>Note:</strong> Cells marked with yellow background (duration) are editable when you click "Edit Table" button. Progress bars can be adjusted by modifying the width percentage in the HTML code.
+        </div>
+
+        <div class="summary">
+            <strong>✅ Advantages:</strong><br>
+            • Complete passwordless authentication experience<br>
+            • Higher user satisfaction - single OTP method<br>
+            • Modern security standard<br>
+            • Competitive advantage<br>
+            • Better brand positioning<br>
+            <br>
+            <strong>⚠️ Considerations:</strong><br>
+            • Longer implementation time (+4 weeks vs Option 1)<br>
+            • Higher complexity in session management<br>
+            • More extensive testing required<br>
+            • Requires careful rollout strategy<br>
+            • Need fallback mechanisms for failures
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.editable').forEach(cell => {
+            cell.addEventListener('blur', function() {
+                console.log('Updated:', this.textContent);
+            });
+        });
+    </script>
+</body>
+</html>

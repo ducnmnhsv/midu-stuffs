@@ -2,8 +2,8 @@
 
 **Document Type:** API Specification  
 **Category:** Derivatives Asset - Daily Profit/Loss  
-**Version:** 1.1  
-**Date:** March 25, 2026
+**Version:** 1.4  
+**Date:** April 8, 2026
 
 > **Note:** Lotte-integrated API for **Derivatives only**. Query lãi/lỗ theo ngày (realized + unrealized + fee + tax) trong khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.8 — DRACC-037 (dr-daily-profit-loss).
 
@@ -23,16 +23,49 @@ Daily P&L API tra cứu lãi/lỗ theo từng ngày trong khoảng thời gian, 
 
 ### 1.3 Response Format Standards
 
-**Success (Query):**
+**Success (Query) — TradeX (mọi trang):** năm field tổng hợp ở **root** (flat) + `items` + `nextKey`. FE **chỉ** truyền `nextKey` khi lấy trang tiếp; không gửi `query_type`. Backend tự gọi Lotte `query_type = 0` hoặc `1` theo có/không `nextKey`.
+
+**Lần đầu (Lotte trả `total` + `data_list`):** map `total` → các field `total*`.
+
+**Trang sau (Lotte chỉ trả `data_list`):** `items` là `data_list` mới; **cùng một bộ** `totalRealizedProfitLoss` … `totalNetProfitLoss` như lần đầu — backend **tự giữ** từ bản tổng Lotte lần `query_type = 0` (cache theo khóa truy vấn + user, TTL ngắn) hoặc gọi bổ sung theo policy (xem §5.2). Không tính tổng bằng `sum(items)`.
+
 ```json
 {
-  "items": [...],
-  "totalNetProfitLoss": 0,
-  "pagination": {
-    "hasMore": true,
-    "nextKey": "...",
-    "totalRecords": 50
-  }
+  "totalRealizedProfitLoss": 25000000,
+  "totalUnrealizedProfitLoss": 130000,
+  "totalFee": 20000,
+  "totalTax": 100000,
+  "totalNetProfitLoss": 24850000,
+  "items": [
+    {
+      "date": "20260325",
+      "accountNumber": "039C110257",
+      "accountName": "Nguyễn Văn A",
+      "productCode": "VN30F",
+      "symbolCode": "41I1FA000",
+      "productName": "HDTLVN30",
+      "realizedProfitLoss": 12500000,
+      "unrealizedProfitLoss": -1000000,
+      "fee": 12100,
+      "tax": 20000,
+      "netProfitLoss": 11500000
+    }
+  ],
+  "nextKey": "20251027039C110257VN30F     41I1FB000"
+}
+```
+
+**Hết trang:** `nextKey` = `null` (hoặc omit theo convention JSON API — ưu tiên `null` cho rõ).
+
+```json
+{
+  "totalRealizedProfitLoss": 25000000,
+  "totalUnrealizedProfitLoss": 130000,
+  "totalFee": 20000,
+  "totalTax": 100000,
+  "totalNetProfitLoss": 24850000,
+  "items": [],
+  "nextKey": null
 }
 ```
 
@@ -56,8 +89,9 @@ or
 **Principles:**
 - HTTP status = success indicator (200 = success, 4xx/5xx = error)
 - NO `success: true/false` field
-- Query: List of daily P&L records + `totalNetProfitLoss` (tổng `netProfitLoss` của các phần tử trong `items` của response hiện tại) + pagination
-- Pass-through Lotte messages AS-IS
+- Query: **`totalRealizedProfitLoss`**, **`totalUnrealizedProfitLoss`**, **`totalFee`**, **`totalTax`**, **`totalNetProfitLoss`** (từ Lotte `total` lần đầu; lặp lại trên mọi trang) + **`items`** + root **`nextKey`**
+- Không bọc `pagination`; không object `totals` lồng nhau
+- Pass-through Lotte messages AS-IS (error path)
 
 ---
 
@@ -119,8 +153,19 @@ or
 | `contractCode` | String | ❌ | "%" | Mã hợp đồng (filter) |
 | `branch` | String | ❌ | "%" | Chi nhánh |
 | `department` | String | ❌ | "%" | Phòng giao dịch |
-| `nextKey` | String | ❌ | "0" | Pagination token |
+| `nextKey` | String | ❌ | *(không gửi)* | Copy từ **`nextKey`** của response TradeX trước đó. Có giá trị hợp lệ → backend gọi Lotte `query_type = 1` + `next_key`. Không gửi → lần đầu (`query_type = 0`) |
 | `fetchCount` | Number | ❌ | 100 | Số bản ghi mỗi lần gọi Lotte (`row_count`), khuyến nghị 100 để giảm số trang (max: 100) |
+
+**Query mode (Lotte `query_type`) — backend suy luận (không bắt buộc client truyền số):**
+
+| Điều kiện gọi TradeX | Lotte `query_type` | `total` từ Lotte | `data_list` |
+|----------------------|--------------------|------------------|-------------|
+| `nextKey` absent, empty, hoặc sentinel `"0"` | `0` | Có (nếu Lotte trả) | Trang đầu |
+| `nextKey` có giá trị từ response trước | `1` | **Không** (Lotte không trả `total`) | Các dòng tiếp theo |
+
+**Quy tắc Lotte (đã xác nhận tích hợp):** chỉ khi `query_type = 0` Lotte mới trả object **`total`**. Với `query_type = 1` + **`next_key`** Lotte chỉ trả **`data_list`** tiếp theo (không có `total`). TradeX vẫn trả đủ năm field **`total*`** cho FE trên mọi trang — backend tự lấy từ lần `query_type = 0` (cache) hoặc policy bổ sung (§5.2).
+
+**FE:** không gửi `query_type`. Có `nextKey` trên query string → trang tiếp; không có (hoặc sentinel theo BE) → lần đầu.
 
 ### 3.2 Request Mapping
 
@@ -136,8 +181,9 @@ or
 | `contractCode` | String | ❌ | `contract_code` | Default: "%" | Mã hợp đồng |
 | `branch` | String | ❌ | `branch` | Default: "%" | Chi nhánh |
 | `department` | String | ❌ | `department` | Default: "%" | Phòng giao dịch |
-| `nextKey` | String | ❌ | `next_key` | Default: "0" | Pagination |
+| `nextKey` | String | ❌ | `next_key` | Lần đầu: không set hoặc `"0"` theo contract Lotte; lần sau: giá trị từ item/`total` response trước | Phân trang; kèm `query_type = 1` khi không phải lần đầu |
 | `fetchCount` | Number | ❌ | `row_count` | Default: 100 (TradeX); map 1:1, max 100 | Số dòng Lotte trả về mỗi request — **nên dùng 100** khi cần lấy đủ bản ghi, hạn chế phân trang |
+| *(Derived)* | - | - | `query_type` | `0` nếu không có `nextKey` hợp lệ; `1` nếu client gửi `nextKey` từ lần gọi trước | Không expose trực tiếp cho client nếu backend tự suy luận; hoặc optional `queryType` nếu product muốn explicit |
 | *(JWT)* `userId` | - | - | `hts_user_id` | Auto (or from token) | hts_user_id tra cứu |
 | *(Backend)* | - | - | `password` | From session / secure store | Mật khẩu mã hóa (không truyền từ client) |
 
@@ -149,7 +195,8 @@ const searchType = request.searchAllAccounts ?? false;
 const contractCode = request.contractCode ?? '%';
 const branch = request.branch ?? '%';
 const department = request.department ?? '%';
-const nextKey = request.nextKey ?? '0';
+const nextKey = request.nextKey?.trim();
+const queryType = nextKey && nextKey !== '0' ? 1 : 0;
 
 // Validate date range
 const daysDiff = calculateDaysDiff(dateFrom, dateTo);
@@ -160,71 +207,202 @@ if (daysDiff > 90) {
 
 ### 3.3 Response Mapping
 
+**Lotte success envelope (tham chiếu):** `error_code`, `error_desc`, `success`, `total_record`, `data_list`, và **`total`** (object) — **`total` chỉ có khi `query_type = 0`**.
+
 **Success (200):**
 
-**Item Object (mỗi dòng P&L theo ngày / hợp đồng):**
+**Item Object — mỗi phần tử `data_list[]` (P&L theo ngày + tài khoản + sản phẩm + hợp đồng):**
 
 | Lotte Field | TradeX Field | Type | Transform | Description |
 |-------------|--------------|------|-----------|-------------|
 | `date` | `date` | String | Direct | Ngày (yyyyMMdd) |
-| `contract_code` | `symbolCode` | String | Direct | Mã hợp đồng / mã CK phái sinh |
-| `product_name` | `productName` | String | Direct | Tên sản phẩm |
+| `account_no` | `accountNumber` | String | Direct | Số tài khoản phái sinh |
+| `account_name` | `accountName` | String | Direct | Tên chủ tài khoản |
+| `product_code` | `productCode` | String | Direct | Mã sản phẩm (VD: VN30F) |
+| `contract_code` | `symbolCode` | String | Trim | Mã hợp đồng; Lotte có thể pad khoảng trắng — nên `trim` khi hiển thị/so khớp |
+| `product_name` | `productName` | String | Direct | Tên sản phẩm (VD: HDTLVN30) |
 | `realized_profit_loss` | `realizedProfitLoss` | Number | Parse float | Lãi lỗ đã thực hiện |
 | `unrealized_profit_loss` | `unrealizedProfitLoss` | Number | Parse float | Lãi lỗ chưa thực hiện |
 | `fee` | `fee` | Number | Parse float | Phí |
 | `tax` | `tax` | Number | Parse float | Thuế |
 | `net_profit_loss` | `netProfitLoss` | Number | Parse float | Net lãi lỗ |
+| `next_key` | *(internal / phân trang)* | String | — | Dùng để suy ra root `nextKey` trang sau; **không** bắt buộc nhét vào từng phần tử `items[]` cho client |
 
-**Tổng hợp (root level, cùng cấp `items`):**
+**Tổng hợp — object Lotte `total` → các field root `total*` (TradeX):**
 
-| TradeX Field | Type | Description |
-|--------------|------|-------------|
-| `totalNetProfitLoss` | Number | Tổng `netProfitLoss` của **tất cả** phần tử trong mảng `items` của response hiện tại (cùng trang). Backend tính sau khi map từ Lotte: `items.reduce((s, i) => s + i.netProfitLoss, 0)`. Nếu client phân trang, mỗi trang có `totalNetProfitLoss` riêng cho các dòng trong trang đó. |
+| Lotte Field (`total`) | TradeX Field (root) | Type | Transform | Description |
+|------------------------|---------------------|------|-----------|-------------|
+| `realized_profit_loss` | `totalRealizedProfitLoss` | Number | Parse float | Tổng LL đã thực hiện (phạm vi truy vấn Lotte) |
+| `unrealized_profit_loss` | `totalUnrealizedProfitLoss` | Number | Parse float | Tổng LL chưa thực hiện |
+| `fee` | `totalFee` | Number | Parse float | Tổng phí |
+| `tax` | `totalTax` | Number | Parse float | Tổng thuế |
+| `net_profit_loss` | `totalNetProfitLoss` | Number | Parse float | Tổng net LL |
 
-**Pagination:**
+**Trang phân trang (`query_type = 1`):** Lotte không trả `total`. TradeX vẫn trả **cùng năm field `total*`** như đã lấy ở lần gọi `query_type = 0` của **cùng một truy vấn** (backend cache / policy §5.2). **Không** suy ra từ `sum(items)`.
 
-| Lotte Field | TradeX Field | Type | Description |
+**Phân trang (root):**
+
+| Nguồn Lotte | TradeX Field | Type | Description |
 |-------------|--------------|------|-------------|
-| (from last item or response) `next_key` | `pagination.nextKey` | String | Next page token; null nếu hết |
-| (derived) | `pagination.hasMore` | Boolean | nextKey != null && nextKey != "0" |
-| (if available) | `pagination.totalRecords` | Number | Tổng số records (nếu Lotte cung cấp) |
+| `next_key` (ưu tiên: phần tử cuối `data_list`; fallback: `total.next_key` khi có ở lần đầu) | `nextKey` | String \| null | Gửi lại trên request cho trang tiếp; `null` khi hết (hoặc không còn cursor hợp lệ) |
+| `total_record` (root) | *(optional)* `totalRecords` | Number \| null | Nếu product cần: parse số khi chuỗi khác rỗng; không bắt buộc trong contract tối thiểu |
 
-**Response Structure:**
+**Response Structure — lần đầu (map từ Lotte có `total` + `data_list`):**
 ```json
 {
+  "totalRealizedProfitLoss": 78728000,
+  "totalUnrealizedProfitLoss": 0,
+  "totalFee": 65000,
+  "totalTax": 150378,
+  "totalNetProfitLoss": 78512622,
   "items": [
     {
-      "date": "20260325",
-      "symbolCode": "41I1FA000",
+      "date": "20251029",
+      "accountNumber": "039C110257",
+      "accountName": "Nguyễn Ngọc Hà",
+      "productCode": "VN30F",
+      "symbolCode": "41I1FB000",
       "productName": "HDTLVN30",
-      "realizedProfitLoss": 12500000,
-      "unrealizedProfitLoss": -1000000,
-      "fee": 12100,
-      "tax": 20000,
-      "netProfitLoss": 11500000
+      "realizedProfitLoss": -1260000,
+      "unrealizedProfitLoss": 0,
+      "fee": 0,
+      "tax": 0,
+      "netProfitLoss": -1260000
     }
   ],
-  "totalNetProfitLoss": 11500000,
-  "pagination": {
-    "hasMore": false,
-    "nextKey": null,
-    "totalRecords": 1
-  }
+  "nextKey": "20251027039C110257VN30F     41I1FB000"
 }
 ```
 
-**Empty Result:**
+**Phân trang tiếp:** FE gửi cùng filter như lần đầu + `nextKey` từ response trước → backend Lotte `query_type = 1` + `next_key`. Lotte chỉ trả `data_list` (không `total`) — ví dụ raw:
+
+**Lotte raw — trang tiếp (`next_key` + `query_type = 1`) — thực tế:**
+
 ```json
 {
-  "items": [],
-  "totalNetProfitLoss": 0,
-  "pagination": {
-    "hasMore": false,
-    "nextKey": null,
-    "totalRecords": 0
-  }
+  "error_code": "0000",
+  "error_desc": "",
+  "success": true,
+  "total_record": "",
+  "data_list": [
+    {
+      "date": "20251024",
+      "account_no": "039C110257",
+      "account_name": "Nguyễn Ngọc Hà",
+      "product_code": "VN30F",
+      "contract_code": "41I1FB000",
+      "product_name": "HDTLVN30",
+      "realized_profit_loss": "-1470000",
+      "unrealized_profit_loss": "0",
+      "fee": "0",
+      "net_profit_loss": "-1470000",
+      "next_key": "20251022039C110257VN30F     41I1FB000",
+      "tax": "0"
+    },
+    {
+      "date": "20251023",
+      "account_no": "039C110257",
+      "account_name": "Nguyễn Ngọc Hà",
+      "product_code": "VN30F",
+      "contract_code": "41I1FB000",
+      "product_name": "HDTLVN30",
+      "realized_profit_loss": "7280000",
+      "unrealized_profit_loss": "0",
+      "fee": "0",
+      "net_profit_loss": "7280000",
+      "next_key": "20251022039C110257VN30F     41I1FB000",
+      "tax": "0"
+    },
+    {
+      "date": "20251022",
+      "account_no": "039C110257",
+      "account_name": "Nguyễn Ngọc Hà",
+      "product_code": "VN30F",
+      "contract_code": "41I1FB000",
+      "product_name": "HDTLVN30",
+      "realized_profit_loss": "1230000",
+      "unrealized_profit_loss": "0",
+      "fee": "5000",
+      "net_profit_loss": "1212250",
+      "next_key": "20251022039C110257VN30F     41I1FB000",
+      "tax": "12750"
+    }
+  ]
 }
 ```
+
+- **Không có** key `total` trong JSON.  
+- `next_key` trên các dòng (và token trang sau) lệch ngày so với trang `query_type = 0` (ví dụ từ `20251027…` → `20251022…`) — backend forward nguyên chuỗi cho lần gọi tiếp.  
+- Dòng có phí/thuế: `net_profit_loss` có thể khác `realized_profit_loss` (ví dụ `1230000` − `5000` − `12750` = `1212250`).
+
+**TradeX — cùng trang sau (`query_type = 1`):** `items` map từ `data_list` mới; **`total*`** giữ nguyên bản từ lần Lotte `query_type = 0` (ví dụ số tổng cùng trang đầu):
+
+```json
+{
+  "totalRealizedProfitLoss": 78728000,
+  "totalUnrealizedProfitLoss": 0,
+  "totalFee": 65000,
+  "totalTax": 150378,
+  "totalNetProfitLoss": 78512622,
+  "items": [
+    {
+      "date": "20251024",
+      "accountNumber": "039C110257",
+      "accountName": "Nguyễn Ngọc Hà",
+      "productCode": "VN30F",
+      "symbolCode": "41I1FB000",
+      "productName": "HDTLVN30",
+      "realizedProfitLoss": -1470000,
+      "unrealizedProfitLoss": 0,
+      "fee": 0,
+      "tax": 0,
+      "netProfitLoss": -1470000
+    },
+    {
+      "date": "20251023",
+      "accountNumber": "039C110257",
+      "accountName": "Nguyễn Ngọc Hà",
+      "productCode": "VN30F",
+      "symbolCode": "41I1FB000",
+      "productName": "HDTLVN30",
+      "realizedProfitLoss": 7280000,
+      "unrealizedProfitLoss": 0,
+      "fee": 0,
+      "tax": 0,
+      "netProfitLoss": 7280000
+    },
+    {
+      "date": "20251022",
+      "accountNumber": "039C110257",
+      "accountName": "Nguyễn Ngọc Hà",
+      "productCode": "VN30F",
+      "symbolCode": "41I1FB000",
+      "productName": "HDTLVN30",
+      "realizedProfitLoss": 1230000,
+      "unrealizedProfitLoss": 0,
+      "fee": 5000,
+      "tax": 12750,
+      "netProfitLoss": 1212250
+    }
+  ],
+  "nextKey": "20251022039C110257VN30F     41I1FB000"
+}
+```
+
+**Empty Result (`data_list` rỗng):**
+```json
+{
+  "totalRealizedProfitLoss": 78728000,
+  "totalUnrealizedProfitLoss": 0,
+  "totalFee": 65000,
+  "totalTax": 150378,
+  "totalNetProfitLoss": 78512622,
+  "items": [],
+  "nextKey": null
+}
+```
+
+*(Số `total*` trên trang rỗng vẫn là bản tổng từ lần `query_type = 0` nếu đang trong chuỗi phân trang; lần đầu không có `total` từ Lotte thì các `total*` = `0` hoặc `null` theo convention BE.)*
 
 ### 3.4 Error Mapping
 
@@ -337,7 +515,7 @@ if (daysDiff > 90) {
 - NO duplicate business logic
 
 **2. Message Pass-Through:**
-- Success: Return daily P&L items + `totalNetProfitLoss` + pagination
+- Success: Root **`total*`** (từ Lotte `total` lần đầu; lặp lại khi phân trang) + `items` + root `nextKey`
 - Error: Pass-through Lotte `error_desc` AS-IS
 - TradeX NEVER transforms or translates Lotte messages
 - Language controlled via `Accept-Language` → Lotte `lang_code`
@@ -355,13 +533,14 @@ if (daysDiff > 90) {
 **5. Default Values:**
 - `searchAllAccounts`: false
 - `contractCode`, `branch`, `department`: "%"
-- `nextKey`: "0"
+- `nextKey`: lần đầu không gửi (hoặc sentinel theo Lotte); lần sau copy từ **`nextKey`** response TradeX trước đó
 - `fetchCount`: Default **100**, max 100 — map sang Lotte `row_count`. **Khuyến nghị:** giữ `row_count` = 100 khi gọi Lotte để một lần lấy tối đa bản ghi, giảm số vòng phân trang (điều chỉnh nếu Lotte giới hạn khác).
 
-**6. Pagination:**
-- Lotte trả `next_key` trong từng dòng hoặc response; dùng để gọi trang tiếp theo
-- TradeX: `pagination.nextKey`, `pagination.hasMore`, `pagination.totalRecords` (nếu có)
-- `totalNetProfitLoss` chỉ phản ánh tổng trên **trang hiện tại** (`items` trong response đó)
+**6. Pagination, `query_type` & tổng hợp cho FE:**
+- **FE:** chỉ truyền `nextKey` khi lấy trang tiếp; không gửi `query_type`. Còn lại giữ nguyên filter (account, ngày, product, …) như lần đầu.
+- **BE → Lotte:** không có `nextKey` hợp lệ → `query_type = 0` (có `total` + `data_list`). Có `nextKey` → `query_type = 1` + `next_key` (chỉ `data_list`).
+- **BE → FE:** mọi response có đủ **`totalRealizedProfitLoss`**, **`totalUnrealizedProfitLoss`**, **`totalFee`**, **`totalTax`**, **`totalNetProfitLoss`** + `items` + root **`nextKey`**. Khi Lotte không trả `total` (trang 2+), các `total*` lấy từ **bản đã lưu** khi xử lý lần `query_type = 0` của cùng khóa truy vấn (user + filter), TTL ngắn (vd. 2–15 phút). **Cache miss:** có thể gọi thêm Lotte `query_type = 0` chỉ để lấy `total` (bỏ qua hoặc không trả `data_list` cho FE) — thống nhất với architecture team.
+- **`nextKey` output:** từ phần tử cuối `data_list` hoặc `total.next_key` khi có; `null` khi hết trang.
 
 **7. GET vs POST:**
 - Client gọi GET với query parameters
@@ -369,11 +548,14 @@ if (daysDiff > 90) {
 
 ### 5.3 Data Transformation
 
-**Item mapping (Lotte → TradeX):**
+**Item mapping (Lotte `data_list[]` → TradeX `items[]`):**
 ```typescript
 const mapItem = (lotteItem) => ({
   date: lotteItem.date,
-  symbolCode: lotteItem.contract_code,
+  accountNumber: lotteItem.account_no,
+  accountName: lotteItem.account_name,
+  productCode: lotteItem.product_code,
+  symbolCode: String(lotteItem.contract_code ?? '').trim(),
   productName: lotteItem.product_name,
   realizedProfitLoss: parseFloat(lotteItem.realized_profit_loss) || 0,
   unrealizedProfitLoss: parseFloat(lotteItem.unrealized_profit_loss) || 0,
@@ -382,8 +564,34 @@ const mapItem = (lotteItem) => ({
   netProfitLoss: parseFloat(lotteItem.net_profit_loss) || 0,
 });
 
-const items = lotteRows.map(mapItem);
-const totalNetProfitLoss = items.reduce((sum, i) => sum + i.netProfitLoss, 0);
+const rawList = lotteResponse.data_list ?? [];
+const items = rawList.map(mapItem);
+
+const mapTotalsFromLotteTotal = (t) =>
+  t
+    ? {
+        totalRealizedProfitLoss: parseFloat(t.realized_profit_loss) || 0,
+        totalUnrealizedProfitLoss: parseFloat(t.unrealized_profit_loss) || 0,
+        totalFee: parseFloat(t.fee) || 0,
+        totalTax: parseFloat(t.tax) || 0,
+        totalNetProfitLoss: parseFloat(t.net_profit_loss) || 0,
+      }
+    : null;
+
+// Lần query_type = 0: lưu aggregate vào cache(keyQuery) + trả cho FE
+// Lần query_type = 1: đọc aggregate từ cache(keyQuery); không dùng sum(items)
+const aggregates =
+  mapTotalsFromLotteTotal(lotteResponse.total) ?? loadTotalsFromCache(keyQuery);
+
+const lastRaw = rawList[rawList.length - 1];
+const nextKeyOut =
+  lastRaw?.next_key ?? lotteResponse.total?.next_key ?? null;
+const nextKeyForClient =
+  nextKeyOut != null && String(nextKeyOut).trim() !== '' && String(nextKeyOut).trim() !== '0'
+    ? String(nextKeyOut).trim()
+    : null;
+
+// Response body: { ...aggregates, items, nextKey: nextKeyForClient }
 ```
 
 **Lotte request — `row_count`:**
@@ -392,15 +600,8 @@ const totalNetProfitLoss = items.reduce((sum, i) => sum + i.netProfitLoss, 0);
 const row_count = Math.min(Math.max(request.fetchCount ?? 100, 1), 100);
 ```
 
-**Pagination:**
-```typescript
-const lastItem = rawLotteRows[rawLotteRows.length - 1];
-const nextKey = lastItem?.next_key ?? null;
-const hasMore = nextKey != null && nextKey !== '0';
-```
-
 ---
 
 **Document Status:** ✅ Complete  
 **For:** BA/Dev  
-**Next Steps:** Implementation by Dev team; confirm với Lotte giới hạn khoảng ngày (start_date/end_date), `row_count` max, và cách trả `totalRecords` nếu có. Response item: chỉ các field đã map §3.3; `totalNetProfitLoss` theo trang.
+**Next Steps:** Implementation by Dev team; chốt **TTL + khóa cache** cho `total*` khi phân trang; hành vi **cache miss** (gọi lại `query_type = 0` hay trả lỗi). Confirm Lotte: khoảng ngày, `row_count` max, `total_record`. Response: root `total*` + `items` + `nextKey`; map đầy đủ `data_list` §3.3; không `reduce` trên `items` cho tổng toàn phạm vi.

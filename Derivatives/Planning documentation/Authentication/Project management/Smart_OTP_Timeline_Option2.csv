@@ -1,0 +1,18 @@
+Seq.,Task,Expected Duration,4th week (Feb.),1st week (Mar.),2nd week (Mar.),3rd week (Mar.),4th week (Mar.),1st week (Apr.),2nd week (Apr.)
+,PART 1: LOTTE IMPLEMENTATION,,,,,,,,
+1.1,Receiving & Review final API specification from Lotte,3 days,60%,,,,,,
+1.2,Assign staff in charge (Lotte side),1 day,40%,,,,,,
+1.3,Review & confirm Smart OTP API contract (incl. login),3 days,40%,20%,,,,,
+1.4,Lotte API Development & Internal Testing,10 days,,80%,60%,,,,
+1.5,Lotte provides Sandbox API for NHSV,1 day,,,20%,,,,
+,PART 2: NHSV IMPLEMENTATION,,,,,,,,
+2.1,UI/UX Design for Smart OTP flows (login + transaction),5 days,,,60%,60%,,,
+2.2,Define TradeX API specifications & integration plan,3 days,,,,60%,,,
+2.3,API Implementation - Login flow with Smart OTP,5 days,,,,40%,40%,,
+2.4,API Implementation - Transaction authorization,4 days,,,,,60%,,
+2.5,Frontend Implementation - Login screens (iOS & Android),5 days,,,,,40%,40%,
+2.6,Frontend Implementation - Transaction flows,5 days,,,,,,70%,
+2.7,Session management & security hardening,3 days,,,,,,40%,20%
+2.8,Internal Testing + Joint UAT with Lotte,7 days,,,,,,,70%
+2.9,Bug fixing & Optimization,5 days,,,,,,,30%
+2.10,Go-Live Smart OTP on NHSV Pro,1 day,,,,,,,10%

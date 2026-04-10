@@ -2,7 +2,7 @@
 
 > **Purpose:** Business planning and requirements for TradeX Derivatives Integration  
 > **Audience:** PM, BA, Stakeholders (NO implementation code)  
-> **Last Updated:** February 3, 2026
+> **Last Updated:** April 9, 2026
 
 ---
 
@@ -14,6 +14,7 @@
 | **[Order/](./Order/)** | ✅ Complete | Order placement (regular & conditional) |
 | **[Account/](./Account/)** | 📋 Planned | Account info, balance, positions |
 | **[Asset/](./Asset/)** | 📋 Spec Ready | Vị thế mở (DRACC-003), portfolio |
+| **[Open_DR_Sub_Account/](./Open_DR_Sub_Account/)** | 📋 Planning | Mở tiểu khoản phái sinh online (eligibility, FPT, admin) |
 
 ---
 

@@ -52,7 +52,7 @@ Add the VSD flow in Cash Transaction (Derivatives): **VSD Balance** + **Deposit*
   - Default: date range e.g. last 7 days or 90 days (confirm with product); `transactionType` = ALL (%)
   - If user selects `fromDate` > `toDate` → set `fromDate` = `toDate`
   - Do not allow future date (toDate ≤ today)
-- Response: `items` (list), `nextData` (pagination). Map fields per API spec §8 (accountNumber, transactionType, amount, note, registrationDate, feeAmount, receivedAmount, statusVTB, statusBOS, statusVSD, etc.). Format amounts with thousand separators
+- Response: `items` (list), `nextData` (pagination). Map fields per API spec §8 (accountNumber, transactionType, amount, note, registrationDate, feeAmount, receivedAmount, statusVTB, **statusBOS** — enum string TradeX §8.3.1 e.g. `DEPOSIT_SUCCESSFULLY`, not numeric code, statusBOSDescriptionVi/En, statusVSD, etc.). Format amounts with thousand separators; map **`statusBOS`** to UI copy via i18n or use descriptions from API
 - If `nextData` is not empty → "Load more" or infinite scroll: call same API with same params + `nextData` from previous response, append to list
 - If `items` is empty → show empty state (as Figma)
 - If API error → show response `message`, do not clear already loaded list
