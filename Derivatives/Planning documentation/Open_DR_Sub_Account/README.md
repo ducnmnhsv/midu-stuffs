@@ -19,7 +19,8 @@ Tài liệu nhóm nghiệp vụ cho phép **khách hàng đăng ký mở tiểu 
 
 | Document | Description |
 |----------|-------------|
-| [PRD — Mở tiểu khoản phái sinh online](./Planning/PRD_Open_Derivatives_Sub_Account_Online.md) | Product Requirements Document (đầy đủ) |
+| [PRD v2.0 — Mở tiểu khoản phái sinh online (chi tiết kỹ thuật)](./Planning/PRD_Open_Derivatives_Sub_Account_Online_v2.md) | PRD chi tiết end-to-end: FE pre-check, BE eligibility, FPT eContract, Lotte DRACC-038, OneSignal + Email |
+| [PRD v1.0 — Mở tiểu khoản phái sinh online (planning)](./Planning/PRD_Open_Derivatives_Sub_Account_Online.md) | PRD khung planning ban đầu (kế thừa) |
 
 ### Folder structure (chuẩn Derivatives)
 

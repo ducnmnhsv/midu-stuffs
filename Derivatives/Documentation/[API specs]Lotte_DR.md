@@ -1,7 +1,7 @@
 # TÀI LIỆU ĐẶC TẢ KỸ THUẬT API GATEWAY 2.0
 
 **Nguồn:** Tài liệu đặc tả API 2.0 Tsolution Detail – NHSV Derivatives (Lotte HPT)  
-**Cập nhật từ file:** `Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties 1.docx` (31/03/2026, `dcterms:modified` trong doc); trước đó: Derivaties 8 (30/03/2026).
+**Cập nhật từ file:** `Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties 12.docx` (đặc tả DRACC-038 — 2026.04.13 trong doc); trước đó: Derivaties 1 (31/03/2026).
 
 ---
 
@@ -11,6 +11,7 @@
 
 | Ngày       | Phiên bản | Người thực hiện | Nội dung |
 |------------|-----------|-----------------|----------|
+| 2026-04-22 | Doc sync  | Cursor          | **Derivaties 12:** Thêm **DRACC-038 — Tạo sub account phái sinh** (`dr-create-sub-account`) tại **§2.1.9** — POST, OAuth2 + API KEY, request `hts_user_id`, `account_no`, optional `fee_group` / `margin_ratio_group` / `warning_group`; response `data_list` / `scrt_err_msg` |
 | 2026-03-31 | Doc sync  | Cursor          | **Derivaties 1 / DRORD-036:** URL **`dr-adv-can`**; request thêm **`date`** (yyyyMMdd); `user_id` hoặc `hts_user_id`; sample I/O UAT + response `data_list[].dummy` — §2.3.16 |
 | 2026-03-30 | Doc sync  | Cursor          | Đồng bộ từ Word Tsolution Derivatives 8: thêm **DRORD-034 – DRORD-038** (lệnh đặt trước mua/bán, huỷ, tra cứu danh sách, danh sách có thể huỷ) tại **§2.3.14 – §2.3.18** |
 | 2026-03-18 | Doc sync  | Cursor          | Đồng bộ từ PDF 18/03/2026: Thêm **Mục 4 – WebSocket REALTIME** (4.1 Cấu trúc dữ liệu REALTIME: Order events, Account events); đánh số lại Mục quy tắc chung thành **5** (5.1 Cấu trúc dữ liệu, 5.2 Bảng mã) |
@@ -323,6 +324,46 @@
     - `net_profit_loss`: String, Net lãi lỗ
     - `next_key`: String, Biến key
     - `tax`: String, Thuế
+
+#### 2.1.9 DRACC-038: Tạo sub account phái sinh
+- **URL**: `[Root URL APIKEY]/tsol/apikey/tuxsvc/der/account/dr-create-sub-account`
+- **Method**: POST
+- **Authenticate**: Oauth2, API KEY
+- **Request Header**:
+    - `Authorization`: Y, bearer access_token (lấy từ API mục 4.1)
+    - `apiKey`: Y, [API KEY] (apiKey sẽ được cung cấp)
+    - `Content-Type`: Y, `application/json`
+- **Request Data (JSON object)**:
+    - `hts_user_id`: String, Y, user_id
+    - `account_no`: String, Y, Tài khoản
+    - `fee_group`: String, N, Default: `""` (Nhóm phí margin)
+    - `margin_ratio_group`: String, N, Default: `""` (Nhóm tỷ lệ ký quỹ)
+    - `warning_group`: String, N, Default: `""` (Nhóm tỷ lệ cảnh báo)
+- **Input Sample**:
+```json
+{
+  "hts_user_id": "lthpt01",
+  "account_no": "039C003131"
+}
+```
+- **Response Data**:
+    - `error_code`: String, Y (0000: Thực hiện thành công, 1005: Thực hiện không thành công)
+    - `error_desc`: String, Y
+    - `success`: boolean, Y (true: xử lý nghiệp vụ thành công, false: quá trình xử lý có lỗi)
+    - `total_record`: String (có thể rỗng — theo sample gốc)
+    - `data_list`: DataResponse
+- **Object Types (DataResponse)**:
+    - `scrt_err_msg`: String, Message thực hiện thành công
+- **Output Sample**:
+```json
+{
+  "error_code": "0000",
+  "error_desc": "[V0010]Đã xử lí xong một cách bình thường",
+  "success": true,
+  "total_record": "",
+  "data_list": []
+}
+```
 
 ### 2.2 GIAO DỊCH TIỀN PHÁI SINH
 
