@@ -1,0 +1,158 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Asset Screen - Overview	AST-001	Mở Asset phái sinh	Kiểm tra user vào được màn tài sản phái sinh.	"1. User đã đăng nhập tài khoản phái sinh/sub 80"	"1. Mở app
+2. Vào Asset/Tài sản
+3. Chọn tài khoản phái sinh hoặc tab Derivatives nếu có"	"1. Màn Asset phái sinh hiển thị đúng tài khoản/sub
+2. các nhóm thông tin tài sản được tải thành công"		Not Run
+Asset Screen - Overview	AST-002	Hiển thị tổng quan tài sản	Kiểm tra các số liệu chính trên Asset screen.	"1. Tài khoản có dữ liệu tài sản"	"1. Mở Asset phái sinh
+2. Quan sát các số liệu tổng quan như tiền mặt khả dụng, số dư hiện có, tài sản đảm bảo, tài sản ròng"	"1. Các số liệu chính hiển thị đúng định dạng tiền
+2. trường không có dữ liệu hiển thị -- hoặc 0 theo thiết kế"		Not Run
+Asset Screen - Overview	AST-003	Hiển thị tiền ký quỹ	Kiểm tra nhóm số dư tiền ký quỹ.	"1. Tài khoản có dữ liệu ký quỹ"	"1. Mở Asset phái sinh
+2. Quan sát số dư ký quỹ đầu ngày, nộp/rút, số dư ký quỹ hiện tại"	"1. Thông tin ký quỹ hiển thị đầy đủ, đúng nhãn và định dạng số"		Not Run
+Asset Screen - Overview	AST-004	Hiển thị tài sản đảm bảo	Kiểm tra thông tin tài sản đảm bảo hợp lệ.	"1. Tài khoản có dữ liệu tài sản đảm bảo"	"1. Mở Asset phái sinh
+2. Quan sát accepted collateral, withdrawable collateral nếu có"	"1. Tài sản đảm bảo và giá trị có thể rút hiển thị đúng
+2. không nhầm với số dư tiền mặt"		Not Run
+Asset Screen - Overview	AST-005	Hiển thị phí, thuế và thâm hụt	Kiểm tra các khoản phí/thuế/shortfall trên Asset.	"1. Tài khoản có dữ liệu phí hoặc có thể dùng dữ liệu test"	"1. Mở Asset phái sinh
+2. Quan sát phí vị thế, phí HNX, thuế, shortfall/thâm hụt nếu có"	"1. Các khoản phí, thuế, số tiền thiếu hiển thị rõ
+2. giá trị âm/dương format nhất quán"		Not Run
+Asset Screen - Overview	AST-006	Hiển thị lãi/lỗ đã thực hiện	Kiểm tra realized P/L trong Asset.	"1. Tài khoản có giao dịch đã phát sinh lãi/lỗ hoặc dữ liệu test"	"1. Mở Asset phái sinh
+2. Quan sát Lãi/Lỗ đã thực hiện"	"1. Lãi/Lỗ đã thực hiện hiển thị đúng màu/định dạng
+2. không nhầm với lãi/lỗ chưa thực hiện"		Not Run
+Asset Screen - Overview	AST-007	Hiển thị lãi/lỗ chưa thực hiện	Kiểm tra unrealized P/L trong Asset.	"1. Tài khoản có vị thế mở"	"1. Mở Asset phái sinh
+2. Quan sát Lãi/Lỗ chưa thực hiện
+3. Đối chiếu với Portfolio/Open positions nếu có"	"1. Lãi/Lỗ chưa thực hiện hiển thị đúng với vị thế đang mở
+2. số âm/dương dùng màu theo rule app"		Not Run
+Asset Screen - Overview	AST-008	Asset refresh sau giao dịch	Kiểm tra tài sản cập nhật sau khi có giao dịch phái sinh.	"1. Tài khoản có thể đặt/khớp lệnh trong UAT"	"1. Ghi nhận Asset trước giao dịch
+2. Thực hiện một giao dịch phái sinh thành công
+3. Quay lại Asset hoặc refresh"	"1. Các số liệu liên quan như ký quỹ, lãi/lỗ, phí hoặc sức mua được cập nhật theo giao dịch"		Not Run
+Asset Screen - Overview	AST-009	Asset empty state	Kiểm tra tài khoản chưa có dữ liệu phái sinh.	"1. Tài khoản phái sinh mới hoặc không có dữ liệu asset"	"1. Đăng nhập tài khoản không có dữ liệu phái sinh
+2. Mở Asset phái sinh"	"1. App hiển thị empty state hoặc giá trị 0/-- rõ ràng
+2. không hiển thị dữ liệu của tài khoản khác"		Not Run
+Asset Screen - Format	AST-025	Asset có giá trị âm	Kiểm tra hiển thị các field âm như P/L hoặc shortfall.	"1. Tài khoản có lãi/lỗ âm hoặc shortfall"	"1. Mở Asset phái sinh
+2. Quan sát các field âm"	"1. Giá trị âm hiển thị đúng dấu, màu sắc và định dạng
+2. không bị đổi thành 0 hoặc mất dấu âm"		Not Run
+Asset Screen - Format	AST-026	Asset có giá trị rất lớn	Kiểm tra format số lớn không vỡ layout.	"1. Tài khoản test có giá trị tài sản/ký quỹ lớn"	"1. Mở Asset phái sinh
+2. Quan sát các số tiền lớn"	"1. Số lớn có dấu phân tách hàng nghìn
+2. không tràn layout hoặc bị che mất đơn vị/label"		Not Run
+Asset Screen - Refresh	AST-027	Asset refresh khi kéo xuống	Kiểm tra thao tác pull-to-refresh nếu app hỗ trợ.	"1. App đang mở Asset phái sinh
+2. có kết nối mạng"	"1. Mở Asset
+2. Kéo xuống để refresh
+3. Quan sát loading và dữ liệu sau refresh"	"1. App hiển thị trạng thái refresh
+2. dữ liệu cập nhật lại
+3. không nhân đôi block thông tin"		Not Run
+Asset Screen - Error Handling	AST-021	Asset xử lý lỗi tải dữ liệu	Kiểm tra app hiển thị lỗi khi không tải được asset.	"1. Có thể giả lập mất mạng hoặc lỗi tải dữ liệu"	"1. Tắt mạng hoặc dùng môi trường lỗi
+2. Mở Asset phái sinh
+3. Quan sát thông báo
+4. Bấm Retry nếu có"	"1. App hiển thị lỗi dễ hiểu
+2. không hiển thị dữ liệu cũ gây nhầm lẫn nếu dữ liệu không còn hợp lệ
+3. Retry tải lại được khi mạng ổn định"		Not Run
+Asset Screen - Error Handling	AST-022	Không nhầm Asset phái sinh với cơ sở	Kiểm tra dữ liệu phái sinh không lẫn với tài sản cơ sở.	"1. Tài khoản có cả cơ sở và phái sinh"	"1. Mở Asset cơ sở
+2. Ghi nhận một vài thông tin
+3. Mở Asset phái sinh
+4. So sánh nhóm dữ liệu"	"1. Asset phái sinh hiển thị đúng dữ liệu phái sinh/sub 80
+2. không lẫn danh mục cổ phiếu cơ sở"		Not Run
+Asset Screen - Error Handling	AST-023	Mở Asset khi chưa có sub 80	Kiểm tra user chưa có tài khoản phái sinh.	"1. User đăng nhập tài khoản chưa có sub/tài khoản phái sinh"	"1. Vào Asset
+2. Chọn Derivatives nếu có"	"1. App hiển thị thông báo chưa có tài khoản phái sinh hoặc không có dữ liệu
+2. không hiển thị nhầm tài sản cơ sở"		Not Run
+Asset Screen - Account	AST-024	Đổi account trên Asset	Kiểm tra số liệu asset cập nhật khi đổi tài khoản.	"1. User có ít nhất 2 tài khoản/sub phái sinh"	"1. Mở Asset phái sinh account A
+2. Ghi nhận một số chỉ tiêu
+3. Đổi sang account B
+4. Quan sát dữ liệu"	"1. Dữ liệu được tải lại theo account B
+2. không còn số liệu của account A sau khi đổi"		Not Run
+Asset Screen - Session	AST-037	Session hết hạn khi mở Asset	Kiểm tra app xử lý session expired.	"1. Session user hết hạn hoặc môi trường mô phỏng"	"1. Mở Asset phái sinh khi session hết hạn
+2. Quan sát màn"	"1. App yêu cầu đăng nhập lại hoặc hiển thị session expired
+2. không hiển thị dữ liệu tài khoản cũ"		Not Run
+Portfolio - Display	AST-010	Mở Portfolio phái sinh	Kiểm tra màn Portfolio/danh mục phái sinh.	"1. User có quyền phái sinh
+2. có hoặc không có vị thế"	"1. Vào Portfolio/Danh mục
+2. Chọn tab Derivatives nếu có"	"1. Portfolio phái sinh hiển thị danh sách vị thế hoặc empty state
+2. header/tổng hợp đúng tài khoản"		Not Run
+Portfolio - Display	AST-011	Portfolio hiển thị mã và chiều vị thế	Kiểm tra danh sách portfolio hiển thị đúng mã hợp đồng và Long/Short.	"1. Tài khoản có ít nhất một vị thế mở"	"1. Mở Portfolio phái sinh
+2. Quan sát từng dòng vị thế"	"1. Mỗi dòng hiển thị mã hợp đồng, chiều vị thế Long/Short hoặc Mua/Bán rõ ràng"		Not Run
+Portfolio - Display	AST-012	Portfolio hiển thị khối lượng và giá trung bình	Kiểm tra các trường quantity và average price.	"1. Tài khoản có vị thế mở"	"1. Mở Portfolio phái sinh
+2. Quan sát Quantity, Previous quantity nếu có, Average price"	"1. Khối lượng và giá trung bình hiển thị đúng định dạng
+2. không bị trống nếu có dữ liệu"		Not Run
+Portfolio - Display	AST-013	Portfolio cập nhật giá realtime	Kiểm tra giá hiện tại trong portfolio cập nhật liên tục.	"1. Đang trong phiên
+2. vị thế có mã đang giao dịch"	"1. Mở Portfolio phái sinh
+2. Ghi nhận Current price
+3. Chờ biến động giá"	"1. Current price cập nhật realtime
+2. lãi/lỗ chưa thực hiện cập nhật theo giá mới nếu app hỗ trợ realtime"		Not Run
+Portfolio - Display	AST-014	Portfolio màu lãi/lỗ	Kiểm tra màu sắc P/L theo âm/dương.	"1. Có vị thế lời/lỗ hoặc dữ liệu test"	"1. Mở Portfolio
+2. Quan sát Unrealized P/L từng dòng"	"1. P/L dương hiển thị màu tăng
+2. P/L âm hiển thị màu giảm
+3. bằng 0 hiển thị màu trung tính theo rule app"		Not Run
+Portfolio - Navigation	AST-015	Portfolio điều hướng sang Trade	Kiểm tra thao tác từ portfolio sang đặt lệnh/đóng vị thế nếu có.	"1. Tài khoản có vị thế mở
+2. app có action trên dòng vị thế"	"1. Mở Portfolio
+2. Chọn một vị thế
+3. Bấm action Trade/Close/Reverse nếu có"	"1. App điều hướng đúng màn Trade với symbol và chiều phù hợp
+2. không mất context tài khoản"		Not Run
+Portfolio - Edge Cases	AST-028	Portfolio không có vị thế	Kiểm tra empty state portfolio phái sinh.	"1. Tài khoản phái sinh không có vị thế"	"1. Mở Portfolio phái sinh"	"1. App hiển thị không có vị thế/danh mục rỗng
+2. không hiển thị dòng trống hoặc dữ liệu cũ"		Not Run
+Portfolio - Edge Cases	AST-029	Portfolio mất kết nối realtime	Kiểm tra portfolio xử lý khi realtime bị ngắt.	"1. Portfolio đang hiển thị vị thế trong phiên giao dịch"	"1. Mở Portfolio
+2. Tắt mạng
+3. Chờ 30 giây
+4. Bật mạng lại"	"1. App không crash
+2. dữ liệu không nhảy sai
+3. sau khi kết nối lại giá tiếp tục cập nhật hoặc user có thể refresh"		Not Run
+Portfolio - Edge Cases	AST-030	Portfolio đổi mã nhanh sang Trade	Kiểm tra không điều hướng sai symbol khi thao tác nhanh.	"1. Tài khoản có nhiều vị thế"	"1. Mở Portfolio
+2. Bấm action trên vị thế A rồi quay lại
+3. Bấm nhanh action trên vị thế B"	"1. Màn Trade mở đúng symbol/side của vị thế được chọn cuối cùng
+2. không dùng nhầm context vị thế trước"		Not Run
+Daily P/L - Display	AST-016	Mở Daily P/L	Kiểm tra màn Daily P/L phái sinh.	"1. User có dữ liệu lãi/lỗ theo ngày hoặc dữ liệu test"	"1. Vào Asset/Portfolio
+2. Mở Daily P/L
+3. Chọn khoảng ngày"	"1. Màn Daily P/L hiển thị tổng lãi/lỗ, phí, thuế và danh sách theo ngày/hợp đồng"		Not Run
+Daily P/L - Filter	AST-017	Daily P/L lọc theo khoảng ngày	Kiểm tra bộ lọc ngày Daily P/L.	"1. Có dữ liệu trong nhiều ngày"	"1. Mở Daily P/L
+2. Chọn fromDate/toDate hợp lệ
+3. Áp dụng lọc"	"1. Danh sách chỉ hiển thị dữ liệu trong khoảng ngày
+2. tổng hợp trên màn phù hợp với dữ liệu lọc"		Not Run
+Daily P/L - Validation	AST-018	Daily P/L khoảng ngày không hợp lệ	Kiểm tra app chặn fromDate > toDate hoặc khoảng ngày quá dài nếu có rule.	"1. Đang ở Daily P/L"	"1. Chọn fromDate sau toDate hoặc khoảng ngày vượt giới hạn
+2. Áp dụng lọc"	"1. App hiển thị lỗi ngày không hợp lệ hoặc tự điều chỉnh theo thiết kế
+2. không tải dữ liệu sai"		Not Run
+Daily P/L - Edge Cases	AST-031	Daily P/L không có dữ liệu	Kiểm tra empty state Daily P/L.	"1. Chọn khoảng ngày không có dữ liệu P/L"	"1. Mở Daily P/L
+2. Chọn khoảng ngày không có dữ liệu
+3. Bấm tìm kiếm"	"1. App hiển thị không có dữ liệu
+2. tổng hợp hiển thị 0 hoặc -- theo thiết kế
+3. không giữ kết quả cũ"		Not Run
+Daily P/L - Validation	AST-032	Daily P/L ngày tương lai	Kiểm tra không tra cứu Daily P/L cho ngày tương lai.	"1. Đang ở Daily P/L"	"1. Chọn dateTo là ngày tương lai nếu picker cho phép
+2. Bấm tìm kiếm"	"1. App không cho chọn ngày tương lai hoặc hiển thị lỗi
+2. không tải dữ liệu sai"		Not Run
+Daily P/L - Pagination	AST-033	Daily P/L phân trang	Kiểm tra Daily P/L có nhiều dữ liệu.	"1. Tài khoản có nhiều dòng Daily P/L hơn một trang"	"1. Mở Daily P/L
+2. Chọn khoảng ngày nhiều dữ liệu
+3. Cuộn cuối danh sách hoặc bấm Load more"	"1. App tải thêm dòng mới
+2. tổng hợp vẫn giữ đúng
+3. không tính lại tổng sai theo riêng trang đang xem"		Not Run
+Transaction History	AST-019	Transaction history phái sinh	Kiểm tra lịch sử giao dịch trong Asset nếu app hiển thị.	"1. Tài khoản có lịch sử giao dịch phái sinh"	"1. Mở Asset/Transaction history
+2. Chọn khoảng ngày
+3. Quan sát danh sách"	"1. Danh sách hiển thị từng giao dịch mua/bán, mã hợp đồng, giá, khối lượng, thời gian và trạng thái theo thiết kế"		Not Run
+Transaction History	AST-034	Transaction history fromDate sau toDate	Kiểm tra filter ngày không hợp lệ trong lịch sử giao dịch.	"1. Đang ở Transaction history"	"1. Chọn fromDate sau toDate
+2. Bấm tìm kiếm"	"1. App hiển thị lỗi ngày không hợp lệ hoặc tự điều chỉnh theo thiết kế
+2. không hiển thị danh sách sai"		Not Run
+Risk/MU Warning	AST-020	Risk/MU warning hiển thị	Kiểm tra cảnh báo rủi ro hoặc tỷ lệ sử dụng ký quỹ nếu app có hiển thị.	"1. Tài khoản có trạng thái cảnh báo hoặc dữ liệu test"	"1. Mở Asset phái sinh
+2. Quan sát khu vực cảnh báo/risk/MU
+3. Mở chi tiết nếu có"	"1. Cảnh báo hiển thị đúng mức độ
+2. số tiền cần bổ sung hoặc tỷ lệ rủi ro hiển thị rõ ràng nếu có dữ liệu"		Not Run
+Risk/MU Warning	AST-035	Risk/MU không có cảnh báo	Kiểm tra trạng thái tài khoản bình thường.	"1. Tài khoản không vi phạm MU/risk"	"1. Mở Asset phái sinh
+2. Quan sát khu vực cảnh báo/risk"	"1. App hiển thị trạng thái bình thường hoặc không hiển thị cảnh báo
+2. không làm user hiểu nhầm là đang bị margin call"		Not Run
+Risk/MU Warning	AST-036	Risk/MU lỗi tải dữ liệu	Kiểm tra lỗi riêng của phần cảnh báo không làm hỏng toàn màn Asset.	"1. Có thể giả lập lỗi tải risk/MU trong khi asset info vẫn tải được"	"1. Mở Asset
+2. Gây lỗi phần risk/MU nếu có thể
+3. Quan sát màn"	"1. App vẫn hiển thị các thông tin asset khác
+2. phần risk/MU hiển thị lỗi hoặc -- rõ ràng"		Not Run
+Risk/MU Warning	AST-040	Risk warning — Margin Call	Kiểm tra cảnh báo Margin Call khi tỷ lệ sử dụng ký quỹ vượt ngưỡng.	"1. Tài khoản có trạng thái margin call hoặc dữ liệu test"	"1. Mở Asset phái sinh
+2. Quan sát khu vực cảnh báo/risk
+3. Mở chi tiết cảnh báo nếu có"	"1. App hiển thị cảnh báo Margin Call rõ ràng
+2. Hiển thị số tiền cần bổ sung hoặc tỷ lệ MU hiện tại
+3. Màu sắc cảnh báo nổi bật (đỏ/cam)"		Not Run
+Risk/MU Warning	AST-041	Risk warning — Force Sell	Kiểm tra cảnh báo Force Sell khi tài khoản vi phạm nghiêm trọng.	"1. Tài khoản có trạng thái force sell hoặc dữ liệu test"	"1. Mở Asset phái sinh
+2. Quan sát khu vực cảnh báo/risk
+3. Mở chi tiết cảnh báo nếu có"	"1. App hiển thị cảnh báo Force Sell rõ ràng
+2. Hiển thị lý do và hành động cần thực hiện
+3. Màu sắc cảnh báo nghiêm trọng (đỏ)"		Not Run
+Daily Balance	AST-038	Số dư hàng ngày (Daily Balance) hiển thị đúng	Kiểm tra màn Daily Balance hiển thị số dư theo ngày.	"1. Tài khoản có dữ liệu số dư qua nhiều ngày"	"1. Mở Asset > Daily Balance hoặc Số dư hàng ngày
+2. Chọn khoảng ngày
+3. Quan sát danh sách số dư"	"1. Danh sách hiển thị số dư cuối ngày cho mỗi ngày trong khoảng
+2. Số dư format đúng, có phân tách hàng nghìn
+3. Có thể xem chi tiết từng ngày nếu app hỗ trợ"		Not Run
+Cumulative P/L	AST-039	Lãi/Lỗ cộng dồn (Cumulative P/L)	Kiểm tra màn Cumulative P/L hiển thị tổng lãi/lỗ theo thời gian.	"1. Tài khoản có giao dịch phát sinh lãi/lỗ qua nhiều ngày"	"1. Mở Asset > Cumulative P/L hoặc Lãi/Lỗ cộng dồn
+2. Chọn khoảng ngày
+3. Quan sát biểu đồ/danh sách"	"1. Biểu đồ/danh sách hiển thị lãi/lỗ cộng dồn theo thời gian
+2. Tổng hợp đúng với dữ liệu giao dịch thực tế
+3. Màu sắc phản ánh lời/lỗ"		Not Run

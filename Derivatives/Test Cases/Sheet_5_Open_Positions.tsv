@@ -1,0 +1,129 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Screen & Display	POS-001	Mở Open positions	Kiểm tra màn danh sách vị thế mở.	"1. User đã đăng nhập tài khoản phái sinh
+2. có hoặc không có vị thế"	"1. Mở app
+2. Vào Trade/Portfolio/Open positions
+3. Chọn tài khoản phái sinh"	"1. Màn Open positions hiển thị danh sách vị thế hoặc empty state
+2. header đúng tài khoản/sub"		Not Run
+Screen & Display	POS-002	Empty state không có vị thế	Kiểm tra tài khoản chưa có vị thế mở.	"1. Tài khoản phái sinh không có vị thế mở"	"1. Đăng nhập tài khoản không có vị thế
+2. Mở Open positions"	"1. App hiển thị thông báo không có vị thế
+2. không hiển thị dữ liệu của tài khoản khác"		Not Run
+Screen & Display	POS-003	Hiển thị mã hợp đồng	Kiểm tra mỗi vị thế có mã hợp đồng đúng.	"1. Tài khoản có ít nhất một vị thế mở"	"1. Mở Open positions
+2. Quan sát cột/mục Symbol hoặc Mã hợp đồng"	"1. Mỗi dòng vị thế hiển thị đúng mã hợp đồng phái sinh"		Not Run
+Screen & Display	POS-004	Hiển thị chiều Long/Short	Kiểm tra vị thế thể hiện đúng chiều mua/bán.	"1. Tài khoản có vị thế Long hoặc Short"	"1. Mở Open positions
+2. Quan sát side của từng vị thế"	"1. Side hiển thị rõ Long/Short hoặc Mua/Bán
+2. màu/icon nếu có theo thiết kế"		Not Run
+Screen & Display	POS-005	Hiển thị khối lượng hiện tại	Kiểm tra số lượng vị thế đang nắm giữ.	"1. Tài khoản có vị thế mở"	"1. Mở Open positions
+2. Quan sát Quantity/Khối lượng hiện tại"	"1. Khối lượng hiện tại hiển thị đúng, là số nguyên và không âm"		Not Run
+Screen & Display	POS-006	Hiển thị khối lượng trước	Kiểm tra khối lượng trước nếu màn có field này.	"1. Tài khoản có dữ liệu previous quantity"	"1. Mở Open positions
+2. Quan sát field Previous quantity/KL trước"	"1. Field hiển thị đúng dữ liệu nếu có
+2. nếu không có dữ liệu thì hiển thị -- theo thiết kế"		Not Run
+Screen & Display	POS-007	Hiển thị giá trung bình	Kiểm tra average price của vị thế.	"1. Tài khoản có vị thế mở"	"1. Mở Open positions
+2. Quan sát Average price/Giá TB"	"1. Giá trung bình hiển thị đúng định dạng thập phân
+2. không lẫn với giá hiện tại"		Not Run
+Screen & Display	POS-008	Hiển thị giá hiện tại realtime	Kiểm tra current price của vị thế cập nhật theo thị trường.	"1. Đang trong phiên
+2. mã vị thế có biến động giá"	"1. Mở Open positions
+2. Ghi nhận Current price
+3. Chờ cập nhật thị trường"	"1. Current price cập nhật realtime
+2. không cần reload màn hình"		Not Run
+Screen & Display	POS-009	Hiển thị lãi/lỗ chưa thực hiện	Kiểm tra P/L từng vị thế.	"1. Tài khoản có vị thế mở"	"1. Mở Open positions
+2. Quan sát Unrealized P/L từng dòng"	"1. P/L hiển thị đúng theo chiều vị thế và giá hiện tại
+2. màu sắc phản ánh lời/lỗ"		Not Run
+Screen & Display	POS-010	Hiển thị tổng P/L và tổng vị thế	Kiểm tra tổng hợp trên đầu màn nếu có.	"1. Tài khoản có nhiều vị thế"	"1. Mở Open positions
+2. Quan sát phần tổng hợp"	"1. Tổng P/L và tổng open position hiển thị đúng theo các dòng đang có trên màn"		Not Run
+Screen & Display	POS-011	Hiển thị khối lượng có thể đóng	Kiểm tra closable quantity.	"1. Tài khoản có vị thế và có/không có lệnh đối ứng chờ khớp"	"1. Mở Open positions
+2. Quan sát Closable quantity/Số lượng có thể đóng"	"1. Số lượng có thể đóng hiển thị đúng
+2. không lớn hơn khối lượng hiện tại"		Not Run
+Quick Close	POS-012	Quick close vị thế Long	Kiểm tra đóng nhanh vị thế Long.	"1. Tài khoản có vị thế Long có thể đóng
+2. đang trong phiên cho phép đặt lệnh"	"1. Mở Open positions
+2. Chọn vị thế Long
+3. Bấm Quick close/Close
+4. Kiểm tra màn xác nhận/lệnh"	"1. App mở luồng đóng vị thế với chiều Sell phù hợp
+2. symbol và quantity được pre-fill theo vị thế hoặc theo lựa chọn user"		Not Run
+Quick Close	POS-013	Quick close vị thế Short	Kiểm tra đóng nhanh vị thế Short.	"1. Tài khoản có vị thế Short có thể đóng
+2. đang trong phiên cho phép đặt lệnh"	"1. Mở Open positions
+2. Chọn vị thế Short
+3. Bấm Quick close/Close
+4. Kiểm tra màn xác nhận/lệnh"	"1. App mở luồng đóng vị thế với chiều Buy phù hợp
+2. symbol và quantity được pre-fill theo vị thế hoặc theo lựa chọn user"		Not Run
+Quick Close	POS-016	Không cho đóng vượt khối lượng có thể đóng	Kiểm tra validation khi user muốn đóng nhiều hơn closable quantity.	"1. Vị thế có closable quantity xác định"	"1. Mở luồng Close position
+2. Nhập quantity lớn hơn số lượng có thể đóng
+3. Bấm xác nhận"	"1. App hiển thị lỗi hoặc không cho xác nhận
+2. không tạo lệnh đóng vượt quá khả dụng"		Not Run
+Quick Close	POS-017	Open positions refresh sau khi đóng vị thế	Kiểm tra danh sách cập nhật sau khi quick close thành công.	"1. Có vị thế có thể đóng và giao dịch close thành công"	"1. Ghi nhận vị thế trước khi đóng
+2. Thực hiện Quick close thành công
+3. Quay lại Open positions hoặc refresh"	"1. Khối lượng vị thế, closable quantity và P/L được cập nhật
+2. vị thế biến mất nếu đã đóng hết"		Not Run
+Quick Close	POS-021	Vị thế có closable quantity bằng 0	Kiểm tra không cho quick close khi không có khối lượng có thể đóng.	"1. Có vị thế nhưng closable quantity = 0, ví dụ do có lệnh đối ứng chờ khớp"	"1. Mở Open positions
+2. Chọn vị thế có closable quantity = 0
+3. Quan sát nút Close/Reverse"	"1. App disable action không hợp lệ hoặc hiển thị thông báo không có khối lượng có thể đóng"		Not Run
+Quick Close	POS-022	Quick close quantity bằng 0	Kiểm tra validation số lượng đóng vị thế.	"1. Đang ở luồng Close position"	"1. Nhập Quantity = 0
+2. Bấm xác nhận đóng"	"1. App hiển thị lỗi khối lượng không hợp lệ
+2. không tạo lệnh đóng"		Not Run
+Quick Close	POS-023	Quick close mất mạng khi confirm	Kiểm tra xử lý mất kết nối khi đóng vị thế.	"1. Vị thế có thể đóng
+2. form close hợp lệ"	"1. Mở luồng Close
+2. Tắt mạng
+3. Bấm Confirm"	"1. App hiển thị lỗi kết nối
+2. không báo đóng vị thế thành công sai
+3. user có thể kiểm tra lại vị thế sau khi có mạng"		Not Run
+Quick Close	POS-024	Double tap Confirm Close	Kiểm tra không tạo nhiều lệnh đóng khi bấm nhanh.	"1. Vị thế có thể đóng
+2. dialog close đang mở
+3. mạng phản hồi chậm"	"1. Bấm Close
+2. Trong dialog, bấm Confirm nhiều lần nhanh"	"1. Nút Confirm loading/disable
+2. không tạo nhiều lệnh đóng trùng nhau"		Not Run
+Reverse Position	POS-014	Reverse vị thế Long	Kiểm tra đảo vị thế từ Long sang Short.	"1. Tài khoản có vị thế Long
+2. đủ điều kiện giao dịch"	"1. Mở Open positions
+2. Chọn vị thế Long
+3. Bấm Reverse
+4. Quan sát lệnh/confirmation"	"1. App chuẩn bị lệnh đảo chiều theo đúng symbol
+2. chiều giao dịch là Sell và quantity theo rule đảo vị thế của app"		Not Run
+Reverse Position	POS-015	Reverse vị thế Short	Kiểm tra đảo vị thế từ Short sang Long.	"1. Tài khoản có vị thế Short
+2. đủ điều kiện giao dịch"	"1. Mở Open positions
+2. Chọn vị thế Short
+3. Bấm Reverse
+4. Quan sát lệnh/confirmation"	"1. App chuẩn bị lệnh đảo chiều theo đúng symbol
+2. chiều giao dịch là Buy và quantity theo rule đảo vị thế của app"		Not Run
+Reverse Position	POS-025	Reverse khi không đủ Max buy/sell	Kiểm tra đảo vị thế bị chặn khi tài khoản không đủ sức mua/bán.	"1. Có vị thế mở nhưng Max buy/sell không đủ cho lệnh reverse"	"1. Mở Open positions
+2. Bấm Reverse trên vị thế
+3. Xác nhận nếu có"	"1. App hiển thị lỗi vượt sức mua/sức bán hoặc không đủ điều kiện
+2. không tạo lệnh reverse"		Not Run
+Reverse Position	POS-026	Reverse ngoài phiên giao dịch	Kiểm tra đảo vị thế ngoài thời gian cho phép.	"1. Đang ngoài phiên giao dịch hoặc môi trường UAT mô phỏng"	"1. Mở Open positions
+2. Bấm Reverse
+3. Xác nhận"	"1. App xử lý theo rule phiên giao dịch
+2. nếu không cho phép thì hiển thị message rõ ràng và không tạo lệnh"		Not Run
+Realtime Updates	POS-027	Vị thế vừa thay đổi trong lúc xem	Kiểm tra realtime/refresh khi vị thế thay đổi do lệnh khớp.	"1. Có lệnh có thể làm thay đổi vị thế trong khi màn Open positions đang mở"	"1. Mở Open positions
+2. Thực hiện hoặc chờ lệnh khớp làm thay đổi vị thế
+3. Quan sát danh sách hoặc refresh"	"1. Khối lượng, giá trung bình, current price và P/L cập nhật đúng
+2. không còn dữ liệu cũ gây nhầm lẫn"		Not Run
+Edge Cases	POS-028	P/L đúng màu khi bằng 0	Kiểm tra P/L bằng 0 không bị tô màu sai.	"1. Có vị thế P/L = 0 hoặc dữ liệu test"	"1. Mở Open positions
+2. Tìm vị thế có P/L = 0
+3. Quan sát màu/format"	"1. P/L = 0 hiển thị màu trung tính theo rule app
+2. không hiển thị như lãi hoặc lỗ"		Not Run
+Edge Cases	POS-029	Giá hiện tại thiếu dữ liệu	Kiểm tra vị thế khi current price chưa có.	"1. Có vị thế nhưng dữ liệu giá hiện tại trống hoặc chưa tải được"	"1. Mở Open positions trong điều kiện current price thiếu
+2. Quan sát dòng vị thế"	"1. Current price hiển thị -- hoặc trạng thái phù hợp
+2. P/L không tính sai
+3. app không crash"		Not Run
+Edge Cases	POS-030	Open positions pagination/load more	Kiểm tra danh sách nhiều vị thế hơn một trang.	"1. Tài khoản có nhiều vị thế hoặc dữ liệu test phân trang"	"1. Mở Open positions
+2. Cuộn cuối danh sách hoặc bấm Load more
+3. Quan sát dữ liệu"	"1. Vị thế trang sau được tải thêm
+2. không mất hoặc nhân đôi vị thế đã hiển thị"		Not Run
+Edge Cases	POS-031	Pull-to-refresh Open positions	Kiểm tra làm mới danh sách vị thế.	"1. Open positions đang hiển thị"	"1. Kéo xuống để refresh nếu app hỗ trợ
+2. Quan sát loading và dữ liệu sau refresh"	"1. App refresh danh sách thành công
+2. không nhân đôi dòng
+3. dữ liệu sau refresh phản ánh trạng thái mới nhất"		Not Run
+Account & Session	POS-019	Không có quyền xem account	Kiểm tra user không xem được vị thế của tài khoản không thuộc mình.	"1. Môi trường có account không thuộc user hoặc session đổi account lỗi"	"1. Cố mở Open positions với account không hợp lệ nếu app cho phép
+2. Quan sát màn hình"	"1. App hiển thị lỗi không có quyền hoặc không cho chọn account
+2. không lộ dữ liệu vị thế của account khác"		Not Run
+Account & Session	POS-020	Đổi account trên Open positions	Kiểm tra danh sách vị thế cập nhật khi đổi tài khoản.	"1. User có ít nhất 2 tài khoản/sub phái sinh"	"1. Mở Open positions account A
+2. Ghi nhận danh sách
+3. Đổi sang account B
+4. Quan sát danh sách"	"1. Danh sách được tải lại theo account B
+2. không còn vị thế của account A sau khi đổi"		Not Run
+Account & Session	POS-032	Session hết hạn khi mở Open positions	Kiểm tra xử lý session expired.	"1. Session user hết hạn hoặc môi trường mô phỏng"	"1. Mở Open positions khi session hết hạn
+2. Quan sát màn"	"1. App yêu cầu đăng nhập lại hoặc hiển thị session expired
+2. không hiển thị dữ liệu vị thế cũ"		Not Run
+Error Handling	POS-018	Open positions lỗi tải dữ liệu	Kiểm tra app hiển thị lỗi khi không tải được vị thế.	"1. Có thể giả lập mất mạng hoặc lỗi tải dữ liệu"	"1. Tắt mạng hoặc dùng môi trường lỗi
+2. Mở Open positions
+3. Quan sát thông báo
+4. Bấm Retry nếu có"	"1. App hiển thị lỗi dễ hiểu
+2. Retry tải lại được khi kết nối ổn định
+3. app không crash"		Not Run

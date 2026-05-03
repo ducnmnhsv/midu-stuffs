@@ -1,0 +1,475 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Screen & Layout	ORD-001	Mở màn Trade Derivatives	Kiểm tra user vào được màn giao dịch phái sinh.	"1. User đã đăng nhập
+2. tài khoản có quyền phái sinh/sub 80
+3. có dữ liệu mã phái sinh"	"1. Mở app
+2. Vào Trade
+3. Chọn tài khoản phái sinh/sub 80
+4. Chọn một mã phái sinh"	"1. Màn Trade Derivatives hiển thị đúng mã, tài khoản, giá thị trường, CE/REF/FL, Bid/Ask và form đặt lệnh"		Not Run
+Screen & Layout	ORD-002	Chuyển giữa Lệnh thường và Lệnh nhanh	Kiểm tra hai chế độ giao diện giữ nguyên dữ liệu đang nhập.	"1. Đang ở màn Trade Derivatives
+2. đã chọn symbol"	"1. Nhập giá, khối lượng và loại lệnh
+2. Chuyển sang Lệnh nhanh
+3. Chuyển lại Lệnh thường"	"1. App đổi layout đúng
+2. symbol, giá, khối lượng và loại lệnh không bị mất"		Not Run
+Screen & Layout	ORD-047	Mở Trade khi chưa có tài khoản phái sinh	Kiểm tra app xử lý user chưa mở sub/tài khoản phái sinh.	"1. User đăng nhập tài khoản chưa có quyền phái sinh hoặc chưa có sub 80"	"1. Vào Trade
+2. Chọn khu vực Derivatives nếu có
+3. Quan sát màn hình"	"1. App hiển thị hướng dẫn/messaging phù hợp
+2. không cho đặt lệnh phái sinh khi tài khoản chưa đủ điều kiện"		Not Run
+Screen & Layout	ORD-048	Đổi tài khoản khi form đã nhập dữ liệu	Kiểm tra form không giữ nhầm dữ liệu khi đổi account.	"1. User có ít nhất 2 account/sub phái sinh"	"1. Mở Trade và nhập symbol, price, quantity
+2. Đổi sang account khác
+3. Quan sát Max buy/sell và form"	"1. Account hiển thị đúng
+2. Max buy/sell tải lại
+3. app reset hoặc giữ form theo thiết kế nhưng không dùng nhầm giới hạn của account cũ"		Not Run
+Realtime Price	ORD-003	Giá realtime mặc định bật	Kiểm tra field Price tự cập nhật theo giá hiện tại khi realtime bật.	"1. Đang trong phiên
+2. mã có giá realtime"	"1. Mở màn Trade
+2. Kiểm tra switch Real-time price đang bật
+3. Quan sát field Price khi giá thị trường thay đổi"	"1. Switch realtime bật mặc định
+2. Price tự cập nhật theo giá hiện tại"		Not Run
+Realtime Price	ORD-004	Tắt realtime khi user chỉnh giá	Kiểm tra user chỉnh tay giá thì realtime price tự tắt.	"1. Đang ở màn Trade
+2. realtime price đang bật"	"1. Nhập giá thủ công hoặc bấm +/- ở field Price
+2. Quan sát switch Real-time price"	"1. Switch realtime price tự tắt
+2. giá user nhập được giữ nguyên trong lúc realtime tắt"		Not Run
+Realtime Price	ORD-005	Realtime tự bật lại sau khi tắt	Kiểm tra realtime price tự bật lại sau thời gian chờ theo yêu cầu.	"1. Đã tắt realtime price bằng cách chỉnh giá"	"1. Chỉnh giá để tắt realtime
+2. Không thao tác thêm
+3. Chờ khoảng 10 giây"	"1. Switch realtime price tự bật lại
+2. Price tiếp tục cập nhật theo giá hiện tại"		Not Run
+Price Input	ORD-006	Tap CE/REF/FL để điền giá	Kiểm tra user có thể chọn nhanh giá trần/tham chiếu/sàn.	"1. Màn Trade hiển thị CE/REF/FL"	"1. Tap CE
+2. Kiểm tra Price
+3. Tap REF
+4. Tap FL"	"1. Field Price lần lượt được điền đúng giá CE, REF, FL
+2. realtime price tắt khi user chọn giá thủ công"		Not Run
+Price Input	ORD-007	Tap Bid/Ask để điền giá	Kiểm tra chọn giá từ sổ lệnh để đặt lệnh nhanh.	"1. Màn Trade có Bid/Ask"	"1. Tap một giá bên Bid
+2. Kiểm tra Price
+3. Tap một giá bên Ask
+4. Kiểm tra Price"	"1. Field Price được điền đúng giá user tap
+2. realtime price tắt sau thao tác"		Not Run
+Price Input	ORD-014	Tăng giảm price theo bước 0.1	Kiểm tra nút +/- của Price.	"1. Đang ở màn Trade
+2. order type LO"	"1. Nhập Price hợp lệ
+2. Bấm +
+3. Bấm -"	"1. Price tăng/giảm theo bước 0.1
+2. định dạng số hiển thị đúng"		Not Run
+Price Input	ORD-015	Nhập giá dưới sàn	Kiểm tra app chặn giá thấp hơn sàn.	"1. Màn Trade có giá FL"	"1. Chọn order type LO
+2. Nhập Price nhỏ hơn FL
+3. Bấm Buy hoặc Sell"	"1. App hiển thị lỗi Giá đặt ngoài khung giá cho phép
+2. không đặt lệnh"		Not Run
+Price Input	ORD-016	Nhập giá trên trần	Kiểm tra app chặn giá cao hơn trần.	"1. Màn Trade có giá CE"	"1. Chọn order type LO
+2. Nhập Price lớn hơn CE
+3. Bấm Buy hoặc Sell"	"1. App hiển thị lỗi Giá đặt ngoài khung giá cho phép
+2. không đặt lệnh"		Not Run
+Price Input	ORD-017	Order type LO yêu cầu giá	Kiểm tra LO không được bỏ trống giá.	"1. Đang ở màn Trade"	"1. Chọn order type LO
+2. Xóa Price
+3. Nhập Quantity hợp lệ
+4. Bấm Buy/Sell"	"1. App yêu cầu nhập giá hợp lệ
+2. không đặt lệnh khi giá trống"		Not Run
+Price Input	ORD-018	Order type thị trường không yêu cầu giá	Kiểm tra MTL/MOK/MAK không yêu cầu nhập giá nếu thiết kế quy định.	"1. Đang ở màn Trade"	"1. Chọn MTL
+2. Quan sát field Price
+3. Lặp lại với MOK và MAK"	"1. Field Price bị disable hoặc không bắt buộc theo design
+2. form vẫn cho nhập Quantity hợp lệ"		Not Run
+Price Input	ORD-051	Nhập price không phải số	Kiểm tra validation khi user nhập ký tự chữ/ký tự đặc biệt ở Price.	"1. Đang ở màn Trade
+2. order type LO"	"1. Tap Price
+2. Nhập chữ hoặc ký tự đặc biệt nếu bàn phím cho phép
+3. Bấm đặt lệnh"	"1. App không nhận ký tự không hợp lệ hoặc hiển thị lỗi
+2. không đặt lệnh"		Not Run
+Price Input	ORD-054	Nhập price không đúng bước giá	Kiểm tra giá phải theo bước 0.1.	"1. Đang ở màn Trade
+2. order type LO"	"1. Nhập Price có bước lẻ như 1250.25
+2. Nhập Quantity hợp lệ
+3. Bấm Buy/Sell"	"1. App hiển thị lỗi bước giá/làm tròn theo thiết kế
+2. không gửi lệnh sai bước giá"		Not Run
+Price Input	ORD-055	Giá đúng bằng trần và sàn	Kiểm tra biên hợp lệ của khoảng giá.	"1. Màn Trade có CE và FL
+2. tài khoản đủ điều kiện đặt lệnh"	"1. Chọn LO
+2. Nhập Price = CE và đặt thử
+3. Nhập Price = FL và đặt thử"	"1. Giá bằng CE hoặc FL được coi là hợp lệ nếu sàn cho phép
+2. app không báo ngoài khung"		Not Run
+Price Input	ORD-089	Giá tự làm tròn khi nhập ≥2 số thập phân	Kiểm tra app tự làm tròn giá nhập sai bước giá.	"1. Đang ở màn Trade
+2. Order type LO
+3. Bước giá = 0.1"	"1. Nhập Price = 1250.25 (2 số thập phân)
+2. Quan sát field Price sau khi nhập
+3. Nhập Price = 1250.27
+4. Quan sát field Price"	"1. App tự làm tròn giá theo bước 0.1 gần nhất
+2. 1250.25 → làm tròn thành 1250.2 hoặc 1250.3 theo rule
+3. User thấy giá đã được làm tròn trước khi đặt lệnh"		Not Run
+Quantity Input	ORD-008	Hiển thị Max buy và Max sell	Kiểm tra số lượng tối đa mua/bán hiển thị dưới nút Buy/Sell.	"1. Tài khoản có dữ liệu sức mua/sức bán"	"1. Mở màn Trade
+2. Chọn symbol
+3. Quan sát dưới nút Buy và Sell"	"1. Max buy và Max sell hiển thị rõ ràng, đúng định dạng số và cập nhật khi đổi symbol/tài khoản"		Not Run
+Quantity Input	ORD-009	Đổi symbol cập nhật Max buy/sell	Kiểm tra giới hạn mua/bán được refresh khi đổi mã.	"1. Có ít nhất hai mã phái sinh để chọn"	"1. Mở màn Trade
+2. Ghi nhận Max buy/sell của mã A
+3. Đổi sang mã B
+4. Quan sát Max buy/sell"	"1. Max buy/sell được tải lại theo mã mới
+2. không giữ nhầm giá trị của mã cũ"		Not Run
+Quantity Input	ORD-010	Nhập quantity vượt Max buy	Kiểm tra app chặn quantity vượt sức mua.	"1. Tài khoản có Max buy xác định"	"1. Chọn chiều Buy
+2. Nhập Quantity lớn hơn Max buy
+3. Bấm Buy"	"1. App hiển thị lỗi Vượt quá sức mua khả dụng
+2. không mở/gửi xác nhận lệnh thành công"		Not Run
+Quantity Input	ORD-011	Nhập quantity vượt Max sell	Kiểm tra app chặn quantity vượt sức bán.	"1. Tài khoản có Max sell xác định"	"1. Chọn chiều Sell
+2. Nhập Quantity lớn hơn Max sell
+3. Bấm Sell"	"1. App hiển thị lỗi Vượt quá sức bán khả dụng
+2. không mở/gửi xác nhận lệnh thành công"		Not Run
+Quantity Input	ORD-012	Nhập quantity bằng 0	Kiểm tra app chặn khối lượng không hợp lệ.	"1. Đang ở màn Trade"	"1. Chọn Buy hoặc Sell
+2. Nhập Quantity = 0
+3. Bấm đặt lệnh"	"1. App hiển thị lỗi khối lượng không hợp lệ hoặc yêu cầu nhập tối thiểu 1
+2. không đặt lệnh"		Not Run
+Quantity Input	ORD-013	Tăng giảm quantity theo bước 1	Kiểm tra nút +/- của Quantity.	"1. Đang ở màn Trade"	"1. Nhập Quantity = 1
+2. Bấm +
+3. Bấm -"	"1. Quantity tăng/giảm theo bước 1
+2. không giảm xuống dưới giá trị tối thiểu"		Not Run
+Quantity Input	ORD-052	Nhập quantity thập phân	Kiểm tra quantity bắt buộc là số nguyên.	"1. Đang ở màn Trade"	"1. Nhập Quantity = 1.5 nếu input cho phép
+2. Bấm Buy/Sell"	"1. App hiển thị lỗi khối lượng không hợp lệ hoặc tự chuẩn hóa theo rule
+2. không đặt sai quantity thập phân"		Not Run
+Quantity Input	ORD-053	Nhập quantity âm	Kiểm tra app chặn khối lượng âm.	"1. Đang ở màn Trade"	"1. Nhập Quantity = -1 nếu input cho phép
+2. Bấm Buy/Sell"	"1. App không cho nhập số âm hoặc hiển thị lỗi
+2. không đặt lệnh"		Not Run
+Quantity Input	ORD-056	Quantity đúng bằng Max buy/sell	Kiểm tra biên hợp lệ của số lượng tối đa.	"1. Tài khoản có Max buy/sell > 0"	"1. Chọn Buy và nhập Quantity = Max buy
+2. Kiểm tra validation
+3. Chọn Sell và nhập Quantity = Max sell"	"1. Quantity bằng đúng giới hạn tối đa được chấp nhận
+2. chỉ vượt quá mới bị chặn"		Not Run
+Quantity Input	ORD-057	Max buy/sell bằng 0	Kiểm tra tài khoản không còn sức mua/bán.	"1. Tài khoản hoặc symbol có Max buy = 0 hoặc Max sell = 0"	"1. Mở Trade
+2. Quan sát Max buy/sell
+3. Nhập Quantity = 1 và bấm Buy/Sell tương ứng"	"1. App hiển thị Max = 0
+2. không cho đặt lệnh theo chiều không còn khả dụng
+3. message dễ hiểu"		Not Run
+Quantity Input	ORD-058	Lỗi tải Max buy/sell	Kiểm tra app xử lý khi không lấy được giới hạn mua/bán.	"1. Có thể giả lập lỗi hoặc mất mạng khi vào Trade"	"1. Mở Trade trong điều kiện lỗi tải Max buy/sell
+2. Quan sát màn
+3. Thử đặt lệnh"	"1. App hiển thị lỗi hoặc trạng thái không xác định rõ
+2. không cho submit nếu chưa có dữ liệu bắt buộc để kiểm soát rủi ro"		Not Run
+Đặt lệnh thường	ORD-019	Đặt Buy LO thành công	Kiểm tra đặt lệnh mua LO hợp lệ.	"1. Đang trong phiên cho phép
+2. tài khoản đủ sức mua
+3. giá trong khung
+4. Quantity hợp lệ"	"1. Chọn Buy
+2. Chọn order type LO
+3. Nhập Price hợp lệ
+4. Nhập Quantity hợp lệ
+5. Bấm Buy
+6. Xác nhận trong dialog"	"1. App hiển thị đặt lệnh thành công kèm thông tin lệnh
+2. lệnh xuất hiện trong Orderbook/Lệnh chưa khớp với đúng thông tin"		Not Run
+Đặt lệnh thường	ORD-020	Đặt Sell LO thành công	Kiểm tra đặt lệnh bán LO hợp lệ.	"1. Đang trong phiên cho phép
+2. tài khoản đủ sức bán
+3. giá trong khung
+4. Quantity hợp lệ"	"1. Chọn Sell
+2. Chọn order type LO
+3. Nhập Price hợp lệ
+4. Nhập Quantity hợp lệ
+5. Bấm Sell
+6. Xác nhận trong dialog"	"1. App hiển thị đặt lệnh thành công kèm thông tin lệnh
+2. lệnh xuất hiện trong Orderbook/Lệnh chưa khớp với đúng thông tin"		Not Run
+Đặt lệnh theo phiên	ORD-024	ATO chỉ hợp lệ phiên mở cửa	Kiểm tra loại lệnh ATO theo phiên.	"1. Có thể test trong phiên ATO hoặc môi trường UAT mô phỏng phiên"	"1. Chọn order type ATO trong phiên ATO
+2. Đặt lệnh hợp lệ
+3. Thử đặt ATO ngoài phiên ATO"	"1. Trong phiên ATO, lệnh hợp lệ được tiếp nhận
+2. ngoài phiên ATO, app hiển thị lỗi phù hợp và không đặt lệnh"		Not Run
+Đặt lệnh theo phiên	ORD-025	ATC chỉ hợp lệ phiên đóng cửa	Kiểm tra loại lệnh ATC theo phiên.	"1. Có thể test trong phiên ATC hoặc môi trường UAT mô phỏng phiên"	"1. Chọn order type ATC trong phiên ATC
+2. Đặt lệnh hợp lệ
+3. Thử đặt ATC ngoài phiên ATC"	"1. Trong phiên ATC, lệnh hợp lệ được tiếp nhận
+2. ngoài phiên ATC, app hiển thị lỗi phù hợp và không đặt lệnh"		Not Run
+Đặt lệnh theo phiên	ORD-026	MOK/MAK/MTL chỉ hợp lệ phiên liên tục	Kiểm tra các lệnh thị trường theo phiên.	"1. Có thể test trong phiên liên tục và ngoài phiên liên tục"	"1. Trong phiên liên tục, đặt thử MOK/MAK/MTL
+2. Ngoài phiên liên tục, đặt lại từng loại"	"1. Trong phiên liên tục, lệnh hợp lệ được tiếp nhận theo điều kiện thị trường
+2. ngoài phiên liên tục, app hiển thị lỗi phù hợp"		Not Run
+Chặn Mua/Bán cùng phiên	ORD-084	Chặn đặt lệnh Buy khi đã có lệnh Sell cùng phiên ATO	Kiểm tra không cho đặt lệnh Buy cùng phiên khi đã có lệnh Sell ATO.	"1. Đang trong phiên ATO
+2. Đã có lệnh Sell ATO chưa khớp"	"1. Mở màn Trade
+2. Chọn cùng mã phái sinh
+3. Chọn order type ATO
+4. Nhập quantity hợp lệ
+5. Bấm Buy"	"1. App hiển thị lỗi không cho đặt lệnh Buy khi đã có lệnh Sell cùng phiên
+2. Không tạo lệnh mới"		Not Run
+Chặn Mua/Bán cùng phiên	ORD-085	Chặn đặt lệnh Sell khi đã có lệnh Buy cùng phiên ATO	Kiểm tra không cho đặt lệnh Sell cùng phiên khi đã có lệnh Buy ATO.	"1. Đang trong phiên ATO
+2. Đã có lệnh Buy ATO chưa khớp"	"1. Mở màn Trade
+2. Chọn cùng mã phái sinh
+3. Chọn order type ATO
+4. Nhập quantity hợp lệ
+5. Bấm Sell"	"1. App hiển thị lỗi không cho đặt lệnh Sell khi đã có lệnh Buy cùng phiên
+2. Không tạo lệnh mới"		Not Run
+Chặn Mua/Bán cùng phiên	ORD-086	Chặn đặt lệnh Buy khi đã có lệnh Sell cùng phiên ATC	Kiểm tra không cho đặt lệnh Buy cùng phiên khi đã có lệnh Sell ATC.	"1. Đang trong phiên ATC
+2. Đã có lệnh Sell ATC chưa khớp"	"1. Mở màn Trade
+2. Chọn cùng mã phái sinh
+3. Chọn order type ATC
+4. Nhập quantity hợp lệ
+5. Bấm Buy"	"1. App hiển thị lỗi không cho đặt lệnh Buy khi đã có lệnh Sell cùng phiên
+2. Không tạo lệnh mới"		Not Run
+Chặn Mua/Bán cùng phiên	ORD-087	Chặn đặt lệnh Sell khi đã có lệnh Buy cùng phiên ATC	Kiểm tra không cho đặt lệnh Sell cùng phiên khi đã có lệnh Buy ATC.	"1. Đang trong phiên ATC
+2. Đã có lệnh Buy ATC chưa khớp"	"1. Mở màn Trade
+2. Chọn cùng mã phái sinh
+3. Chọn order type ATC
+4. Nhập quantity hợp lệ
+5. Bấm Sell"	"1. App hiển thị lỗi không cho đặt lệnh Sell khi đã có lệnh Buy cùng phiên
+2. Không tạo lệnh mới"		Not Run
+Chặn Mua/Bán cùng phiên	ORD-088	Cho phép đặt lệnh đối ứng sau khi hủy lệnh ATO/ATC	Kiểm tra user được đặt lệnh đối ứng sau khi hủy lệnh cũ cùng phiên.	"1. Đang trong phiên ATO hoặc ATC
+2. Đã có lệnh Buy ATO/ATC chưa khớp"	"1. Hủy lệnh Buy ATO/ATC thành công
+2. Đợi trạng thái lệnh chuyển đã hủy
+3. Đặt lệnh Sell ATO/ATC cùng mã"	"1. App cho đặt lệnh Sell sau khi lệnh Buy đã hủy
+2. Lệnh Sell được tiếp nhận bình thường"		Not Run
+Dialog xác nhận	ORD-021	Dialog xác nhận lệnh Buy	Kiểm tra dialog trước khi gửi lệnh mua.	"1. Form Buy đã nhập hợp lệ"	"1. Bấm Buy
+2. Quan sát dialog xác nhận
+3. Bấm Cancel
+4. Bấm Buy lại
+5. Bấm Confirm"	"1. Dialog hiển thị đúng symbol, chiều Mua, order type, giá, khối lượng
+2. Cancel không gửi lệnh
+3. Confirm mới thực hiện đặt lệnh"		Not Run
+Dialog xác nhận	ORD-022	Dialog xác nhận lệnh Sell	Kiểm tra dialog trước khi gửi lệnh bán.	"1. Form Sell đã nhập hợp lệ"	"1. Bấm Sell
+2. Quan sát dialog xác nhận
+3. Bấm Cancel
+4. Bấm Sell lại
+5. Bấm Confirm"	"1. Dialog hiển thị đúng symbol, chiều Bán, order type, giá, khối lượng
+2. Cancel không gửi lệnh
+3. Confirm mới thực hiện đặt lệnh"		Not Run
+Dialog xác nhận	ORD-023	Chặn double submit khi xác nhận	Kiểm tra app không tạo nhiều lệnh khi user bấm confirm liên tục.	"1. Form đặt lệnh hợp lệ
+2. mạng phản hồi chậm"	"1. Bấm Buy/Sell
+2. Trong dialog, bấm Confirm nhiều lần nhanh
+3. Kiểm tra kết quả"	"1. Nút Confirm chuyển loading/disable
+2. chỉ có một kết quả đặt lệnh được ghi nhận"		Not Run
+Orderbook & Danh sách lệnh	ORD-027	Orderbook hiển thị danh sách lệnh trong ngày	Kiểm tra màn Orderbook phái sinh.	"1. Tài khoản có lệnh trong ngày hoặc dữ liệu test"	"1. Mở tab Orderbook
+2. Quan sát danh sách lệnh"	"1. Danh sách hiển thị lệnh trong ngày với mã, chiều Mua/Bán, loại lệnh, giá, khối lượng, khớp, chưa khớp, trạng thái"		Not Run
+Orderbook & Danh sách lệnh	ORD-028	Lệnh chưa khớp có thao tác sửa/hủy	Kiểm tra user có thể thao tác với lệnh còn hiệu lực.	"1. Tài khoản có lệnh chưa khớp hoặc khớp một phần"	"1. Mở Orderbook/Lệnh chưa khớp
+2. Chọn một lệnh còn hiệu lực
+3. Quan sát action"	"1. Lệnh còn hiệu lực hiển thị nút Sửa/Hủy theo đúng trạng thái
+2. lệnh đã khớp hết không hiển thị action không phù hợp"		Not Run
+Orderbook & Danh sách lệnh	ORD-066	Sổ lệnh rỗng trên màn Trade	Kiểm tra form đặt lệnh khi Bid/Ask chưa có dữ liệu.	"1. Mã phái sinh không có bid/ask hoặc ngoài phiên"	"1. Chọn mã không có Bid/Ask
+2. Quan sát khu vực sổ lệnh
+3. Thử tap vào khu vực rỗng"	"1. App hiển thị empty state cho Bid/Ask
+2. tap không làm điền giá sai
+3. form vẫn validate bình thường"		Not Run
+Orderbook & Danh sách lệnh	ORD-067	Lệnh khớp một phần sau khi đặt	Kiểm tra trạng thái partial fill trên Orderbook.	"1. Có thể đặt lệnh phát sinh khớp một phần hoặc môi trường có dữ liệu partial"	"1. Đặt lệnh có khả năng khớp một phần
+2. Mở Orderbook
+3. Quan sát matched và pending quantity"	"1. Lệnh hiển thị trạng thái khớp một phần
+2. matched quantity và pending quantity đúng
+3. vẫn có action phù hợp cho phần còn lại"		Not Run
+Sửa lệnh	ORD-029	Sửa lệnh thường thành công	Kiểm tra sửa giá hoặc khối lượng của lệnh thường.	"1. Có lệnh LO chưa khớp
+2. đang trong phiên cho phép sửa
+3. tài khoản đủ sức mua/bán"	"1. Mở Orderbook
+2. Chọn Edit/Sửa trên lệnh
+3. Nhập giá hoặc khối lượng mới hợp lệ
+4. Bấm Modify/Sửa"	"1. App hiển thị sửa lệnh thành công
+2. Orderbook cập nhật thông tin mới hoặc lệnh mới theo cơ chế app"		Not Run
+Sửa lệnh	ORD-030	Sửa lệnh với giá ngoài khung	Kiểm tra app chặn sửa lệnh khi giá không hợp lệ.	"1. Có lệnh thường có thể sửa"	"1. Mở màn sửa lệnh
+2. Nhập giá thấp hơn FL hoặc cao hơn CE
+3. Bấm Modify/Sửa"	"1. App hiển thị lỗi giá ngoài khung
+2. lệnh cũ vẫn giữ nguyên"		Not Run
+Sửa lệnh	ORD-031	Sửa lệnh với quantity vượt khả dụng	Kiểm tra app chặn sửa lệnh khi khối lượng vượt khả dụng.	"1. Có lệnh thường có thể sửa
+2. biết Max quantity"	"1. Mở màn sửa lệnh
+2. Nhập Quantity lớn hơn Max quantity
+3. Bấm Modify/Sửa"	"1. App hiển thị lỗi vượt sức mua/sức bán khả dụng
+2. không sửa lệnh"		Not Run
+Sửa lệnh	ORD-032	Sửa lệnh đã khớp hết bị chặn	Kiểm tra không cho sửa lệnh đã khớp toàn bộ.	"1. Có lệnh đã khớp toàn bộ trong ngày"	"1. Mở Orderbook
+2. Tìm lệnh đã khớp hết
+3. Quan sát action hoặc thử vào chi tiết"	"1. App không cho sửa lệnh đã khớp hết hoặc hiển thị thông báo trạng thái lệnh không thể sửa"		Not Run
+Sửa lệnh	ORD-065	Đổi order type sau khi nhập giá	Kiểm tra form cập nhật đúng khi đổi giữa LO và lệnh thị trường.	"1. Đang ở Trade
+2. đã nhập Price và Quantity"	"1. Chọn LO và nhập Price
+2. Đổi sang MOK/MAK/MTL
+3. Đổi lại LO"	"1. Trạng thái Price/disable/required cập nhật đúng
+2. không gửi giá sai cho loại lệnh thị trường
+3. khi quay lại LO user có thể nhập lại giá"		Not Run
+Sửa lệnh	ORD-070	Sửa lệnh chỉ thay đổi price	Kiểm tra sửa một phần field vẫn hợp lệ.	"1. Có lệnh LO chưa khớp"	"1. Mở màn sửa
+2. Chỉ đổi Price hợp lệ, giữ Quantity
+3. Bấm Modify"	"1. App cho sửa thành công
+2. thông tin mới phản ánh đúng ở Orderbook"		Not Run
+Sửa lệnh	ORD-071	Sửa lệnh chỉ thay đổi quantity	Kiểm tra sửa một phần field quantity.	"1. Có lệnh LO chưa khớp và đủ khả dụng"	"1. Mở màn sửa
+2. Chỉ đổi Quantity hợp lệ, giữ Price
+3. Bấm Modify"	"1. App cho sửa thành công
+2. thông tin mới phản ánh đúng ở Orderbook"		Not Run
+Hủy lệnh	ORD-033	Hủy lệnh thường thành công	Kiểm tra hủy lệnh còn hiệu lực.	"1. Có lệnh chưa khớp
+2. đang trong phiên cho phép hủy"	"1. Mở Orderbook
+2. Chọn Cancel/Hủy
+3. Xác nhận hủy"	"1. App hiển thị hủy lệnh thành công
+2. trạng thái lệnh chuyển đã hủy hoặc lệnh biến khỏi danh sách chưa khớp"		Not Run
+Hủy lệnh	ORD-034	Hủy lệnh đã khớp hết bị chặn	Kiểm tra không cho hủy lệnh đã khớp toàn bộ.	"1. Có lệnh đã khớp toàn bộ"	"1. Mở Orderbook
+2. Tìm lệnh đã khớp hết
+3. Quan sát action hoặc thử hủy nếu có"	"1. App không cho hủy lệnh đã khớp hết hoặc hiển thị thông báo trạng thái lệnh không thể hủy"		Not Run
+Stop Order - Đặt lệnh	ORD-035	Đặt Stop order Buy hợp lệ	Kiểm tra đặt lệnh dừng chiều mua.	"1. Đang ở màn Stop order
+2. có giá hiện tại
+3. tài khoản đủ sức mua"	"1. Chọn Buy
+2. Nhập giá kích hoạt lớn hơn giá hiện tại
+3. Nhập giá đặt và Quantity hợp lệ
+4. Chọn ngày hiệu lực
+5. Bấm đặt và xác nhận"	"1. App hiển thị đặt Stop order thành công
+2. lệnh xuất hiện trong danh sách lệnh điều kiện/stop order"		Not Run
+Stop Order - Đặt lệnh	ORD-036	Đặt Stop order Sell hợp lệ	Kiểm tra đặt lệnh dừng chiều bán.	"1. Đang ở màn Stop order
+2. có giá hiện tại
+3. tài khoản đủ sức bán"	"1. Chọn Sell
+2. Nhập giá kích hoạt nhỏ hơn giá hiện tại
+3. Nhập giá đặt và Quantity hợp lệ
+4. Chọn ngày hiệu lực
+5. Bấm đặt và xác nhận"	"1. App hiển thị đặt Stop order thành công
+2. lệnh xuất hiện trong danh sách lệnh điều kiện/stop order"		Not Run
+Stop Order - Validation	ORD-037	Stop Buy trigger không hợp lệ	Kiểm tra Stop Buy yêu cầu trigger price lớn hơn giá hiện tại.	"1. Đang ở màn Stop order
+2. biết giá hiện tại"	"1. Chọn Buy
+2. Nhập giá kích hoạt nhỏ hơn hoặc bằng giá hiện tại
+3. Nhập các trường còn lại hợp lệ
+4. Bấm đặt"	"1. App hiển thị lỗi giá kích hoạt mua phải lớn hơn giá hiện tại
+2. không đặt lệnh"		Not Run
+Stop Order - Validation	ORD-038	Stop Sell trigger không hợp lệ	Kiểm tra Stop Sell yêu cầu trigger price nhỏ hơn giá hiện tại.	"1. Đang ở màn Stop order
+2. biết giá hiện tại"	"1. Chọn Sell
+2. Nhập giá kích hoạt lớn hơn hoặc bằng giá hiện tại
+3. Nhập các trường còn lại hợp lệ
+4. Bấm đặt"	"1. App hiển thị lỗi giá kích hoạt bán phải nhỏ hơn giá hiện tại
+2. không đặt lệnh"		Not Run
+Stop Order - Sửa/Hủy	ORD-039	Sửa Stop order thành công	Kiểm tra sửa lệnh dừng đang còn hiệu lực.	"1. Có Stop order đang chờ kích hoạt/có thể sửa"	"1. Mở Orderbook/Conditional order
+2. Chọn Edit trên Stop order
+3. Sửa trigger price, order price, quantity hoặc affected date hợp lệ
+4. Bấm Modify"	"1. App hiển thị sửa lệnh thành công
+2. danh sách cập nhật thông tin mới"		Not Run
+Stop Order - Sửa/Hủy	ORD-040	Hủy Stop order thành công	Kiểm tra hủy lệnh dừng đang còn hiệu lực.	"1. Có Stop order đang chờ kích hoạt/có thể hủy"	"1. Mở Orderbook/Conditional order
+2. Chọn Cancel trên Stop order
+3. Xác nhận hủy"	"1. App hiển thị hủy lệnh thành công
+2. trạng thái chuyển đã hủy hoặc không còn trong danh sách chờ"		Not Run
+Stop Order - Validation	ORD-072	Stop order ngày hiệu lực quá khứ	Kiểm tra không chọn ngày hiệu lực trong quá khứ.	"1. Đang ở màn Stop order"	"1. Mở date picker ngày hiệu lực
+2. Chọn ngày trong quá khứ nếu có thể
+3. Bấm xác nhận/đặt lệnh"	"1. App không cho chọn ngày quá khứ hoặc hiển thị lỗi
+2. không đặt Stop order"		Not Run
+Stop Order - Validation	ORD-073	Stop order thiếu trigger price	Kiểm tra trường trigger bắt buộc.	"1. Đang ở màn Stop order"	"1. Để trống trigger price
+2. Nhập các trường khác hợp lệ
+3. Bấm đặt"	"1. App hiển thị lỗi yêu cầu nhập giá kích hoạt
+2. không đặt lệnh"		Not Run
+Stop Order - Kích hoạt	ORD-092	Stop order Buy — kích hoạt khi giá đạt trigger	Kiểm tra Stop Buy được kích hoạt khi giá thị trường đạt trigger price.	"1. Có Stop order Buy đang chờ
+2. Trigger price > giá hiện tại"	"1. Đặt Stop Buy với trigger price cao hơn giá hiện tại
+2. Chờ giá thị trường tăng đến trigger
+3. Quan sát trạng thái lệnh"	"1. Khi giá đạt trigger, Stop order được kích hoạt thành lệnh thường
+2. Lệnh xuất hiện trong Orderbook với trạng thái đang chờ khớp"		Not Run
+Stop Order - Kích hoạt	ORD-093	Stop order Sell — kích hoạt khi giá đạt trigger	Kiểm tra Stop Sell được kích hoạt khi giá thị trường đạt trigger price.	"1. Có Stop order Sell đang chờ
+2. Trigger price < giá hiện tại"	"1. Đặt Stop Sell với trigger price thấp hơn giá hiện tại
+2. Chờ giá thị trường giảm đến trigger
+3. Quan sát trạng thái lệnh"	"1. Khi giá đạt trigger, Stop order được kích hoạt thành lệnh thường
+2. Lệnh xuất hiện trong Orderbook với trạng thái đang chờ khớp"		Not Run
+Stop Order - Hết hiệu lực	ORD-094	Stop order — hết hiệu lực sau ngày affected date	Kiểm tra Stop order tự hủy sau ngày hiệu lực.	"1. Có Stop order với affected date trong tương lai"	"1. Đặt Stop order với affected date = ngày mai
+2. Chờ qua ngày affected date
+3. Kiểm tra trạng thái lệnh"	"1. Stop order chuyển trạng thái hết hiệu lực/expired sau ngày affected date
+2. Không được kích hoạt sau ngày hiệu lực"		Not Run
+Lệnh đặt trước - Đặt lệnh	ORD-041	Đặt lệnh đặt trước ngày giao dịch tương lai	Kiểm tra đặt advance order cho ngày giao dịch hợp lệ.	"1. Tài khoản có quyền phái sinh
+2. ngày T+1 là ngày giao dịch"	"1. Mở màn Lệnh đặt trước
+2. Chọn Buy hoặc Sell
+3. Chọn mã, phiên, loại lệnh
+4. Chọn ngày hiệu lực T+1
+5. Nhập dữ liệu hợp lệ
+6. Bấm đặt và xác nhận"	"1. App hiển thị đặt lệnh đặt trước thành công
+2. lệnh nằm trong danh sách lệnh đặt trước với trạng thái chờ xử lý"		Not Run
+Lệnh đặt trước - Validation	ORD-042	Lệnh đặt trước ngày nghỉ bị chặn	Kiểm tra không cho chọn/gửi lệnh đặt trước vào ngày nghỉ.	"1. Có ngày T+1 hoặc ngày chọn là cuối tuần/ngày nghỉ"	"1. Mở Lệnh đặt trước
+2. Chọn ngày hiệu lực là ngày nghỉ
+3. Nhập thông tin còn lại hợp lệ
+4. Bấm đặt"	"1. App hiển thị lỗi ngày không hợp lệ hoặc không cho chọn ngày nghỉ
+2. không tạo lệnh"		Not Run
+Lệnh đặt trước - Validation	ORD-074	Advance order tổ hợp phiên và loại lệnh không hợp lệ	Kiểm tra validation trading session với order type.	"1. Đang ở màn Lệnh đặt trước"	"1. Chọn order type ATO nhưng chọn phiên liên tục
+2. Nhập dữ liệu khác hợp lệ
+3. Bấm đặt"	"1. App hiển thị lỗi tổ hợp loại lệnh/phiên không hợp lệ
+2. không tạo advance order"		Not Run
+Lệnh đặt trước - Kích hoạt	ORD-090	Lệnh đặt trước — kích hoạt đúng ngày hiệu lực	Kiểm tra lệnh đặt trước được kích hoạt vào đúng ngày T+1.	"1. Có lệnh đặt trước trạng thái chờ xử lý cho ngày T+1"	"1. Đặt lệnh đặt trước cho ngày T+1
+2. Chờ đến ngày T+1
+3. Kiểm tra trạng thái lệnh khi vào phiên
+4. Kiểm tra Orderbook"	"1. Lệnh đặt trước được kích hoạt và chuyển thành lệnh thường vào đúng phiên của ngày T+1
+2. Lệnh xuất hiện trong Orderbook với trạng thái đang chờ khớp"		Not Run
+Lệnh đặt trước - Kích hoạt	ORD-091	Lệnh đặt trước — không kích hoạt khi ngày hiệu lực là ngày nghỉ	Kiểm tra lệnh đặt trước không được xử lý vào ngày nghỉ.	"1. Có lệnh đặt trước cho ngày là cuối tuần hoặc ngày lễ"	"1. Đặt lệnh đặt trước cho ngày nghỉ
+2. Chờ đến ngày đó
+3. Kiểm tra trạng thái lệnh"	"1. Lệnh không được kích hoạt vào ngày nghỉ
+2. Lệnh chờ đến ngày giao dịch tiếp theo hoặc hiển thị trạng thái phù hợp"		Not Run
+Lệnh đặt trước - Sửa/Hủy	ORD-043	Hủy lệnh đặt trước	Kiểm tra hủy advance order đang chờ xử lý.	"1. Có lệnh đặt trước trạng thái chờ xử lý"	"1. Mở danh sách lệnh đặt trước
+2. Chọn lệnh cần hủy
+3. Bấm Cancel/Hủy
+4. Xác nhận"	"1. Lệnh chuyển trạng thái đã hủy
+2. không còn được xử lý vào phiên/ngày hiệu lực"		Not Run
+Lệnh đặt trước - Sửa/Hủy	ORD-095	Lệnh đặt trước — hủy trước ngày hiệu lực	Kiểm tra user có thể hủy advance order trước ngày kích hoạt.	"1. Có lệnh đặt trước trạng thái chờ xử lý"	"1. Mở danh sách lệnh đặt trước
+2. Chọn lệnh còn hiệu lực
+3. Bấm Cancel/Hủy
+4. Xác nhận hủy"	"1. Lệnh chuyển trạng thái đã hủy
+2. Không được kích hoạt vào ngày hiệu lực"		Not Run
+Lệnh đặt trước - Sửa/Hủy	ORD-096	Lệnh đặt trước — sửa thông tin trước ngày hiệu lực	Kiểm tra user có thể sửa advance order trước ngày kích hoạt.	"1. Có lệnh đặt trước trạng thái chờ xử lý"	"1. Mở danh sách lệnh đặt trước
+2. Chọn lệnh còn hiệu lực
+3. Sửa giá hoặc quantity
+4. Bấm Modify/Xác nhận"	"1. App hiển thị sửa lệnh thành công
+2. Thông tin mới được cập nhật cho ngày hiệu lực"		Not Run
+Xem lịch sử lệnh	ORD-044	Lịch sử lệnh thường	Kiểm tra xem lịch sử/orderbook lệnh thường.	"1. Tài khoản có lệnh thường trong ngày hoặc trong khoảng lọc"	"1. Mở Orderbook/History
+2. Chọn tab Normal order nếu có
+3. Chọn khoảng ngày
+4. Quan sát danh sách"	"1. Danh sách hiển thị đúng lệnh thường theo bộ lọc
+2. các trạng thái và số liệu khớp đúng với giao dịch"		Not Run
+Xem lịch sử lệnh	ORD-045	Lịch sử Stop order	Kiểm tra xem lịch sử lệnh dừng.	"1. Tài khoản có Stop order hoặc dữ liệu test"	"1. Mở Orderbook/History
+2. Chọn tab Stop order/Conditional order
+3. Chọn khoảng ngày
+4. Quan sát danh sách"	"1. Danh sách hiển thị đúng Stop order theo bộ lọc
+2. trạng thái chờ kích hoạt, đã kích hoạt, hủy, từ chối được thể hiện rõ"		Not Run
+Xem lịch sử lệnh	ORD-046	Lịch sử lệnh đặt trước	Kiểm tra xem lịch sử lệnh đặt trước.	"1. Tài khoản có advance order hoặc dữ liệu test"	"1. Mở Orderbook/History
+2. Chọn tab Advance order/Lệnh đặt trước
+3. Chọn khoảng ngày
+4. Quan sát danh sách"	"1. Danh sách hiển thị đúng lệnh đặt trước
+2. có ngày hiệu lực, phiên, loại lệnh và trạng thái xử lý"		Not Run
+Xem lịch sử lệnh	ORD-075	History chọn fromDate sau toDate	Kiểm tra filter ngày không hợp lệ trong lịch sử lệnh.	"1. Đang ở màn Order History"	"1. Chọn fromDate lớn hơn toDate
+2. Bấm tìm kiếm"	"1. App hiển thị lỗi ngày không hợp lệ hoặc tự điều chỉnh theo thiết kế
+2. không trả danh sách sai"		Not Run
+Xem lịch sử lệnh	ORD-076	History không có dữ liệu	Kiểm tra trạng thái rỗng của lịch sử lệnh.	"1. Chọn khoảng ngày không có lệnh"	"1. Mở Order History
+2. Chọn khoảng ngày không có giao dịch
+3. Bấm tìm kiếm"	"1. App hiển thị không có dữ liệu
+2. không giữ danh sách cũ gây nhầm lẫn"		Not Run
+TSĐB biến động	ORD-077	TSĐB cập nhật sau khi đặt lệnh thành công	Kiểm tra TSĐB (Tổng số dư biến động) thay đổi ngay sau khi đặt lệnh.	"1. Tài khoản có TSĐB xác định trước khi đặt lệnh
+2. Đặt lệnh Buy LO hợp lệ"	"1. Ghi nhận TSĐB trước khi đặt lệnh
+2. Đặt lệnh Buy thành công
+3. Quay lại màn Asset hoặc khu vực hiển thị TSĐB
+4. Quan sát TSĐB sau khi đặt lệnh"	"1. TSĐB thay đổi tương ứng với giá trị lệnh đã đặt
+2. Thay đổi phản ánh đúng chiều (giảm khi Buy, tăng khi Sell)"		Not Run
+TSĐB biến động	ORD-078	TSĐB cập nhật sau khi hủy lệnh	Kiểm tra TSĐB được hoàn trả khi hủy lệnh.	"1. Có lệnh chưa khớp đã làm thay đổi TSĐB"	"1. Ghi nhận TSĐB hiện tại
+2. Hủy lệnh thành công
+3. Quan sát TSĐB sau khi hủy"	"1. TSĐB được hoàn trả về mức trước khi đặt lệnh
+2. Thay đổi đúng với giá trị lệnh đã hủy"		Not Run
+TSĐB biến động	ORD-079	TSĐB cập nhật sau khi sửa lệnh tăng giá	Kiểm tra TSĐB thay đổi khi sửa lệnh với giá cao hơn.	"1. Có lệnh LO chưa khớp
+2. Sửa lệnh với giá cao hơn giá cũ"	"1. Ghi nhận TSĐB trước khi sửa
+2. Sửa lệnh thành công với giá cao hơn
+3. Quan sát TSĐB"	"1. TSĐB thay đổi tăng thêm tương ứng với chênh lệch giá
+2. Thay đổi đúng công thức tính TSĐB"		Not Run
+TSĐB biến động	ORD-080	TSĐB cập nhật sau khi sửa lệnh giảm giá	Kiểm tra TSĐB thay đổi khi sửa lệnh với giá thấp hơn.	"1. Có lệnh LO chưa khớp
+2. Sửa lệnh với giá thấp hơn giá cũ"	"1. Ghi nhận TSĐB trước khi sửa
+2. Sửa lệnh thành công với giá thấp hơn
+3. Quan sát TSĐB"	"1. TSĐB giảm tương ứng với chênh lệch giá
+2. Thay đổi đúng công thức tính TSĐB"		Not Run
+TSĐB biến động	ORD-081	TSĐB cập nhật sau khi sửa lệnh tăng khối lượng	Kiểm tra TSĐB thay đổi khi sửa lệnh tăng quantity.	"1. Có lệnh LO chưa khớp
+2. Sửa lệnh với quantity lớn hơn"	"1. Ghi nhận TSĐB trước khi sửa
+2. Sửa lệnh thành công với quantity lớn hơn
+3. Quan sát TSĐB"	"1. TSĐB tăng thêm tương ứng với quantity tăng
+2. Thay đổi đúng công thức tính TSĐB"		Not Run
+TSĐB biến động	ORD-082	TSĐB cập nhật sau khi lệnh khớp một phần	Kiểm tra TSĐB thay đổi khi lệnh khớp một phần.	"1. Có lệnh pending dễ khớp trong UAT"	"1. Ghi nhận TSĐB trước khi khớp
+2. Để lệnh khớp một phần
+3. Quan sát TSĐB sau khi khớp"	"1. TSĐB được cập nhật tương ứng với phần đã khớp
+2. Phần còn lại vẫn giữ TSĐB theo quantity chưa khớp"		Not Run
+TSĐB biến động	ORD-083	TSĐB cập nhật sau khi lệnh khớp toàn bộ	Kiểm tra TSĐB thay đổi khi lệnh khớp hết.	"1. Có lệnh pending dễ khớp toàn bộ trong UAT"	"1. Ghi nhận TSĐB trước khi khớp
+2. Để lệnh khớp toàn bộ
+3. Quan sát TSĐB sau khi khớp"	"1. TSĐB được cập nhật đúng với trạng thái lệnh đã khớp hết
+2. Không còn TSĐB bị giữ cho lệnh đã hoàn thành"		Not Run
+Race Conditions	ORD-068	Sửa lệnh vừa bị khớp trong lúc thao tác	Kiểm tra race condition khi lệnh khớp trước khi user bấm sửa.	"1. Có lệnh pending dễ khớp
+2. môi trường có realtime khớp lệnh"	"1. Mở màn sửa lệnh pending
+2. Trong lúc đang sửa, để lệnh được khớp hết
+3. Bấm Modify"	"1. App hiển thị lỗi/trạng thái mới của lệnh
+2. không báo sửa thành công sai"		Not Run
+Race Conditions	ORD-069	Hủy lệnh vừa bị khớp trong lúc thao tác	Kiểm tra race condition khi lệnh khớp trước khi user hủy.	"1. Có lệnh pending dễ khớp"	"1. Mở Orderbook
+2. Chọn Cancel trên lệnh pending
+3. Để lệnh khớp trước/đúng lúc xác nhận
+4. Confirm hủy"	"1. App hiển thị lệnh không thể hủy hoặc trạng thái đã khớp
+2. Orderbook cập nhật đúng"		Not Run
+Mạng & Xử lý lỗi	ORD-049	Symbol bị tạm ngừng giao dịch	Kiểm tra không cho đặt lệnh với mã bị suspend/halt.	"1. Môi trường có mã phái sinh bị tạm ngừng hoặc trạng thái không giao dịch"	"1. Chọn mã bị tạm ngừng
+2. Nhập lệnh hợp lệ về giá/quantity
+3. Bấm Buy/Sell"	"1. App hiển thị thông báo mã không được giao dịch
+2. không gửi lệnh thành công"		Not Run
+Mạng & Xử lý lỗi	ORD-050	Symbol đã đáo hạn	Kiểm tra chặn đặt lệnh mã đã hết hạn.	"1. Có mã phái sinh đã đáo hạn hoặc inactive"	"1. Chọn mã đã đáo hạn
+2. Quan sát form
+3. Thử bấm Buy/Sell nếu nút còn hiển thị"	"1. App không cho đặt lệnh
+2. user thấy trạng thái mã đã hết hạn hoặc không còn giao dịch"		Not Run
+Mạng & Xử lý lỗi	ORD-059	Mất mạng trước khi confirm đặt lệnh	Kiểm tra đặt lệnh khi mất mạng trước bước xác nhận.	"1. Form đặt lệnh đã nhập hợp lệ"	"1. Bấm Buy/Sell để mở dialog
+2. Tắt mạng
+3. Bấm Confirm"	"1. App hiển thị lỗi kết nối
+2. không hiển thị đặt lệnh thành công khi chưa có kết quả xác nhận"		Not Run
+Mạng & Xử lý lỗi	ORD-060	Mất mạng sau khi bấm confirm	Kiểm tra trạng thái không chắc chắn sau khi user bấm xác nhận và mạng mất.	"1. Form hợp lệ
+2. có thể giả lập mạng chập chờn"	"1. Bấm Confirm
+2. Ngắt mạng ngay khi loading
+3. Quan sát kết quả
+4. Mở Orderbook kiểm tra"	"1. App không tạo duplicate
+2. nếu chưa xác định kết quả thì hướng dẫn user kiểm tra Orderbook/refresh
+3. không tự báo thành công sai"		Not Run
+Mạng & Xử lý lỗi	ORD-061	Back khỏi dialog xác nhận	Kiểm tra user đóng dialog không gửi lệnh.	"1. Form hợp lệ và dialog đang mở"	"1. Bấm Buy/Sell
+2. Đóng dialog bằng X/back hoặc Cancel
+3. Kiểm tra Orderbook"	"1. Dialog đóng
+2. không có lệnh mới
+3. dữ liệu form vẫn còn để user chỉnh"		Not Run
+Mạng & Xử lý lỗi	ORD-062	Rời màn khi đang gửi lệnh	Kiểm tra app không lỗi khi user back trong lúc submit.	"1. Form hợp lệ
+2. môi trường phản hồi chậm"	"1. Bấm Confirm đặt lệnh
+2. Trong lúc loading, bấm back hoặc chuyển tab nếu app cho phép
+3. Quay lại Trade/Orderbook"	"1. App không crash
+2. kết quả lệnh được phản ánh rõ ở Orderbook hoặc thông báo
+3. không tạo nhiều lệnh"		Not Run
+Phiên giao dịch	ORD-063	Phiên nghỉ trưa	Kiểm tra đặt lệnh trong khoảng nghỉ trưa.	"1. Đang trong giờ nghỉ trưa hoặc môi trường UAT mô phỏng nghỉ trưa"	"1. Chọn mã phái sinh
+2. Nhập lệnh LO hợp lệ
+3. Bấm Buy/Sell"	"1. App xử lý theo rule nghiệp vụ hiện hành: cho/không cho đặt lệnh rõ ràng
+2. nếu không cho thì message dễ hiểu"		Not Run
+Phiên giao dịch	ORD-064	Ngoài giờ giao dịch	Kiểm tra đặt lệnh thường ngoài giờ.	"1. Đang ngoài giờ giao dịch hoặc môi trường UAT mô phỏng đóng cửa"	"1. Mở Trade
+2. Nhập lệnh thường hợp lệ
+3. Bấm Buy/Sell"	"1. App không đặt lệnh thường nếu rule không cho phép
+2. message hướng dẫn user về phiên giao dịch tiếp theo nếu có"		Not Run

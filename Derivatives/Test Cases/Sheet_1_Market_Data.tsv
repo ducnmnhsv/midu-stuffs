@@ -1,0 +1,193 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Navigation & Access	MD-001	Mở tab Derivatives trên Market	Kiểm tra user xem được khu vực thị trường phái sinh trên app.	"1. App đã cài đặt.
+2. Có dữ liệu thị trường trong ngày."	"1. Mở app NHSV Pro.
+2. Vào màn Market.
+3. Chọn tab Derivatives."	"1. Tab Derivatives hiển thị rõ ràng bên cạnh các tab thị trường hiện có.
+2. Danh sách mã phái sinh được tải thành công."		Not Run
+Navigation & Access	MD-002	Hiển thị mã phái sinh không cần đăng nhập	Kiểm tra danh sách mã phái sinh luôn có thể xem ở khu vực market public.	"1. User chưa đăng nhập hoặc đã logout.
+2. App có kết nối mạng."	"1. Mở app khi chưa đăng nhập.
+2. Vào Market.
+3. Chọn tab Derivatives."	"1. Danh sách mã phái sinh vẫn hiển thị.
+2. App không yêu cầu đăng nhập chỉ để xem bảng giá."		Not Run
+Symbol Grouping	MD-003	Hiển thị nhóm Index futures	Kiểm tra tab con Index futures chỉ hiển thị hợp đồng tương lai chỉ số.	"1. Market có dữ liệu mã phái sinh Index.
+2. Market có dữ liệu mã Gov.Bond."	"1. Vào Market > Derivatives.
+2. Chọn tab Index futures.
+3. Quan sát danh sách mã."	"1. Danh sách chỉ gồm các mã phái sinh thuộc nhóm Index futures.
+2. Không lẫn mã Gov.Bond future."		Not Run
+Symbol Grouping	MD-004	Hiển thị nhóm Gov.Bond future	Kiểm tra tab con Gov.Bond future chỉ hiển thị hợp đồng tương lai trái phiếu chính phủ.	"1. Market có dữ liệu mã Gov.Bond future."	"1. Vào Market > Derivatives.
+2. Chọn tab Gov.Bond future.
+3. Quan sát danh sách mã."	"1. Danh sách chỉ gồm các mã phái sinh thuộc nhóm Gov.Bond future.
+2. Không lẫn mã Index futures."		Not Run
+Symbol Grouping	MD-005	Hiển thị toàn bộ mã phái sinh	Kiểm tra tab Derivatives tổng hợp hiển thị đầy đủ các nhóm mã phái sinh.	"1. Market có dữ liệu nhiều nhóm phái sinh."	"1. Vào Market > Derivatives.
+2. Chọn tab con Derivatives hoặc All nếu có.
+3. Đối chiếu danh sách."	"1. Danh sách hiển thị cả Index futures và Gov.Bond future.
+2. Nội dung hiển thị theo đúng thiết kế."		Not Run
+Price Display & Colors	MD-006	Hiển thị màu giá theo quy tắc app	Kiểm tra màu sắc giá phái sinh theo trạng thái tăng giảm.	"1. Có mã tăng để đối chiếu.
+2. Có mã giảm để đối chiếu.
+3. Có mã tham chiếu, trần hoặc sàn nếu môi trường test hỗ trợ."	"1. Vào Market > Derivatives.
+2. Quan sát màu các cột giá/thay đổi.
+3. Đối chiếu từng trạng thái giá."	"1. Giá tham chiếu màu vàng.
+2. Giá tăng màu xanh lá.
+3. Giá giảm màu đỏ.
+4. Giá tăng trần màu tím.
+5. Giá giảm sàn màu xanh lam."		Not Run
+Price Display & Colors	MD-007	Hiển thị ký tự đáo hạn trong ngày	Kiểm tra mã có ngày đáo hạn hôm nay được đánh dấu.	"1. Có ít nhất một mã phái sinh đáo hạn trong ngày test."	"1. Vào Market > Derivatives.
+2. Tìm mã có ngày đáo hạn là hôm nay.
+3. Quan sát tên mã."	"1. Mã đáo hạn trong ngày hiển thị ký tự * bên cạnh tên mã theo yêu cầu."		Not Run
+Price Display & Colors	MD-035	Dữ liệu màu tại đúng giá trần/sàn	Kiểm tra màu giá khi giá bằng chính xác CE hoặc FL.	"1. Có mã có giá hiện tại bằng trần hoặc sàn trong UAT."	"1. Mở Market > Derivatives.
+2. Tìm mã có giá bằng CE hoặc FL.
+3. Quan sát màu ở Market và Current price."	"1. Giá bằng CE hiển thị màu trần.
+2. Giá bằng FL hiển thị màu sàn.
+3. Không bị hiển thị nhầm màu tăng/giảm thường."		Not Run
+Sorting	MD-008	Sắp xếp theo Price	Kiểm tra chức năng sort Price trên danh sách phái sinh.	"1. Danh sách Derivatives có nhiều mã.
+2. Các mã có dữ liệu giá."	"1. Vào Market > Derivatives.
+2. Nhấn cột Price để sort tăng.
+3. Nhấn lại để sort giảm."	"1. Danh sách được sắp xếp đúng theo Price.
+2. Chiều sort thay đổi sau mỗi lần nhấn giống cơ chế hiện tại của app."		Not Run
+Sorting	MD-009	Sắp xếp theo Volume	Kiểm tra chức năng sort Volume trên danh sách phái sinh.	"1. Danh sách Derivatives có nhiều mã.
+2. Các mã có dữ liệu khối lượng."	"1. Vào Market > Derivatives.
+2. Nhấn cột Volume để sort tăng.
+3. Nhấn lại để sort giảm."	"1. Danh sách được sắp xếp đúng theo Volume.
+2. Các mã không có dữ liệu được xử lý nhất quán theo app."		Not Run
+Sorting	MD-010	Sắp xếp theo Change	Kiểm tra chức năng sort Change trên danh sách phái sinh.	"1. Danh sách Derivatives có nhiều mã.
+2. Các mã có dữ liệu tăng giảm."	"1. Vào Market > Derivatives.
+2. Nhấn cột Change để sort tăng.
+3. Nhấn lại để sort giảm."	"1. Danh sách được sắp xếp đúng theo mức thay đổi.
+2. Giá trị âm/dương được đặt đúng thứ tự."		Not Run
+Horizontal Price Board	MD-011	Bảng giá ngang mặc định Index futures	Kiểm tra màn bảng giá ngang phái sinh mở mặc định nhóm Index futures.	"1. App có chức năng horizontal price board cho phái sinh."	"1. Vào Market > Derivatives.
+2. Mở bảng giá ngang.
+3. Quan sát nhóm đang được chọn."	"1. Bảng giá ngang mở với nhóm Index futures mặc định.
+2. Dữ liệu hiển thị theo đúng cột thiết kế."		Not Run
+Horizontal Price Board	MD-012	Đổi nhóm trong bảng giá ngang	Kiểm tra user đổi được nhóm mã trong bảng giá ngang.	"1. Có dữ liệu Index futures.
+2. Có dữ liệu Gov.Bond future."	"1. Mở bảng giá ngang Derivatives.
+2. Mở dropdown/selector nhóm.
+3. Chọn Gov.Bond future.
+4. Chọn lại Index futures."	"1. Danh sách option hiển thị đầy đủ.
+2. Sau khi chọn, bảng giá đổi đúng nhóm.
+3. Layout không bị mất hoặc vỡ."		Not Run
+Horizontal Price Board	MD-013	Empty state bảng giá ngang	Kiểm tra app hiển thị thông báo dễ hiểu khi nhóm không có dữ liệu.	"1. Có thể chọn nhóm không có mã hoặc dữ liệu test được cấu hình rỗng."	"1. Mở bảng giá ngang Derivatives.
+2. Chọn nhóm không có dữ liệu.
+3. Quan sát màn hình."	"1. App hiển thị thông báo Không có dữ liệu hoặc No data.
+2. Không hiển thị bảng rỗng không có message."		Not Run
+Horizontal Price Board	MD-014	Error state bảng giá ngang	Kiểm tra app hiển thị lỗi và cho thử lại khi không tải được dữ liệu.	"1. Có thể giả lập mất mạng hoặc lỗi tải dữ liệu."	"1. Tắt mạng hoặc dùng môi trường có lỗi tải.
+2. Mở bảng giá ngang Derivatives.
+3. Quan sát thông báo.
+4. Bấm Retry/Thử lại nếu có."	"1. App hiển thị trạng thái lỗi rõ ràng.
+2. Có cách thử lại.
+3. Khi dữ liệu tải lại thành công thì bảng giá hiển thị bình thường."		Not Run
+Home Chart	MD-015	Home hiển thị chart VN30F1M front month	Kiểm tra Home dùng mã phái sinh VN30 có ngày đáo hạn gần nhất.	"1. Home có block chart Index derivatives.
+2. Có danh sách mã VN30F với nhiều kỳ hạn."	"1. Mở Home.
+2. Quan sát chart phái sinh VN30.
+3. Đối chiếu mã hiển thị với mã có ngày đáo hạn gần nhất còn hiệu lực."	"1. Home hiển thị chart của mã VN30F front month.
+2. Không chọn mã đã đáo hạn.
+3. Không chọn mã xa hạn hơn khi còn mã gần hơn."		Not Run
+Home Chart	MD-036	Home không có mã front month hợp lệ	Kiểm tra Home chart khi không tìm được mã front month còn hiệu lực.	"1. Môi trường test không có mã front month hợp lệ hoặc tất cả mã đã đáo hạn."	"1. Mở Home.
+2. Quan sát block chart phái sinh."	"1. App dùng fallback theo thiết kế hoặc hiển thị không có dữ liệu.
+2. App không crash.
+3. App không chọn sai mã cơ sở."		Not Run
+Home Chart	MD-039	Home chart fallback khi không có dữ liệu phái sinh	Kiểm tra Home chart xử lý khi không có mã front month hợp lệ.	"1. Môi trường test không có mã VN30F front month còn hiệu lực
+2. Hoặc tất cả mã đã đáo hạn"	"1. Mở màn Home
+2. Quan sát block chart phái sinh
+3. Kiểm tra app có chọn mã fallback hay không"	"1. App hiển thị chart fallback theo thiết kế hoặc empty state
+2. Không crash
+3. Không chọn nhầm mã cơ sở (HOSE/HNX) thay cho phái sinh"		Not Run
+Search	MD-016	Tìm kiếm mã phái sinh	Kiểm tra search trả về mã phái sinh và nhãn nhóm đúng.	"1. Có dữ liệu mã phái sinh.
+2. User có thể dùng search."	"1. Mở Search.
+2. Nhập một mã phái sinh như VN30F.
+3. Quan sát kết quả."	"1. Kết quả hiển thị mã phái sinh đúng.
+2. Nhãn nhóm/sàn hiển thị theo ngôn ngữ app như PS/DR hoặc TPCP/GB."		Not Run
+Search	MD-029	Search mã phái sinh không tồn tại	Kiểm tra search khi user nhập mã không có trong hệ thống.	"1. App có kết nối mạng."	"1. Mở Search.
+2. Nhập mã phái sinh không tồn tại, ví dụ VN30F9999.
+3. Quan sát kết quả."	"1. App hiển thị không có kết quả hoặc empty state rõ ràng.
+2. App không tự chọn mã gần giống gây nhầm lẫn."		Not Run
+Search	MD-030	Search ký tự thường/khoảng trắng	Kiểm tra search xử lý input không chuẩn của user.	"1. App có dữ liệu mã phái sinh."	"1. Mở Search.
+2. Nhập mã bằng chữ thường hoặc có khoảng trắng đầu/cuối.
+3. Quan sát kết quả."	"1. App vẫn tìm được mã phù hợp hoặc tự trim input.
+2. App không hiển thị lỗi kỹ thuật."		Not Run
+Current Price - Navigation	MD-017	Mở Current price từ Market	Kiểm tra điều hướng từ danh sách phái sinh sang chi tiết mã.	"1. Danh sách Market > Derivatives đang hiển thị."	"1. Vào Market > Derivatives.
+2. Chọn một mã phái sinh.
+3. Quan sát màn Current price."	"1. App mở đúng màn Current price của mã đã chọn.
+2. Tên mã và nhãn nhóm hiển thị đúng."		Not Run
+Current Price - Navigation	MD-025	Điều hướng Buy/Sell từ Current price	Kiểm tra nút Buy/Sell đưa user sang màn Trade với đúng mã.	"1. User đã đăng nhập tài khoản có phái sinh.
+2. Đang ở Current price của một mã phái sinh."	"1. Mở Current price.
+2. Bấm Buy.
+3. Quay lại và bấm Sell."	"1. App mở màn Trade phái sinh với đúng mã đã chọn.
+2. Chiều Buy hoặc Sell được pre-fill đúng theo nút user bấm."		Not Run
+Current Price - Display	MD-018	Current price hiển thị Basic info	Kiểm tra thông tin cơ bản của mã phái sinh theo thiết kế.	"1. Mã phái sinh có dữ liệu thị trường trong ngày."	"1. Mở Current price của mã phái sinh.
+2. Quan sát khu vực thông tin giá.
+3. Kiểm tra các trường mã, giá hiện tại, trần, sàn, tham chiếu, mở cửa, cao nhất, thấp nhất, khối lượng."	"1. Các trường thông tin hiển thị đầy đủ theo thiết kế.
+2. Số liệu đúng định dạng.
+3. Trường không có dữ liệu hiển thị --."		Not Run
+Current Price - Display	MD-019	Current price hiển thị Bid/Ask 3 bước và 10 bước	Kiểm tra user xem được sổ lệnh theo lựa chọn 3/10 bước giá.	"1. Mã phái sinh có dữ liệu bid/ask."	"1. Mở Current price.
+2. Ở tab Quote, quan sát Bid/Ask mặc định.
+3. Đổi selector 3 bước/10 bước.
+4. Quan sát danh sách giá."	"1. Bid/Ask hiển thị đúng số bước đã chọn.
+2. Giá và khối lượng mua/bán được căn chỉnh dễ đọc."		Not Run
+Current Price - Display	MD-020	Tab Matched hiển thị giao dịch khớp	Kiểm tra tab Matched của mã phái sinh.	"1. Mã phái sinh có dữ liệu khớp lệnh trong phiên hoặc dữ liệu mẫu."	"1. Mở Current price.
+2. Chọn tab Matched.
+3. Quan sát danh sách khớp."	"1. Tab Matched hiển thị danh sách giao dịch khớp của đúng mã.
+2. Dữ liệu gồm thời gian, giá, khối lượng và màu tăng/giảm nếu có."		Not Run
+Current Price - Display	MD-021	Tab Chart hiển thị biểu đồ	Kiểm tra tab Chart của mã phái sinh.	"1. Mã phái sinh có dữ liệu chart."	"1. Mở Current price.
+2. Chọn tab Chart.
+3. Chọn các khung thời gian có trên app."	"1. Chart hiển thị đúng mã đang xem.
+2. Đổi timeframe cập nhật chart.
+3. Nếu không có dữ liệu thì hiển thị thông báo phù hợp."		Not Run
+Current Price - Display	MD-024	Fallback dữ liệu trống trên Current price	Kiểm tra app hiển thị -- khi trường dữ liệu chưa có.	"1. Có mã hoặc môi trường test có một số trường trống."	"1. Mở Current price của mã có dữ liệu thiếu.
+2. Quan sát tất cả field trên màn."	"1. Các trường thiếu hiển thị --.
+2. Các trường còn dữ liệu vẫn hiển thị bình thường.
+3. App không crash."		Not Run
+Realtime Data	MD-022	Dữ liệu realtime trên Market	Kiểm tra giá phái sinh cập nhật liên tục trong phiên.	"1. Đang trong phiên giao dịch.
+2. Có biến động giá thị trường."	"1. Vào Market > Derivatives.
+2. Ghi nhận giá/khối lượng của một mã.
+3. Chờ thị trường có cập nhật.
+4. Quan sát thay đổi."	"1. Giá, thay đổi, phần trăm và khối lượng cập nhật trên màn.
+2. User không cần reload app."		Not Run
+Realtime Data	MD-023	Dữ liệu realtime trên Current price	Kiểm tra chi tiết mã cập nhật realtime.	"1. Đang trong phiên giao dịch.
+2. Mã có biến động giá hoặc sổ lệnh."	"1. Mở Current price của mã phái sinh.
+2. Quan sát giá hiện tại và Bid/Ask.
+3. Chờ cập nhật thị trường."	"1. Giá hiện tại, thay đổi, khối lượng và Bid/Ask cập nhật liên tục.
+2. App không bị nhảy sai mã."		Not Run
+Realtime Data	MD-038	Hiển thị giá trị ĐTNN trên bảng giá phái sinh	Kiểm tra cột ĐTNN (Foreigner) hiển thị đúng trên Market Derivatives.	"1. Đang trong phiên giao dịch
+2. Mã phái sinh có dữ liệu giá trị mua/bán của ĐTNN"	"1. Mở Market > Derivatives
+2. Quan sát cột ĐTNN (Foreigner buy/sell)
+3. Đối chiếu với nguồn dữ liệu nếu có"	"1. Cột ĐTNN hiển thị giá trị mua và bán riêng biệt
+2. Định dạng số đúng, có dấu phân tách
+3. Nếu không có dữ liệu thì hiển thị --"		Not Run
+Error Handling & Connectivity	MD-026	Market mở khi mất mạng	Kiểm tra app xử lý khi user mở Market Derivatives lúc không có kết nối.	"1. Thiết bị đang tắt mạng hoặc mạng rất yếu."	"1. Tắt Wi-Fi/4G.
+2. Mở Market > Derivatives.
+3. Quan sát màn hình.
+4. Bật mạng lại và thử refresh."	"1. App hiển thị lỗi kết nối hoặc trạng thái retry rõ ràng.
+2. Khi có mạng lại, dữ liệu tải được và không cần đóng app."		Not Run
+Error Handling & Connectivity	MD-027	Market mất mạng khi đang xem realtime	Kiểm tra màn Market không treo khi mất kết nối realtime giữa chừng.	"1. Đang trong phiên.
+2. Market > Derivatives đang hiển thị dữ liệu."	"1. Mở Market > Derivatives.
+2. Tắt mạng trong khi đang xem.
+3. Chờ 30 giây.
+4. Bật mạng lại."	"1. App không crash.
+2. Có trạng thái mất kết nối nếu thiết kế có.
+3. Sau khi có mạng, dữ liệu tiếp tục cập nhật hoặc user có thể refresh."		Not Run
+Error Handling & Connectivity	MD-028	Current price mã vừa hết hạn	Kiểm tra app xử lý mã phái sinh đã đáo hạn hoặc không còn giao dịch.	"1. Môi trường có mã đã đáo hạn hoặc mã được đánh dấu inactive."	"1. Tìm hoặc mở mã đã đáo hạn.
+2. Quan sát Current price.
+3. Bấm Buy/Sell nếu nút còn hiển thị."	"1. App không cho giao dịch mã hết hạn.
+2. Thông tin thị trường hiển thị theo trạng thái dữ liệu cũ hoặc thông báo không còn giao dịch."		Not Run
+Error Handling & Connectivity	MD-031	Chuyển nhanh giữa nhiều mã Current price	Kiểm tra dữ liệu không bị lẫn khi user đổi mã liên tục.	"1. Có ít nhất 2 mã phái sinh có dữ liệu."	"1. Mở Current price mã A.
+2. Quay lại Market và mở mã B ngay.
+3. Lặp lại 3 lần.
+4. Quan sát header, giá, Bid/Ask."	"1. Header, giá và Bid/Ask luôn thuộc đúng mã đang xem.
+2. Không còn dữ liệu realtime của mã trước."		Not Run
+Error Handling & Connectivity	MD-032	Current price loading chậm	Kiểm tra màn chi tiết trong điều kiện dữ liệu tải chậm.	"1. Có thể giả lập mạng chậm hoặc môi trường UAT phản hồi chậm."	"1. Mở Current price của mã phái sinh.
+2. Quan sát trong lúc loading.
+3. Chờ dữ liệu hiển thị."	"1. App hiển thị loading/skeleton phù hợp.
+2. App không hiển thị số liệu cũ của mã khác.
+3. Dữ liệu hiển thị đúng sau khi tải xong."		Not Run
+Edge Cases	MD-033	Chart không có dữ liệu timeframe	Kiểm tra tab Chart khi một khung thời gian không có dữ liệu.	"1. Mã phái sinh có ít hoặc không có dữ liệu cho một timeframe."	"1. Mở Current price > Chart.
+2. Chọn lần lượt các timeframe.
+3. Chọn timeframe không có dữ liệu nếu có."	"1. App hiển thị empty state cho timeframe không có dữ liệu.
+2. Các timeframe khác vẫn hoạt động."		Not Run
+Edge Cases	MD-034	Matched không có giao dịch trong ngày	Kiểm tra tab Matched khi mã chưa có giao dịch khớp.	"1. Mã phái sinh chưa phát sinh khớp lệnh trong ngày hoặc dữ liệu test rỗng."	"1. Mở Current price.
+2. Chọn tab Matched."	"1. Tab Matched hiển thị không có dữ liệu.
+2. Không hiển thị giao dịch của mã khác hoặc ngày khác."		Not Run
+Edge Cases	MD-037	Đổi ngôn ngữ app với nhãn phái sinh	Kiểm tra nhãn PS/DR và TPCP/GB theo ngôn ngữ.	"1. App hỗ trợ đổi ngôn ngữ VI/EN."	"1. Đặt ngôn ngữ tiếng Việt.
+2. Kiểm tra nhãn mã phái sinh ở Search/Current price.
+3. Đổi sang tiếng Anh.
+4. Kiểm tra lại."	"1. Nhãn phái sinh đổi đúng theo ngôn ngữ.
+2. Mã cơ sở HOSE/HNX/UPCOM không bị ảnh hưởng."		Not Run

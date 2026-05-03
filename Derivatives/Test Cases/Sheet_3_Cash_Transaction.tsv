@@ -1,0 +1,218 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Navigation & Access	CASH-001	Mở Cash Transaction phái sinh	Kiểm tra user vào được khu vực giao dịch tiền phái sinh.	"1. User đã đăng nhập tài khoản có sub 80"	"1. Mở app
+2. Chọn tài khoản phái sinh/sub 80
+3. Vào Cash Transaction"	"1. Màn Cash Transaction hiển thị các chức năng liên quan phái sinh như Withdraw, Internal transfer, VSD, Cash statement theo thiết kế"		Not Run
+Navigation & Access	CASH-030	Không có sub 80 khi mở Cash Transaction	Kiểm tra user chưa có tài khoản phái sinh không thao tác được giao dịch tiền.	"1. User đăng nhập tài khoản chưa có sub/tài khoản phái sinh"	"1. Vào Cash Transaction
+2. Chọn khu vực Derivatives nếu có"	"1. App hiển thị thông báo chưa có tài khoản phái sinh hoặc không cho vào màn giao dịch tiền phái sinh
+2. không hiển thị form chuyển tiền"		Not Run
+Internal Transfer - Form	CASH-002	Mở Internal transfer	Kiểm tra tab Internal transfer hiển thị đúng layout.	"1. User đang ở Cash Transaction với sub 80"	"1. Chọn Internal transfer
+2. Quan sát tab Request và History"	"1. Internal transfer active
+2. tab Request mặc định hiển thị
+3. có tab History để tra cứu"		Not Run
+Internal Transfer - Form	CASH-003	Hiển thị Available amount	Kiểm tra số tiền khả dụng khi chuyển nội bộ.	"1. User có dữ liệu số dư khả dụng"	"1. Mở Internal transfer > Request
+2. Quan sát dòng Available amount"	"1. Available amount hiển thị đúng định dạng số, có dấu phân tách hàng nghìn"		Not Run
+Internal Transfer - Form	CASH-004	Receiving account dropdown	Kiểm tra chọn tài khoản nhận khi chuyển nội bộ.	"1. User có ít nhất một sub/tài khoản nhận hợp lệ"	"1. Mở dropdown Receiving account
+2. Chọn một account/sub khác
+3. Quan sát form"	"1. Danh sách receiving account hiển thị đúng định dạng
+2. sau khi chọn, form cập nhật account nhận và note mặc định nếu có"		Not Run
+Internal Transfer - Form	CASH-005	Nút All trong Internal transfer	Kiểm tra nút All điền số tiền tối đa có thể chuyển.	"1. Available amount > 0"	"1. Mở Internal transfer
+2. Bấm All ở field Amount"	"1. Amount được điền bằng Available amount
+2. số tiền format đúng"		Not Run
+Internal Transfer - Validation	CASH-006	Internal transfer thiếu amount	Kiểm tra validation amount bắt buộc.	"1. Đang ở Internal transfer Request"	"1. Để trống Amount
+2. Nhập Note hợp lệ nếu cần
+3. Bấm Transfer"	"1. App hiển thị lỗi Field is required hoặc thông báo tương đương
+2. không mở dialog xác nhận"		Not Run
+Internal Transfer - Validation	CASH-007	Internal transfer vượt Available amount	Kiểm tra chặn chuyển vượt số tiền khả dụng.	"1. Available amount đã hiển thị"	"1. Nhập Amount lớn hơn Available amount
+2. Bấm Transfer"	"1. App hiển thị lỗi Vượt quá số tiền cho phép
+2. không mở dialog xác nhận"		Not Run
+Internal Transfer - Validation	CASH-031	Internal transfer amount bằng 0	Kiểm tra không cho chuyển tiền với amount = 0.	"1. Đang ở Internal transfer Request"	"1. Nhập Amount = 0
+2. Nhập Note hợp lệ
+3. Bấm Transfer"	"1. App hiển thị lỗi số tiền không hợp lệ
+2. không mở dialog xác nhận"		Not Run
+Internal Transfer - Validation	CASH-032	Internal transfer amount âm	Kiểm tra không cho chuyển tiền với số âm.	"1. Đang ở Internal transfer Request"	"1. Nhập Amount âm nếu input cho phép
+2. Bấm Transfer"	"1. App không cho nhập số âm hoặc hiển thị lỗi
+2. không mở dialog xác nhận"		Not Run
+Internal Transfer - Validation	CASH-033	Internal transfer amount có ký tự chữ	Kiểm tra input số tiền chỉ nhận số hợp lệ.	"1. Đang ở Internal transfer Request"	"1. Tap Amount
+2. Nhập chữ/ký tự đặc biệt nếu có thể
+3. Bấm Transfer"	"1. App không nhận ký tự không hợp lệ hoặc hiển thị lỗi
+2. không gửi giao dịch"		Not Run
+Internal Transfer - Validation	CASH-034	Internal transfer note trống	Kiểm tra Note bắt buộc nếu app/API yêu cầu.	"1. Đang ở Internal transfer Request
+2. Amount hợp lệ"	"1. Xóa toàn bộ Note
+2. Bấm Transfer"	"1. App hiển thị lỗi Field is required hoặc thông báo tương đương
+2. không mở dialog xác nhận"		Not Run
+Internal Transfer - Validation	CASH-035	Internal transfer nhận cùng tài khoản/sub	Kiểm tra không cho chuyển tới chính sub đang gửi.	"1. Có thể chọn hoặc nhập receiving account bằng sending account/sub"	"1. Mở Internal transfer
+2. Chọn receiving account trùng sending account/sub nếu có
+3. Nhập Amount hợp lệ
+4. Bấm Transfer"	"1. App chặn giao dịch hoặc không hiển thị option trùng
+2. không cho chuyển tiền tới chính tài khoản/sub gửi"		Not Run
+Internal Transfer - Confirm	CASH-008	Dialog xác nhận Internal transfer	Kiểm tra dialog trước khi chuyển nội bộ.	"1. Form Internal transfer đã nhập hợp lệ"	"1. Bấm Transfer
+2. Quan sát dialog
+3. Bấm Cancel"	"1. Dialog hiển thị Sending account, Receiving account, Amount, Note
+2. Cancel đóng dialog và giữ nguyên dữ liệu form"		Not Run
+Internal Transfer - Confirm	CASH-009	Confirm Internal transfer thành công	Kiểm tra luồng chuyển tiền nội bộ hợp lệ.	"1. Form hợp lệ
+2. tài khoản đủ số dư
+3. trong thời gian giao dịch nếu có giới hạn"	"1. Bấm Transfer
+2. Trong dialog bấm Confirm
+3. Chờ kết quả"	"1. App hiển thị chuyển tiền thành công
+2. Available amount được cập nhật
+3. form reset hoặc trở về trạng thái mặc định"		Not Run
+Internal Transfer - Confirm	CASH-010	Internal transfer lỗi giao dịch	Kiểm tra app hiển thị lỗi khi chuyển nội bộ không thành công.	"1. Có thể dùng số tiền/tình huống khiến giao dịch bị từ chối"	"1. Nhập thông tin hợp lệ về form nhưng không thỏa điều kiện thực tế
+2. Bấm Transfer
+3. Confirm"	"1. App hiển thị message lỗi rõ ràng
+2. form không bị reset để user chỉnh lại"		Not Run
+Internal Transfer - Confirm	CASH-036	Double tap Confirm chuyển nội bộ	Kiểm tra không tạo hai giao dịch khi user bấm Confirm liên tục.	"1. Form Internal transfer hợp lệ
+2. mạng phản hồi chậm"	"1. Bấm Transfer
+2. Trong dialog, bấm Confirm nhiều lần nhanh
+3. Kiểm tra lịch sử"	"1. Nút Confirm loading/disable
+2. chỉ ghi nhận một giao dịch hoặc một kết quả xử lý"		Not Run
+Internal Transfer - Confirm	CASH-037	Mất mạng khi Confirm chuyển nội bộ	Kiểm tra xử lý lỗi kết nối trong lúc chuyển nội bộ.	"1. Form Internal transfer hợp lệ"	"1. Mở dialog xác nhận
+2. Tắt mạng
+3. Bấm Confirm"	"1. App hiển thị lỗi kết nối
+2. không báo thành công sai
+3. user có thể kiểm tra lại History sau khi có mạng"		Not Run
+Internal Transfer - History	CASH-011	Lịch sử Internal transfer mặc định	Kiểm tra tab History của chuyển nội bộ.	"1. User có hoặc không có lịch sử chuyển tiền"	"1. Mở Internal transfer
+2. Chọn tab History"	"1. App hiển thị lịch sử theo khoảng ngày mặc định
+2. nếu không có dữ liệu thì có empty state rõ ràng"		Not Run
+Internal Transfer - History	CASH-012	Lọc lịch sử Internal transfer theo ngày	Kiểm tra bộ lọc ngày trong lịch sử chuyển nội bộ.	"1. Có dữ liệu lịch sử ở nhiều ngày hoặc dữ liệu test"	"1. Mở History
+2. Chọn fromDate/toDate
+3. Áp dụng lọc"	"1. Danh sách chỉ hiển thị giao dịch trong khoảng ngày đã chọn
+2. số tiền, account gửi/nhận và ghi chú hiển thị đúng"		Not Run
+Internal Transfer - History	CASH-013	Load more lịch sử Internal transfer	Kiểm tra phân trang/lấy thêm lịch sử.	"1. Có nhiều giao dịch hơn một trang"	"1. Mở History
+2. Cuộn cuối danh sách hoặc bấm Load more
+3. Quan sát danh sách"	"1. Dữ liệu trang tiếp theo được append
+2. không mất dữ liệu đã tải trước"		Not Run
+Internal Transfer - History	CASH-039	History Internal transfer fromDate sau toDate	Kiểm tra filter ngày không hợp lệ.	"1. Đang ở Internal transfer History"	"1. Chọn fromDate sau toDate
+2. Bấm tìm kiếm/lọc"	"1. App hiển thị lỗi ngày không hợp lệ hoặc tự điều chỉnh theo thiết kế
+2. không hiển thị danh sách sai"		Not Run
+Internal Transfer - Note handling	CASH-053	Internal transfer — note mặc định khi chọn tài khoản nhận	Kiểm tra note được tự điền khi chọn receiving account.	"1. User có ít nhất một receiving account hợp lệ"	"1. Mở Internal transfer > Request
+2. Chọn một receiving account từ dropdown
+3. Quan sát field Note"	"1. Field Note được tự điền giá trị mặc định theo thiết kế
+2. User có thể chỉnh sửa note nếu muốn"		Not Run
+Internal Transfer - Note handling	CASH-054	Internal transfer — note quá dài	Kiểm tra validation độ dài field Note.	"1. Đang ở Internal transfer Request"	"1. Nhập Amount hợp lệ
+2. Nhập Note rất dài (vượt giới hạn ký tự nếu có)
+3. Bấm Transfer"	"1. App hiển thị lỗi độ dài note vượt quá giới hạn hoặc tự cắt theo thiết kế
+2. Nếu cắt tự động thì hiển thị warning cho user"		Not Run
+VSD Deposit	CASH-014	Mở VSD Deposit	Kiểm tra màn nộp ký quỹ VSD.	"1. User đã đăng nhập tài khoản phái sinh"	"1. Vào Cash Transaction
+2. Chọn VSD/Deposit hoặc Nộp ký quỹ
+3. Quan sát màn"	"1. Màn Deposit hiển thị Cash balance at VSD, Withdrawable from VSD nếu có, Amount, All, Fee/Received amount và nút Deposit"		Not Run
+VSD Deposit	CASH-015	VSD Balance hiển thị và refresh	Kiểm tra số dư VSD hiển thị và cập nhật sau giao dịch.	"1. User có dữ liệu VSD balance"	"1. Mở VSD Deposit hoặc Withdraw
+2. Ghi nhận số dư
+3. Thực hiện giao dịch thành công hoặc refresh màn"	"1. Cash balance at VSD và Withdrawable from VSD hiển thị đúng định dạng
+2. sau giao dịch thành công được cập nhật lại"		Not Run
+VSD Deposit	CASH-016	Deposit dùng nút All	Kiểm tra nút All trong form nộp ký quỹ.	"1. Có số dư có thể dùng để nộp"	"1. Mở Deposit
+2. Bấm All ở Amount"	"1. Amount được điền bằng số tiền tối đa theo thiết kế
+2. app tự tính/hiển thị phí nếu có"		Not Run
+VSD Deposit	CASH-017	Deposit tính phí thành công	Kiểm tra phí được hiển thị trước khi xác nhận nộp ký quỹ.	"1. Nhập amount hợp lệ"	"1. Mở Deposit
+2. Nhập Amount hợp lệ
+3. Chờ phí hiển thị hoặc rời khỏi ô amount"	"1. App hiển thị Fee, Adjusted amount, Received amount hoặc thông tin phí theo thiết kế trước khi cho submit"		Not Run
+VSD Deposit	CASH-018	Deposit lỗi tính phí	Kiểm tra app chặn nộp khi không tính được phí.	"1. Có thể giả lập lỗi hoặc dùng môi trường phí không trả về"	"1. Mở Deposit
+2. Nhập Amount
+3. Khi phí báo lỗi, bấm Deposit"	"1. App hiển thị lỗi tính phí
+2. không mở dialog xác nhận hoặc không cho nộp đến khi phí hợp lệ"		Not Run
+VSD Deposit	CASH-019	Deposit confirm thành công	Kiểm tra nộp ký quỹ VSD hợp lệ.	"1. Amount và phí hợp lệ
+2. trong thời gian cho phép giao dịch nếu có giới hạn"	"1. Nhập Amount hợp lệ
+2. Bấm Deposit
+3. Kiểm tra dialog
+4. Bấm Confirm"	"1. App hiển thị nộp ký quỹ thành công
+2. refresh VSD balance
+3. reset form"		Not Run
+VSD Deposit	CASH-040	VSD Deposit amount bằng 0	Kiểm tra không cho nộp ký quỹ số tiền 0.	"1. Đang ở VSD Deposit"	"1. Nhập Amount = 0
+2. Bấm Deposit"	"1. App hiển thị lỗi số tiền không hợp lệ
+2. không tính phí hoặc không mở dialog xác nhận"		Not Run
+VSD Deposit	CASH-041	VSD Deposit amount lớn hơn số dư	Kiểm tra chặn nộp ký quỹ vượt số tiền khả dụng.	"1. Đang ở VSD Deposit
+2. có thông tin số dư khả dụng"	"1. Nhập Amount lớn hơn số dư có thể nộp
+2. Bấm Deposit"	"1. App hiển thị lỗi số tiền vượt quá khả dụng
+2. không mở dialog xác nhận"		Not Run
+VSD Deposit	CASH-042	VSD Deposit phí thay đổi sau khi sửa amount	Kiểm tra phí được tính lại khi user đổi số tiền.	"1. Đang ở VSD Deposit
+2. tính phí hoạt động"	"1. Nhập Amount A và chờ phí
+2. Đổi sang Amount B
+3. Quan sát phí/received amount"	"1. Phí và số tiền nhận được cập nhật theo Amount mới
+2. không giữ phí cũ khi xác nhận"		Not Run
+VSD Deposit	CASH-043	Double tap Confirm Deposit	Kiểm tra không tạo hai giao dịch nộp ký quỹ.	"1. Deposit form hợp lệ
+2. dialog đang mở
+3. mạng phản hồi chậm"	"1. Bấm Deposit
+2. Trong dialog, bấm Confirm nhiều lần nhanh"	"1. Nút Confirm loading/disable
+2. chỉ xử lý một lần
+3. History không có giao dịch duplicate do double tap"		Not Run
+VSD Withdraw	CASH-020	Withdraw dùng nút All	Kiểm tra nút All trong form rút ký quỹ.	"1. Withdrawable from VSD > 0"	"1. Mở Withdraw/Rút ký quỹ
+2. Bấm All ở Amount"	"1. Amount được điền bằng Withdrawable from VSD
+2. format số đúng"		Not Run
+VSD Withdraw	CASH-021	Withdraw vượt số tiền có thể rút	Kiểm tra chặn rút vượt số tiền được rút từ VSD.	"1. Withdrawable from VSD đã hiển thị"	"1. Nhập Amount lớn hơn Withdrawable from VSD
+2. Bấm Withdraw"	"1. App hiển thị lỗi giá trị vượt quá số tiền có thể rút hoặc disable nút chuyển
+2. không mở dialog xác nhận"		Not Run
+VSD Withdraw	CASH-022	Withdraw confirm thành công	Kiểm tra rút ký quỹ VSD hợp lệ.	"1. Amount hợp lệ
+2. trong thời gian cho phép giao dịch nếu có giới hạn"	"1. Mở Withdraw
+2. Nhập Amount hợp lệ
+3. Bấm Withdraw
+4. Kiểm tra dialog
+5. Bấm Confirm"	"1. App hiển thị rút ký quỹ thành công
+2. refresh VSD balance
+3. reset form"		Not Run
+VSD Withdraw	CASH-023	Deposit/Withdraw ngoài giờ	Kiểm tra app xử lý giao dịch VSD ngoài thời gian cho phép.	"1. Đang ngoài giờ giao dịch hoặc môi trường UAT mô phỏng ngoài giờ"	"1. Mở Deposit hoặc Withdraw
+2. Nhập amount hợp lệ
+3. Bấm Confirm"	"1. App hiển thị cảnh báo/lỗi ngoài giờ theo quy định
+2. giao dịch không thành công"		Not Run
+VSD Withdraw	CASH-044	VSD Withdraw amount bằng 0	Kiểm tra không cho rút ký quỹ số tiền 0.	"1. Đang ở VSD Withdraw"	"1. Nhập Amount = 0
+2. Bấm Withdraw"	"1. App hiển thị lỗi số tiền không hợp lệ
+2. không mở dialog xác nhận"		Not Run
+VSD Withdraw	CASH-045	VSD Withdraw khi withdrawable bằng 0	Kiểm tra tài khoản không có số tiền rút được.	"1. Withdrawable from VSD = 0"	"1. Mở Withdraw
+2. Quan sát Withdrawable
+3. Nhập Amount = 1 hoặc bấm All
+4. Bấm Withdraw"	"1. App hiển thị không có số tiền có thể rút
+2. không cho xác nhận rút"		Not Run
+VSD History	CASH-024	VSD History mặc định All	Kiểm tra lịch sử VSD hiển thị mặc định tất cả giao dịch.	"1. User có hoặc không có lịch sử VSD"	"1. Mở VSD History
+2. Quan sát filter và danh sách"	"1. Filter mặc định là All hoặc theo thiết kế
+2. danh sách hiển thị Deposit/Withdraw trong khoảng ngày mặc định
+3. empty state rõ ràng nếu không có dữ liệu"		Not Run
+VSD History	CASH-025	VSD History lọc Deposit	Kiểm tra lọc lịch sử nộp ký quỹ.	"1. Có giao dịch nộp hoặc dữ liệu test"	"1. Mở VSD History
+2. Chọn transaction type Deposit
+3. Áp dụng lọc"	"1. Danh sách chỉ hiển thị giao dịch Deposit
+2. số tiền, phí, trạng thái hiển thị đúng"		Not Run
+VSD History	CASH-026	VSD History lọc Withdraw	Kiểm tra lọc lịch sử rút ký quỹ.	"1. Có giao dịch rút hoặc dữ liệu test"	"1. Mở VSD History
+2. Chọn transaction type Withdraw
+3. Áp dụng lọc"	"1. Danh sách chỉ hiển thị giao dịch Withdraw
+2. số tiền và trạng thái hiển thị đúng"		Not Run
+VSD History	CASH-046	VSD History fromDate sau toDate	Kiểm tra filter ngày không hợp lệ ở lịch sử VSD.	"1. Đang ở VSD History"	"1. Chọn fromDate sau toDate
+2. Bấm tìm kiếm/lọc"	"1. App hiển thị lỗi ngày không hợp lệ hoặc tự điều chỉnh theo thiết kế
+2. không tải danh sách sai"		Not Run
+VSD History	CASH-047	VSD History ngày tương lai	Kiểm tra không tra cứu lịch sử với ngày tương lai.	"1. Đang ở VSD History"	"1. Chọn toDate là ngày tương lai nếu picker cho phép
+2. Bấm tìm kiếm"	"1. App không cho chọn ngày tương lai hoặc hiển thị lỗi
+2. không gửi truy vấn sai"		Not Run
+Cash Statement	CASH-027	Mở Cash statement	Kiểm tra màn sao kê tiền phái sinh.	"1. User đã đăng nhập tài khoản phái sinh"	"1. Vào Cash Transaction
+2. Chọn Cash statement/Sao kê tiền
+3. Chọn khoảng ngày nếu cần"	"1. Màn Cash statement hiển thị lịch sử thanh toán theo ngày với lãi/lỗ, phí, thuế, số dư khả dụng và trạng thái thanh toán"		Not Run
+Cash Statement	CASH-028	Cash statement trạng thái thanh toán	Kiểm tra trạng thái đã/chưa thanh toán trong sao kê tiền.	"1. Có dữ liệu sao kê có trạng thái khác nhau"	"1. Mở Cash statement
+2. Quan sát các trường trạng thái lãi/lỗ, phí, thuế
+3. Lọc/sort nếu app hỗ trợ"	"1. Trạng thái đã thanh toán/chưa thanh toán hiển thị rõ ràng
+2. dữ liệu không bị nhầm với lịch sử giao dịch mua/bán"		Not Run
+Cash Statement	CASH-029	Cash statement empty/error	Kiểm tra trạng thái rỗng và lỗi của sao kê tiền.	"1. Có thể chọn khoảng ngày không có dữ liệu hoặc giả lập lỗi"	"1. Chọn khoảng ngày không có sao kê
+2. Quan sát empty state
+3. Thử trong điều kiện lỗi tải dữ liệu nếu có"	"1. Không có dữ liệu thì hiển thị empty state
+2. lỗi tải dữ liệu thì hiển thị message và cho thử lại nếu thiết kế có"		Not Run
+Cash Statement	CASH-048	Cash statement khoảng ngày quá dài	Kiểm tra giới hạn khoảng ngày sao kê nếu có.	"1. Đang ở Cash statement"	"1. Chọn khoảng ngày rất dài, ví dụ trên 6 tháng
+2. Bấm tìm kiếm"	"1. App hiển thị lỗi hoặc giới hạn theo quy định
+2. không làm màn hình treo"		Not Run
+Cash Statement	CASH-049	Cash statement pagination/load more	Kiểm tra sao kê tiền có nhiều hơn một trang.	"1. Tài khoản có nhiều bản ghi sao kê"	"1. Mở Cash statement
+2. Chọn khoảng ngày nhiều dữ liệu
+3. Cuộn cuối danh sách hoặc bấm Load more"	"1. Dữ liệu trang sau được tải thêm và nối vào danh sách
+2. không mất dữ liệu đã tải"		Not Run
+Mạng & Session	CASH-038	Refresh Available amount lỗi	Kiểm tra màn vẫn dùng được khi không tải được số dư khả dụng.	"1. Có thể giả lập lỗi tải Available amount"	"1. Mở Internal transfer trong điều kiện lỗi số dư
+2. Quan sát Available amount
+3. Thử bấm Transfer"	"1. App hiển thị lỗi hoặc -- cho Available amount
+2. không cho chuyển vượt kiểm soát khi chưa có số dư"		Not Run
+Mạng & Session	CASH-050	Session hết hạn khi thực hiện giao dịch tiền	Kiểm tra app xử lý khi token/session hết hạn.	"1. User đang đăng nhập nhưng session có thể hết hạn trong môi trường test"	"1. Mở Internal transfer hoặc VSD
+2. Để session hết hạn hoặc dùng môi trường mô phỏng
+3. Bấm Confirm giao dịch"	"1. App yêu cầu đăng nhập lại hoặc hiển thị session expired
+2. không báo giao dịch thành công"		Not Run
+Cuối tuần/Ngày lễ	CASH-051	Internal transfer vào cuối tuần	Kiểm tra chuyển nội bộ vào ngày cuối tuần.	"1. Đang vào cuối tuần hoặc môi trường UAT mô phỏng"	"1. Mở Internal transfer > Request
+2. Nhập Amount hợp lệ
+3. Chọn Receiving account
+4. Bấm Transfer
+5. Confirm"	"1. App xử lý theo rule: cho phép hoặc từ chối giao dịch cuối tuần
+2. Nếu không cho phép thì hiển thị message rõ ràng
+3. Nếu cho phép thì giao dịch thành công bình thường"		Not Run
+Cuối tuần/Ngày lễ	CASH-052	VSD Deposit/Withdraw vào ngày lễ	Kiểm tra giao dịch VSD vào ngày lễ.	"1. Đang vào ngày lễ hoặc môi trường UAT mô phỏng"	"1. Mở VSD Deposit hoặc Withdraw
+2. Nhập Amount hợp lệ
+3. Bấm Confirm"	"1. App hiển thị cảnh báo không thể giao dịch vào ngày lễ
+2. Giao dịch không được xử lý
+3. Message hướng dẫn user về ngày làm việc tiếp theo"		Not Run
