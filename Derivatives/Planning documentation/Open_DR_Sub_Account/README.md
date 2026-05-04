@@ -3,7 +3,7 @@
 **Category:** Mở tiểu khoản phái sinh (sub 80) online  
 **Project:** TradeX Derivatives — NHSV Pro  
 **Status:** Planning  
-**Last Updated:** April 9, 2026
+**Last Updated:** May 4, 2026
 
 ---
 
@@ -21,6 +21,7 @@ Tài liệu nhóm nghiệp vụ cho phép **khách hàng đăng ký mở tiểu 
 |----------|-------------|
 | [PRD v2.0 — Mở tiểu khoản phái sinh online (chi tiết kỹ thuật)](./Planning/PRD_Open_Derivatives_Sub_Account_Online_v2.md) | PRD chi tiết end-to-end: FE pre-check, BE eligibility, FPT eContract, Lotte DRACC-038, OneSignal + Email |
 | [PRD v1.0 — Mở tiểu khoản phái sinh online (planning)](./Planning/PRD_Open_Derivatives_Sub_Account_Online.md) | PRD khung planning ban đầu (kế thừa) |
+| [BE Jira backlog — sub 80 online (BA / copy-paste Jira)](./Issues/BE_Jira_Backlog_Sub_Account_Online.md) | 12 story BE theo góc nhìn nghiệp vụ (giá trị, quy tắc, AC); chi tiết kỹ thuật tham chiếu PRD |
 
 ### Folder structure (chuẩn Derivatives)
 
@@ -31,7 +32,7 @@ Tài liệu nhóm nghiệp vụ cho phép **khách hàng đăng ký mở tiểu 
 | **Issues/** | Issue triển khai theo feature |
 | **Archive/** | Tài liệu lịch sử |
 
-Các thư mục `Specifications/`, `Issues/`, `Archive/` sẽ được điền khi có spec kỹ thuật và ticket implementation.
+`Issues/` có backlog Jira-style cho BE; `Specifications/` và `Archive/` bổ sung khi có spec kỹ thuật chi tiết hoặc khi archive.
 
 ---
 
