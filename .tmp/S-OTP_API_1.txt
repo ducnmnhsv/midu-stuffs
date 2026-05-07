@@ -1,0 +1,322 @@
+SOTP-102: Đăng ký S-OTP
+Versions
+Date
+Who changed
+What changed?
+2026.05.05
+HungNC
+Phiên bản đặc tả đầu tiên
+
+
+
+
+URL
+Method
+Authenticate
+URL
+POST
+API KEY
+[RootURL]/tsol/apikey/sotp/v2/register-sotp
+
+
+
+
+Request Header
+Auth Type
+Parameter
+Required
+Format
+Valid Values
+Description
+Oauth2
+Authorization
+Y
+bearer access_token
+access_token lấy từ API mục 4.1
+
+API KEY
+apiKey
+Y
+[API KEY]
+apiKey sẽ được cung cấp
+
+
+Request Data
+Data Type
+JSON
+Name
+Type
+Required
+Format/Default
+Valid Values
+Description
+hts_user_id
+String
+Y
+
+
+Thông tin user_id
+mode
+String
+Y
+
+Giá trị Y/N
+Có đăng ký smart OTP
+
+Input Sample
+{
+    "mode":"Y",
+    "hts_user_id":"lhpt01"
+}
+Response Header
+Parameter
+Required
+Format
+Valid Values
+Description
+
+
+
+
+
+
+Response Data
+Response HTTP Status Code
+Tham khảo ở mục “Mô tả mã lỗi”
+Data Type
+JSON
+Name
+Type
+Required
+Format
+Valid Values
+Description
+error_code
+String
+Y
+
+0000: Thực hiện thành công
+1005: Thực hiện ko thành công
+Mã lỗi thực hiện API
+error_desc
+String
+Y
+
+
+Nội dung mã lỗi
+success
+boolean
+Y
+
+true: Xử lý nghiệp vụ thành công
+false: Quá trình xử lý có lỗi
+Trạng thái thực hiện API
+data_list
+DataResponse
+
+
+Xem mô tả struct của object ở Object Types của API này.
+Cấu trúc data trả về
+
+Output Sample
+{
+    "success": true,
+    "error_code": "0000",
+    "error_desc": "SUCCESS",
+    "total_record": "",
+    "data_list": [
+    ]
+}
+Object Types
+ObjectName
+DataResponse
+Field Name
+Type
+Format
+Valid Values
+Description
+sotp_stat
+String
+
+
+Trạng thái S-OTP
+sotp_sec
+String
+
+
+Khóa tạo mã S-OTP. Sử dụng để tạo mã S-OTP, lưu ý mã S-OTP được tạo ra sẽ có hiệu lực trong 60s
+
+API Events
+Event Code
+Description
+
+
+
+Other Infor
+
+
+
+
+SOTP-101: Xác thực S-OTP
+
+Versions
+Date
+Who changed
+What changed?
+2023.06.07
+LuongLV
+Phiên bản đặc tả đầu tiên
+
+
+
+
+URL
+Method
+Authenticate
+URL
+POST
+API KEY
+[RootURL]/tsol/apikey/sotp/v2/verify-totp
+
+
+
+
+Request Header
+Auth Type
+Parameter
+Required
+Format
+Valid Values
+Description
+Oauth2
+Authorization
+Y
+bearer access_token
+access_token lấy từ API mục 4.1
+
+API KEY
+apiKey
+Y
+[API KEY]
+apiKey sẽ được cung cấp
+
+
+Request Data
+Data Type
+JSON
+Name
+Type
+Required
+Format/Default
+Valid Values
+Description
+user_id
+String
+Y
+
+
+Thông tin user_id
+secret
+String
+Y
+
+
+Key tạo S-OTP
+code
+String
+Y
+
+
+Mã S-OTP
+
+Input Sample
+{
+    "code":"988522",
+    "secret":"VGswjj4354"
+}
+Response Header
+Parameter
+Required
+Format
+Valid Values
+Description
+
+
+
+
+
+
+Response Data
+Response HTTP Status Code
+Tham khảo ở mục “Mô tả mã lỗi”
+Data Type
+JSON
+Name
+Type
+Required
+Format
+Valid Values
+Description
+error_code
+String
+Y
+
+0000: Thực hiện thành công
+1005: Thực hiện ko thành công
+Mã lỗi thực hiện API
+error_desc
+String
+Y
+
+
+Nội dung mã lỗi
+success
+boolean
+Y
+
+true: Xử lý nghiệp vụ thành công
+false: Quá trình xử lý có lỗi
+Trạng thái thực hiện API
+data_list
+DataResponse
+
+
+Xem mô tả struct của object ở Object Types của API này.
+Cấu trúc data trả về
+
+Output Sample
+{
+    "success": true,
+    "error_code": "0000",
+    "error_desc": "SUCCESS",
+    "total_record": "",
+    "data_list": [
+        {
+            "auth_result": "AUTHENTICATED"
+        }
+    ]
+}
+Object Types
+ObjectName
+DataResponse
+Field Name
+Type
+Format
+Valid Values
+Description
+auth_result
+String
+
+AUTHENTICATED: S-OTP hợp lệ
+NOT_AUTHENTICATED: S-OTP không hợp lệ
+Kết quả xác thực:
+
+API Events
+Event Code
+Description
+
+
+
+Other Infor
+
+
