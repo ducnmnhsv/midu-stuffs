@@ -1,0 +1,113 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Scope & Naming	SYS-001	Xác minh phạm vi Init Job theo tài liệu	Kiểm tra mapping đúng giữa hành vi đã mô tả trong TradeX Knowledge (init-job.md) và môi trường triển khai: một pipeline Init SymbolInfo duy nhất trong doc, chạy trước phiên.	"1. Đã đọc TradeX Knowledge/System/init-job.md
+2. Truy cập config/deploy UAT hoặc prod read-only tên service và cron"	"1. Liệt kê service owner: market-collector-lotte (downloadSymbol), realtime-v2 (InitService, MarketInit.init), Kafka topic symbolInfoUpdate khi enableInitMarket=false
+2. Xác nhận lịch scheduled ~8:30 sáng phiên làm việc theo doc
+3. Ghi nhận đích lưu: Redis key realtime_mapSymbolInfo, MongoDB collection symbolInfo, MinIO/S3 file symbol_static.json"	"1. Init SymbolInfo trong doc chỉ mô tả luồng đầu ngày trước mở cửa; không mô tả job tách riêng đẩy symbol phái sinh cuối ngày trong init-job.md
+2. Test backend trong sheet này chỉ áp cho pipeline đã mô tả trong init-job.md; pipeline khác thuộc tài liệu kiến trúc khác và testcase tách sheet"		Not Run
+Init Pipeline	SYS-002	Lotte API → merge SymbolInfo	Kiểm tra download và merge đủ nguồn: symbolNames, symbolPrices, bestBidAsks, indexList, indexDaily theo LotteApiSymbolInfoService.	"1. Quyền đọc log market-collector-lotte trên UAT
+2. Một lần chạy downloadSymbol đã được trigger (cron hoặc trigger thủ công theo SYS-020)"	"1. Mở log phiên downloadSymbol tương ứng
+2. Xác nhận các endpoint cấu hình trong application.yaml được gọi cho merge
+3. Xác nhận merge hoàn tất thành List SymbolInfo trước bước publish/init"	"1. Log không thiếu nhánh gọi API bắt buộc cho merge đã mô tả trong init-job
+2. Kích thước tập SymbolInfo sau merge đạt ít nhất initThresholdSize sau khi Lotte trả đủ dữ liệu; trường hợp dưới ngưỡng xử lý tại SYS-013
+3. Lỗi API tuân retry/threshold ghi tại SYS-014 và SYS-013"		Not Run
+Init Pipeline	SYS-003	Ghi Redis sau init	Kiểm tra Hash runtime realtime_mapSymbolInfo sau khi MarketInit.init hoàn tất.	"1. Quyền đọc Redis non-prod
+2. Một lần init thành công đã kết thúc trong cửa sổ test"	"1. Lấy tên key đầy đủ từ config deployment (giá trị chuẩn trong doc: realtime_mapSymbolInfo; prefix môi trường lấy đúng file helm/env)
+2. Đọc cấu trúc Hash: scan field mã VN30F đang niêm yết trên Lotte trong ngày test
+3. Đối chiếu với bản symbol_static.json cùng phiên"	"1. Key tồn tại; mỗi field mã chứa payload SymbolInfo đúng định dạng cache
+2. Toàn bộ mã type FUTURES do Lotte đưa vào batch merge phải có field trong Hash sau init thành công
+3. Không ghi Hash nửa vời: hoặc init hoàn tất với set đầy đủ theo luồng pause/resume, hoặc abort có exception (đối chiếu SYS-012)"		Not Run
+Init Pipeline	SYS-004	Ghi MongoDB symbolInfo	Kiểm tra backup persistent sau init.	"1. Quyền query MongoDB collection symbolInfo trên non-prod
+2. Cùng lần init như SYS-003"	"1. Đếm document hoặc filter type=FUTURES
+2. So khớp code VN30F và hai mã cổ phiếu ngẫu nhiên giữa Mongo và Redis"	"1. Mongo chứa snapshot cùng phiên với Redis cho các mã đối chiếu
+2. Collection symbolInfo phục vai trò backup khi Redis mất dữ liệu theo thiết kế init-job"		Not Run
+Init Pipeline	SYS-005	symbol_static.json trên MinIO/S3	Kiểm tra object client tải khi khởi động app.	"1. Biết bucket và path từ app.marketConf.symbolStaticBucket và symbolStaticFile
+2. Upload đã xảy ra trong cùng lần init đã kiểm tra"	"1. HTTP GET object symbol_static.json từ base URL MinIO/S3 của môi trường (production: https://file.nhsvpro.nhsv.vn/market/symbol_static.json; UAT: https://file.tnhsvpro.nhsv.vn/market/symbol_static.json theo init-job doc)
+2. Parse JSON array
+3. Filter các phần tử type=FUTURES; đối chiếu size và danh sách code với Redis"	"1. File JSON hợp lệ; schema trường khớp mục File symbol_static.json trong init-job.md
+2. Tập mã FUTURES trong file trùng nguồn SymbolInfo đã merge cho phiên đó
+3. Không dùng URL bucket của môi trường khác"		Not Run
+Kafka Path	SYS-006	Topic symbolInfoUpdate — nhóm message	Kiểm tra realtime-v2 consume theo groupId, chờ timeout 60s, pause/resume thread.	"1. enableInitMarket=false trên collector để đi Kafka
+2. Log realtime-v2 và quyền xem topic symbolInfoUpdate"	"1. Bắt payload publish từ collector: groupId, command.cleanAll, symbolInfos
+2. Trên realtime-v2 log InitService.handleSymbolInfoUpdate và timer 10s
+3. Xác nhận pauseAll → update cache → resumeAll → marketInit.init"	"1. Luồng consumer xử lý trong monitorService.pauseAll callback; không cập nhật cache SymbolInfo giữa chừng khi thread đang pause
+2. Sau marketInit.init: Redis/Mongo/file đồng bộ một đợt
+3. Điều kiện đóng nhóm theo InitService: totalReceived đạt totalMessages hoặc timer hết 60s — nhóm đóng, init chạy, thread resume; không kẹt pause"		Not Run
+Kafka Path	SYS-007	enableInitMarket — đường direct	Kiểm tra MarketInit.init khi bật đường trực tiếp không qua Kafka.	"1. Nhánh enableInitMarket=true chỉ bật trên môi trường được phê duyệt change
+2. BE standby rollback"	"1. Áp config enableInitMarket=true theo change ticket
+2. Trigger downloadSymbol
+3. So sánh Redis/Mongo/file với kết quả một lần chạy enableInitMarket=false trên cùng snapshot dữ liệu Lotte (non-prod)"	"1. Cả hai đường gọi MarketInit.init với cùng nguồn SymbolInfo cuối cùng
+2. Kiểm chứng chỉ một trong hai đường được bật trên prod theo bản application.yaml đã freeze
+3. Sau kiểm tra: revert về giá trị mặc định env prod enableInitMarket=false theo application.yaml đã duyệt; không duy trì hai đường init song song trên prod"		Not Run
+Derivatives vs Base	SYS-008	Mã FUTURES trong cùng batch init	Kiểm tra merge Lotte đưa cổ phiếu, chỉ số, ETF, CW, FUTURES trong một downloadSymbol; không có job riêng chỉ phái sinh trong phạm vi init-job.md.	"1. Log merge và Redis sau một init hoàn chỉnh"	"1. Query Redis hoặc file: đếm document type=FUTURES
+2. Đối chiếu danh sách contract VN30F và Gov.Bond future đang niêm yết với bản công bố Sở trong ngày test"	"1. Mọi hợp đồng FUTURES Lotte trả trong symbolNames cho ngày đó xuất hiện trong batch
+2. Kiến trúc init-job.md không tách pipeline «chỉ derivatives»; sai lệch danh sách là defect merge hoặc API Lotte, không giả định job ẩn"		Not Run
+Job Independence	SYS-009	Job index constituents (lotte-bridge) độc lập init symbol	Kiểm tra hai luồng: lotte-bridge đồng bộ indexStockListUpdate tới realtime-v2 DB; market-collector-lotte init SymbolInfo độc lập.	"1. Lịch cron lotte-bridge index list (doc: 0,15,30,55 phút 1h sáng MON-FRI) và init collector (~8:30) đã biết
+2. Log cả hai service trên UAT"	"1. Trên non-prod: dừng pod lotte-bridge trong cửa sổ chạy job index; giữ collector chạy
+2. Thu log phiên init collector cùng ngày
+3. Xác nhận collector vẫn gọi downloadSymbol và publish/consume tới Redis đầy đủ"	"1. Init SymbolInfo không phụ thuộc điều kiện job index constituents thành công; collector không chờ bridge
+2. Sau bước dừng pod bridge: collection index stock list không cập nhật phiên mới trong DB; realtime-v2 đọc bản ghi cũ cho VN30 membership tới lần job index chạy lại thành công
+3. Hai luồng có metric và alert riêng"		Not Run
+Job Independence	SYS-010	Process tách biệt collector / bridge / realtime-v2	Kiểm tra blast radius khi một tiến trình dừng.	"1. Topology K8s/vm: ba service khác deployment unit
+2. Quyền scale hoặc stop pod non-prod"	"1. Dừng deployment market-collector-lotte
+2. Quan sát pod realtime-v2 và lotte-bridge: trạng thái Running
+3. Lặp lại bằng cách dừng từng service khác một"	"1. Dừng collector không làm exit realtime-v2 và bridge
+2. Dừng bridge không làm exit collector và realtime-v2
+3. Kafka và Redis tiếp tục phục vụ giới hạn blast radius giữa producer/consumer"		Not Run
+Failure Handling	SYS-011	Kafka publish symbolInfoUpdate fail	Kiểm tra hành vi khi gửi Kafka thất bại.	"1. Môi trường non-prod cho phép inject lỗi publish hoặc đọc static code path LotteApiSymbolInfoService / publisher
+2. Log collector"	"1. Inject lỗi publish sau merge (non-prod)
+2. Đọc log collector và kiểm tra Redis chưa nhận batch mới từ message lỗi"	"1. Theo init-job.md: Kafka send fail → log error, tiếp tục (consumer không nhận batch mới)
+2. Redis giữ snapshot trước lỗi; không ghi half-state từ payload không gửi được
+3. Alert log đủ để on-call replay SYS-020"		Not Run
+Failure Handling	SYS-012	Redis hoặc Mongo fail trong MarketInit.init	Kiểm tra abort.	"1. Non-prod: quyền chặn write Redis hoặc Mongo (iptables/ACL hoặc stop replica secondary không ảnh hưởng prod)"	"1. Khởi động init
+2. Chặn write Redis trong cửa sổ MarketInit.init
+3. Ghi exception và trạng thái cache"	"1. Theo init-job.md: Redis/Mongo fail → throw, abort init
+2. Dashboard/run không báo init success
+3. Phục hồi theo SYS-018; replay tay SYS-020 sau khi hạ tầng hồi phục"		Not Run
+Failure Handling	SYS-013	initThresholdSize không đạt	Kiểm tra điều kiện allSymbols.size() nhỏ hơn initThresholdSize trong application.yaml (doc minh họa giá trị 1500).	"1. Giá trị initThresholdSize đọc từ application.yaml môi trường test
+2. Phương pháp tạo tập symbol dưới ngưỡng: mock API Lotte non-prod hoặc branch test"	"1. Chạy merge với số symbol thấp hơn ngưỡng
+2. Bắt IllegalStateException Not enough symbols trong log"	"1. Init abort
+2. Không commit Redis/Mongo/file với dataset dưới ngưỡng
+3. Alert ops kích hoạt theo rule đội đặt"		Not Run
+Failure Handling	SYS-014	Lotte API timeout	Kiểm tra retry 5 lần, delay 15s giữa các lần theo init-job.md.	"1. Log chi tiết HTTP client enabled trên UAT
+2. Inject HTTP timeout trên non-prod cho một endpoint merge (delay vượt client timeout)"	"1. Đếm số lần retry và timestamp trong log HTTP client
+2. Xuất metric latency endpoint đã inject"	"1. Đúng 5 lần retry trước khi báo lỗi cuối (theo bảng Error Handling trong doc)
+2. Khoảng cách delay 15s giữa các retry
+3. Metric latency API trên dashboard đội triển khai"		Not Run
+Scheduling	SYS-015	Ngày lễ / cuối tuần — skip init	Kiểm tra holidayService.isHoliday() trong LotteApiSymbolInfoService.downloadSymbol.	"1. Ngày test là T7 hoặc CN hoặc ngày lễ có trong holiday config database
+2. Log collector level INFO"	"1. Trigger downloadSymbol trong ngày test đã chọn: cron schedule hoặc SYS-020
+2. Đọc log dòng TODAY IS HOLIDAY OR WEEKEND - END downloadSymbol"	"1. downloadSymbol return CompletableFuture.completedFuture(null) không đi vào merge đầy đủ
+2. Redis/Mongo giữ snapshot phiên trước: nhánh holiday không chạy merge đầy đủ và không gọi MarketInit.init với danh sách rỗng thay thế toàn bộ cache (đối chiếu block code downloadSymbol return early)"		Not Run
+Concurrency	SYS-016	Coordinator enableMultipleInstance	Kiểm tra điều phối multi-instance và deployment đơn replica khi enableMultipleInstance=false.	"1. Non-prod: hai manifest collector đã chuẩn bị — (A) enableMultipleInstance=true và replicaCount=2 — (B) enableMultipleInstance=false và replicaCount=1"	"1. Triển khai manifest (A); trigger init; đọc log lock và leader election trong source market-collector-lotte
+2. Triển khai manifest (B); trigger init; đếm một tiến trình downloadSymbol trong log
+3. So khớp hành vi với giá trị enableMultipleInstance trong từng manifest"	"1. enableMultipleInstance=true: một replica giữ lock và chạy downloadSymbol đầy đủ; replica còn lại không ghi Redis trong cùng tick scheduler
+2. enableMultipleInstance=false: đúng một replica collector chạy downloadSymbol; không có race hai leader"		Not Run
+Performance	SYS-017	Load merge ~2000 mã và publish Kafka	Đo thời lượng và tài nguyên.	"1. APM hoặc log duration trên collector và realtime-v2
+2. Dataset đầy đủ ~2000 mã trên UAT load-test"	"1. Timestamp bắt đầu downloadSymbol đến publish Kafka cuối cùng
+2. Heap peak collector và realtime-v2 trong cửa sổ đó"	"1. Tổng thời gian nằm trong SLA nội bộ đã ghi trong wiki/runbook vận hành market (mốc tham chiếu trước giờ mở cửa)
+2. Payload Kafka nằm trong giới hạn max.message.bytes broker đã cấu hình
+3. Không OOM với replica memory đã sizing"		Not Run
+Recovery	SYS-018	Daily Recovery sau init fail	Thực hiện runbook Daily Recovery sau khi MarketInit abort.	"1. Runbook Daily Recovery phiên bản hiện hành do đội vận hành lưu trữ
+2. Quyền thực thi trên non-prod trước prod"	"1. Giả lập init fail theo SYS-012 trên non-prod
+2. Chạy từng bước runbook Daily Recovery
+3. Verify Redis/Mongo/file đạt trạng thái đọc được cho app"	"1. Sau recovery: symbol_static.json và Redis chứa đủ SymbolInfo để app không khởi động trống thị trường
+2. Thời gian recovery trong SLA nội bộ đã cam kết
+3. Ghi incident id vào ticket"		Not Run
+Observability	SYS-019	Metric và alert init	Kiểm tra dashboard quan sát pipeline init.	"1. Truy cập stack monitoring đã gắn với cluster TradeX (tên dashboard đội cung cấp)"	"1. Xác nhận counter hoặc gauge: init success, init fail, duration, symbol count sau merge
+2. Kích hoạt alert giả lập: fail threshold hoặc duration vượt ngưỡng đã định nghĩa trong rule Alertmanager/PagerDuty"	"1. On-call nhận notification trong SLA paging đội đặt
+2. Log init khớp pattern Logback đã merge trong repo (timestamp, level, service); trace id xuất hiện theo đúng biến OTEL và exporter trong manifest deployment collector và realtime-v2"		Not Run
+Manual Ops	SYS-020	Trigger thủ công downloadSymbol	Replay init qua API hoặc Kafka message uri downloadSymbol.	"1. Quyền produce Kafka topic market-collector-lotte hoặc gọi endpoint trigger đã document nội bộ
+2. Change window đã đặt"	"1. Gửi payload đúng schema: {\"uri\":\"downloadSymbol\"} vào topic market-collector-lotte theo init-job.md
+2. Theo dõi end-to-end Redis/Mongo/file
+3. Ghi ticket incident liên kết replay"	"1. Replay hoàn tất; cache phản ánh dữ liệu Lotte mới nhất sau khi cleanAll và init theo command.message
+2. cleanAll=true xóa cache map trước ghi: operator hiểu semantics trước khi bấm production
+3. Audit log lưu user hệ thống hoặc principal đã trigger"		Not Run
+Contract Test	SYS-021	GET /api/v2/market/indexStockList/{indexCode}	Kiểm tra API market-query-v2 sau khi job bridge đã ghi MongoDB c_index_stock_list.	"1. Job lotte-bridge index đã chạy thành công trong phiên sáng cùng ngày test
+2. Token hoặc môi trường public UAT cho GET"	"1. Gọi GET indexStockList/VN30
+2. Lấy snapshot getIndexStockList từ Lotte trong cùng phiên kiểm chứng hoặc danh sách chuẩn UAT đã lưu
+3. So từng mã cổ phiếu"	"1. Response khớp nguồn Lotte cho cùng thời điểm đối chiếu
+2. Ordering thực tế: job bridge 1h sáng chạy trước init ~8:30; API không được empty chỉ do init đã chạy trong khi bridge chưa chạy trong ngày — kiểm tra này chạy sau khi bridge hoàn tất theo lịch"		Not Run
+Data Quality	SYS-022	So khớp mã phái sinh app và backend	Đếm mã tab Market Derivatives trên app và đối chiếu type=FUTURES trong symbol_static.json.	"1. Build app UAT trỏ file URL đúng môi trường
+2. Export symbol_static.json cùng phiên init"	"1. Đếm mã trên UI tab Derivatives (All) không filter con
+2. Đếm phần tử JSON type=FUTURES
+3. Ghi lệch do tab con Index futures / Gov.Bond future chỉ hiển thị subset"	"1. Lệch giữa All và count FUTURES giải thích bằng filter UI và contract hết hạn ẩn theo rule app
+2. Lệch không giải thích được → ghi defect merge collector hoặc bug UI filter với bằng chứng hai bảng đếm"		Not Run
