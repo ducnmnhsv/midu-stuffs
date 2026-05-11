@@ -4,7 +4,7 @@
 **Category:** Derivatives Orders — Real-time Order Status  
 **Project:** TradeX Derivatives Integration  
 **Date:** 2026-05-11  
-**Version:** 1.1  
+**Version:** 1.4  
 **Author:** BA/PM Team
 
 > **Tham chiếu Lotte:** `Derivatives/Documentation/[API specs]Lotte_DR.md` — §3.1.1 Order events, event_code `F15303`  
@@ -15,11 +15,11 @@
 ## Table of Contents
 
 1. [Overview](#1-overview)
-2. [Architecture & Data Flow](#2-architecture--data-flow)
+2. [Architecture & Data Flow](#2-architecture--data-flow) *(§2.3: REST snapshot `todayUnmatch` + `history`)*
 3. [Lotte Source — Event F15303](#3-lotte-source--event-f15303)
 4. [BE Specification](#4-be-specification)
 5. [WebSocket Contract (Channel & Payload)](#5-websocket-contract-channel--payload)
-6. [FE Specification](#6-fe-specification)
+6. [FE Specification](#6-fe-specification) *(§6.7 refresh field sau WS; §6.8 nút Hủy/Sửa)*
 7. [Field Mapping](#7-field-mapping)
 8. [Status & Code Mapping](#8-status--code-mapping)
 9. [Examples](#9-examples)
@@ -32,7 +32,7 @@
 
 ### 1.1 Vấn đề
 
-Hiện tại, để xem trạng thái mới nhất của lệnh trên sổ lệnh phái sinh, app phải **gọi API** (`GET /api/v1/derivatives/order/orderBook`) mỗi khi có thay đổi (hoặc poll định kỳ). Điều này dẫn đến:
+Hiện tại, để xem trạng thái mới nhất của **lệnh thường** phái sinh trên app, NHSV Pro **không dùng một API “orderBook” đơn lẻ** mà kết hợp **hai REST snapshot** (chi tiết §2.3): danh sách lệnh chưa khớp hết / còn hiệu lực, và lịch sử lệnh trong ngày. Khi không có WebSocket, app phải **poll hoặc refresh** các API này để thấy thay đổi — điều này dẫn đến:
 
 - Trạng thái lệnh **chậm trễ** so với thực tế
 - Tốn băng thông khi gọi lại toàn bộ danh sách lệnh
@@ -40,7 +40,7 @@ Hiện tại, để xem trạng thái mới nhất của lệnh trên sổ lện
 
 ### 1.2 Giải pháp
 
-App **subscribe WebSocket channel** dành riêng cho tài khoản phái sinh. Khi có thay đổi trạng thái lệnh, BE **đẩy sự kiện** xuống app ngay lập tức. App **cập nhật đúng dòng lệnh** trên sổ mà không cần refresh toàn bộ danh sách.
+App **subscribe WebSocket channel** dành riêng cho tài khoản phái sinh. Khi có thay đổi trạng thái lệnh, BE **đẩy sự kiện** xuống app ngay lập tức. FE **merge event vào đúng dòng lệnh** trong state đã load từ **todayUnmatch** và/hoặc **history** (khớp theo `orderNumber` / quan hệ lệnh gốc — §2.3, §6.2) với các giá trị mới nhất: KL đã khớp, KL còn lại, giá khớp, trạng thái, loại thao tác lifecycle — **không cần** gọi lại toàn bộ REST sau mỗi tick (vẫn giữ REST làm snapshot và khi reconnect — §2.2).
 
 ### 1.3 Phạm vi
 
@@ -48,7 +48,7 @@ App **subscribe WebSocket channel** dành riêng cho tài khoản phái sinh. Kh
 |----------|-------|
 | **Loại sự kiện** | Chỉ F15303 (trạng thái sổ lệnh) — xem §3 |
 | **Loại lệnh** | Tất cả lệnh phái sinh: Regular Orders (LO, ATO, ATC, MOK, MAK, MTL) |
-| **Màn hình FE** | Sổ lệnh phái sinh (Order Book screen), Today Unmatch |
+| **Màn hình FE** | Lệnh thường phái sinh: **Today Unmatch** + **History (trong ngày)** — snapshot từ hai REST API §2.3 |
 | **Không thuộc scope** | F15302 (khớp lệnh — event riêng), Conditional Orders (spec riêng), Account events F15xxx |
 
 ### 1.4 Luồng tổng quan
@@ -67,7 +67,7 @@ ws-v2 (TradeX WebSocket server)
     │ Channel: order.status.{accountNumber}
     ▼
 NHSV Pro App (FE)
-    │ Merge by orderId → Update UI dòng lệnh
+    │ Merge by orderNumber → Update UI dòng lệnh
     ▼
 Sổ lệnh cập nhật real-time ✅
 ```
@@ -112,7 +112,7 @@ Sổ lệnh cập nhật real-time ✅
 │                                                                  │
 │  - Connected via socketCluster (existing pattern)                │
 │  - Subscribe: order.status.{accountNumber}                       │
-│  - On event: merge by orderId → update order row in state        │
+│  - On event: merge by orderNumber → update order row in state      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -120,12 +120,66 @@ Sổ lệnh cập nhật real-time ✅
 
 | Action | Cơ chế | Lý do |
 |--------|--------|-------|
-| **Vào màn sổ lệnh** | Gọi REST API orderBook | Lấy snapshot đầy đủ |
-| **Đang xem sổ lệnh** | WS events F15303 | Cập nhật incremental từng dòng |
-| **Reconnect WS** | Gọi lại REST API orderBook | Đồng bộ trạng thái bị miss |
-| **App từ background lên** | Gọi lại REST API orderBook | Đảm bảo không lệch state |
+| **Vào màn lệnh / sau login** | Gọi REST snapshot theo §2.3 (`todayUnmatch` + `history` trong ngày) | Lấy snapshot đầy đủ cho hai danh sách app đang dùng |
+| **Đang xem lệnh** | WS events F15303 (TradeX channel §5) | Cập nhật incremental — khớp **`orderNumber`** payload WS ↔ **`orderNumber`** REST §7.2 |
+| **Reconnect WS** | Gọi lại REST snapshot §2.3 | Đồng bộ trạng thái bị miss |
+| **App từ background lên** | Gọi lại REST snapshot §2.3 | Đảm bảo không lệch state |
 
-> **Nguyên tắc:** WS là **incremental update**, REST API là **snapshot source of truth**. Không thể dùng WS thay thế hoàn toàn REST.
+> **Nguyên tắc:** WS là **incremental update**, REST là **snapshot source of truth**. Không thể dùng WS thay thế hoàn toàn REST.
+
+### 2.3 REST snapshot trên app — lệnh thường phái sinh
+
+App NHSV Pro hiện **hiển thị / cho phép hủy–sửa** lệnh thường dựa trên **hai nguồn**:
+
+| API | Vai trò | Ghi chú nghiệp vụ |
+|-----|---------|-------------------|
+| `GET /api/v1/derivatives/order/todayUnmatch` | Danh sách lệnh **chưa khớp hết** hoặc **vẫn còn hiệu lực** | Field `status` dùng cho nhãn/lifecycle cùng hệ với `operation` ở history (§6.7). **Nút Hủy/Sửa** không phải lúc nào cũng bật — xem rule theo `orderType` §6.8 |
+| `GET /rest/api/v1/derivatives/order/history` | **Toàn bộ lệnh** trong ngày (theo cách app đang gọi) | App đang dùng `fromDate = toDate = today`, `orderType = ALL`, `matchType = ALL` để lấy snapshot **trong ngày** |
+
+**Ví dụ response — todayUnmatch:**
+
+```json
+{
+  "orderNumber": 1000006,
+  "symbolCode": "41I1FB000",
+  "sellBuyType": "SELL",
+  "orderType": "LO",
+  "status": "New Order waiting",
+  "orderPrice": 1473,
+  "orderQuantity": 1,
+  "matchedQuantity": 0,
+  "unmatchedQuantity": 1
+}
+```
+
+**Ví dụ response — history:**
+
+```json
+{
+  "orderNumber": 1000008,
+  "originalOrderNumber": 1000005,
+  "symbolCode": "41I1FB000",
+  "sellBuyType": "SELL",
+  "orderPrice": 1400.1,
+  "matchedPrice": 0,
+  "orderQuantity": 1,
+  "matchedQuantity": 0,
+  "unmatchedQuantity": 0,
+  "operation": "MODIFY_ORDER",
+  "orderType": "LO",
+  "orderTime": "20251029 105719",
+  "rejectReason": " ",
+  "orderStatus": "CONFIRMED",
+  "nextKey": "0"
+}
+```
+
+**Mục tiêu WebSocket đối với hai nguồn này**
+
+- Khi nhận event trạng thái lệnh (sau normalize §4), FE **render lại UI** đúng các cột đã thống nhất trong §6.7 (history vs todayUnmatch), rồi **áp lại rule nút** §6.8.
+- Tối thiểu đồng bộ: **KL đã khớp**, **KL chưa khớp**, **giá khớp**, **`orderStatus`**, **`operation`** — cùng **tên field / enum** với REST history (`/api/v1/derivatives/order/history`) để FE không đổi mapping — §6.7, §8.1.
+- **Khóa khớp:** payload WS dùng **`orderNumber`** (string) — đối chiếu **`orderNumber`** trên REST (so sánh sau normalize kiểu).
+- **Lệnh gốc:** Lotte `evt_orgOrdNo` → TradeX **`originalOrderNumber`** trên WS (§5.2). FE merge theo **`orderNumber`** hoặc **`originalOrderNumber`** theo rule BA.
 
 ---
 
@@ -249,19 +303,20 @@ Mục đích: FE không phụ thuộc vào naming convention của Lotte Core.
 |-------------|-----------------|---------|
 | `event_code` | `eventType` | Giá trị: `"ORDER_STATUS"` (fixed, không dùng raw `F15303`) |
 | `event_seqno` | `seqNo` | Giữ nguyên string |
-| `date` + `evt_time` | `eventTime` | Ghép thành ISO 8601: `"2026-05-11T14:48:22+07:00"` |
+| `date` + `evt_time` | `eventTime` | Chuỗi **`yyyymmdd HH:mm:ss`** (cùng style ví dụ history / PM), VD `"20260511 14:48:22"` — hoặc ISO 8601 nếu BE/FE đã thống nhất (ghi rõ trong release notes) |
 | `acnt_no` | `accountNumber` | |
-| `evt_ordNo` | `orderId` | Khóa chính để FE merge |
+| `evt_ordNo` | `orderNumber` | Khóa merge FE — **cùng tên** REST history |
 | `evt_code` | `symbolCode` | |
-| `evt_side` | `side` | Map `"1"` → `"BUY"`, `"2"` → `"SELL"`; nếu gặp `"Mua"`/`"Bán"` → map tương đương (§8.3) |
-| `evt_action` | `lifecycleAction` | Map `1`/`2`/`3` → TradeX enum §8.4 (optional trên WS — có thể chỉ dùng nội bộ BE) |
-| `evt_ordType` | `orderType` | Map mã Core → TradeX: xem §8.2 |
-| `evt_price` | `price` | String → Number (parse, giữ null nếu rỗng) |
+| `evt_side` | `sellBuyType` | Map `"1"`/`"Mua"` → `"BUY"`; `"2"`/`"Bán"` → `"SELL"` — §8.3 |
+| `evt_action` | `operation` | Map `1`/`2`/`3` → `NEW_ORDER` / `MODIFY_ORDER` / `CANCEL_ORDER` — §8.4 (**nguồn Lotte là `evt_action`**, không phải `evt_status`) |
+| `evt_ordType` | `orderType` | Map mã Core → TradeX: §8.2 |
+| `evt_price` | `price` | String → Number |
 | `evt_qty` | `quantity` | String → Number |
-| `evt_status` | `status` | Map `0`–`5`, `R`, `X` → TradeX enum: xem §8.1 |
+| `evt_status` | `orderStatus` | Map Lotte → enum TradeX **đồng nhất history** — §8.1 |
 | `evt_matchQty` | `matchedQuantity` | String → Number |
 | `evt_remQty` | `remainingQuantity` | String → Number |
-| `evt_matchPrice` | `matchedPrice` | Áp dụng logic §4.1.4 (lệnh ≠ LO) trước khi parse; sau đó String → Number hoặc `null` nếu chưa khớp |
+| `evt_matchPrice` | `matchedPrice` | Áp dụng §4.1.4 (lệnh ≠ LO) trước khi parse |
+| `evt_orgOrdNo` | `originalOrderNumber` | `"0"` / rỗng → `null`; khác → string — khớp REST history |
 
 #### 4.1.4 Giá khớp (`matchedPrice`) — lệnh **không phải LO** (bắt buộc TradeX BE)
 
@@ -269,8 +324,8 @@ Mục đích: FE không phụ thuộc vào naming convention của Lotte Core.
 
 | Điều kiện (sau parse số) | Hành vi TradeX BE |
 |-------------------------|-------------------|
-| `evt_price == 0` **và** `evt_matchPrice != 0` | **Giá khớp hiệu lực** = `evt_matchPrice`. Lưu giá này vào **state tạm theo `orderId`** (ví dụ bộ nhớ trong collector hoặc cache TTL ngắn) với tên gợi ý `lastMatchPriceByOrderId`. |
-| Event **tiếp theo** cùng `orderId`: `evt_price != 0` **và** `evt_matchPrice == 0` (hoặc `"0"`) | **Không** được ghi đè `matchedPrice` trên payload TradeX thành `0`/`null` chỉ vì Lotte gửi `evt_matchPrice = 0`. Phải **giữ nguyên** giá trị `evt_matchPrice` đã ghi nhận ở bước trước (`lastMatchPriceByOrderId`) cho đến khi có event mới với `evt_matchPrice` khác 0 có ý nghĩa nghiệp vụ hoặc lệnh kết thúc (xóa state theo `orderId`). |
+| `evt_price == 0` **và** `evt_matchPrice != 0` | **Giá khớp hiệu lực** = `evt_matchPrice`. Lưu vào state tạm theo **`orderNumber`** (`lastMatchPriceByOrderNumber`). |
+| Event **tiếp theo** cùng **`orderNumber`**: `evt_price != 0` **và** `evt_matchPrice == 0` (hoặc `"0"`) | **Không** ghi đè `matchedPrice` trên payload TradeX thành `0`/`null` chỉ vì Lotte gửi `evt_matchPrice = 0`. Giữ `lastMatchPriceByOrderNumber` đến khi có event đổi giá có nghiệp vụ hoặc kết thúc lệnh. |
 
 **Lý do nghiệp vụ:** Core có thể gửi **hai (hoặc nhiều) event** cho cùng một lệnh thị trường: event đầu mang giá khớp ở `evt_matchPrice` khi `evt_price` còn 0; event sau “bơm” giá giới hạn vào `evt_price` nhưng tắt `evt_matchPrice` về 0. FE chỉ cần một `matchedPrice` ổn định trên kênh TradeX.
 
@@ -318,29 +373,39 @@ Ví dụ: order.status.0001234567
 
 - `accountNumber` là số tài khoản phái sinh (10 chữ số, theo format TradeX)
 
-### 5.2 Payload — TradeX WS Event
+### 5.2 Payload — TradeX WS Event (**đồng nhất pattern REST history**)
+
+Tên field và giá trị enum **`orderStatus`**, **`operation`** phải **cùng convention** với response `GET .../derivatives/order/history` để FE tái dùng mapper hiện có — không dùng `orderId` / `side` / `status` / `lifecycleAction` trên kênh TradeX này.
 
 ```json
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "20260511000123",
-  "eventTime": "2026-05-11T14:48:22+07:00",
-  "accountNumber": "0001234567",
-  "orderId": "20260511000456",
-  "symbolCode": "VN30F2506",
-  "side": "BUY",
+  "eventTime": "20260511 14:48:22",
+  "accountNumber": "039C200327",
+  "orderNumber": "1000007",
+  "symbolCode": "41I1G3000",
+  "sellBuyType": "BUY",
   "orderType": "LO",
   "price": 1280.0,
   "quantity": 10,
-  "status": "MATCHED",
+  "orderStatus": "FILLED",
   "matchedQuantity": 5,
   "remainingQuantity": 5,
   "matchedPrice": 1279.5,
-  "lifecycleAction": "NEW"
+  "operation": "NEW_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
-- `lifecycleAction` (optional): chỉ gửi nếu BE chọn expose — map từ `evt_action` (§8.4).
+- **`eventTime`:** định dạng **`yyyymmdd HH:mm:ss`** như ví dụ (hoặc format đã thống nhất với FE — ghi trong ticket triển khai).
+- **`orderNumber`:** string — khớp `orderNumber` REST (Lotte `evt_ordNo`).
+- **`sellBuyType`:** `BUY` | `SELL` — khớp history (Lotte `evt_side`, §8.3).
+- **`orderStatus`:** enum TradeX — map từ Lotte **`evt_status`** — §8.1.
+- **`operation`:** `NEW_ORDER` | `MODIFY_ORDER` | `CANCEL_ORDER` — map từ Lotte **`evt_action`** (mã `1`/`2`/`3`) — §8.4. **Không** lấy `operation` từ `evt_status`.
+- **`originalOrderNumber`:** `null` hoặc string; Lotte `evt_orgOrdNo` = `"0"` → `null`.
+
+> **Tính nhất quán nội dung:** BE phải đảm bảo **`orderStatus`** thống nhất với **`matchedQuantity`** / **`remainingQuantity`** (ví dụ `FILLED` ↔ `remainingQuantity === 0` khi đã khớp hết). Ví dụ JSON phía trên minh họa **cấu trúc field**; nếu `orderStatus` là `PARTIALLY_FILLED` thì thường `remainingQuantity > 0`.
 
 ### 5.3 Subscribe / Unsubscribe (SocketCluster protocol)
 
@@ -372,10 +437,10 @@ Ví dụ: order.status.0001234567
 
 | Thời điểm | Action |
 |-----------|--------|
-| Mount màn sổ lệnh (OrderBook screen) | Subscribe `order.status.{accountNumber}` |
-| Unmount màn sổ lệnh | Unsubscribe |
-| App từ background → foreground | Gọi REST API orderBook → re-subscribe |
-| WS reconnect thành công | Gọi REST API orderBook → re-subscribe |
+| Mount màn **lệnh thường phái sinh** (Today Unmatch / History trong ngày — có gọi REST §2.3) | Subscribe `order.status.{accountNumber}` |
+| Unmount màn | Unsubscribe |
+| App từ background → foreground | Gọi lại REST snapshot §2.3 → re-subscribe |
+| WS reconnect thành công | Gọi lại REST snapshot §2.3 → re-subscribe |
 | Đăng xuất | Unsubscribe tất cả channel order.status |
 
 ### 6.2 Xử lý event nhận được
@@ -387,41 +452,55 @@ Nhận message từ channel order.status.{accountNumber}
     ├─ Kiểm tra eventType === "ORDER_STATUS"?
     │       └─ Không? → Bỏ qua (guard cho tương lai)
     │
-    ├─ Lấy orderId từ payload
-    ├─ Tìm dòng lệnh tương ứng trong state hiện tại
+    ├─ Lấy orderNumber (và originalOrderNumber nếu có) từ payload
+    ├─ Tìm dòng trong state đã load từ todayUnmatch và/hoặc history:
+    │       REST orderNumber === WS orderNumber (normalize kiểu string)
+    │       hoặc (optional) originalOrderNumber === WS originalOrderNumber theo rule BA
     │
-    ├─ Tìm thấy → Cập nhật các trường: status, matchedQuantity, remainingQuantity, matchedPrice (BE đã áp dụng §4.1.4 cho lệnh ≠ LO — FE dùng giá trị payload, không tự suy lại từ raw Lotte)
+    ├─ Tìm thấy → Cập nhật các trường §6.7:
+    │       orderStatus, operation, matchedQuantity, remainingQuantity,
+    │       matchedPrice, price, sellBuyType, orderType, …
     │
-    └─ Không tìm thấy → Không tự thêm mới; gọi REST API refresh để lấy snapshot đầy đủ
+    └─ Không tìm thấy → Không tự thêm mới; gọi REST snapshot §2.3 (silent refresh)
 ```
 
-> **Không tự thêm dòng mới vào state khi chỉ có WS event.** Luôn dùng REST API để lấy danh sách đầy đủ ban đầu.
+> **Không tự thêm dòng mới vào state khi chỉ có WS event.** Luôn dùng REST snapshot §2.3 để có danh sách ban đầu. **Hai collection** (unmatch + history) có thể cùng chứa một lệnh ở giai đoạn khác — policy “xóa khỏi unmatch khi hết điều kiện” nên dựa trên **`orderStatus` + `remainingQuantity`** sau merge, sau đó đồng bộ với kết quả REST khi refresh.
 
-### 6.3 Cập nhật state theo từng status
+**Đối chiếu mục tiêu cập nhật với REST** — chi tiết §6.7.
 
-| `status` nhận được | Hành động trong state | Hiển thị (gợi ý) |
-|---------------------|----------------------|------------------|
-| `RECEIVED` | Cập nhật row theo payload | "Đã tiếp nhận" |
-| `ROUTED` | Cập nhật row theo payload | "Đang chuyển" |
-| `ORDER_CONFIRMED` | Cập nhật row theo payload | "Đã xác nhận lệnh" |
-| `RECEIPT_ACKNOWLEDGED` | Cập nhật row theo payload | "Đã xác nhận tiếp nhận" |
-| `MATCHED` | Cập nhật: status, `matchedQuantity`, `remainingQuantity`, `matchedPrice` | "Đã khớp" / "Khớp một phần" (§6.4) |
-| `CANCELLED` | Cập nhật: `status`, thường `remainingQuantity` theo event | "Đã hủy" |
-| `REJECTED_NHSV` | Cập nhật: `status` | "Từ chối (CTCK)" |
-| `REJECTED_EXCHANGE` | Cập nhật: `status` | "Từ chối (Sở)" |
+| Cập nhật từ WS | todayUnmatch | history |
+|----------------|-------------|---------|
+| `matchedQuantity` | ✓ §6.7 | ✓ §6.7 |
+| `remainingQuantity` | → `unmatchedQuantity` §6.7 | → `unmatchedQuantity` §6.7 |
+| `matchedPrice` | Theo UI | ✓ §6.7 |
+| `orderStatus` | Map vào text `status` (§6.7) | `orderStatus` — **cùng enum** §8.1 |
+| `operation` | Đồng bộ nhãn với history | `operation` §6.7 |
+| Rule nút Hủy/Sửa | §6.8 | §6.8 |
+
+### 6.3 Cập nhật state theo `orderStatus`
+
+Payload WS dùng **`orderStatus`** (đồng nhất REST history). FE merge vào row state và format UI theo mapper hiện có.
+
+| `orderStatus` nhận được | Hành động trong state | Gợi ý UI |
+|-------------------------|-------------------------|-----------|
+| `RECEIVED` | Cập nhật row theo payload | Tiếp nhận |
+| `CONFIRMED` | Cập nhật row theo payload | Đã xác nhận |
+| `PARTIALLY_FILLED` | Cập nhật KL + giá theo payload | Khớp một phần (§6.4) |
+| `FILLED` | Cập nhật KL + giá; thường `remainingQuantity === 0` | Khớp hết |
+| `REJECTED` | Cập nhật `orderStatus`; hiển thị lý do nếu có từ REST sau refresh | Từ chối |
 
 ### 6.4 Logic khớp một phần vs khớp toàn bộ
 
 ```
-status === "MATCHED"
-    │
-    ├─ remainingQuantity > 0 → Khớp một phần (hiển thị matchedQty / totalQty)
-    └─ remainingQuantity === 0 → Khớp toàn bộ
+orderStatus === "PARTIALLY_FILLED"
+    │  → remainingQuantity > 0 (thông thường)
+orderStatus === "FILLED"
+    │  → remainingQuantity === 0 (thông thường); đối chiếu matchedQuantity / quantity
 ```
 
 ### 6.5 Deduplicate
 
-- Nếu nhận nhiều event cho cùng `orderId`: dùng `seqNo` để chỉ apply event **có seqNo lớn hơn** (tránh apply event cũ sau event mới do network delay)
+- Nếu nhận nhiều event cho cùng **`orderNumber`**: dùng `seqNo` để chỉ apply event **có seqNo lớn hơn** (tránh apply event cũ sau event mới do network delay)
 - Nếu `seqNo` không available hoặc không parseable: apply event mới nhất theo thứ tự nhận
 
 ### 6.6 UI feedback
@@ -429,10 +508,62 @@ status === "MATCHED"
 | Trường hợp | Phản hồi UI |
 |------------|------------|
 | Status thay đổi (bất kỳ) | Highlight nhẹ dòng lệnh (animation 0.5s) |
-| MATCHED | Badge xanh / toast nếu app đang background |
-| CANCELLED / REJECTED | Badge đỏ |
+| `PARTIALLY_FILLED` / `FILLED` | Badge xanh / toast nếu app đang background |
+| `REJECTED` / `operation === CANCEL_ORDER` | Badge đỏ / trạng thái hủy |
 | WS mất kết nối | Hiển thị indicator "Đang kết nối lại..." |
 | WS reconnect xong | Tắt indicator, refresh silently |
+
+### 6.7 Đồng bộ field sau WebSocket (render lại UI)
+
+Sau khi merge payload WS vào state (§6.2), FE **render lại UI** — field WS đã **cùng tên / cùng enum** với history nơi có thể (`orderStatus`, `operation`, …).
+
+**API `GET /rest/api/v1/derivatives/order/history` — cập nhật các field:**
+
+| Field REST | Nguồn từ WS |
+|------------|-------------|
+| `operation` | **`operation`** trực tiếp (`NEW_ORDER` / `MODIFY_ORDER` / `CANCEL_ORDER`). |
+| `orderStatus` | **`orderStatus`** trực tiếp (§8.1). |
+| `matchedPrice` | `matchedPrice`. |
+| `matchedQuantity` | `matchedQuantity`. |
+| `unmatchedQuantity` | `remainingQuantity`. |
+
+**API `GET /api/v1/derivatives/order/todayUnmatch` — cập nhật các field:**
+
+| Field REST | Nguồn từ WS |
+|------------|-------------|
+| `matchedQuantity` | `matchedQuantity`. |
+| `unmatchedQuantity` | `remainingQuantity`. |
+
+**Đồng nhất `status` (todayUnmatch) và `operation` / `orderStatus` (history)**
+
+- Field **`status`** trên todayUnmatch (text hiển thị) và **`operation`** + **`orderStatus`** trên history **mô tả cùng một lệnh** — sau WS, FE map **`orderStatus`** / **`operation`** vào đúng rule format **`status`** text trên unmatch (mapper hiện có), để hai danh sách không lệch.
+
+### 6.8 Logic enable nút **Hủy** / **Sửa**
+
+Áp dụng **sau** mỗi lần merge WS (và khi render từ REST snapshot). Thứ tự ưu tiên: **rule chung** → **rule theo loại lệnh** (`orderType`).
+
+#### Rule chung (mọi loại lệnh)
+
+| Điều kiện (sau merge / từ state) | Hủy / Sửa |
+|----------------------------------|-----------|
+| **Đã khớp hết** (`orderStatus === FILLED` và/hoặc `remainingQuantity === 0` theo §6.4) | **Không** enable |
+| **Đã hủy / từ chối** (`operation === CANCEL_ORDER` hoặc `orderStatus === REJECTED`, hoặc rule UI tương đương) | **Không** enable |
+
+#### Rule theo loại lệnh (TradeX `orderType`)
+
+Các rule dưới **chỉ áp dụng khi rule chung chưa tắt nút** (ví dụ vẫn còn KL chưa khớp và lệnh chưa ở trạng thái hủy).
+
+| `orderType` | Điều kiện | Hủy / Sửa |
+|-------------|-----------|-----------|
+| **MOK** | **Chưa** nhận được (qua WS/state sau merge) **tín hiệu xác định khớp toàn bộ** theo nghiệp vụ MOK | **Không** enable |
+| **MAK** | **Khớp một phần** (`matchedQuantity > 0` và `remainingQuantity > 0`) **hoặc** **đã khớp hết** | **Không** enable |
+| **MTL** | **Chỉ khớp một phần** (`matchedQuantity > 0` và `remainingQuantity > 0`) | **Vẫn enable** (trừ khi rule chung đã tắt nút) |
+
+> **Ghi chú MOK:** Nếu literal “chưa nhận tín hiệu khớp toàn bộ → không enable” kết hợp với rule chung “đã khớp hết → không enable” làm **không còn cửa sổ** bật nút, **BA/BE cần xác nhận** lại nghiệp vụ (ví dụ MOK có cho hủy khi đang chờ kết quả hay chỉ sau Or Kill). FE implement đúng bảng trên cho đến khi có điều chỉnh BA.
+
+> **Ghi chú MAK:** Chỉ trong các trạng thái **chưa phát sinh khớp** (`matchedQuantity === 0`) và chưa vi phạm rule chung, nút mới có thể enable — hoặc theo đúng bảng: có khớp (dù một phần) hoặc khớp hết thì **không** enable.
+
+**Các loại lệnh khác (LO, ATO, ATC, …)** không có rule riêng trong tài liệu này — chỉ áp **rule chung** §6.8 và các quy tắc UI/REST hiện hành của app.
 
 ---
 
@@ -446,42 +577,57 @@ status === "MATCHED"
 | 2 | `event_seqno` | String | `seqNo` | String | Pass-through | Dùng để dedupe |
 | 3 | `date` + `evt_time` | String | `eventTime` | String (ISO 8601) | Ghép và format: `yyyymmdd` + `HH:mm:ss` → `yyyy-MM-ddTHH:mm:ss+07:00` | |
 | 4 | `acnt_no` | String | `accountNumber` | String | Pass-through | Route key |
-| 5 | `evt_ordNo` | String | `orderId` | String | Pass-through | **Khóa merge FE** |
+| 5 | `evt_ordNo` | String | `orderNumber` | String | Pass-through | **Khóa merge FE** — cùng REST |
 | 6 | `evt_code` | String | `symbolCode` | String | Pass-through | |
-| 7 | `evt_side` | String | `side` | Enum String | `"1"`/`"2"` → `"BUY"`/`"SELL"`; `"Mua"`/`"Bán"` → tương đương | §8.3 |
-| 8 | `evt_action` | String | `lifecycleAction` | Enum String (optional) | `1`/`2`/`3` → §8.4 | Có thể bỏ qua trên WS nếu BE không expose |
+| 7 | `evt_side` | String | `sellBuyType` | Enum String | `"1"`/`"2"` / `"Mua"`/`"Bán"` → `"BUY"`/`"SELL"` | §8.3 |
+| 8 | `evt_action` | String | `operation` | Enum String | `1`/`2`/`3` → `NEW_ORDER`/`MODIFY_ORDER`/`CANCEL_ORDER` — §8.4 |
 | 9 | `evt_ordType` | String | `orderType` | Enum String | Xem §8.2 | |
-| 10 | `evt_price` | String | `price` | Number/null | Parse to Number; rỗng/null → `null` | Lệnh thị trường có thể `0` |
+| 10 | `evt_price` | String | `price` | Number/null | Parse to Number | |
 | 11 | `evt_qty` | String | `quantity` | Number | Parse to Number | |
-| 12 | `evt_status` | String | `status` | Enum String | `0`–`5`, `R`, `X` → §8.1 | |
-| 13 | `evt_matchQty` | String | `matchedQuantity` | Number | Parse to Number; `0` nếu chưa khớp | |
+| 12 | `evt_status` | String | `orderStatus` | Enum String | §8.1 | |
+| 13 | `evt_matchQty` | String | `matchedQuantity` | Number | Parse to Number | |
 | 14 | `evt_remQty` | String | `remainingQuantity` | Number | Parse to Number | |
-| 15 | `evt_matchPrice` | String | `matchedPrice` | Number/null | Áp dụng §4.1.4 nếu `orderType ≠ LO`; sau đó parse; không ghi đè bằng 0 khi đã có `lastMatchPrice` | |
+| 15 | `evt_matchPrice` | String | `matchedPrice` | Number/null | §4.1.4 nếu `orderType ≠ LO` | |
+| 16 | `evt_orgOrdNo` | String | `originalOrderNumber` | String/null | `"0"` → `null` | REST history |
+
+### 7.2 TradeX WS → cột cập nhật trên REST (lệnh thường)
+
+Dùng cho FE sau khi đã map BE (§4) — **một dòng** trong state tương ứng một bản ghi `orderNumber` trên API. **Set field bắt buộc refresh sau WS** đã chốt tại **§6.7**.
+
+| TradeX WS (§5.2) | `todayUnmatch` | `history` |
+|------------------|----------------|---------|
+| `orderNumber` | Key merge | Key merge |
+| `originalOrderNumber` | Theo BA | `originalOrderNumber` |
+| `orderStatus` | Map → text `status` §6.7 | `orderStatus` (cùng enum §8.1) |
+| `operation` | Map → nhãn / `status` §6.7 | `operation` |
+| `matchedQuantity` | `matchedQuantity` | `matchedQuantity` |
+| `remainingQuantity` | `unmatchedQuantity` | `unmatchedQuantity` |
+| `matchedPrice` | Theo UI | `matchedPrice` |
+| `price` | `orderPrice` | `orderPrice` |
+| `sellBuyType` | `sellBuyType` | `sellBuyType` |
+| `orderType` | Rule nút §6.8 | Rule nút §6.8 |
 
 ---
 
 ## 8. Status & Code Mapping
 
-### 8.1 Order Status: Lotte `evt_status` → TradeX
+### 8.1 Lotte `evt_status` → TradeX **`orderStatus`** (WebSocket & REST history)
 
-**Nguồn chuẩn (Lotte WS `eventBody`):** mã số `0`–`5` và chữ `R`, `X` — định nghĩa §3.4.
+Enum **`orderStatus`** trên payload TradeX WebSocket **phải trùng tập giá trị** với field `orderStatus` trên `GET .../derivatives/order/history` để FE dùng chung formatter.
 
-| Lotte `evt_status` | TradeX `status` | Mô tả (Lotte) | Hiển thị UI (gợi ý) |
-|--------------------|-----------------|---------------|---------------------|
-| `0` | `RECEIVED` | Tiếp nhận | "Đã tiếp nhận" |
-| `1` | `ROUTED` | Chuyển | "Đang chuyển" |
-| `2` | `ORDER_CONFIRMED` | Xác nhận lệnh | "Đã xác nhận lệnh" |
-| `3` | `RECEIPT_ACKNOWLEDGED` | Xác nhận tiếp nhận | "Đã xác nhận tiếp nhận" |
-| `4` | `MATCHED` | Khớp toàn bộ | "Đã khớp" |
-| `5` | `MATCHED` | Khớp một phần | "Khớp một phần" (kết hợp `remainingQuantity > 0`) |
-| `R` | `REJECTED_NHSV` | Từ chối (NHSV từ chối) | "Từ chối (CTCK)" |
-| `X` | `REJECTED_EXCHANGE` | Từ chối (Sở từ chối) | "Từ chối (Sở)" |
+| Lotte `evt_status` | TradeX `orderStatus` | Ghi chú |
+|--------------------|------------------------|---------|
+| `0` | `RECEIVED` | Tiếp nhận |
+| `3` | `CONFIRMED` | Đã xác nhận (đồng nhất app/history) |
+| `4` | `FILLED` | Khớp toàn bộ |
+| `5` | `PARTIALLY_FILLED` | Khớp một phần |
+| `R` hoặc `X` | `REJECTED` | Từ chối (CTCK / Sở — không tách enum trên WS nếu history gộp một `REJECTED`) |
 
-> **Phân biệt `4` vs `5`:** Cả hai đều map `status = MATCHED` trên TradeX; FE dùng `matchedQuantity` / `remainingQuantity` (§6.4) để phân biệt khớp hết vs một phần. Nếu product muốn tách enum riêng (`MATCHED_FULL` / `PARTIALLY_MATCHED`), BA quyết định và cập nhật bảng này + contract §5.2.
+**Mã Lotte `1`, `2` (§3.4 — Chuyển / Xác nhận lệnh):** BE map sang **`CONFIRMED`** hoặc **`RECEIVED`** theo rule đã dùng khi build response history — **thống nhất một đường** trong collector + REST.
 
-> **Legacy:** Nếu vẫn nhận mã chữ `A`/`B`/`C`/`D`/`R` từ nguồn cũ, cần bảng map riêng sau khi xác nhận Core — **không** trộn bảng chữ cái với bảng `0`–`5`/`R`/`X` ở trên mà không có quyết định BA/BE.
+> **Tham chiếu ý nghĩa gốc Core:** bảng mô tả Lotte trong §3.4 vẫn dùng cho hiểu nghiệp vụ; **emit ra TradeX** luôn qua bảng trên để khớp FE.
 
-### 8.2 Order Type: Lotte evt_ordType → TradeX
+### 8.2 Order Type: Lotte `evt_ordType` → TradeX `orderType`
 
 | Lotte `evt_ordType` | TradeX `orderType` | Mô tả |
 |---------------------|-------------------|-------|
@@ -492,31 +638,26 @@ status === "MATCHED"
 | `7` | `ATC` | Lệnh đóng cửa |
 | `9` | `MTL` | Market To Limit |
 
-### 8.3 Side: Lotte `evt_side` → TradeX
+### 8.3 Chiều lệnh: Lotte `evt_side` → TradeX `sellBuyType`
 
-**Chuẩn WebSocket (mã số):**
+Payload WS dùng **`sellBuyType`** (cùng REST history), không dùng tên `side`.
 
-| Lotte `evt_side` | TradeX `side` |
-|------------------|--------------|
+| Lotte `evt_side` | TradeX `sellBuyType` |
+|--------------------|------------------------|
 | `1` | `BUY` |
 | `2` | `SELL` |
-
-**Dự phòng (dạng chữ, nếu Core gửi):**
-
-| Lotte `evt_side` | TradeX `side` |
-|------------------|--------------|
 | `Mua` | `BUY` |
 | `Bán` | `SELL` |
 
-### 8.4 Action: Lotte `evt_action` → TradeX `lifecycleAction` (optional)
+### 8.4 Loại thao tác: Lotte **`evt_action`** → TradeX **`operation`**
 
-| Lotte `evt_action` | TradeX `lifecycleAction` | Ý nghĩa Lotte |
-|--------------------|--------------------------|---------------|
-| `1` | `NEW` | Lệnh mới |
-| `2` | `MODIFIED` | Lệnh sửa |
-| `3` | `CANCELLED` | Lệnh hủy |
+**Nguồn Lotte là `evt_action`** (không phải `evt_status`). Trong tài liệu góp ý, nếu ghi nhầm `operation` ← `evt_status` thì **bỏ qua** — chỉ dùng bảng dưới. Giá trị WS **trùng** field `operation` trên history.
 
-> Field `lifecycleAction` là **tùy chọn** trên payload WS (§5.2). BE có thể chỉ dùng nội bộ để log/audit; `evt_status` vẫn là nguồn chính cho trạng thái hiển thị sổ lệnh.
+| Lotte `evt_action` | TradeX `operation` |
+|--------------------|---------------------|
+| `1` | `NEW_ORDER` |
+| `2` | `MODIFY_ORDER` |
+| `3` | `CANCEL_ORDER` |
 
 ---
 
@@ -539,34 +680,39 @@ status === "MATCHED"
   "evt_ordType": "0",
   "evt_price": "1280",
   "evt_qty": "10",
-  "evt_status": "B",
+  "evt_action": "1",
+  "evt_status": "4",
   "evt_matchQty": "10",
   "evt_remQty": "0",
-  "evt_matchPrice": "1279.5"
+  "evt_matchPrice": "1279.5",
+  "evt_orgOrdNo": "0"
 }
 ```
 
-**TradeX WS payload → FE nhận được:**
+**TradeX WS payload → FE nhận được** (đồng nhất §5.2):
+
 ```json
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "20260511000123",
-  "eventTime": "2026-05-11T14:48:22+07:00",
+  "eventTime": "20260511 14:48:22",
   "accountNumber": "0001234567",
-  "orderId": "20260511000456",
+  "orderNumber": "20260511000456",
   "symbolCode": "VN30F2506",
-  "side": "BUY",
+  "sellBuyType": "BUY",
   "orderType": "LO",
   "price": 1280.0,
   "quantity": 10,
-  "status": "MATCHED",
+  "orderStatus": "FILLED",
   "matchedQuantity": 10,
   "remainingQuantity": 0,
-  "matchedPrice": 1279.5
+  "matchedPrice": 1279.5,
+  "operation": "NEW_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
-**FE action:** Tìm `orderId = "20260511000456"` trong state → cập nhật `status = MATCHED`, `matchedQuantity = 10`, `remainingQuantity = 0`, `matchedPrice = 1279.5` → Highlight dòng.
+**FE action:** Tìm `orderNumber` trong state → cập nhật **`orderStatus`**, KL, giá — **cùng mapper** REST history → Highlight dòng.
 
 ---
 
@@ -577,125 +723,82 @@ status === "MATCHED"
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "20260511000124",
-  "eventTime": "2026-05-11T14:49:05+07:00",
+  "eventTime": "20260511 14:49:05",
   "accountNumber": "0001234567",
-  "orderId": "20260511000457",
+  "orderNumber": "20260511000457",
   "symbolCode": "VN30F2506",
-  "side": "SELL",
+  "sellBuyType": "SELL",
   "orderType": "LO",
   "price": 1285.0,
   "quantity": 20,
-  "status": "MATCHED",
+  "orderStatus": "PARTIALLY_FILLED",
   "matchedQuantity": 8,
   "remainingQuantity": 12,
-  "matchedPrice": 1285.0
+  "matchedPrice": 1285.0,
+  "operation": "NEW_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
-**FE action:** `status = MATCHED`, hiển thị `"Khớp một phần: 8/20"`. Tiếp tục chờ event tiếp theo.
+**FE action:** `orderStatus = PARTIALLY_FILLED` → hiển thị khớp một phần (8/20). Chờ event tiếp.
 
 ---
 
-### 9.3 Lệnh bị hủy
+### 9.3 Lệnh hủy (thao tác CANCEL)
 
-**TradeX WS payload:**
+**TradeX WS payload** (`orderStatus` sau hủy **đồng nhất REST history** — ví dụ minh họa):
+
 ```json
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "20260511000125",
-  "eventTime": "2026-05-11T15:01:30+07:00",
+  "eventTime": "20260511 15:01:30",
   "accountNumber": "0001234567",
-  "orderId": "20260511000457",
+  "orderNumber": "20260511000457",
   "symbolCode": "VN30F2506",
-  "side": "SELL",
+  "sellBuyType": "SELL",
   "orderType": "LO",
   "price": 1285.0,
   "quantity": 20,
-  "status": "CANCELLED",
+  "orderStatus": "CONFIRMED",
   "matchedQuantity": 8,
   "remainingQuantity": 0,
-  "matchedPrice": null
+  "matchedPrice": null,
+  "operation": "CANCEL_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
-**FE action:** `status = CANCELLED`, `remainingQuantity = 0` → Badge đỏ.
+**FE action:** `operation = CANCEL_ORDER` → cập nhật UI / rule nút §6.8.
 
 ---
 
 ### 9.4 MTL — khớp một phần: hai event liên tiếp từ Core (F15303)
 
-Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên cả hai event; khác nhau ở cặp `evt_price` / `evt_matchPrice`.
+Core gửi **cùng `evt_ordNo`**, `evt_status = 5` → TradeX `orderStatus = PARTIALLY_FILLED` (§8.1).
 
-**Event 1 — giá khớp nằm ở `evt_matchPrice`, `evt_price = 0`:**
+**TradeX BE (§4.1.4):** sau event 1, lưu `lastMatchPriceByOrderNumber["10000913"] = 2265.8`. Sau event 2, emit `matchedPrice: 2265.8` (không phát `0`).
 
-```json
-{
-  "date": "20251127",
-  "event_seqno": "943174",
-  "event_code": "F15303",
-  "acnt_no": "039C110257",
-  "evt_time": "13:28:52",
-  "evt_ordNo": "10000913",
-  "evt_orgOrdNo": "0",
-  "evt_action": "1",
-  "evt_account": "039C110257",
-  "evt_code": "41I16600",
-  "evt_side": "1",
-  "evt_ordType": "91",
-  "evt_price": "0",
-  "evt_qty": "3",
-  "evt_status": "5",
-  "evt_matchQty": "1",
-  "evt_remQty": "2",
-  "evt_matchPrice": "2265.8"
-}
-```
-
-**Event 2 — Core “bơm” giá vào `evt_price`, `evt_matchPrice = 0`:**
-
-```json
-{
-  "date": "20251127",
-  "event_seqno": "943175",
-  "event_code": "F15303",
-  "acnt_no": "039C110257",
-  "evt_time": "13:28:52",
-  "evt_ordNo": "10000913",
-  "evt_orgOrdNo": "0",
-  "evt_action": "1",
-  "evt_account": "039C110257",
-  "evt_code": "41I16600",
-  "evt_side": "1",
-  "evt_ordType": "91",
-  "evt_price": "2265.9",
-  "evt_qty": "3",
-  "evt_status": "5",
-  "evt_matchQty": "1",
-  "evt_remQty": "2",
-  "evt_matchPrice": "0"
-}
-```
-
-> **Ghi chú:** `evt_ordType` trong ví dụ thực tế là `"91"` — cần đối chiếu bảng map Core ↔ TradeX (§8.2) với tài liệu Lotte DR; trên luồng nghiệp vụ đây là **MTL** (khớp một phần + chuyển giá).
-
-**TradeX BE (§4.1.4):** sau event 1, lưu `lastMatchPriceByOrderId["10000913"] = 2265.8`. Sau event 2, emit `matchedPrice: 2265.8` (không phát `0`).
-
-**TradeX WS → FE (cả hai lần đẩy, cùng ý nghĩa khớp một phần):**
+**TradeX WS → FE** (bổ sung đủ field §5.2; rút gọn trích dẫn):
 
 ```json
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "943174",
-  "orderId": "10000913",
+  "eventTime": "20251127 13:28:52",
+  "accountNumber": "039C110257",
+  "orderNumber": "10000913",
   "symbolCode": "41I16600",
-  "side": "BUY",
+  "sellBuyType": "BUY",
   "orderType": "MTL",
   "price": 0,
   "quantity": 3,
-  "status": "MATCHED",
+  "orderStatus": "PARTIALLY_FILLED",
   "matchedQuantity": 1,
   "remainingQuantity": 2,
-  "matchedPrice": 2265.8
+  "matchedPrice": 2265.8,
+  "operation": "NEW_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
@@ -703,20 +806,24 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên c
 {
   "eventType": "ORDER_STATUS",
   "seqNo": "943175",
-  "orderId": "10000913",
+  "eventTime": "20251127 13:28:52",
+  "accountNumber": "039C110257",
+  "orderNumber": "10000913",
   "symbolCode": "41I16600",
-  "side": "BUY",
+  "sellBuyType": "BUY",
   "orderType": "MTL",
   "price": 2265.9,
   "quantity": 3,
-  "status": "MATCHED",
+  "orderStatus": "PARTIALLY_FILLED",
   "matchedQuantity": 1,
   "remainingQuantity": 2,
-  "matchedPrice": 2265.8
+  "matchedPrice": 2265.8,
+  "operation": "NEW_ORDER",
+  "originalOrderNumber": null
 }
 ```
 
-**FE action:** Merge theo `orderId`; `seqNo` tăng dần. Luôn hiển thị **giá khớp 2265.8** cho đến khi có event đổi `matchedPrice` có nghiệp vụ hoặc refresh từ REST.
+**FE action:** Merge theo **`orderNumber`**; `seqNo` tăng dần. Giữ **giá khớp 2265.8** đến khi có event đổi giá có nghiệp vụ hoặc refresh REST.
 
 ---
 
@@ -736,15 +843,15 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên c
 | Tình huống | Hành động FE |
 |------------|-------------|
 | WS ngắt kết nối | Hiển thị indicator "Đang kết nối lại..."; không xóa state |
-| Reconnect thành công | Gọi REST API orderBook để lấy snapshot mới; re-subscribe channel; tắt indicator |
-| App ra background | Giữ state; khi vào foreground: gọi REST API → re-subscribe |
+| Reconnect thành công | Gọi REST snapshot §2.3 để lấy snapshot mới; re-subscribe channel; tắt indicator |
+| App ra background | Giữ state; khi vào foreground: gọi REST snapshot §2.3 → re-subscribe |
 | Timeout reconnect (> 30s) | Hiển thị thông báo "Không có kết nối — Kéo để làm mới" |
 
-### 10.3 FE — Event không tìm thấy orderId
+### 10.3 FE — Event không tìm thấy `orderNumber`
 
 | Tình huống | Hành động FE |
 |------------|-------------|
-| orderId trong event không có trong state | Không tự thêm dòng; gọi REST API refresh (silent) |
+| `orderNumber` trong payload WS không có trong state | Không tự thêm dòng; gọi REST snapshot §2.3 (silent refresh) |
 | Event trùng seqNo | Bỏ qua event trùng |
 | Event seqNo nhỏ hơn seqNo đã apply | Bỏ qua (stale event) |
 
@@ -757,9 +864,9 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên c
 - [ ] Subscribe `sub/bos.evt.ord.sts.*/` thành công sau khi kết nối Lotte WS
 - [ ] Chỉ forward event có `event_code === "F15303"` — bỏ qua F15302 và các mã khác
 - [ ] Normalize đúng tất cả fields theo §7.1
-- [ ] Map đúng `evt_status` (`0`–`5`, `R`, `X`) → TradeX enum §8.1; xử lý legacy A/B/C/D/R nếu còn tồn tại
+- [ ] Map đúng `evt_status` → **`orderStatus`** — §8.1 (mã Lotte `1`/`2` → rule đã thống nhất với REST history; legacy chữ `A`/`B`/… nếu Core còn gửi)
 - [ ] Với lệnh ≠ LO: áp dụng logic `matchedPrice` §4.1.4 (hai bước `evt_price`/`evt_matchPrice`)
-- [ ] Map đúng `evt_action` `1`/`2`/`3` nếu expose `lifecycleAction` (§8.4)
+- [ ] Map đúng `evt_action` → **`operation`** — §8.4
 - [ ] Map đúng `evt_ordType` 0/2/3/4/7/9 → TradeX enum §8.2
 - [ ] Publish đúng Kafka topic `order-status-events` với key = `accountNumber`
 - [ ] ws-v2 chỉ push event xuống session có `accountNumber` khớp (kiểm tra bảo mật)
@@ -771,12 +878,15 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên c
 - [ ] Subscribe `order.status.{accountNumber}` khi mount màn sổ lệnh
 - [ ] Unsubscribe khi unmount màn sổ lệnh
 - [ ] Parse payload đúng và lọc `eventType === "ORDER_STATUS"`
-- [ ] Merge đúng theo `orderId` — không tạo dòng mới khi orderId không có trong state
+- [ ] Merge đúng theo **`orderNumber`** — không tạo dòng mới khi chưa có trong state
 - [ ] Deduplicate theo `seqNo` — bỏ qua event cũ hơn
-- [ ] Cập nhật đúng `status` (gồm `RECEIVED`, `ROUTED`, …, `REJECTED_NHSV`, `REJECTED_EXCHANGE` — §6.3), `matchedQuantity`, `remainingQuantity`, `matchedPrice`
+- [ ] Sau mỗi event WS: render lại đúng field §6.7 — **history:** `operation`, `orderStatus`, `matchedPrice`, `matchedQuantity`, `unmatchedQuantity`; **todayUnmatch:** `matchedQuantity`, `unmatchedQuantity`
+- [ ] Payload WS dùng **`orderStatus`** + **`operation`** (§5.2); đồng bộ text `status` trên todayUnmatch theo mapper hiện có (§6.7)
+- [ ] Áp rule nút Hủy/Sửa §6.8 (chung + MOK / MAK / MTL); đặc biệt MTL khớp một phần vẫn enable; MAK có khớp (một phần hoặc hết) thì không enable
+- [ ] Cập nhật đúng `orderStatus` (§6.3: `RECEIVED`, `CONFIRMED`, `PARTIALLY_FILLED`, `FILLED`, `REJECTED`), `matchedQuantity`, `remainingQuantity`, `matchedPrice`
 - [ ] Với lệnh ≠ LO: tin `matchedPrice` từ BE sau §4.1.4; kiểm tra scenario §9.4 (MTL hai event)
-- [ ] Hiển thị "khớp một phần" khi `status = MATCHED` và `remainingQuantity > 0`
-- [ ] Gọi REST API refresh khi: reconnect WS, app foreground, orderId không tìm thấy
+- [ ] Hiển thị khớp một phần khi `orderStatus = PARTIALLY_FILLED` (và/hoặc `remainingQuantity > 0`)
+- [ ] Gọi REST snapshot §2.3 khi: reconnect WS, app foreground, `orderNumber` không tìm thấy
 - [ ] Hiển thị indicator khi WS mất kết nối
 - [ ] Tắt indicator và refresh silently sau khi reconnect thành công
 
@@ -799,5 +909,6 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` (khớp một phần) trên c
 **Next Steps:**  
 1. BE review §4 (component design và Kafka integration với kiến trúc hiện tại)  
 2. FE review §6 (subscribe pattern với socketCluster hiện tại)  
-3. Confirm `orderId` format từ Lotte F15303 = `orderId` trong REST API orderBook response  
-4. Sign-off → đưa vào sprint planning
+3. Confirm payload WS **`orderNumber`** = REST **`orderNumber`**; **`originalOrderNumber`** khi có  
+4. Confirm string **`orderStatus`** / **`operation`** trên WS **trùng** contract REST history (§8.1, §8.4)  
+5. Sign-off → đưa vào sprint planning
