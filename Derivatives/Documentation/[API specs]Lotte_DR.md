@@ -1283,6 +1283,29 @@
 | mth_qty      | String    |              |          | Số lượng khớp lệnh    |
 | mth_pri      | String    |              |          | Giá khớp              |
 
+**Cùng subscription** `sub/bos.evt.ord.sts.*/` **có thể nhận thêm** mã sự kiện **F15303** — cập nhật **trạng thái sổ lệnh** (lifecycle lệnh: mới / khớp / hủy / sửa / từ chối) để client không cần polling API danh sách lệnh khi có thay đổi.
+
+| FieldName       | FieldType | Valid Values | Format   | Description |
+|-----------------|-----------|--------------|----------|-------------|
+| event_code      | String    | F15303       |          | Mã sự kiện (Trạng thái sổ lệnh) |
+| event_seqno     | String    |              |          | Số sequence |
+| date            | String    |              | yyyymmdd | Ngày sự kiện |
+| acnt_no         | String    |              |          | Số tài khoản |
+| evt_time        | String    |              | HH:mm:ss | Thời điểm sự kiện |
+| evt_ordNo       | String    |              |          | Số hiệu lệnh (khóa đối chiếu với dòng trên sổ lệnh) |
+| evt_account     | String    |              |          | Số tài khoản (theo sự kiện) |
+| evt_code        | String    |              |          | Mã hợp đồng / mã CK |
+| evt_side        | String    |              |          | Chiều: Mua / Bán |
+| evt_ordType     | String    |              |          | Loại lệnh: `0` LO, `2` ATO, `3` MAK, `4` MOK, `7` ATC, `9` MTL (theo quy ước Core) |
+| evt_price       | String    |              |          | Giá đặt |
+| evt_qty         | String    |              |          | Khối lượng đặt |
+| evt_status      | String    |              |          | Trạng thái: `A` Lệnh mới, `B` Khớp, `C` Hủy, `D` Sửa, `R` Từ chối |
+| evt_matchQty    | String    |              |          | Khối lượng đã khớp |
+| evt_remQty      | String    |              |          | Khối lượng còn lại |
+| evt_matchPrice  | String    |              |          | Giá khớp |
+
+> **Gợi ý tích hợp app:** lọc theo `event_code === "F15303"`, cập nhật state theo `evt_ordNo` + `evt_status`; dùng `evt_matchQty` / `evt_remQty` / `evt_matchPrice` cho khớp một phần hoặc hiển thị chi tiết khớp.
+
 #### 3.1.2 Account events
 
 - **Đăng ký nhận dữ liệu:** `sub/bos.evt.acc.inf.*/`

@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** May 7, 2026
 
-> **Scope:** (1) TradeX SMS OTP (Send/Verify) để kích hoạt luồng S-OTP (txType = `SMART_OTP`) — đây chỉ là **bước xác thực đầu vào** trước khi TradeX gọi API kích hoạt SmartOTP. (2) Mapping Core (Lotte) ↔ TradeX cho nghiệp vụ **đăng ký SmartOTP** và **xác thực SmartOTP**.
+> **Scope:** (1) TradeX SMS OTP (Send/Verify) để kích hoạt luồng S-OTP (txType = `SMART_OTP`) — đây chỉ là **bước xác thực đầu vào** trước khi TradeX gọi API kích hoạt SmartOTP. (2) Mapping Core (Lotte) ↔ TradeX cho nghiệp vụ **đăng ký SmartOTP** và **xác thực SmartOTP**. (3) Bổ sung field `sotp_stat` / `sotp_sec` từ Lotte vào response **`POST /rest/api/v1/login`** và **`POST /rest/api/v1/login/sec/verifyOTP`** để FE suy ra trạng thái đăng ký S-OTP và so khớp thiết bị (kết hợp `sotpKey` lưu local).
 
 ---
 
@@ -26,6 +26,8 @@ Tài liệu này mô tả mapping API cho luồng **S-OTP / SmartOTP** theo 2 ch
 | Verify Activation SMS OTP | POST | `/api/v1/smartOtp/activationOtp/verify` |
 | Register SmartOTP (Core) | POST | `/api/v1/smartOtp/register` |
 | Verify SmartOTP (Core) | POST | `/api/v1/smartOtp/verify` |
+| Login (SmartOTP context fields) | POST | `/rest/api/v1/login` |
+| Verify secondary OTP after login | POST | `/rest/api/v1/login/sec/verifyOTP` |
 
 ### 1.3 Response Format Standards (TradeX)
 
@@ -83,7 +85,25 @@ Tài liệu này mô tả mapping API cho luồng **S-OTP / SmartOTP** theo 2 ch
 
 Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một thiết bị MTS** tại một thời điểm; kích hoạt trên thiết bị mới sẽ làm thiết bị cũ inactive.
 
-### 2.3 Language Mapping
+### 2.3 Login response: `sotp_stat` / `sotp_sec` và suy luận “đúng thiết bị”
+
+| Lotte field | TradeX field (đề xuất) | Ý nghĩa gần đúng |
+| --- | --- | --- |
+| `sotp_stat` | `sotpStatus` | Trạng thái đăng ký S-OTP trên Core (ví dụ `Y` / `N` — **chốt valid values với Lotte**) |
+| `sotp_sec` | `sotpKey` | Khóa sinh mã S-OTP hiện đang gắn với tài khoản trên Core (cùng ý nghĩa với `sotp_sec` sau register trong spec SOTP-102) |
+
+**Giới hạn:** Hai field này **không** chứa `deviceId`. Để FE biết **thiết bị hiện tại có trùng với thiết bị đã đăng ký hay không**, cần **so sánh** `sotpKey` từ API với `sotpKey` đã lưu **secure storage** trên máy sau khi user kích hoạt S-OTP trên thiết bị đó.
+
+| Điều kiện (gợi ý FE) | Diễn giải UX |
+| --- | --- |
+| `sotpStatus !== Y` (hoặc tương đương “chưa đăng ký”) | Chưa đăng ký S-OTP trên Core → luồng kích hoạt như tài liệu quy trình |
+| `sotpStatus === Y` và `sotpKey` **khớp** `sotpKey` local đã lưu | Đây là **thiết bị đã đăng ký** (active trên máy này) |
+| `sotpStatus === Y` và **không có** `sotpKey` local (cài mới / xóa app / chưa từng kích hoạt trên máy này) | Đã có đăng ký trên Core nhưng **máy này chưa có `sotpKey`** → có thể là thiết bị khác đã kích hoạt, hoặc máy mất dữ liệu local → UI: kích hoạt lại / chuyển thiết bị |
+| `sotpStatus === Y` và có `sotpKey` local nhưng **không khớp** `sotpKey` | Key trên Core đã đổi (thường do **kích hoạt lại trên thiết bị khác**) → máy hiện tại **không** còn là thiết bị active |
+
+**Lưu ý bảo mật:** Trả `sotpKey` xuống client trong login response là **nhạy cảm**. Nên chốt với Security/Lotte: có thể chỉ trả xuống khi thật sự cần cho offline generate, hoặc chỉ dùng server-side và FE dùng flag/so khớp hash thay vì raw key.
+
+### 2.4 Language Mapping
 
 | Accept-Language | Core `lang_code` | Note |
 | --- | --- | --- |
@@ -116,7 +136,7 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 | `phoneNumber` | String | ✅ | `id` | Direct | SĐT nhận OTP (format E.164 khuyến nghị, ví dụ `+84...`) |
 | `txType` | String | ✅ | `txType` | Fixed: `SMART_OTP` | Luôn cố định cho luồng kích hoạt SmartOTP |
 | `idType` | String | ✅ | `idType` | Fixed: `PHONE_NO` | Theo template |
-| *(Header)* `Accept-Language` | - | - | `lang_code` | Map (§2.3) | Nếu upstream có hỗ trợ |
+| *(Header)* `Accept-Language` | - | - | `lang_code` | Map (§2.4) | Nếu upstream có hỗ trợ |
 
 ### 3.3 Response Mapping
 
@@ -246,7 +266,7 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 |---|---|---|---|---|
 | `error_desc` | `message` | String | Direct | Pass-through |
 | `data_list[0].sotp_stat` | `sotpStatus` | String | Direct | Trạng thái S-OTP |
-| `data_list[0].sotp_sec` | `secret` | String | Direct | Khóa tạo mã S-OTP (TTL code ~60s theo Core spec) |
+| `data_list[0].sotp_sec` | `sotpKey` | String | Direct | Khóa tạo mã S-OTP (TTL code ~60s theo Core spec) |
 
 **TradeX Response example (200):**
 
@@ -254,7 +274,7 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 {
   "message": "SUCCESS",
   "sotpStatus": "ACTIVE",
-  "secret": "VGswjj4354"
+  "sotpKey": "VGswjj4354"
 }
 ```
 
@@ -288,7 +308,7 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 | TradeX Field | Type | Required | Core Field | Transform | Description |
 |---|---|---:|---|---|---|
 | *(JWT)* `userId` | String | - | `user_id` | Auto | User ID |
-| `secret` | String | ✅ | `secret` | Direct | Key tạo S-OTP theo Core spec |
+| `sotpKey` | String | ✅ | `secret` | Direct | Key tạo S-OTP theo Core spec |
 | `otpCode` | String | ✅ | `code` | Direct | Mã S-OTP |
 | `channel` | String | ✅ | - | TradeX only | `WTS` / `HTS` (audit/rate limit), **không gửi Core** theo Core spec hiện tại |
 
@@ -318,9 +338,54 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 
 ---
 
-## 7. Error Handling Summary
+## 7. Login & Secondary OTP — SmartOTP Fields (Lotte → TradeX)
 
-### 7.1 Error Response Format
+Bổ sung mapping cho response của **`POST /rest/api/v1/login`** và **`POST /rest/api/v1/login/sec/verifyOTP`** khi luồng đăng nhập lấy thêm ngữ cảnh SmartOTP từ Lotte (theo field `sotp_stat`, `sotp_sec`).
+
+### 7.1 Lotte → TradeX (response payload)
+
+**Nguyên tắc naming TradeX:** không expose trực tiếp tên snake_case Lotte; map sang camelCase có nghĩa.
+
+| Lotte Field | TradeX Field | Type | Required | Transform | Description |
+| --- | --- | --- | ---: | --- | --- |
+| `sotp_stat` | `sotpStatus` | String | ❌\* | Direct | Trạng thái đăng ký S-OTP trên Core (ví dụ `Y`/`N` — **chốt enum với Lotte**) |
+| `sotp_sec` | `sotpKey` | String | ❌\* | Direct | Khóa sinh mã S-OTP đang hiệu lực trên Core |
+| `error_code` | - | - | - | Check `0000` | Áp dụng wrapper Lotte nếu có; TradeX response login giữ chuẩn TradeX |
+
+\* Có mặt khi Lotte/Core trả kèm trong payload login/mfa; nếu không có → FE coi như chưa có ngữ cảnh S-OTP.
+
+### 7.2 Vị trí đề xuất trong JSON response (abstract)
+
+Tùy contract hiện tại của `login` / `verifyOTP` (userInfo, `data`, v.v.), hai field có thể đặt:
+
+- **Option A (ưu tiên):** trong object **user** / **userInfo** (cùng cấp username, account…) — vì gắn tài khoản.
+- **Option B:** trong object **`smartOtp`** lồng bên trong response để tách domain.
+
+**Example (minh họa — chỉ là contract đề xuất):**
+
+```json
+{
+  "accessToken": "...",
+  "userInfo": {
+    "username": "...",
+    "sotpStatus": "Y",
+    "sotpKey": "9hADD7pCtfb8"
+  }
+}
+```
+
+### 7.3 Quy tắc FE (tóm tắt)
+
+Chi tiết bảng quyết định xem **§2.3**. Tóm lại:
+
+- **`sotpStatus`** → đã có đăng ký trên Core hay chưa (theo enum Lotte).
+- **So khớp thiết bị:** so `sotpKey` (server) với `sotpKey` đã lưu sau kích hoạt trên **thiết bị này**; không có `deviceId` trong 2 field này.
+
+---
+
+## 8. Error Handling Summary
+
+### 8.1 Error Response Format
 
 - **400**: `INVALID_PARAMETER` + `params[]`
 - **401/403**: `UNAUTHORIZED` / `TOKEN_EXPIRED` / `FORBIDDEN`
@@ -329,9 +394,9 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 
 ---
 
-## 8. Implementation Notes
+## 9. Implementation Notes
 
-### 8.1 Service Architecture (logical)
+### 9.1 Service Architecture (logical)
 
 | Component | Role |
 |---|---|
@@ -340,15 +405,15 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 | `lotte-bridge` (or core connector) | Call Core endpoints SOTP-102 / SOTP-101 |
 | OTP service (used by eKYC template) | Send/verify SMS OTP with `id/idType/txType` |
 
-### 8.2 Key Security Notes (to be finalized)
+### 9.2 Key Security Notes (to be finalized)
 
-- **`secret` lifecycle**: Core register (SOTP-102) trả về `sotp_sec` (secret). TradeX nên lưu **server-side** theo `userId` + `deviceId` (và/hoặc encrypt-at-rest) để WTS/HTS verify không cần app cầm `secret`.
+- **`sotpKey` lifecycle**: Core register (SOTP-102) trả về `sotp_sec` (sotpKey). TradeX nên lưu **server-side** theo `userId` + `deviceId` (và/hoặc encrypt-at-rest) để WTS/HTS verify không cần app cầm `sotpKey`.
 - **Device binding**: Core spec không có `deviceId`; device binding nên được TradeX enforce (DB + audit + revoke).
 - **Rate limit**: Send/verify OTP nên rate-limit theo `phoneNumber` + `userId` + IP.
 
 ---
 
-## 9. References
+## 10. References
 
 - `Smart OTP - multi channels/SmartOTP_WTS_HTS_Scope_Analysis.md`
 - `Smart OTP - multi channels/Quy_trinh_S_OTP.md`
@@ -358,8 +423,8 @@ Theo scope hiện tại, mỗi tài khoản chỉ active SmartOTP trên **một 
 
 ---
 
-**Document Status:** 📋 Draft (needs confirmation on auth model + secret handling)  
+**Document Status:** 📋 Draft (needs confirmation on auth model + sotpKey handling)  
 **For:** BA/Dev  
-**Next Steps:** Chốt endpoint naming + auth model (WTS/HTS), thống nhất cơ chế quản lý `secret`, rồi tạo Jira backlog triển khai BE/FE/QA  
+**Next Steps:** Chốt endpoint naming + auth model (WTS/HTS), thống nhất cơ chế quản lý `sotpKey`, rồi tạo Jira backlog triển khai BE/FE/QA  
 **Estimated Effort:** 2-4 days (BE) + 2-3 days (FE) + 1-2 days (QA)
 

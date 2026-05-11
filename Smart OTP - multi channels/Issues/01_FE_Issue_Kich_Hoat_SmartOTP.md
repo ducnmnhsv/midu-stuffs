@@ -48,7 +48,27 @@ This issue handles only `Kích hoạt Smart OTP`.
 
 User taps `Kích hoạt Smart OTP`.
 
-Call SDK method to check SmartOTP status by `accountNumber` and `deviceId`.
+### Status Detection (Requirement Update)
+
+FE cần detect 2 case trước khi vào form kích hoạt:
+
+- **Detect account đã active S-OTP trước đó hay chưa?** (dựa trên `sotpStatus`)
+- **Nếu đã active trước đó:** thiết bị hiện tại là **đúng thiết bị đang active** hay **thiết bị khác** (dựa trên so khớp `sotpKey` server vs local)
+
+Nguồn dữ liệu:
+
+- **Server (TradeX login / verifyOTP response):** `userInfo.sotpStatus`, `userInfo.sotpKey`
+- **Local (Secure storage):** `localSotpKey` đã lưu trên thiết bị sau khi user kích hoạt S-OTP thành công trên thiết bị đó
+
+Decision table:
+
+| Condition | FE interpretation | UX action |
+| --- | --- | --- |
+| `sotpStatus !== "Y"` (hoặc tương đương “not registered”) | Chưa active S-OTP | Cho phép vào flow kích hoạt |
+| `sotpStatus === "Y"` và `localSotpKey` tồn tại **và** `localSotpKey === sotpKey` | Đã active và **đúng thiết bị hiện tại** | Show: `Quý khách đã đăng ký S-OTP trên thiết bị này.` |
+| `sotpStatus === "Y"` và (`localSotpKey` không tồn tại **hoặc** `localSotpKey !== sotpKey`) | Đã active nhưng **không phải thiết bị này** (hoặc thiết bị này mất state local) | Show transfer warning và cho phép user xác nhận chuyển thiết bị |
+
+> Note: `sotpStatus`/`sotpKey` không chứa `deviceId`, vì vậy FE không thể “biết thiết bị” nếu không có local key để so khớp.
 
 If account already activated SmartOTP on the current device:
 
@@ -104,18 +124,19 @@ flowchart TD
   A[More screen] --> B[Tap Smart OTP]
   B --> C[Smart OTP screen]
   C --> D[Tap Kích hoạt Smart OTP]
-  D --> E[Call SDK check SmartOTP status]
-  E --> F{Status}
+  D --> E[Read sotpStatus/sotpKey from login response]
+  E --> E2[Read localSotpKey from secure storage]
+  E2 --> F{Decision}
 
-  F -->|Active current device| G[Show already activated warning]
+  F -->|sotpStatus != Y| K[Continue activation flow]
+  F -->|sotpStatus == Y AND localSotpKey == sotpKey| G[Show already activated warning]
   G --> H[Dismiss and stay on Smart OTP screen]
 
-  F -->|Active another device| I[Show transfer device warning]
+  F -->|sotpStatus == Y AND localSotpKey missing OR mismatch| I[Show transfer device warning]
   I --> J{User confirms transfer}
   J -->|No| H
-  J -->|Yes| K[Call SDK send SMS OTP]
+  J -->|Yes| K
 
-  F -->|Not activated| K
   K --> L[Show activation form]
   L --> M[Input SMS OTP + new PIN + confirm PIN]
   M --> N{Input valid}
@@ -163,8 +184,7 @@ flowchart TD
 
 - User can access Smart OTP from `More`.
 - Smart OTP screen displays 4 main functions from Figma.
-- Tapping `Kích hoạt Smart OTP` checks current activation status first.
+- Tapping `Kích hoạt Smart OTP` checks current activation status first using `sotpStatus/sotpKey` and local secure storage.
 - App handles current-device active, other-device active, and not-activated states.
 - App supports SMS OTP input, PIN creation, confirm PIN, resend OTP, and 5 incorrect OTP attempts.
 - Successful activation binds SmartOTP to the current device and returns user to Smart OTP screen.
-

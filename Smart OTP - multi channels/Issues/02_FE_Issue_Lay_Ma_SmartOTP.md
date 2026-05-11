@@ -60,7 +60,7 @@ User taps `Lấy mã Smart OTP`.
 If user is already logged in:
 
 - Use current logged-in account.
-- Call SDK method to check SmartOTP status by `accountNumber` and `deviceId`.
+- Detect SmartOTP status using `sotpStatus` / `sotpKey` from login (TradeX) and compare with `localSotpKey` in secure storage (see `00_FE_Overview_SmartOTP_End_To_End_Flow.md`).
 
 If user is not logged in:
 
@@ -68,6 +68,7 @@ If user is not logged in:
 - If no eligible account, display empty state and guide user to login and activate SmartOTP first.
 - If there are eligible accounts, display account selector.
 - After user selects account, call SDK method to check SmartOTP status by `accountNumber` and `deviceId`.
+- After user selects account, determine eligibility by local secure state (must have `localSotpKey` for that account). If missing, treat as not eligible / activated on another device.
 
 Status handling:
 
@@ -193,4 +194,3 @@ flowchart TD
 - Correct PIN displays SmartOTP code with 60-second countdown.
 - Incorrect PIN threshold follows partner logic.
 - Code refresh behavior follows partner logic for both after-login and pre-login flows.
-

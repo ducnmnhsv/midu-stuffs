@@ -21,10 +21,43 @@ Phase 1 goal:
 - SmartOTP is integrated by SDK, not direct REST API calls from FE.
 - NHSV does not have SDK source code yet, so SDK method names, payloads, error codes, and storage behavior must be confirmed with partner.
 - One account can activate SmartOTP on only one MTS device at a time.
+- FE must detect SmartOTP activation status using `sotpStatus` / `sotpKey` returned by TradeX `login` / `verifyOTP` (when available) and compare with `localSotpKey` in secure storage to infer **active on this device vs another device**.
 - Before login, user can only use `Lấy mã Smart OTP`.
 - After login, user can access full Smart OTP screen from `More`.
 - `Kích hoạt Smart OTP`, `Đổi PIN Smart OTP`, `Reset PIN Smart OTP`, and `Kích hoạt lại SmartOTP` require user to be logged in.
 - Reset PIN does not create a new PIN directly. After reset success, app navigates directly to activation flow.
+
+## Status Detection Rule (New Requirement)
+
+TradeX login response provides 2 fields (mapped from Lotte):
+
+- `userInfo.sotpStatus` (example: `"Y"` / `"N"`)
+- `userInfo.sotpKey` (server key)
+
+FE secure storage provides:
+
+- `localSotpKey` (stored on device after successful activation on this device)
+
+Decision:
+
+| Condition | Interpretation |
+| --- | --- |
+| `sotpStatus !== "Y"` | Not activated |
+| `sotpStatus === "Y"` AND `localSotpKey === sotpKey` | Activated on current device |
+| `sotpStatus === "Y"` AND `localSotpKey` missing OR mismatch | Activated on another device (or this device lost local state) |
+
+### Detection Flow Diagram
+
+```mermaid
+flowchart TD
+  A[After login: receive userInfo] --> B[Read sotpStatus, sotpKey]
+  B --> C[Read localSotpKey from secure storage]
+  C --> D{Is sotpStatus == Y?}
+  D -->|No| E[Not activated]
+  D -->|Yes| F{localSotpKey exists and matches sotpKey?}
+  F -->|Yes| G[Activated on current device]
+  F -->|No| H[Activated on another device OR lost local state]
+```
 
 ## Smart OTP Screen
 

@@ -125,10 +125,12 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 | [Stop Orders API Spec](./Specifications/Stop_Orders_API_Spec.md) | DRORD-005/006/023/024/025/026 - Stop order (Place/Modify/Cancel) | BE Developers | ~300 |
 | [Advance Order API Spec](./Specifications/Advance_Order_API_Spec.md) | DRORD-034–038 — Lệnh đặt trước (Place/Cancel/History/Cancellable), cùng format Regular_Orders_API_Spec | BE Developers, BA | ~520 |
 | [TP/SL UI Copy](./Specifications/TP_SL_UI_Copy.md) | TP/SL tooltips, validation messages | FE, UX | ~90 |
+| [**Order Status WebSocket Spec**](./Specifications/OrderStatus_WebSocket_Spec.md) | **Real-time order status via WebSocket (F15303)** — BE collector, normalize, WS channel contract, FE subscribe/merge pattern | BE Developers, FE Developers, QA | ~300 |
 
 **📄 Design Decisions & Technical Analysis:**
 - [Order Availability Response Design](./Specifications/Order_Availability_Response_Design.md) - Why API response contains only availability data (no margin fields)
 - [Real-time Availability Analysis](./Specifications/Real_time_Availability_Analysis.md) - WebSocket vs polling strategies for real-time availability updates
+- [Order Status WebSocket Spec](./Specifications/OrderStatus_WebSocket_Spec.md) — **Real-time order status** (F15303): Lotte → BE collector → ws-v2 → App
 
 **📘 TradeX-Wide API Standards:**
 - [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)
@@ -161,6 +163,7 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 **Future Issues:**
 - Conditional Orders Implementation (when approved)
 - Order History Implementation (when approved)
+- Order Status WebSocket FE Implementation (from [OrderStatus_WebSocket_Spec](./Specifications/OrderStatus_WebSocket_Spec.md))
 
 ### Archive (Historical Documents)
 
