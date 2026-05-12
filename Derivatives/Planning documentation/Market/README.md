@@ -2,7 +2,7 @@
 
 > **Module:** Market Data  
 > **Project:** TradeX Derivatives Integration  
-> **Last Updated:** February 3, 2026  
+> **Last Updated:** May 12, 2026  
 > **Status:** Planning Complete + Implementation Issues Created
 
 ---
@@ -37,6 +37,7 @@ Bổ sung **hiển thị thông tin giá phái sinh** (Futures) vào hệ thốn
 | ✅ Real-time WebSocket | ❌ P&L calculation |
 | ✅ symbol_static.json | ❌ Mobile app changes |
 | 📋 **Chart API (TradingView history)** | ❌ Thay đổi flow FE |
+| 📋 **Lịch sử giá ngày (DRMKT-004 → period/DAILY)** | ❌ Thay đổi contract API period |
 
 **Legend:** ✅ Completed | 📋 Issue Created | ❌ Out of Scope
 
@@ -118,6 +119,7 @@ Giống cơ sở (equity):
 | Feature | Status | Issue | Priority | Estimate |
 |---------|--------|-------|----------|----------|
 | **Chart API (TradingView)** | 📋 Issue Created | [Issues/Chart_API_Implementation](#chart-api) | High | 2.5-3.5 weeks |
+| **Historical daily backfill (Lotte DRMKT-004)** | 📋 Issue Created | [Issues/Historical_Daily_Lotte_Backfill_Implementation](#historical-daily-backfill) | High | ~3–5 days |
 
 ### 🔮 Future Enhancements
 
@@ -160,6 +162,7 @@ Located in `Issues/` folder:
 | Issue | Priority | Status | Estimate |
 |-------|----------|--------|----------|
 | [Chart API Implementation](./Issues/Chart_API_Implementation.md) | High | 📋 Ready | 2.5-3.5 weeks |
+| [Historical Daily Lotte Backfill](./Issues/Historical_Daily_Lotte_Backfill_Implementation.md) | High | 📋 Ready | ~3–5 days |
 | [Current Price Screen BE Tasks](./Issues/Current_Price_Screen_BE_Tasks.md) | Medium | 📋 Ready | 2-3 days |
 
 ---
@@ -190,6 +193,20 @@ API `/tradingview/history` currently only supports Equity symbols. Need to suppo
 
 ---
 
+### <a name="historical-daily-backfill"></a>Historical daily backfill (Lotte DRMKT-004)
+
+**Issue:** [Issues/Historical_Daily_Lotte_Backfill_Implementation.md](./Issues/Historical_Daily_Lotte_Backfill_Implementation.md)
+
+**Problem:**  
+Tại go-live phái sinh, TradeX chưa có **symbol daily** trong Mongo cho các ngày trước đó → `GET /market/symbol/{symbol}/period/DAILY` không hiển thị giá quá khứ.
+
+**Solution approach:**  
+Job backfill gọi **DRMKT-004** (daily derivatives), map vào **Mongo symbol daily** (cùng schema hiện tại), dùng **`max_result`** (sau khi Lotte xác nhận giới hạn) và **phân trang `next_key`** cho đến hết.
+
+**Status:** Ready for BE
+
+---
+
 ## 🧪 Testing Strategy
 
 ### Test Levels
@@ -206,6 +223,7 @@ API `/tradingview/history` currently only supports Equity symbols. Need to suppo
 | P0 | Real-time quote updates | Planning/04 |
 | P0 | SymbolInfo API accuracy | Planning/04 |
 | P0 | Chart D/W/M resolutions | Issues/Chart_API |
+| P0 | Period DAILY phái sinh sau backfill DRMKT-004 | Issues/Historical_Daily_Lotte_Backfill |
 | P0 | Chart minute resolutions | Issues/Chart_API |
 | P0 | Symbol type detection | Planning/03 |
 | P0 | No equity regression | All documents |
