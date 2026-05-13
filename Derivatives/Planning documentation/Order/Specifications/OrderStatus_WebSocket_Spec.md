@@ -4,7 +4,7 @@
 **Category:** Derivatives Orders — Real-time Order Status  
 **Project:** TradeX Derivatives Integration  
 **Date:** 2026-05-11  
-**Version:** 1.4  
+**Version:** 1.5  
 **Author:** BA/PM Team
 
 > **Tham chiếu Lotte:** `Derivatives/Documentation/[API specs]Lotte_DR.md` — §3.1.1 Order events, event_code `F15303`  
@@ -19,7 +19,7 @@
 3. [Lotte Source — Event F15303](#3-lotte-source--event-f15303)
 4. [BE Specification](#4-be-specification)
 5. [WebSocket Contract (Channel & Payload)](#5-websocket-contract-channel--payload)
-6. [FE Specification](#6-fe-specification) *(§6.7 refresh field sau WS; §6.8 nút Hủy/Sửa)*
+6. [FE Specification](#6-fe-specification) *(§6.0 Order Book + History hiển thị ngay từ WS; §6.7 field sau WS; §6.8 nút Hủy/Sửa)*
 7. [Field Mapping](#7-field-mapping)
 8. [Status & Code Mapping](#8-status--code-mapping)
 9. [Examples](#9-examples)
@@ -112,7 +112,7 @@ Sổ lệnh cập nhật real-time ✅
 │                                                                  │
 │  - Connected via socketCluster (existing pattern)                │
 │  - Subscribe: order.status.{accountNumber}                       │
-│  - On event: merge by orderNumber → update order row in state      │
+│  - On event: merge by orderNumber → update Order Book + History UI │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -121,7 +121,7 @@ Sổ lệnh cập nhật real-time ✅
 | Action | Cơ chế | Lý do |
 |--------|--------|-------|
 | **Vào màn lệnh / sau login** | Gọi REST snapshot theo §2.3 (`todayUnmatch` + `history` trong ngày) | Lấy snapshot đầy đủ cho hai danh sách app đang dùng |
-| **Đang xem lệnh** | WS events F15303 (TradeX channel §5) | Cập nhật incremental — khớp **`orderNumber`** payload WS ↔ **`orderNumber`** REST §7.2 |
+| **Đang xem lệnh** | WS events F15303 (TradeX channel §5) → merge state → **re-render ngay** màn **Order Book (todayUnmatch)** và **Order History (trong ngày)** | Cập nhật incremental theo **`orderNumber`** §7.2 — **không bắt buộc** gọi lại API full list sau mỗi event (chi tiết §6.0) |
 | **Reconnect WS** | Gọi lại REST snapshot §2.3 | Đồng bộ trạng thái bị miss |
 | **App từ background lên** | Gọi lại REST snapshot §2.3 | Đảm bảo không lệch state |
 
@@ -176,7 +176,9 @@ App NHSV Pro hiện **hiển thị / cho phép hủy–sửa** lệnh thường 
 
 **Mục tiêu WebSocket đối với hai nguồn này**
 
-- Khi nhận event trạng thái lệnh (sau normalize §4), FE **render lại UI** đúng các cột đã thống nhất trong §6.7 (history vs todayUnmatch), rồi **áp lại rule nút** §6.8.
+- Khi nhận event trạng thái lệnh (sau normalize §4), FE **áp ngay** vào state đang hiển thị cho **cả hai** luồng UI: **Order Book** (snapshot `todayUnmatch`) và **Order History** (snapshot `history` trong ngày) — **một event có thể cập nhật đồng thời** hai danh sách nếu cùng một `orderNumber` xuất hiện ở cả hai (hoặc chỉ một trong hai tùy giai đoạn lệnh).
+- **Không yêu cầu** user hoặc timer **gọi lại API** chỉ để “làm mới danh sách” sau mỗi tick WS: sau merge, **re-render** ngay hai màn (hoặc tab) đang mở — REST chỉ khi vào màn / reconnect / gap / thiếu dữ liệu (§6.0, §2.2).
+- FE **render lại UI** đúng các cột đã thống nhất trong §6.7 (history vs todayUnmatch), rồi **áp lại rule nút** §6.8.
 - Tối thiểu đồng bộ: **KL đã khớp**, **KL chưa khớp**, **giá khớp**, **`orderStatus`**, **`operation`** — cùng **tên field / enum** với REST history (`/api/v1/derivatives/order/history`) để FE không đổi mapping — §6.7, §8.1.
 - **Khóa khớp:** payload WS dùng **`orderNumber`** (string) — đối chiếu **`orderNumber`** trên REST (so sánh sau normalize kiểu).
 - **Lệnh gốc:** Lotte `evt_orgOrdNo` → TradeX **`originalOrderNumber`** trên WS (§5.2). FE merge theo **`orderNumber`** hoặc **`originalOrderNumber`** theo rule BA.
@@ -433,6 +435,17 @@ Tên field và giá trị enum **`orderStatus`**, **`operation`** phải **cùng
 
 ## 6. FE Specification
 
+### 6.0 Order Book và Order History — hiển thị ngay từ WebSocket (không poll sau mỗi event)
+
+PM / BA yêu cầu: khi có **event mới** trên kênh §5, app phải **tự động hiển thị** thay đổi trên **cả hai** ngữ cảnh mà user theo dõi lệnh — **Order Book** (danh sách từ `todayUnmatch`) và **Order History** (danh sách trong ngày từ `history`) — **không** phụ thuộc vào việc user kéo refresh hay app **gọi lại API** chỉ để “tải lại cả danh sách” sau từng event.
+
+| Yêu cầu | Chi tiết |
+|----------|----------|
+| **Một nguồn sự kiện, hai UI** | Cùng một payload WS sau khi merge (§6.2) phải cập nhật **đồng thời** state (hoặc selector) mà **màn Order Book** và **màn Order History** đang bind — nếu user mở cả hai tab/màn, cả hai đều reflect cùng lúc. |
+| **Re-render ngay** | Sau mỗi event hợp lệ: cập nhật state → **re-render** list (virtual list / FlatList) **trong cùng frame cycle hoặc batch tiếp theo** — không enqueue “full REST refetch” như bước bắt buộc giữa event và paint. |
+| **REST không thay thế tick WS** | Gọi `todayUnmatch` / `history` **chỉ** khi: vào màn lần đầu, sau reconnect WS, app từ background, gap `seqNo`, hoặc không merge được (§2.2, §6.2, §10.3). **Không** coi “mỗi event = một lần gọi API danh sách” là acceptance tiêu chuẩn. |
+| **Trải nghiệm mục tiêu** | User thấy trạng thái / KL / giá **real-time** giống sàn — giảm flicker và tải lặp. |
+
 ### 6.1 Khi nào subscribe / unsubscribe
 
 | Thời điểm | Action |
@@ -457,14 +470,15 @@ Nhận message từ channel order.status.{accountNumber}
     │       REST orderNumber === WS orderNumber (normalize kiểu string)
     │       hoặc (optional) originalOrderNumber === WS originalOrderNumber theo rule BA
     │
-    ├─ Tìm thấy → Cập nhật các trường §6.7:
+    ├─ Tìm thấy (một hoặc hai collection) → Cập nhật các trường §6.7 ở **mọi** chỗ có cùng orderNumber:
     │       orderStatus, operation, matchedQuantity, remainingQuantity,
     │       matchedPrice, price, sellBuyType, orderType, …
+    │       → Re-render **Order Book + Order History** ngay (§6.0)
     │
-    └─ Không tìm thấy → Không tự thêm mới; gọi REST snapshot §2.3 (silent refresh)
+    └─ Không tìm thấy → §10.3 (ưu tiên upsert từ WS nếu đủ field; nếu không → REST snapshot một lần)
 ```
 
-> **Không tự thêm dòng mới vào state khi chỉ có WS event.** Luôn dùng REST snapshot §2.3 để có danh sách ban đầu. **Hai collection** (unmatch + history) có thể cùng chứa một lệnh ở giai đoạn khác — policy “xóa khỏi unmatch khi hết điều kiện” nên dựa trên **`orderStatus` + `remainingQuantity`** sau merge, sau đó đồng bộ với kết quả REST khi refresh.
+> **Hiển thị danh sách từ WS, không bắt buộc refetch sau mỗi event:** Sau snapshot ban đầu §2.3, luồng chuẩn là **chỉ WS** cập nhật dòng lệnh cho đến khi có lý do §2.2. **Hai collection** (unmatch + history) có thể cùng chứa một lệnh ở giai đoạn khác — policy “dòng còn trên Order Book hay chỉ còn trên History” dựa trên **`orderStatus` + `remainingQuantity`** (và rule nghiệp vụ app) **sau merge WS**, không cần gọi API chỉ để đồng bộ sau từng tick trừ khi payload thiếu hoặc nghi ngờ lệch (§10.3).
 
 **Đối chiếu mục tiêu cập nhật với REST** — chi tiết §6.7.
 
@@ -511,7 +525,7 @@ orderStatus === "FILLED"
 | `PARTIALLY_FILLED` / `FILLED` | Badge xanh / toast nếu app đang background |
 | `REJECTED` / `operation === CANCEL_ORDER` | Badge đỏ / trạng thái hủy |
 | WS mất kết nối | Hiển thị indicator "Đang kết nối lại..." |
-| WS reconnect xong | Tắt indicator, refresh silently |
+| WS reconnect xong | Tắt indicator → **gọi REST snapshot §2.3** (bắt buộc sau mất kết nối) → re-subscribe; từ đó trở đi cập nhật **Order Book + History** lại chủ yếu từ WS (§6.0), **không** refetch full list sau mỗi event |
 
 ### 6.7 Đồng bộ field sau WebSocket (render lại UI)
 
@@ -847,11 +861,12 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` → TradeX `orderStatus = PAR
 | App ra background | Giữ state; khi vào foreground: gọi REST snapshot §2.3 → re-subscribe |
 | Timeout reconnect (> 30s) | Hiển thị thông báo "Không có kết nối — Kéo để làm mới" |
 
-### 10.3 FE — Event không tìm thấy `orderNumber`
+### 10.3 FE — Event không tìm thấy `orderNumber` (hoặc chưa có trong state)
 
 | Tình huống | Hành động FE |
 |------------|-------------|
-| `orderNumber` trong payload WS không có trong state | Không tự thêm dòng; gọi REST snapshot §2.3 (silent refresh) |
+| `orderNumber` trong payload WS **chưa** có trong state (lệnh mới hoặc state chưa load hết) | **Ưu tiên 1 — Upsert từ WS:** nếu payload đủ field để render một dòng tối thiểu (ít nhất: `orderNumber`, `symbolCode`, `sellBuyType`, `orderType`, `orderStatus`, `operation`, các field §6.7 cho KL/giá), FE **insert** dòng vào đúng collection (Order Book và/hoặc History theo rule nghiệp vụ: ví dụ lệnh mới thường xuất hiện trên cả hai hoặc chỉ History tùy app) → **re-render ngay** — **không** bắt buộc chờ REST. |
+| Payload thiếu field bắt buộc cho UI hoặc BA quyết định không upsert | **Ưu tiên 2:** gọi REST snapshot §2.3 **một lần** (silent refresh) rồi tiếp tục nhận WS. |
 | Event trùng seqNo | Bỏ qua event trùng |
 | Event seqNo nhỏ hơn seqNo đã apply | Bỏ qua (stale event) |
 
@@ -878,17 +893,18 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` → TradeX `orderStatus = PAR
 - [ ] Subscribe `order.status.{accountNumber}` khi mount màn sổ lệnh
 - [ ] Unsubscribe khi unmount màn sổ lệnh
 - [ ] Parse payload đúng và lọc `eventType === "ORDER_STATUS"`
-- [ ] Merge đúng theo **`orderNumber`** — không tạo dòng mới khi chưa có trong state
+- [ ] Merge đúng theo **`orderNumber`**; cập nhật **cùng lúc** cả collection **todayUnmatch** và **history** khi cùng `orderNumber` tồn tại ở hai nơi (§6.0)
+- [ ] Nếu `orderNumber` chưa có trong state: **upsert** từ WS khi đủ field (§10.3); chỉ gọi REST khi thiếu field hoặc sau reconnect/foreground (§2.2)
 - [ ] Deduplicate theo `seqNo` — bỏ qua event cũ hơn
-- [ ] Sau mỗi event WS: render lại đúng field §6.7 — **history:** `operation`, `orderStatus`, `matchedPrice`, `matchedQuantity`, `unmatchedQuantity`; **todayUnmatch:** `matchedQuantity`, `unmatchedQuantity`
+- [ ] Sau mỗi event WS: **Order Book + Order History** re-render ngay — **không** yêu cầu gọi REST full list giữa các event liên tiếp; render đúng field §6.7 — **history:** `operation`, `orderStatus`, `matchedPrice`, `matchedQuantity`, `unmatchedQuantity`; **todayUnmatch:** `matchedQuantity`, `unmatchedQuantity`
 - [ ] Payload WS dùng **`orderStatus`** + **`operation`** (§5.2); đồng bộ text `status` trên todayUnmatch theo mapper hiện có (§6.7)
 - [ ] Áp rule nút Hủy/Sửa §6.8 (chung + MOK / MAK / MTL); đặc biệt MTL khớp một phần vẫn enable; MAK có khớp (một phần hoặc hết) thì không enable
 - [ ] Cập nhật đúng `orderStatus` (§6.3: `RECEIVED`, `CONFIRMED`, `PARTIALLY_FILLED`, `FILLED`, `REJECTED`), `matchedQuantity`, `remainingQuantity`, `matchedPrice`
 - [ ] Với lệnh ≠ LO: tin `matchedPrice` từ BE sau §4.1.4; kiểm tra scenario §9.4 (MTL hai event)
 - [ ] Hiển thị khớp một phần khi `orderStatus = PARTIALLY_FILLED` (và/hoặc `remainingQuantity > 0`)
-- [ ] Gọi REST snapshot §2.3 khi: reconnect WS, app foreground, `orderNumber` không tìm thấy
+- [ ] Gọi REST snapshot §2.3 khi: reconnect WS, app foreground, gap `seqNo`, hoặc không upsert được (§10.3) — **không** dùng làm bước bắt buộc sau **mỗi** event WS khi merge đã thành công
 - [ ] Hiển thị indicator khi WS mất kết nối
-- [ ] Tắt indicator và refresh silently sau khi reconnect thành công
+- [ ] Tắt indicator sau reconnect; gọi REST snapshot §2.3 rồi re-subscribe (§10.2) — không confound với refetch sau mỗi event WS
 
 ---
 
@@ -908,7 +924,7 @@ Core gửi **cùng `evt_ordNo`**, `evt_status = 5` → TradeX `orderStatus = PAR
 **For:** BE Developers, FE Developers, QA  
 **Next Steps:**  
 1. BE review §4 (component design và Kafka integration với kiến trúc hiện tại)  
-2. FE review §6 (subscribe pattern với socketCluster hiện tại)  
+2. FE review §6.0–§6.2 (Order Book + History hiển thị ngay từ WS; subscribe pattern với socketCluster hiện tại)  
 3. Confirm payload WS **`orderNumber`** = REST **`orderNumber`**; **`originalOrderNumber`** khi có  
 4. Confirm string **`orderStatus`** / **`operation`** trên WS **trùng** contract REST history (§8.1, §8.4)  
 5. Sign-off → đưa vào sprint planning
