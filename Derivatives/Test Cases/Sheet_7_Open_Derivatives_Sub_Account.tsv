@@ -1,0 +1,133 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Điều kiện mở & chặn sớm	DSA-001	Mở luồng mở tiểu khoản phái sinh khi đủ điều kiện	Kiểm tra khách hàng đủ điều kiện được vào màn hình và bắt đầu yêu cầu mở sub phái sinh.	"1. Tài khoản cá nhân NHSV Pro
+2. TKCK lưu ký tại NHSV (theo quy định nội bộ test)
+3. Đã hoàn tất hợp đồng mở tài khoản chứng khoán cơ sở
+4. Tài khoản ngân hàng liên kết đúng loại được phép (theo rule NHSV)
+5. Chưa có tiểu khoản phái sinh (sub 80)
+6. Không có yêu cầu mở sub phái sinh đang chờ xử lý"	"1. Đăng nhập app
+2. Điều hướng tới màn hình Mở tiểu khoản phái sinh (theo menu/entry point thiết kế)"	"1. Màn hình mở được, không bị chặn với lý do không đủ điều kiện
+2. Có thể bấm tiếp tục gửi yêu cầu theo luồng app"		Not Run
+Điều kiện mở & chặn sớm	DSA-002	Chặn mở sub khi tài khoản ngân hàng liên kết không thuộc nhóm được phép	Kiểm tra thông báo rõ ràng khi tài khoản ngân hàng liên kết không đủ điều kiện mở phái sinh.	"1. Tài khoản có liên kết ngân hàng không thuộc nhóm được phép mở tiểu khoản phái sinh (theo kịch bản test nội bộ)"	"1. Đăng nhập
+2. Vào màn hình Mở tiểu khoản phái sinh
+3. Thử gửi yêu cầu nếu app cho phép"	"1. App chặn sớm hoặc trả thông báo lỗi dễ hiểu (không mã lỗi kỹ thuật)
+2. Nội dung gợi ý khách liên hệ/kiểm tra liên kết ngân hàng theo policy NHSV
+3. Không mở được webview ký hợp đồng phái sinh"		Not Run
+Điều kiện mở & chặn sớm	DSA-003	Chặn khi đã có tiểu khoản phái sinh (sub 80)	Kiểm tra không cho tạo yêu cầu trùng khi đã có sub 80.	"1. Tài khoản đã có tiểu khoản phái sinh"	"1. Đăng nhập
+2. Tìm entry mở tiểu khoản phái sinh (nếu còn hiển thị)"	"1. App không cho tạo yêu cầu mới hoặc ẩn luồng mở
+2. Nếu có thông báo: nội dung nghiệp vụ rõ (đã có tiểu khoản phái sinh)"		Not Run
+Điều kiện mở & chặn sớm	DSA-004	Chặn khi TKCK không lưu ký tại NHSV	Kiểm tra chặn đúng đối tượng không lưu ký tại NHSV.	"1. Tài khoản không lưu ký tại NHSV (theo kịch bản test)"	"1. Đăng nhập
+2. Vào luồng mở tiểu khoản phái sinh"	"1. App chặn với thông báo nghiệp vụ (ví dụ cần lưu ký tại NHSV)
+2. Không tạo được hợp đồng điện tử mở sub"		Not Run
+Điều kiện mở & chặn sớm	DSA-005	Chặn khi chưa hoàn tất hợp đồng mở tài khoản chứng khoán cơ sở	Kiểm tra điều kiện phải hoàn tất HĐ mở TKCK cơ sở trước.	"1. Tài khoản chưa hoàn tất hợp đồng/điều kiện mở TKCK cơ sở (theo kịch bản test)"	"1. Đăng nhập
+2. Vào màn hình Mở tiểu khoản phái sinh"	"1. App hiển thị hướng dẫn hoàn thiện hợp đồng mở TKCK cơ sở trước
+2. Không cho gửi yêu cầu mở sub phái sinh"		Not Run
+Điều kiện mở & chặn sớm	DSA-006	Chặn khi đang có yêu cầu mở sub phái sinh chờ ký hoặc đang xử lý	Kiểm tra không tạo trùng yêu cầu cho cùng tài khoản.	"1. Tài khoản đã có một yêu cầu mở sub phái sinh đang chờ ký hoặc đang xử lý (theo dữ liệu test)"	"1. Đăng nhập
+2. Thử mở lại màn hình Mở tiểu khoản phái sinh và gửi yêu cầu"	"1. App chặn hoặc báo đang có yêu cầu xử lý (nội dung dễ hiểu)
+2. Không tạo thêm yêu cầu song song"		Not Run
+Khởi tạo yêu cầu	DSA-007	Gửi yêu cầu mở sub thành công — hiển thị đã tiếp nhận	Kiểm tra sau khi gửi yêu cầu, khách hiểu hệ thống đã tiếp nhận.	"1. Tài khoản đủ điều kiện (DSA-001)"	"1. Vào màn hình Mở tiểu khoản phái sinh
+2. Đọc điều khoản/điều kiện nếu có
+3. Xác nhận và gửi yêu cầu"	"1. App báo đã tiếp nhận yêu cầu mở tiểu khoản phái sinh (modal/thông báo theo thiết kế)
+2. Không báo lỗi không rõ nghĩa"		Not Run
+Khởi tạo yêu cầu	DSA-008	Tiếp tục sang bước ký hợp đồng điện tử (webview FPT) khi link sẵn sàng	Kiểm tra luồng mở webview ký HĐ sau khi tiếp nhận.	"1. Vừa gửi yêu cầu thành công (DSA-007)
+2. Môi trường cho phép tạo link ký"	"1. Sau khi tiếp nhận, quan sát app có tự mở hoặc dẫn tới bước ký
+2. Nếu có nút/bước “Ký hợp đồng”, bấm thực hiện"	"1. App mở webview/flow ký của nhà cung cấp chữ ký điện tử (FPT)
+2. Khách thấy nội dung hợp đồng phái sinh để ký (không màn hình trắng/lỗi tải vĩnh viễn)"		Not Run
+Khởi tạo yêu cầu	DSA-009	Khi link ký chưa sẵn sàng ngay — vẫn tiếp nhận và có thể ký sau từ Trang chủ	Kiểm tra trải nghiệm khi hệ thống chưa trả link ký ngay (retry nội bộ app).	"1. Kịch bản test mô phỏng link ký chưa sẵn sàng ngay sau khi tiếp nhận (nếu có thể cấu hình)"	"1. Gửi yêu cầu mở sub
+2. Quan sát thông báo/modal sau khi tiếp nhận
+3. Thoát về Trang chủ hoặc đóng modal theo luồng app"	"1. Khách vẫn thấy thông điệp đã tiếp nhận yêu cầu
+2. Khi vào lại app/Trang chủ, có cách tiếp tục ký (cảnh báo/CTA theo thiết kế)
+3. Không bị kẹt không có hướng dẫn"		Not Run
+Khởi tạo yêu cầu	DSA-010	Lỗi mạng khi gửi yêu cầu	Kiểm tra thông báo khi mất mạng lúc gửi yêu cầu.	"1. Tài khoản đủ điều kiện"	"1. Tắt Wi-Fi/4G
+2. Thử gửi yêu cầu mở sub
+3. Bật lại mạng và thử lại"	"1. App báo lỗi mạng/không gửi được, cho phép thử lại
+2. Sau khi có mạng, gửi lại thành công nếu điều kiện vẫn đạt"		Not Run
+Ký hợp đồng FPT	DSA-011	Ký thành công hợp đồng phái sinh trên webview	Kiểm tra hoàn tất chữ ký điện tử.	"1. Đã mở được webview ký HĐ (DSA-008)"	"1. Thực hiện các bước ký theo hướng dẫn trên webview
+2. Xác nhận hoàn tất ký"	"1. Webview báo ký thành công hoặc đóng về app với trạng thái rõ
+2. App không báo lỗi không rõ nguyên nhân sau khi ký"		Not Run
+Ký hợp đồng FPT	DSA-012	Khách từ chối / không ký trên webview	Kiểm tra khi khách thoát hoặc từ chối ký.	"1. Đã mở webview ký HĐ"	"1. Thử từ chối/không hoàn tất ký (theo lựa chọn trên webview nếu có)
+2. Quay lại app"	"1. App phản ánh trạng thái phù hợp (ví dụ chưa ký / chưa hoàn tất), không báo đã mở sub thành công
+2. Vẫn có thể tiếp tục ký sau nếu hợp đồng còn hiệu lực (theo rule nghiệp vụ)"		Not Run
+Ký hợp đồng FPT	DSA-013	Khách đóng webview giữa chừng chưa ký	Kiểm tra UX khi đóng webview.	"1. Webview ký đang mở"	"1. Đóng webview/trình duyệt nội bộ
+2. Quay lại app"	"1. App không báo đã mở sub thành công
+2. Trên Trang chủ hoặc luồng liên quan vẫn có nhắc tiếp tục ký nếu hợp đồng đang chờ ký"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-014	Không có yêu cầu mở sub — không hiển thị cảnh báo ký	Kiểm tra Trang chủ sạch khi không có luồng active.	"1. Tài khoản không có yêu cầu mở sub phái sinh đang active"	"1. Mở app tới Trang chủ
+2. Quan sát vùng cảnh báo/ banner liên quan mở sub"	"1. Không hiển thị cảnh báo “tiếp tục ký hợp đồng phái sinh”"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-015	Đang chờ ký HĐ — hiển thị cảnh báo và CTA tiếp tục ký	Kiểm tra rule hiển thị cảnh báo khi hợp đồng chờ ký.	"1. Đã tạo yêu cầu và hợp đồng ở trạng thái chờ khách ký (theo dữ liệu test)"	"1. Thoát về Trang chủ hoặc mở lại app
+2. Quan sát cảnh báo"	"1. Có cảnh báo rõ ràng trên Trang chủ
+2. Có nút/hành động “Tiếp tục ký hợp đồng” hoặc tương đương"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-016	Bấm CTA tiếp tục ký từ Trang chủ	Kiểm tra mở lại link ký từ cảnh báo.	"1. Trạng thái chờ ký và đang hiển thị cảnh báo (DSA-015)"	"1. Từ Trang chủ bấm CTA tiếp tục ký
+2. Hoàn tất hoặc kiểm tra webview mở được"	"1. App mở lại luồng ký hợp đồng (webview)
+2. Khách có thể ký tiếp bình thường"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-017	Đã ký HĐ — không còn cảnh báo “tiếp tục ký” (đang xử lý mở sub)	Kiểm tra sau khi ký, không nhắc ký nữa vì đang chờ hệ thống mở sub.	"1. Đã ký HĐ thành công, hệ thống đang xử lý tạo tiểu khoản trên Core (theo dữ liệu test)"	"1. Vào Trang chủ
+2. Quan sát cảnh báo ký HĐ"	"1. Không còn cảnh báo nhắc “tiếp tục ký hợp đồng”
+2. Có thể có trạng thái “đang xử lý” ở màn hình lịch sử/tra cứu nếu app thiết kế"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-018	Mở sub hoàn tất — không còn cảnh báo liên quan	Kiểm tra sau khi hoàn tất.	"1. Tiểu khoản phái sinh đã mở thành công cho tài khoản test"	"1. Mở Trang chủ
+2. Quan sát banner/warning mở sub"	"1. Không còn cảnh báo ký HĐ hoặc cảnh báo mở sub không cần thiết"		Not Run
+Trang chủ — cảnh báo ký HĐ	DSA-019	Hợp đồng bị từ chối / hủy / quá hạn — không còn nhắc ký	Kiểm tra trạng thái cuối không còn CTA ký.	"1. Yêu cầu ở trạng thái nghiệp vụ cuối: từ chối, hủy, hoặc quá hạn (theo kịch bản test)"	"1. Mở Trang chủ
+2. Kiểm tra cảnh báo ký"	"1. Không hiển thị CTA “tiếp tục ký hợp đồng”
+2. Khách có thể xem chi tiết/lịch sử để biết chưa hoàn tất (theo copy app)"		Not Run
+Hoàn tất & sử dụng dịch vụ	DSA-020	Sau khi mở sub thành công — vào được các chức năng giao dịch phái sinh	Kiểm tra quyền sử dụng sau hoàn tất.	"1. Thông báo/ trạng thái cho biết tiểu khoản phái sinh đã sẵn sàng"	"1. Thử vào Trade phái sinh / nộp rút / tài sản phái sinh theo checklist nghiệp vụ
+2. Quan sát không còn chặn “chưa có sub 80”"	"1. Các màn phái sinh chính mở được cho tài khoản
+2. Thông tin tài khoản phản ánh đã có sub phái sinh"		Not Run
+Hoàn tất & sử dụng dịch vụ	DSA-021	Sau khi ký xong — trong thời gian chờ Core xử lý	Kiểm tra trải nghiệm “đang xử lý” không gây hiểu nhầm đã xong.	"1. Đã ký HĐ, Core chưa phản hồi hoàn tất (kịch bản tạm chờ)"	"1. Quan sát màn hình tra cứu trạng thái/lịch sử nếu có
+2. Thử vào Trade phái sinh"	"1. App không báo đã mở sub thành công nếu chưa đạt
+2. Trạng thái hiển thị đang xử lý rõ ràng (nếu có)"		Not Run
+Thông báo (Push / Email)	DSA-022	Push thông báo đã tiếp nhận yêu cầu	Kiểm tra thông báo đẩy sau khi gửi yêu cầu.	"1. Thiết bị cho phép nhận push NHSV Pro
+2. Vừa gửi yêu cầu thành công"	"1. Khóa/mở màn hình hoặc kéo notification center
+2. Tìm thông báo liên quan mở tiểu khoản phái sinh"	"1. Có push (nếu spec bật cho môi trường UAT) với tiêu đề/nội dung dễ hiểu: đã tiếp nhận yêu cầu
+2. Nội dung có mã tài khoản hoặc thông tin nhận diện đúng khách"		Not Run
+Thông báo (Push / Email)	DSA-023	Push / email khi mở tiểu khoản phái sinh thành công	Kiểm tra thông báo hoàn tất.	"1. Quy trình đã hoàn tất mở sub thành công
+2. Email khách hợp lệ trên hồ sơ"	"1. Kiểm tra push
+2. Kiểm tra hộp thư email đăng ký"	"1. Push và/hoặc email thông báo mở thành công, nội dung tiếng Việt/Anh nhất quán với ngôn ngữ app
+2. Có hướng dẫn đăng nhập app để sử dụng dịch vụ phái sinh (theo copy spec)"		Not Run
+Thông báo (Push / Email)	DSA-024	Thông báo khi yêu cầu không hoàn tất (từ chối / hủy / quá hạn)	Kiểm tra thông báo nghiệp vụ khi luồng thất bại.	"1. Yêu cầu ở trạng thái không hoàn tất (kịch bản test)"	"1. Kiểm tra push/email nếu spec có gửi cho trường hợp này"	"1. Nội dung cho biết yêu cầu chưa hoàn tất và hướng dẫn xem chi tiết/lịch sử
+2. Không gây hiểu nhầm là đã mở sub thành công"		Not Run
+Tra cứu trạng thái trên app	DSA-025	Xem trạng thái yêu cầu mở sub trên app (chờ ký)	Kiểm tra tra cứu cho khách hàng.	"1. Có yêu cầu đang chờ ký"	"1. Vào mục lịch sử/tra cứu yêu cầu mở tiểu khoản phái sinh (theo thiết kế app)
+2. Đọc trạng thái hiển thị"	"1. Trạng thái hiển thị đúng nghiệp vụ “chờ ký” hoặc tương đương
+2. Có hướng dẫn tiếp theo (ví dụ về Trang chủ để ký)"		Not Run
+Tra cứu trạng thái trên app	DSA-026	Xem trạng thái sau khi đã ký — đang xử lý	Kiểm tra hiển thị giai đoạn chờ Core.	"1. Đã ký HĐ, đang chờ tạo sub trên Core"	"1. Mở màn tra cứu/lịch sử"	"1. Trạng thái phản ánh “đã ký / đang xử lý” hoặc tương đương, không còn “chờ ký”"		Not Run
+Tra cứu trạng thái trên app	DSA-027	Xem trạng thái hoàn tất / không hoàn tất	Kiểm tra các trạng thái cuối.	"1. Có các bản ghi test ở trạng thái hoàn tất và không hoàn tất"	"1. Mở tra cứu cho từng trường hợp
+2. Đối chiếu với kết quả thực tế tài khoản"	"1. Trạng thái hiển thị khớp nghiệp vụ (hoàn tất vs chưa hoàn tất)
+2. Thời gian cập nhật (nếu hiển thị) hợp lý"		Not Run
+Admin / Ops (cổng quản trị)	DSA-028	Tra cứu danh sách yêu cầu mở sub theo ngày / tài khoản / trạng thái	Kiểm tra bộ lọc cho vận hành.	"1. User có quyền truy cập Admin/Ops theo quy định UAT
+2. Có dữ liệu yêu cầu trong khoảng thời gian test"	"1. Đăng nhập cổng quản trị
+2. Mở màn danh sách yêu cầu mở tiểu khoản phái sinh
+3. Thử lọc theo khoảng ngày, số TKCK, trạng thái"	"1. Danh sách lọc đúng điều kiện
+2. Cột hiển thị đủ thông tin nghiệp vụ (tên, TKCK, trạng thái tổng hợp, trạng thái hợp đồng, thời gian tạo/cập nhật — theo spec)"		Not Run
+Admin / Ops (cổng quản trị)	DSA-029	Xem chi tiết một yêu cầu (timeline / lỗi)	Kiểm tra màn chi tiết phục vụ xử lý sự cố.	"1. Có quyền Admin/Ops
+2. Chọn một yêu cầu cụ thể"	"1. Bấm xem chi tiết
+2. Đọc timeline hoặc thông tin lỗi (nếu có)"	"1. Hiển thị đủ các mốc nghiệp vụ (tạo yêu cầu, cập nhật ký, xử lý Core…)
+2. Thông tin lỗi (nếu có) giúp Ops phân loại, không chỉ mã kỹ thuật khó hiểu"		Not Run
+Admin / Ops (cổng quản trị)	DSA-030	Xem file hợp đồng đã ký (nếu đã lưu)	Kiểm tra tải/xem PDF hợp đồng.	"1. Yêu cầu đã ký và file đã được lưu theo quy trình (theo môi trường test)"	"1. Từ chi tiết yêu cầu, bấm xem/tải hợp đồng nếu có"	"1. Mở được tài liệu PDF hợp đồng đã ký
+2. Nội dung khớp tài khoản/khách trong yêu cầu"		Not Run
+Admin / Ops (cổng quản trị)	DSA-031	Hủy hợp đồng đang chờ ký (nếu nghiệp vụ cho phép)	Kiểm tra quyền hủy của Ops.	"1. Có quyền và có yêu cầu đang chờ ký
+2. Nghiệp vụ xác nhận được phép hủy trong UAT"	"1. Thực hiện thao tác hủy theo cổng quản trị
+2. Xác nhận nếu có dialog"	"1. Trạng thái cập nhật đúng (ví dụ hủy/void theo spec)
+2. Khách không còn bị nhắc ký trên app (sau khi đồng bộ)"		Not Run
+Biên & trải nghiệm	DSA-032	Đổi tài khoản trong app khi đang có yêu cầu mở sub	Kiểm tra không lẫn yêu cầu giữa các tài khoản.	"1. User có nhiều tài khoản trên cùng thiết bị
+2. Một tài khoản đang có yêu cầu mở sub"	"1. Đổi sang tài khoản khác
+2. Quan sát Trang chủ và tra cứu"	"1. Cảnh báo/ trạng thái hiển thị đúng theo tài khoản đang chọn
+2. Không hiển thị yêu cầu của tài khoản A khi đang chọn tài khoản B"		Not Run
+Biên & trải nghiệm	DSA-033	Đăng xuất / đăng nhập lại giữa chừng luồng ký	Kiểm tra an toàn phiên làm việc.	"1. Đang ở bước chờ ký hoặc vừa mở webview"	"1. Đăng xuất
+2. Đăng nhập lại cùng tài khoản
+3. Kiểm tra Trang chủ và tra cứu"	"1. Trạng thái yêu cầu vẫn đúng sau đăng nhập lại
+2. Có thể tiếp tục ký nếu còn chờ ký"		Not Run
+Biên & trải nghiệm	DSA-034	Chuyển app nền / mở lại trong lúc ký	Kiểm tra ổn định webview.	"1. Webview ký đang mở"	"1. Chuyển app sang nền vài phút
+2. Mở lại app"	"1. Không mất dữ liệu đăng nhập phiên làm việc bất thường
+2. Có thể tiếp tục hoặc đóng và mở lại từ CTA Trang chủ"		Not Run
+Biên & trải nghiệm	DSA-035	Đổi ngôn ngữ app (Việt / Anh) trong luồng mở sub	Kiểm tra nhất quán copy.	"1. App hỗ trợ đổi ngôn ngữ"	"1. Đổi ngôn ngữ trước khi gửi yêu cầu, thực hiện luồng
+2. Lặp lại sau khi đổi ngôn ngữ ở bước khác nhau"	"1. Thông báo tiếp nhận, cảnh báo Trang chủ, push/email (nếu kiểm tra được) nhất quán ngôn ngữ"		Not Run
+Biên & trải nghiệm	DSA-036	Kiểm tra thời hạn hợp đồng (quá hạn sau thời gian chờ — theo quy định 90 ngày)	Kiểm tra edge quá hạn theo spec (nếu có công cụ/time travel test).	"1. Chỉ chạy nếu team có kịch bản giả lập thời gian hoặc dữ liệu quá hạn"	"1. Với yêu cầu quá hạn, mở app và tra cứu"	"1. Trạng thái hiển thị quá hạn/ không hoàn tất đúng nghiệp vụ
+2. Không còn CTA ký trên Trang chủ"		Not Run
+Điều kiện mở & chặn sớm	DSA-037	Hiển thị lý do chặn sớm dễ hiểu (không chỉ mã lỗi)	Kiểm tra chất lượng copy cho nghiệp vụ.	"1. Chuẩn bị các tài khoản test cho từng lý do chặn (DSA-002 → DSA-006)"	"1. Lần lượt thử từng tài khoản và ghi nhận thông báo"	"1. Mỗi trường hợp có thông điệp riêng, dễ hiểu với khách hàng không kỹ thuật
+2. Có gợi ý hành động tiếp theo khi phù hợp (đổi NH liên kết, hoàn tất HĐ cơ sở, v.v.)"		Not Run
+Khởi tạo yêu cầu	DSA-038	Không double-submit tạo hai yêu cầu khi bấm nhanh	Kiểm tra chống gửi trùng do thao tác tay.	"1. Tài khoản đủ điều kiện"	"1. Tại màn xác nhận gửi yêu cầu, bấm nút xác nhận nhiều lần liên tiếp nhanh"	"1. Chỉ tạo một yêu cầu hợp lệ (đối chiếu tra cứu/Admin)
+2. App không treo, không báo lỗi loạn"		Not Run
+Ký hợp đồng FPT	DSA-039	Kiểm tra thông tin khách trên hợp đồng (tên, TKCK, CCCD nếu hiển thị)	Kiểm tra đúng người đúng tài khoản.	"1. Mở được webview hợp đồng"	"1. Đọc phần thông tin nhận diện trên hợp đồng
+2. Đối chiếu với hồ sơ khách"	"1. Tên, số TKCK (và các thông tin nhạy cảm được phép hiển thị) khớp hồ sơ
+2. Không nhầm sang khách khác"		Not Run
+Thông báo (Push / Email)	DSA-040	Email mở sub thành công có thông tin hoàn tất và hướng dẫn sử dụng	Kiểm tra nội dung email theo spec nghiệp vụ.	"1. Đã hoàn tất mở sub
+2. Truy cập được email khách"	"1. Mở email chủ đề mở tiểu khoản phái sinh thành công
+2. Đọc toàn bộ nội dung"	"1. Có tên khách, số TKCK, thời gian hoàn tất (nếu spec có)
+2. Có lời mời đăng nhập NHSV Pro để sử dụng dịch vụ phái sinh
+3. Có phiên bản tiếng Anh nếu khách dùng ngôn ngữ Anh"		Not Run
