@@ -1,0 +1,75 @@
+Category	Test case no	Test case name	Description	Preconditions	Test steps	Expected results	Actual results	Status
+Luồng trải nghiệm end-user	HAPPY-001	Toàn trình end-user: mở tiểu khoản phái sinh → đặt lệnh thường → xem Tài sản và Danh mục	Kiểm tra smoke happy path đầy đủ trên NHSV Pro cho khách hàng cá nhân đủ điều kiện.	"1. Tài khoản test chưa có tiểu khoản phái sinh (sub 80)
+2. Tài khoản đủ điều kiện mở sub phái sinh theo quy định NHSV (lưu ký tại NHSV, HĐ mở TKCK cơ sở đã hoàn tất, ngân hàng liên kết hợp lệ)
+3. Thiết bị đăng nhập NHSV Pro, mạng ổn định
+4. Phiên giao dịch phái sinh đang mở (phiên LO) khi thực hiện bước đặt lệnh"	"1. Đăng nhập NHSV Pro
+2. Hoàn tất luồng Mở tiểu khoản phái sinh: gửi yêu cầu → ký hợp đồng FPT → chờ hệ thống xử lý đến khi nhận thông báo mở sub thành công
+3. Vào Trade phái sinh, chọn sub 80 và một mã hợp đồng phái sinh
+4. Đặt một lệnh mua LO hợp lệ và xác nhận
+5. Vào màn Tài sản phái sinh
+6. Vào màn Danh mục phái sinh"	"1. Tiểu khoản phái sinh (sub 80) được mở thành công; app không còn chặn quyền giao dịch phái sinh
+2. Lệnh mua LO được đặt thành công; lệnh hiển thị trong Orderbook với đúng mã, chiều Mua, loại LO, giá và khối lượng đã nhập
+3. Màn Tài sản phái sinh hiển thị đầy đủ nhóm số liệu tổng quan (tiền/ký quỹ, tài sản đảm bảo, lãi lỗ) cho sub 80
+4. Màn Danh mục phái sinh mở được; sau khi lệnh khớp, danh mục phản ánh vị thế tương ứng"		Not Run
+Mở tiểu khoản phái sinh	HAPPY-002	Khách gửi yêu cầu mở tiểu khoản phái sinh và nhận xác nhận tiếp nhận	Kiểm tra bước khởi tạo yêu cầu thành công.	"1. Tài khoản đủ điều kiện mở sub phái sinh
+2. Chưa có sub 80
+3. Chưa có yêu cầu mở sub đang chờ xử lý"	"1. Đăng nhập NHSV Pro
+2. Vào màn hình Mở tiểu khoản phái sinh
+3. Xác nhận và gửi yêu cầu"	"1. App hiển thị thông báo đã tiếp nhận yêu cầu mở tiểu khoản phái sinh
+2. App mở webview ký hợp đồng điện tử FPT để khách ký tiếp"		Not Run
+Mở tiểu khoản phái sinh	HAPPY-003	Khách ký thành công hợp đồng mở tiểu khoản phái sinh trên FPT	Kiểm tra hoàn tất chữ ký điện tử.	"1. Đã gửi yêu cầu mở sub và mở được webview ký hợp đồng FPT"	"1. Thực hiện đầy đủ các bước ký trên webview FPT
+2. Hoàn tất ký và quay lại NHSV Pro"	"1. Webview báo ký hợp đồng thành công
+2. App phản ánh trạng thái đã ký; Trang chủ không còn cảnh báo nhắc tiếp tục ký hợp đồng"		Not Run
+Mở tiểu khoản phái sinh	HAPPY-004	Tiểu khoản phái sinh (sub 80) được mở thành công	Kiểm tra hoàn tất nghiệp vụ mở sub sau khi ký hợp đồng.	"1. Đã ký hợp đồng FPT thành công
+2. Hệ thống đã xử lý xong tạo sub trên Core (theo thời gian xử lý nội bộ UAT)"	"1. Chờ hệ thống xử lý xong (theo SLA nội bộ UAT)
+2. Kiểm tra push notification trên thiết bị
+3. Kiểm tra email đăng ký trên hồ sơ khách
+4. Mở màn tra cứu trạng thái yêu cầu mở sub trên app
+5. Vào Trade phái sinh"	"1. Khách nhận push notification: mở tiểu khoản phái sinh thành công
+2. Khách nhận email xác nhận mở tiểu khoản phái sinh thành công
+3. Trạng thái yêu cầu trên app hiển thị hoàn tất
+4. App cho phép vào Trade phái sinh với sub 80; không còn thông báo chặn chưa có tiểu khoản phái sinh"		Not Run
+Đặt lệnh thường	HAPPY-005	Khách mở màn Trade phái sinh với sub 80	Kiểm tra vào được màn giao dịch sau khi có sub.	"1. Tài khoản đã có tiểu khoản phái sinh (sub 80)
+2. Đang trong phiên giao dịch phái sinh
+3. Dữ liệu mã phái sinh sẵn sàng trên app"	"1. Đăng nhập NHSV Pro
+2. Vào Trade
+3. Chọn tài khoản/sub 80
+4. Chọn một mã hợp đồng phái sinh (ví dụ VN30F1M)"	"1. Màn Trade Derivatives hiển thị đúng tài khoản sub 80 và mã đã chọn
+2. Giá thị trường, CE/REF/FL, Bid/Ask và form Lệnh thường hiển thị đầy đủ
+3. Công tắc Real-time price đang bật"		Not Run
+Đặt lệnh thường	HAPPY-006	Khách đặt lệnh mua LO thành công	Kiểm tra đặt lệnh thường chiều Mua.	"1. Đang ở màn Trade phái sinh với sub 80
+2. Đang trong phiên LO
+3. Tài khoản đủ sức mua
+4. Giá và khối lượng nhập nằm trong khung cho phép"	"1. Chọn chiều Mua (Buy)
+2. Chọn loại lệnh LO
+3. Nhập giá hợp lệ
+4. Nhập khối lượng hợp lệ
+5. Bấm Mua
+6. Bấm Xác nhận trong dialog xác nhận đặt lệnh"	"1. App hiển thị thông báo đặt lệnh thành công kèm thông tin lệnh
+2. Lệnh xuất hiện trong Orderbook ở tab Lệnh chưa khớp với đúng mã, chiều Mua, loại LO, giá và khối lượng đã nhập"		Not Run
+Đặt lệnh thường	HAPPY-007	Khách đặt lệnh bán LO thành công	Kiểm tra đặt lệnh thường chiều Bán.	"1. Đang ở màn Trade phái sinh với sub 80
+2. Đang trong phiên LO
+3. Tài khoản đủ sức bán (có vị thế Long hoặc đủ điều kiện bán theo tài khoản test)
+4. Giá và khối lượng nhập nằm trong khung cho phép"	"1. Chọn chiều Bán (Sell)
+2. Chọn loại lệnh LO
+3. Nhập giá hợp lệ
+4. Nhập khối lượng hợp lệ
+5. Bấm Bán
+6. Bấm Xác nhận trong dialog xác nhận đặt lệnh"	"1. App hiển thị thông báo đặt lệnh thành công kèm thông tin lệnh
+2. Lệnh xuất hiện trong Orderbook ở tab Lệnh chưa khớp với đúng mã, chiều Bán, loại LO, giá và khối lượng đã nhập"		Not Run
+Tài sản & Danh mục	HAPPY-008	Khách xem màn Tài sản phái sinh với số liệu tổng quan đầy đủ	Kiểm tra màn Asset sau khi đã có sub 80.	"1. Tài khoản đã có sub 80
+2. Tài khoản có dữ liệu tài sản phái sinh (đã nộp ký quỹ hoặc đã phát sinh giao dịch)"	"1. Đăng nhập NHSV Pro
+2. Vào Asset/Tài sản
+3. Chọn tài khoản phái sinh (sub 80)"	"1. Màn Tài sản phái sinh hiển thị đúng tài khoản sub 80
+2. Các số liệu tổng quan hiển thị: tiền mặt khả dụng, số dư hiện có, tài sản đảm bảo, tài sản ròng
+3. Nhóm số dư ký quỹ, phí/thuế và lãi lỗ hiển thị với định dạng tiền và nhãn đúng thiết kế app"		Not Run
+Tài sản & Danh mục	HAPPY-009	Khách xem Danh mục phái sinh khi có vị thế mở	Kiểm tra Portfolio sau khi lệnh đã khớp và có vị thế.	"1. Tài khoản sub 80 có ít nhất một vị thế mở (sau lệnh khớp trong UAT)"	"1. Vào Portfolio/Danh mục phái sinh
+2. Quan sát danh sách vị thế"	"1. Danh mục phái sinh hiển thị danh sách vị thế
+2. Mỗi dòng hiển thị mã hợp đồng, chiều Long/Short, khối lượng, giá trung bình và giá hiện tại
+3. Lãi lỗ chưa thực hiện hiển thị màu theo quy tắc app (xanh khi lãi, đỏ khi lỗ)"		Not Run
+Tài sản & Danh mục	HAPPY-010	Số liệu Tài sản và Danh mục phản ánh đúng sau giao dịch phái sinh	Kiểm tra tính nhất quán dữ liệu end-user sau khi đặt lệnh.	"1. Vừa đặt lệnh phái sinh thành công (HAPPY-006 hoặc HAPPY-007)
+2. Lệnh đã khớp toàn bộ trong phiên UAT"	"1. Ghi nhận thông tin lệnh vừa đặt (mã, chiều, khối lượng khớp)
+2. Vào Tài sản phái sinh — ghi nhận số dư ký quỹ và lãi lỗ
+3. Vào Danh mục phái sinh — đối chiếu vị thế"	"1. Số dư ký quỹ và lãi lỗ trên Tài sản thay đổi phù hợp với giao dịch vừa thực hiện
+2. Danh mục hiển thị vị thế khớp với mã và chiều lệnh đã khớp
+3. Khối lượng vị thế trên Danh mục bằng khối lượng khớp cộng dồn của lệnh tương ứng"		Not Run
