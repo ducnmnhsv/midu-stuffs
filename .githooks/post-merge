@@ -10,6 +10,6 @@ CLAUDE_PROJECT_DIR="$HOME/.claude/projects/$(echo "$REPO_DIR" | sed 's|/|-|g')"
 # Chỉ restore nếu .claude-sessions có thay đổi trong merge này
 if git diff-tree -r --name-only --no-commit-id ORIG_HEAD HEAD 2>/dev/null | grep -q "^\.claude-sessions/"; then
   mkdir -p "$CLAUDE_PROJECT_DIR"
-  rsync -a --delete "$SRC/" "$CLAUDE_PROJECT_DIR/" 2>/dev/null
-  echo "✅ Claude sessions restored từ repo."
+  rsync -a "$SRC/" "$CLAUDE_PROJECT_DIR/" 2>/dev/null
+  echo "✅ Claude sessions merged từ repo."
 fi
