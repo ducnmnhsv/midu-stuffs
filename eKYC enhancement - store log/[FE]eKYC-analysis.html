@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>eKYC VNPT SDK — Phân tích dữ liệu</title>
+  <style>
+    :root {
+      --primary: #1a56db;
+      --primary-light: #e8f0fe;
+      --success: #0e9f6e;
+      --success-light: #e6f6f0;
+      --warning: #c27803;
+      --warning-light: #fef3c7;
+      --danger: #e02424;
+      --danger-light: #fde8e8;
+      --gray: #6b7280;
+      --gray-light: #f3f4f6;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8fafc;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #1a56db 0%, #0f3fa0 100%);
+      color: white;
+      padding: 36px 40px 28px;
+    }
+    .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .header p  { font-size: 14px; opacity: .82; }
+    .header-meta {
+      display: flex; gap: 20px; margin-top: 18px; flex-wrap: wrap;
+    }
+    .badge {
+      background: rgba(255,255,255,.18);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ── NAV ── */
+    .nav {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px;
+      display: flex;
+      gap: 4px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      overflow-x: auto;
+    }
+    .nav-btn {
+      padding: 14px 18px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .nav-btn:hover { color: var(--primary); }
+    .nav-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+    /* ── SECTIONS ── */
+    .section { display: none; padding: 32px 40px; max-width: 1100px; margin: 0 auto; }
+    .section.active { display: block; }
+
+    /* ── CARDS ── */
+    .card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .card-header:hover { background: var(--gray-light); }
+    .card-body { padding: 0 20px 20px; }
+    .card-icon { font-size: 18px; }
+    .chevron { margin-left: auto; transition: transform .2s; font-size: 12px; color: var(--gray); }
+    .card.collapsed .chevron { transform: rotate(-90deg); }
+    .card.collapsed .card-body { display: none; }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+    }
+    .flow-step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 16px 0;
+    }
+    .flow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 40px;
+    }
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .step-line {
+      width: 2px;
+      flex: 1;
+      min-height: 24px;
+      background: var(--border);
+      margin-top: 4px;
+    }
+    .step-content { flex: 1; padding-top: 4px; }
+    .step-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .step-desc { font-size: 13px; color: var(--text-muted); }
+
+    /* ── TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .data-table th {
+      background: var(--gray-light);
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .data-table td {
+      padding: 10px 14px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .data-table tr:hover td { background: var(--gray-light); }
+
+    /* ── TAGS ── */
+    .tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tag-sent     { background: var(--success-light); color: var(--success); }
+    .tag-local    { background: var(--warning-light); color: var(--warning); }
+    .tag-missing  { background: var(--danger-light);  color: var(--danger);  }
+    .tag-info     { background: var(--primary-light); color: var(--primary); }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 20px;
+    }
+    .summary-number {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .summary-label { font-size: 13px; color: var(--text-muted); }
+
+    /* ── CODE ── */
+    .code-block {
+      background: #1e2535;
+      color: #cdd6f4;
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin: 8px 0;
+      line-height: 1.8;
+    }
+    .code-block .key   { color: #89b4fa; }
+    .code-block .val   { color: #a6e3a1; }
+    .code-block .str   { color: #f9e2af; }
+    .code-block .cmt   { color: #6c7086; font-style: italic; }
+
+    /* ── ALERT ── */
+    .alert {
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin: 12px 0;
+      display: flex;
+      gap: 10px;
+    }
+    .alert-icon { font-size: 16px; flex-shrink: 0; }
+    .alert-warning { background: var(--warning-light); border-left: 4px solid var(--warning); }
+    .alert-info    { background: var(--primary-light); border-left: 4px solid var(--primary); }
+    .alert-success { background: var(--success-light); border-left: 4px solid var(--success); }
+
+    /* ── TOGGLE DETAILS ── */
+    .toggle-row { cursor: pointer; }
+    .toggle-row:hover td { background: var(--primary-light) !important; }
+    .detail-row td {
+      background: #f8fafc;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 8px 14px 8px 32px;
+    }
+    .detail-row.hidden { display: none; }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .section-sub   { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+
+    /* ── RECOMMENDATION ── */
+    .rec-item {
+      display: flex;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: white;
+      margin-bottom: 12px;
+    }
+    .rec-priority {
+      min-width: 60px;
+      text-align: center;
+      padding: 4px 0;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      height: fit-content;
+    }
+    .pri-high   { background: var(--danger-light);   color: var(--danger);   }
+    .pri-medium { background: var(--warning-light);  color: var(--warning);  }
+    .pri-low    { background: var(--success-light);  color: var(--success);  }
+    .rec-title  { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+    .rec-desc   { font-size: 13px; color: var(--text-muted); }
+
+    @media (max-width: 600px) {
+      .header, .section { padding-left: 16px; padding-right: 16px; }
+      .nav { padding: 0 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <h1>📋 eKYC — Phân tích dữ liệu VNPT SDK</h1>
+  <p>Tổng quan luồng định danh điện tử: những gì SDK trả về, những gì BE đang lưu, và những gì còn thiếu</p>
+  <div class="header-meta">
+    <span class="badge">📱 React Native App</span>
+    <span class="badge">🔌 EkycBridge (Native Module)</span>
+    <span class="badge">🗓 Phân tích: 24/05/2026</span>
+  </div>
+</div>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection('overview')">🗺 Tổng quan luồng</button>
+  <button class="nav-btn" onclick="showSection('sdk-output')">📤 Dữ liệu SDK trả ra</button>
+  <button class="nav-btn" onclick="showSection('be-payload')">🗄 BE đang lưu gì</button>
+  <button class="nav-btn" onclick="showSection('gap')">⚠️ Khoảng trống</button>
+  <button class="nav-btn" onclick="showSection('recommendation')">💡 Đề xuất</button>
+</nav>
+
+<!-- ══════════════════════════════════════
+     TAB 1 — TỔNG QUAN LUỒNG
+══════════════════════════════════════ -->
+<div id="section-overview" class="section active">
+  <div class="section-title">Sơ đồ luồng eKYC</div>
+  <div class="section-sub">Từ khi user bắt đầu đến khi dữ liệu lên server</div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🔁</span> Luồng end-to-end
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="flow">
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#dbeafe;color:#1e40af">1</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Chọn loại giấy tờ</div>
+            <div class="step-desc">
+              User chọn CCCD / CMND / Hộ chiếu.<br>
+              File: <code>src/screens/EKYCChooseIDTypeScreen/index.tsx</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#dbeafe;color:#1e40af">2</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Gọi Native Module — EkycBridge</div>
+            <div class="step-desc">
+              App gọi <code>NativeModules.EkycBridge.startEkycOcr(idType)</code>.<br>
+              SDK mở camera, chụp ảnh mặt trước / mặt sau CCCD, và chụp selfie.
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#d1fae5;color:#065f46">3</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">SDK xử lý & trả kết quả</div>
+            <div class="step-desc">
+              SDK VNPT thực hiện <strong>4 bước AI</strong> và trả về JSON gồm 8 khóa:<br>
+              <br>
+              <table class="data-table" style="margin-top:8px">
+                <tr><th>Khóa</th><th>Nội dung</th><th>Kiểu</th></tr>
+                <tr><td><code>LOG_OCR</code></td><td>Nhận dạng thông tin giấy tờ (OCR)</td><td><span class="tag tag-info">JSON string</span></td></tr>
+                <tr><td><code>LOG_LIVENESS_CARD_FRONT</code></td><td>Kiểm tra độ sống thật ảnh mặt trước</td><td><span class="tag tag-info">JSON string</span></td></tr>
+                <tr><td><code>LOG_LIVENESS_CARD_REAR</code></td><td>Kiểm tra độ sống thật ảnh mặt sau</td><td><span class="tag tag-info">JSON string</span></td></tr>
+                <tr><td><code>LOG_COMPARE</code></td><td>So sánh khuôn mặt selfie vs. ảnh trên CCCD</td><td><span class="tag tag-info">JSON string</span></td></tr>
+                <tr><td><code>LOG_LIVENESS_FACE</code></td><td>Kiểm tra khuôn mặt thật (chống ảnh in)</td><td><span class="tag tag-info">string</span></td></tr>
+                <tr><td><code>LOG_MASK_FACE</code></td><td>Phát hiện đeo khẩu trang</td><td><span class="tag tag-info">string</span></td></tr>
+                <tr><td><code>LOG_PATH_IMAGE_FRONT</code></td><td>Đường dẫn file ảnh mặt trước</td><td><span class="tag tag-info">path</span></td></tr>
+                <tr><td><code>LOG_PATH_IMAGE_BACK</code></td><td>Đường dẫn file ảnh mặt sau</td><td><span class="tag tag-info">path</span></td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#d1fae5;color:#065f46">4</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Xử lý & Validate phía App</div>
+            <div class="step-desc">
+              File: <code>src/reduxs/sagas/EKYC/EKYCScanIdDone.ts</code><br>
+              App parse JSON, kiểm tra ngưỡng chất lượng ảnh, xác nhận liveness.
+              Nếu pass → lưu vào Redux Store để dùng ở các bước tiếp theo.
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#fef3c7;color:#92400e">5</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">User xác nhận thông tin & chính sách</div>
+            <div class="step-desc">
+              User điền thêm thông tin (ngân hàng, dịch vụ, người giới thiệu…)<br>
+              và xác nhận các chính sách trên app.
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#fee2e2;color:#991b1b">6</div>
+            <div class="step-line"></div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Gửi lên Backend</div>
+            <div class="step-desc">
+              File: <code>src/reduxs/sagas/EKYC/OnPressNextInConfirmPolicyScreen.ts</code><br>
+              <strong>API:</strong> <code>POST /lotte/ekycs</code><br>
+              Gửi payload ~35 trường, bao gồm thông tin cá nhân, log ID, ảnh hash, chữ ký số.
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-step">
+          <div class="flow-connector">
+            <div class="step-circle" style="background:#d1fae5;color:#065f46">7</div>
+          </div>
+          <div class="step-content">
+            <div class="step-title">Verify OTP & hoàn tất</div>
+            <div class="step-desc">
+              File: <code>src/reduxs/sagas/EKYC/VerifyOTP.ts</code><br>
+              User xác thực OTP → tài khoản được mở.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="summary-number" style="color:#1a56db">8</div>
+      <div class="summary-label">Khóa SDK trả về</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-number" style="color:#0e9f6e">35+</div>
+      <div class="summary-label">Trường BE đang nhận</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-number" style="color:#c27803">20+</div>
+      <div class="summary-label">Trường SDK có nhưng BE chưa lưu</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-number" style="color:#e02424">6</div>
+      <div class="summary-label">Log ID gửi để audit trail</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TAB 2 — DỮ LIỆU SDK TRẢ RA
+══════════════════════════════════════ -->
+<div id="section-sdk-output" class="section">
+  <div class="section-title">Toàn bộ dữ liệu SDK trả về</div>
+  <div class="section-sub">Click vào từng nhóm để xem chi tiết từng trường</div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div>SDK trả về 4 nhóm dữ liệu chính. Mỗi nhóm là một chuỗi JSON được stringify. App sẽ parse và kiểm tra trước khi gửi lên BE.</div>
+  </div>
+
+  <!-- GROUP 1: OCR -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🪪</span> Nhóm 1 — OCR: Nhận dạng giấy tờ tùy thân
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+        Nguồn: <code>LOG_OCR</code> → parse → <code>IEKYCOCRResult</code>
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:30%">Trường</th>
+            <th style="width:35%">Mô tả</th>
+            <th>Trạng thái</th>
+            <th>Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="toggle-row" onclick="toggleDetail('ocr-logid')">
+            <td><code>logID</code></td>
+            <td>Mã log định danh phiên OCR</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>ocrLogId</code></td>
+          </tr>
+          <tr id="ocr-logid" class="detail-row hidden"><td colspan="4">Dùng để tra cứu log phiên OCR trên hệ thống VNPT. BE lưu dưới tên <code>ocrLogId</code>.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-id')">
+            <td><code>object.id</code></td>
+            <td>Số CCCD / CMND (12 chữ số)</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>identifierId</code></td>
+          </tr>
+          <tr id="ocr-id" class="detail-row hidden"><td colspan="4">Số định danh cá nhân, bắt buộc với mọi loại giấy tờ.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-name')">
+            <td><code>object.name</code></td>
+            <td>Họ và tên đầy đủ</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>fullName</code></td>
+          </tr>
+          <tr id="ocr-name" class="detail-row hidden"><td colspan="4">Tên unicode, đã chuẩn hoá từ OCR.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-gender')">
+            <td><code>object.gender</code></td>
+            <td>Giới tính (Nam / Nữ)</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>Convert → Male/Female</td>
+          </tr>
+          <tr id="ocr-gender" class="detail-row hidden"><td colspan="4">SDK trả "Nam"/"Nữ", app convert sang "Male"/"Female" trước khi gửi BE.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-dob')">
+            <td><code>object.birth_day</code></td>
+            <td>Ngày sinh (dd/MM/yyyy)</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>Convert → yyyyMMdd</td>
+          </tr>
+          <tr id="ocr-dob" class="detail-row hidden"><td colspan="4">App chuyển định dạng từ dd/MM/yyyy sang yyyyMMdd trước khi gửi.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-issue')">
+            <td><code>object.issue_date</code></td>
+            <td>Ngày cấp</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>issueDate</code></td>
+          </tr>
+          <tr id="ocr-issue" class="detail-row hidden"><td colspan="4">Ngày cơ quan có thẩm quyền cấp CCCD.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-expire')">
+            <td><code>object.valid_date</code></td>
+            <td>Ngày hết hạn</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>expireDate</code></td>
+          </tr>
+          <tr id="ocr-expire" class="detail-row hidden"><td colspan="4">Hạn hiệu lực của CCCD. Nếu chưa có hạn (CMND cũ) có thể trống.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-issueplace')">
+            <td><code>object.issue_place</code></td>
+            <td>Nơi cấp</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ <code>issuePlace</code></td>
+          </tr>
+          <tr id="ocr-issueplace" class="detail-row hidden"><td colspan="4">Cơ quan cấp (ví dụ: Cục Cảnh sát QLHC về TTXH).</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-addr')">
+            <td><code>object.recent_location</code></td>
+            <td>Nơi thường trú / Địa chỉ liên hệ</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ permanentAddress & contactAddress</td>
+          </tr>
+          <tr id="ocr-addr" class="detail-row hidden"><td colspan="4">Địa chỉ trên CCCD, app dùng cho cả địa chỉ thường trú lẫn liên hệ.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-nation')">
+            <td><code>object.nationality</code></td>
+            <td>Quốc tịch</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+            <td>Không gửi BE</td>
+          </tr>
+          <tr id="ocr-nation" class="detail-row hidden"><td colspan="4">Quốc tịch in trên CCCD (ví dụ: Việt Nam). Hiện không được gửi lên BE dù có thể hữu ích cho FATCA / AML.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-citizen')">
+            <td><code>object.citizen_id</code></td>
+            <td>Số định danh cá nhân (CCCD chip)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+            <td>Không gửi BE</td>
+          </tr>
+          <tr id="ocr-citizen" class="detail-row hidden"><td colspan="4">Số định danh dân cư 12 số (khác với số CCCD). Trường này có trên chip CCCD mới.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-quality')">
+            <td><code>quality_front / quality_back</code></td>
+            <td>Điểm chất lượng ảnh (0–100)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+            <td>Dùng validate, không lưu BE</td>
+          </tr>
+          <tr id="ocr-quality" class="detail-row hidden"><td colspan="4">Gồm: blur score, brightness score, resolution score cho từng mặt. App dùng để quyết định chụp lại hay tiếp tục, nhưng không ghi lại giá trị cụ thể.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-tampering')">
+            <td><code>tampering / general_warning</code></td>
+            <td>Phát hiện giả mạo / cảnh báo chung</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+            <td>Dùng validate, không lưu BE</td>
+          </tr>
+          <tr id="ocr-tampering" class="detail-row hidden"><td colspan="4">Cờ cảnh báo SDK phát hiện ảnh bị chỉnh sửa, photocopy, hoặc che khuất. App chặn luồng nếu phát hiện nhưng không log lại trên BE.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-mrz')">
+            <td><code>mrz / mrz_probs</code></td>
+            <td>Dữ liệu MRZ (Machine Readable Zone)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+            <td>Không gửi BE</td>
+          </tr>
+          <tr id="ocr-mrz" class="detail-row hidden"><td colspan="4">Chuỗi MRZ 2 dòng ở mặt sau CCCD + độ tin cậy từng ký tự. Dùng cho cross-validation nhưng không lưu.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-imgs')">
+            <td><code>imgs.img_front / imgs.img_back</code></td>
+            <td>Hash ảnh mặt trước / sau</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>→ frontImageUrl / backImageUrl</td>
+          </tr>
+          <tr id="ocr-imgs" class="detail-row hidden"><td colspan="4">Hash (fingerprint) của file ảnh, dùng để BE có thể xác minh ảnh gốc.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('ocr-sign')">
+            <td><code>dataBase64 / dataSign</code></td>
+            <td>Chữ ký số VNPT</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+            <td>Dùng verify tính toàn vẹn</td>
+          </tr>
+          <tr id="ocr-sign" class="detail-row hidden"><td colspan="4">Chữ ký điện tử của VNPT để BE xác thực rằng kết quả OCR này là thật và chưa bị chỉnh sửa.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GROUP 2: LIVENESS -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">👁</span> Nhóm 2 — Liveness Detection: Kiểm tra độ sống thật
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+        Nguồn: <code>LOG_LIVENESS_CARD_FRONT</code>, <code>LOG_LIVENESS_CARD_REAR</code>, <code>LOG_LIVENESS_FACE</code>, <code>LOG_MASK_FACE</code>
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr><th>Trường</th><th>Mô tả</th><th>Trạng thái</th></tr>
+        </thead>
+        <tbody>
+          <tr class="toggle-row" onclick="toggleDetail('lv-cardfront-id')">
+            <td><code>cardLivenessLogId</code></td>
+            <td>Log ID liveness ảnh mặt trước</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="lv-cardfront-id" class="detail-row hidden"><td colspan="3">ID để tra cứu chi tiết kết quả kiểm tra liveness ảnh mặt trước trên server VNPT.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('lv-cardrear-id')">
+            <td><code>cardRearLogId</code></td>
+            <td>Log ID liveness ảnh mặt sau</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="lv-cardrear-id" class="detail-row hidden"><td colspan="3">ID để tra cứu chi tiết kết quả kiểm tra liveness ảnh mặt sau trên server VNPT.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('lv-face-id')">
+            <td><code>faceLivenessLogId</code></td>
+            <td>Log ID liveness khuôn mặt</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="lv-face-id" class="detail-row hidden"><td colspan="3">ID để tra cứu kết quả kiểm tra selfie có phải người thật không.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('lv-mask-id')">
+            <td><code>faceMaskLogId</code></td>
+            <td>Log ID phát hiện khẩu trang</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="lv-mask-id" class="detail-row hidden"><td colspan="3">ID để tra cứu kết quả phát hiện user có đeo khẩu trang không.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('lv-scores')">
+            <td><code>object.fake_liveness_prob</code> <br><code>object.fake_print_photo_prob</code></td>
+            <td>Xác suất giả mạo (ảnh in / màn hình)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+          </tr>
+          <tr id="lv-scores" class="detail-row hidden"><td colspan="3">Xác suất (0–1) SDK đánh giá ảnh là giả. App dùng để chặn nhưng không lưu giá trị số vào BE — chỉ biết pass/fail.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('lv-liveness-flag')">
+            <td><code>object.liveness</code></td>
+            <td>Kết quả liveness (success/failure)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+          </tr>
+          <tr id="lv-liveness-flag" class="detail-row hidden"><td colspan="3">Cờ boolean kết quả cuối cùng. App chỉ gửi Log ID, không gửi kết quả pass/fail rõ ràng lên BE.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GROUP 3: FACE COMPARE -->
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🤳</span> Nhóm 3 — Face Comparison: So sánh khuôn mặt
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px">
+        Nguồn: <code>LOG_COMPARE</code> → <code>IEKYCCompareFaceResult</code>
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr><th>Trường</th><th>Mô tả</th><th>Trạng thái</th></tr>
+        </thead>
+        <tbody>
+          <tr class="toggle-row" onclick="toggleDetail('fc-logid')">
+            <td><code>logID</code></td>
+            <td>Log ID phiên so sánh khuôn mặt</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="fc-logid" class="detail-row hidden"><td colspan="3">→ <code>compareLogId</code>. ID để truy vết kết quả so khớp face trên server VNPT.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('fc-result')">
+            <td><code>object.result</code></td>
+            <td>Tỷ lệ khớp khuôn mặt (%)</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="fc-result" class="detail-row hidden"><td colspan="3">→ <code>matchingRate</code>. Ví dụ: "98.5" nghĩa là 98.5% giống nhau. Đây là chỉ số quan trọng nhất của bước face compare.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('fc-msg')">
+            <td><code>object.msg</code></td>
+            <td>Kết quả so khớp (MATCH / NOMATCH)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+          </tr>
+          <tr id="fc-msg" class="detail-row hidden"><td colspan="3">App dùng để quyết định tiếp tục hay từ chối. Không gửi chuỗi này lên BE (chỉ gửi tỷ lệ số).</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('fc-prob')">
+            <td><code>object.prob</code></td>
+            <td>Xác suất tin cậy (confidence score)</td>
+            <td><span class="tag tag-local">⚠️ Chỉ Local</span></td>
+          </tr>
+          <tr id="fc-prob" class="detail-row hidden"><td colspan="3">Điểm tin cậy của kết quả so khớp. Khác với tỷ lệ khớp — đây là độ chắc chắn của model AI.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('fc-imgs')">
+            <td><code>imgs.img_face / imgs.img_front</code></td>
+            <td>Hash ảnh selfie và mặt trước CCCD</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="fc-imgs" class="detail-row hidden"><td colspan="3">Hash để BE xác nhận đây là ảnh gốc được dùng để so sánh.</td></tr>
+
+          <tr class="toggle-row" onclick="toggleDetail('fc-sign2')">
+            <td><code>dataBase64 / dataSign</code></td>
+            <td>Chữ ký số kết quả so khớp</td>
+            <td><span class="tag tag-sent">✅ Gửi BE</span></td>
+          </tr>
+          <tr id="fc-sign2" class="detail-row hidden"><td colspan="3">Chữ ký VNPT xác nhận kết quả face compare chưa bị giả mạo.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TAB 3 — BE ĐANG LƯU GÌ
+══════════════════════════════════════ -->
+<div id="section-be-payload" class="section">
+  <div class="section-title">Payload BE đang nhận — <code>POST /lotte/ekycs</code></div>
+  <div class="section-sub">Toàn bộ các trường app gửi lên server khi hoàn thành eKYC</div>
+
+  <div class="alert alert-success">
+    <span class="alert-icon">✅</span>
+    <div>Dữ liệu được gửi sau khi user xác nhận chính sách, trước bước OTP. File xử lý: <code>src/reduxs/sagas/EKYC/OnPressNextInConfirmPolicyScreen.ts</code></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🪪</span> Nhóm A — Thông tin cá nhân (từ OCR)
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead><tr><th>Tên field BE</th><th>Nguồn</th><th>Ví dụ giá trị</th></tr></thead>
+        <tbody>
+          <tr><td><code>fullName</code></td><td>object.name (OCR)</td><td>NGUYEN VAN A</td></tr>
+          <tr><td><code>identifierId</code></td><td>object.id (OCR)</td><td>001234567890</td></tr>
+          <tr><td><code>birthDay</code></td><td>object.birth_day (convert)</td><td>19900115</td></tr>
+          <tr><td><code>gender</code></td><td>object.gender (convert)</td><td>Male / Female</td></tr>
+          <tr><td><code>issueDate</code></td><td>object.issue_date</td><td>20200101</td></tr>
+          <tr><td><code>expireDate</code></td><td>object.valid_date</td><td>20300101</td></tr>
+          <tr><td><code>issuePlace</code></td><td>object.issue_place</td><td>Cục Cảnh sát QLHC về TTXH</td></tr>
+          <tr><td><code>permanentAddress</code></td><td>object.recent_location</td><td>123 Lê Lợi, Q1, HCM</td></tr>
+          <tr><td><code>contactAddress</code></td><td>object.recent_location</td><td>(cùng địa chỉ trên)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📊</span> Nhóm B — Kết quả xác minh AI
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead><tr><th>Tên field BE</th><th>Nguồn</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td><code>matchingRate</code></td><td>object.result (Face Compare)</td><td>Tỷ lệ khớp mặt, ví dụ "98.5"</td></tr>
+          <tr><td><code>frontImageUrl</code></td><td>imgs.img_front (OCR)</td><td>Hash ảnh mặt trước CCCD</td></tr>
+          <tr><td><code>backImageUrl</code></td><td>imgs.img_back (OCR)</td><td>Hash ảnh mặt sau CCCD</td></tr>
+          <tr><td><code>dataBase64</code></td><td>OCR result</td><td>Chữ ký số VNPT (encoded)</td></tr>
+          <tr><td><code>dataSign</code></td><td>OCR result</td><td>Chữ ký số VNPT (signed)</td></tr>
+          <tr><td><code>ocrLogId</code></td><td>logID (OCR)</td><td>ID tra cứu phiên OCR</td></tr>
+          <tr><td><code>cardLivenessLogId</code></td><td>liveness front log</td><td>ID tra cứu liveness mặt trước</td></tr>
+          <tr><td><code>cardRearLogId</code></td><td>liveness rear log</td><td>ID tra cứu liveness mặt sau</td></tr>
+          <tr><td><code>compareLogId</code></td><td>logID (Face Compare)</td><td>ID tra cứu phiên face compare</td></tr>
+          <tr><td><code>faceLivenessLogId</code></td><td>face liveness log</td><td>ID tra cứu liveness selfie</td></tr>
+          <tr><td><code>faceMaskLogId</code></td><td>mask detection log</td><td>ID tra cứu phát hiện khẩu trang</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">📱</span> Nhóm C — Thông tin tài khoản & dịch vụ (user nhập)
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead><tr><th>Tên field BE</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td><code>phoneNo</code></td><td>Số điện thoại</td></tr>
+          <tr><td><code>email</code></td><td>Email</td></tr>
+          <tr><td><code>deviceUniqueId</code></td><td>ID thiết bị</td></tr>
+          <tr><td><code>eKycId</code></td><td>Session ID của luồng eKYC</td></tr>
+          <tr><td><code>job</code></td><td>Nghề nghiệp</td></tr>
+          <tr><td><code>branch</code></td><td>Chi nhánh mở tài khoản</td></tr>
+          <tr><td><code>authenMethod</code></td><td>Phương thức xác thực (token/otp)</td></tr>
+          <tr><td><code>otpReceiveMethod</code></td><td>Nhận OTP qua (express/email)</td></tr>
+          <tr><td><code>onlineTrading</code></td><td>Giao dịch online</td></tr>
+          <tr><td><code>marginInclued</code></td><td>Đăng ký margin</td></tr>
+          <tr><td><code>advancedCashIncluded</code></td><td>Ứng trước tiền bán</td></tr>
+          <tr><td><code>derivativesIncluded</code></td><td>Đăng ký phái sinh</td></tr>
+          <tr><td><code>emailNotification</code></td><td>Nhận thông báo qua email</td></tr>
+          <tr><td><code>smsMethod</code></td><td>Phương thức SMS (advanced/basic)</td></tr>
+          <tr><td><code>bankList</code></td><td>Danh sách tài khoản ngân hàng liên kết</td></tr>
+          <tr><td><code>referral</code></td><td>Mã giới thiệu</td></tr>
+          <tr><td><code>partnerId / partnerName</code></td><td>Thông tin đối tác/CTV</td></tr>
+          <tr><td><code>fatca</code></td><td>Khai báo FATCA</td></tr>
+          <tr><td><code>taxNo</code></td><td>Mã số thuế</td></tr>
+          <tr><td><code>investmentExperience</code></td><td>Kinh nghiệm đầu tư (mục tiêu, rủi ro…)</td></tr>
+          <tr><td><code>beneficiaryOwner</code></td><td>Thông tin người hưởng thụ (nếu có)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" onclick="toggleCard(this)">
+      <span class="card-icon">🔍</span> Xem cấu trúc JSON đầy đủ gửi lên BE
+      <span class="chevron">▼</span>
+    </div>
+    <div class="card-body">
+      <div class="code-block">
+<span class="cmt">// POST /lotte/ekycs — payload mẫu</span>
+{
+  <span class="key">"fullName"</span>: <span class="str">"NGUYEN VAN A"</span>,
+  <span class="key">"identifierId"</span>: <span class="str">"001234567890"</span>,
+  <span class="key">"birthDay"</span>: <span class="str">"19900115"</span>,
+  <span class="key">"gender"</span>: <span class="str">"Male"</span>,
+  <span class="key">"issueDate"</span>: <span class="str">"20200101"</span>,
+  <span class="key">"expireDate"</span>: <span class="str">"20300101"</span>,
+  <span class="key">"issuePlace"</span>: <span class="str">"Cục Cảnh sát QLHC về TTXH"</span>,
+  <span class="key">"permanentAddress"</span>: <span class="str">"123 Lê Lợi, Q1, HCM"</span>,
+  <span class="key">"contactAddress"</span>: <span class="str">"123 Lê Lợi, Q1, HCM"</span>,
+
+  <span class="cmt">// Kết quả AI</span>
+  <span class="key">"matchingRate"</span>: <span class="str">"98.5"</span>,
+  <span class="key">"frontImageUrl"</span>: <span class="str">"hash_of_front_image"</span>,
+  <span class="key">"backImageUrl"</span>: <span class="str">"hash_of_back_image"</span>,
+  <span class="key">"dataBase64"</span>: <span class="str">"base64_encoded_signature..."</span>,
+  <span class="key">"dataSign"</span>: <span class="str">"digital_signature..."</span>,
+
+  <span class="cmt">// Log IDs để BE tra cứu trên VNPT</span>
+  <span class="key">"ocrLogId"</span>: <span class="str">"LOG_20260524_001"</span>,
+  <span class="key">"cardLivenessLogId"</span>: <span class="str">"LOG_20260524_002"</span>,
+  <span class="key">"cardRearLogId"</span>: <span class="str">"LOG_20260524_003"</span>,
+  <span class="key">"compareLogId"</span>: <span class="str">"LOG_20260524_004"</span>,
+  <span class="key">"faceLivenessLogId"</span>: <span class="str">"LOG_20260524_005"</span>,
+  <span class="key">"faceMaskLogId"</span>: <span class="str">"LOG_20260524_006"</span>,
+
+  <span class="cmt">// Thông tin user nhập thêm (rút gọn)</span>
+  <span class="key">"phoneNo"</span>: <span class="str">"0901234567"</span>,
+  <span class="key">"email"</span>: <span class="str">"nguyenvana@email.com"</span>,
+  <span class="key">"job"</span>: <span class="str">"Nhân viên văn phòng"</span>,
+  <span class="key">"bankList"</span>: [{
+    <span class="key">"bankId"</span>: <span class="str">"VCB"</span>,
+    <span class="key">"bankAccNo"</span>: <span class="str">"0123456789"</span>,
+    <span class="key">"ownerName"</span>: <span class="str">"NGUYEN VAN A"</span>
+  }],
+  <span class="key">"fatca"</span>: <span class="val">false</span>,
+  <span class="key">"onlineTrading"</span>: <span class="val">true</span>,
+  <span class="key">"marginInclued"</span>: <span class="val">false</span>,
+  <span class="key">"derivativesIncluded"</span>: <span class="val">false</span>
+}
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TAB 4 — KHOẢNG TRỐNG
+══════════════════════════════════════ -->
+<div id="section-gap" class="section">
+  <div class="section-title">Khoảng trống — SDK có nhưng BE chưa lưu</div>
+  <div class="section-sub">Các trường dữ liệu giá trị cao đang bị bỏ sót</div>
+
+  <div class="alert alert-warning">
+    <span class="alert-icon">⚠️</span>
+    <div>Các trường bên dưới hiện chỉ được dùng để <strong>validate phía app</strong> (quyết định pass/fail), sau đó bị bỏ đi. BE không có cách biết <em>tại sao</em> một phiên eKYC thất bại, hay <em>mức độ</em> rủi ro của một phiên thành công.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="cursor:default">
+      <span class="card-icon">🔴</span> Trường thiếu quan trọng nhất
+    </div>
+    <div class="card-body">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Trường SDK</th>
+            <th>Ý nghĩa</th>
+            <th>Tại sao quan trọng</th>
+            <th>Rủi ro nếu thiếu</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>object.msg</code><br><small>(Face Compare)</small></td>
+            <td>MATCH / NOMATCH</td>
+            <td>BE không biết kết quả so khớp mặt là MATCH hay NOMATCH — chỉ có tỷ lệ số</td>
+            <td><span class="tag tag-missing">Audit gap</span> Nếu thresholds thay đổi, BE không thể re-evaluate</td>
+          </tr>
+          <tr>
+            <td><code>object.liveness</code><br><small>(Liveness Card/Face)</small></td>
+            <td>success / failure</td>
+            <td>BE không biết kết quả liveness cụ thể, chỉ có Log ID để gọi API VNPT mới tra được</td>
+            <td><span class="tag tag-missing">Phụ thuộc bên ngoài</span> Nếu VNPT API down, không tra được</td>
+          </tr>
+          <tr>
+            <td><code>tampering / general_warning</code></td>
+            <td>Phát hiện giả mạo ảnh</td>
+            <td>Nếu user vượt qua check giả mạo (edge case bug), BE không có bằng chứng lưu lại</td>
+            <td><span class="tag tag-missing">Security risk</span></td>
+          </tr>
+          <tr>
+            <td><code>quality_front.blur_score</code><br><code>quality_front.brightness_score</code></td>
+            <td>Chất lượng ảnh (blur, độ sáng)</td>
+            <td>BE không biết ảnh đưa vào OCR có chất lượng thế nào</td>
+            <td><span class="tag tag-missing">Audit gap</span> Khó debug khi OCR sai</td>
+          </tr>
+          <tr>
+            <td><code>object.nationality</code></td>
+            <td>Quốc tịch</td>
+            <td>Cần cho FATCA, AML screening</td>
+            <td><span class="tag tag-missing">Compliance</span></td>
+          </tr>
+          <tr>
+            <td><code>object.citizen_id</code></td>
+            <td>Mã định danh cá nhân (chip CCCD)</td>
+            <td>Khác với số CCCD, cần để tra cứu CIC, VNeID</td>
+            <td><span class="tag tag-missing">Functionality gap</span></td>
+          </tr>
+          <tr>
+            <td><code>mrz</code> / <code>mrz_probs</code></td>
+            <td>Machine Readable Zone</td>
+            <td>Cross-check với dữ liệu OCR visual, phát hiện bất nhất</td>
+            <td><span class="tag tag-missing">Fraud detection</span></td>
+          </tr>
+          <tr>
+            <td><code>object.prob</code><br><small>(Face Compare)</small></td>
+            <td>Confidence score AI</td>
+            <td>Tỷ lệ 98% với confidence 60% vs 99% là rất khác nhau</td>
+            <td><span class="tag tag-missing">Risk scoring</span></td>
+          </tr>
+          <tr>
+            <td><code>fake_liveness_prob</code><br><code>fake_print_photo_prob</code></td>
+            <td>Xác suất ảnh giả</td>
+            <td>BE không thể phân tích case borderline (ví dụ: prob = 0.4, pass threshold 0.5)</td>
+            <td><span class="tag tag-missing">Fraud analytics</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header" style="cursor:default">
+      <span class="card-icon">🟡</span> Vấn đề thiết kế hiện tại
+    </div>
+    <div class="card-body">
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <strong>Địa chỉ trùng lặp:</strong> Hiện tại <code>permanentAddress</code> và <code>contactAddress</code> đều lấy từ <code>object.recent_location</code> — cùng một trường. Nếu CCCD có địa chỉ thường trú khác địa chỉ liên hệ, thông tin sẽ không chính xác.
+        </div>
+      </div>
+      <div class="alert alert-warning">
+        <span class="alert-icon">⚠️</span>
+        <div>
+          <strong>Không có fail-reason logging:</strong> Khi eKYC thất bại (liveness fail, fake detection, quality too low), app chỉ báo lỗi cho user mà không log lý do thất bại lên BE. Không có dữ liệu để phân tích tỷ lệ thất bại theo từng bước.
+        </div>
+      </div>
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>
+          <strong>Console log còn trong production code:</strong> <code>console.log('errorerrorerrorerror', error)</code> tại <code>OnPressNextInConfirmPolicyScreen.ts:224</code> và <code>OnPressNextInRegisterMoreServiceScreen.ts:49</code> — cần cleanup.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     TAB 5 — ĐỀ XUẤT
+══════════════════════════════════════ -->
+<div id="section-recommendation" class="section">
+  <div class="section-title">Đề xuất cho BE</div>
+  <div class="section-sub">Ưu tiên theo mức độ impact — business, compliance, fraud prevention</div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-high">🔴 CAO</div>
+    </div>
+    <div>
+      <div class="rec-title">1. Lưu kết quả liveness và face compare dạng structured</div>
+      <div class="rec-desc">
+        Thêm các trường: <code>livenessCardFrontResult</code> (pass/fail), <code>livenessCardRearResult</code>, <code>livenessFaceResult</code>, <code>faceMaskResult</code>, <code>faceCompareMsg</code> (MATCH/NOMATCH), <code>faceCompareProb</code>.
+        <br><br>
+        <strong>Lý do:</strong> Hiện tại BE chỉ có Log ID — muốn biết kết quả phải gọi API VNPT. Nếu VNPT API thay đổi hoặc down, không tra được lịch sử. Lưu trực tiếp giúp audit nhanh hơn và không phụ thuộc vendor.
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-high">🔴 CAO</div>
+    </div>
+    <div>
+      <div class="rec-title">2. Lưu nationality và citizen_id</div>
+      <div class="rec-desc">
+        Thêm: <code>nationality</code> (quốc tịch từ OCR), <code>citizenId</code> (mã định danh chip CCCD mới).
+        <br><br>
+        <strong>Lý do:</strong> <code>nationality</code> cần cho FATCA screening và AML. <code>citizenId</code> là định danh chuẩn cho tích hợp VNeID, CIC, và phòng tránh trùng hồ sơ.
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-medium">🟡 TRUNG BÌNH</div>
+    </div>
+    <div>
+      <div class="rec-title">3. Lưu điểm chất lượng ảnh và xác suất giả mạo</div>
+      <div class="rec-desc">
+        Thêm: <code>ocrQualityFront</code>, <code>ocrQualityBack</code> (blur/brightness score), <code>fakeLivenessProb</code>, <code>fakePrintPhotoProb</code>, <code>tamperingDetected</code> (boolean).
+        <br><br>
+        <strong>Lý do:</strong> Giúp phân tích fraud patterns. Ví dụ: cluster user có fakeLivenessProb cao nhưng vẫn pass — cần review thủ công. Cũng giúp debug khi OCR ra sai (do ảnh mờ).
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-medium">🟡 TRUNG BÌNH</div>
+    </div>
+    <div>
+      <div class="rec-title">4. Log eKYC failure events</div>
+      <div class="rec-desc">
+        Khi user thất bại ở bước liveness / face compare / quality check, gửi event lên BE với: <code>failStep</code> (bước nào fail), <code>failReason</code> (lý do), <code>failScore</code> (giá trị thực).
+        <br><br>
+        <strong>Lý do:</strong> Hiện tại không có dữ liệu để biết bao nhiêu % user fail ở bước nào. Không thể cải thiện UX hay phát hiện fraud patterns.
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-low">🟢 THẤP</div>
+    </div>
+    <div>
+      <div class="rec-title">5. Tách permanentAddress và contactAddress</div>
+      <div class="rec-desc">
+        SDK có thể trả ra địa chỉ thường trú và tạm trú riêng biệt. Hiện cả hai trường đều lấy từ <code>recent_location</code>.
+        <br><br>
+        <strong>Lý do:</strong> Đảm bảo tính chính xác dữ liệu, đặc biệt cho user có hộ khẩu khác nơi ở.
+      </div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div>
+      <div class="rec-priority pri-low">🟢 THẤP</div>
+    </div>
+    <div>
+      <div class="rec-title">6. Lưu MRZ data để cross-validate</div>
+      <div class="rec-desc">
+        Lưu chuỗi MRZ và flag bất nhất giữa MRZ và OCR visual (<code>mrzVsOcrMismatch</code>).
+        <br><br>
+        <strong>Lý do:</strong> Phát hiện giấy tờ bị chỉnh sửa mặt trước nhưng mặt sau MRZ vẫn gốc — hoặc ngược lại.
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:24px">
+    <div class="card-header" style="cursor:default">
+      <span class="card-icon">📋</span> Schema bổ sung đề xuất cho BE
+    </div>
+    <div class="card-body">
+      <div class="code-block">
+<span class="cmt">// Các trường đề xuất thêm vào bảng ekyc_sessions hoặc tương đương</span>
+{
+  <span class="cmt">// --- MỨC ƯU TIÊN CAO ---</span>
+  <span class="key">"nationality"</span>: <span class="str">"Việt Nam"</span>,
+  <span class="key">"citizenId"</span>: <span class="str">"001234567890"</span>,
+  <span class="key">"faceCompareMsg"</span>: <span class="str">"MATCH"</span>,
+  <span class="key">"faceCompareProb"</span>: <span class="val">0.985</span>,
+  <span class="key">"livenessCardFrontResult"</span>: <span class="str">"success"</span>,
+  <span class="key">"livenessCardRearResult"</span>: <span class="str">"success"</span>,
+  <span class="key">"livenessFaceResult"</span>: <span class="str">"success"</span>,
+  <span class="key">"faceMaskResult"</span>: <span class="str">"no_mask"</span>,
+
+  <span class="cmt">// --- MỨC ƯU TIÊN TRUNG BÌNH ---</span>
+  <span class="key">"ocrQualityFrontBlur"</span>: <span class="val">92.5</span>,
+  <span class="key">"ocrQualityFrontBrightness"</span>: <span class="val">88.0</span>,
+  <span class="key">"ocrQualityBackBlur"</span>: <span class="val">90.1</span>,
+  <span class="key">"fakeLivenessProb"</span>: <span class="val">0.02</span>,
+  <span class="key">"fakePrintPhotoProb"</span>: <span class="val">0.01</span>,
+  <span class="key">"tamperingDetected"</span>: <span class="val">false</span>,
+
+  <span class="cmt">// --- MỨC ƯU TIÊN THẤP ---</span>
+  <span class="key">"mrzData"</span>: <span class="str">"P<VNM..."</span>,
+  <span class="key">"mrzVsOcrMismatch"</span>: <span class="val">false</span>
+}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  function toggleCard(header) {
+    header.closest('.card').classList.toggle('collapsed');
+  }
+
+  function toggleDetail(id) {
+    const row = document.getElementById(id);
+    row.classList.toggle('hidden');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKyc_admin — DEV</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111827; color: #e5e7eb; font-size: 13px; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Topbar ── */
+.topbar { background: #1f2937; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; border-bottom: 1px solid #374151; position: fixed; top: 0; left: 0; right: 0; z-index: 300; }
+.topbar-brand { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; color: #f9fafb; }
+.env-badge { font-size: 10px; background: #374151; color: #9ca3af; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 20px; color: #9ca3af; font-size: 12px; cursor: pointer; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: #374151; display: flex; align-items: center; justify-content: center; }
+
+/* ── Layout ── */
+.layout { display: flex; padding-top: 52px; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar { width: 220px; background: #1f2937; border-right: 1px solid #374151; position: fixed; top: 52px; bottom: 0; left: 0; overflow-y: auto; z-index: 200; padding: 12px 10px; }
+.sidebar-label { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; padding: 8px 10px 4px; }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; cursor: pointer; color: #9ca3af; font-size: 13px; transition: all .15s; margin-bottom: 2px; }
+.sidebar-item:hover { background: #374151; color: #e5e7eb; }
+.sidebar-item.active { background: #1e3a5f; color: #60a5fa; font-weight: 600; }
+.sidebar-item .si-icon { font-size: 16px; width: 20px; text-align: center; }
+
+/* ── Main ── */
+.main { margin-left: 220px; flex: 1; min-width: 0; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── Page header ── */
+.page-header { padding: 20px 24px 16px; border-bottom: 1px solid #374151; background: #1f2937; }
+.page-title { font-size: 18px; font-weight: 700; color: #f9fafb; margin-bottom: 2px; }
+.page-subtitle { font-size: 12px; color: #6b7280; }
+
+/* ── Dashboard ── */
+.dash-body { padding: 20px 24px; }
+
+/* KPI grid */
+.kpi-grid { display: grid; gap: 14px; margin-bottom: 18px; }
+.kpi-4 { grid-template-columns: repeat(4, 1fr); }
+.kpi-3 { grid-template-columns: repeat(3, 1fr); }
+.kpi-card { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 16px 18px; position: relative; overflow: hidden; }
+.kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+.kpi-blue::before { background: #3b82f6; }
+.kpi-green::before { background: #10b981; }
+.kpi-red::before { background: #ef4444; }
+.kpi-amber::before { background: #f59e0b; }
+.kpi-purple::before { background: #8b5cf6; }
+.kpi-label { font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
+.kpi-value { font-size: 26px; font-weight: 800; color: #f9fafb; line-height: 1; margin-bottom: 5px; }
+.kpi-sub { font-size: 11px; color: #6b7280; }
+.kpi-trend { font-size: 11px; margin-top: 4px; }
+.up { color: #34d399; } .down { color: #f87171; }
+.kpi-icon { position: absolute; top: 14px; right: 14px; font-size: 20px; opacity: .35; }
+
+/* Chart cards */
+.chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.chart-row-31 { display: grid; grid-template-columns: 2fr 1fr; gap: 14px; margin-bottom: 18px; }
+.chart-card { background: #1f2937; border: 1px solid #374151; border-radius: 10px; padding: 18px 20px; }
+.chart-title { font-size: 13px; font-weight: 700; color: #f9fafb; margin-bottom: 2px; }
+.chart-sub { font-size: 11px; color: #6b7280; margin-bottom: 14px; }
+
+/* Donut */
+.donut-wrap { display: flex; align-items: center; gap: 22px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-label { font-size: 12px; color: #9ca3af; flex: 1; }
+.legend-val { font-size: 13px; font-weight: 700; color: #f9fafb; }
+.legend-pct { font-size: 10px; color: #6b7280; }
+
+/* Bar chart */
+.bar-chart { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label-col { width: 130px; font-size: 11px; color: #9ca3af; text-align: right; flex-shrink: 0; }
+.bar-track { flex: 1; height: 22px; background: #374151; border-radius: 5px; overflow: hidden; }
+.bar-fill-h { height: 100%; border-radius: 5px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 700; color: #fff; transition: width .4s; }
+.bar-count { font-size: 11px; color: #9ca3af; min-width: 28px; text-align: right; }
+
+/* Progress bars */
+.prog-bg { width: 100%; height: 7px; background: #374151; border-radius: 4px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 4px; }
+.prog-green { background: #10b981; }
+.prog-red { background: #ef4444; }
+.prog-yellow { background: #f59e0b; }
+.prog-blue { background: #3b82f6; }
+
+/* Summary table */
+.sum-table { width: 100%; border-collapse: collapse; }
+.sum-table th { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; padding: 8px 12px; text-align: left; border-bottom: 1px solid #374151; font-weight: 600; }
+.sum-table td { padding: 10px 12px; border-bottom: 1px solid #1a2332; font-size: 12px; }
+.sum-table tr:last-child td { border-bottom: none; }
+.sum-table tr:hover td { background: #1a2332; }
+
+/* ── Filter bar ── */
+.filter-bar { background: #1f2937; padding: 10px 24px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #374151; flex-wrap: wrap; }
+.filter-label { font-size: 11px; color: #6b7280; white-space: nowrap; }
+.fi { background: #111827; border: 1px solid #374151; border-radius: 6px; color: #e5e7eb; padding: 6px 10px; font-size: 12px; outline: none; transition: border-color .15s; }
+.fi:focus { border-color: #3b82f6; }
+.fi[type="date"] { width: 128px; }
+.fi[type="text"] { width: 190px; }
+select.fi { width: 155px; }
+.btn { padding: 6px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; transition: all .15s; }
+.btn-sm { padding: 5px 12px; font-size: 11px; }
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-success { background: #059669; color: #fff; }
+.btn-success:hover { background: #047857; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-secondary { background: #374151; color: #d1d5db; }
+.btn-info { background: #0284c7; color: #fff; }
+.btn-ghost { background: transparent; color: #60a5fa; border: 1px solid #1e3a5f; }
+.btn-ghost:hover { background: #1e3a5f; }
+.ml-auto { margin-left: auto; }
+
+/* ── Table ── */
+.table-wrap { overflow-x: auto; }
+table.mt { width: 100%; border-collapse: collapse; }
+table.mt th { background: #1a2332; padding: 11px 14px; text-align: left; font-size: 10px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; border-bottom: 1px solid #374151; }
+table.mt td { padding: 11px 14px; border-bottom: 1px solid #1a2332; font-size: 12px; vertical-align: middle; }
+table.mt tr:hover td { background: #1a2332; }
+
+/* Pills */
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.pill-green { background: #064e3b; color: #34d399; }
+.pill-red { background: #450a0a; color: #fca5a5; }
+.pill-amber { background: #451a03; color: #fcd34d; }
+.pill-blue { background: #1e3a5f; color: #93c5fd; }
+.pill-gray { background: #374151; color: #9ca3af; }
+
+/* Attempt badges */
+.ab { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-right: 3px; }
+.ab-total { background: #1e3a5f; color: #93c5fd; }
+.ab-fail { background: #450a0a; color: #fca5a5; }
+.ab-warn { background: #451a03; color: #fcd34d; }
+
+/* Rate colors */
+.rate-h { color: #34d399; font-weight: 700; }
+.rate-m { color: #fbbf24; font-weight: 700; }
+.rate-l { color: #f87171; font-weight: 700; }
+
+/* ── Modal ── */
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.72); z-index: 500; align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; }
+.modal { background: #1f2937; border-radius: 12px; width: 960px; max-width: 96vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; border: 1px solid #374151; box-shadow: 0 25px 60px rgba(0,0,0,.6); }
+.modal-header { padding: 16px 22px; border-bottom: 1px solid #374151; display: flex; justify-content: space-between; align-items: center; background: #1a2332; }
+.modal-header h3 { font-size: 15px; font-weight: 700; color: #f9fafb; }
+.modal-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.modal-close { background: #374151; border: none; color: #9ca3af; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+.modal-close:hover { background: #4b5563; color: #fff; }
+.modal-body { overflow-y: auto; flex: 1; background: #111827; }
+
+.modal-tabs { display: flex; border-bottom: 1px solid #374151; background: #1f2937; }
+.modal-tab { padding: 11px 18px; cursor: pointer; font-size: 12px; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .15s; font-weight: 500; white-space: nowrap; }
+.modal-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; background: #111827; }
+.modal-tab:hover:not(.active) { color: #d1d5db; background: #283040; }
+.tab-pane { display: none; padding: 20px; }
+.tab-pane.active { display: block; }
+
+/* Info sections */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.info-sec { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+.info-sec-title { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid #374151; }
+.info-row { display: flex; padding: 6px 0; border-bottom: 1px solid #1a2332; align-items: flex-start; gap: 10px; }
+.info-row:last-child { border-bottom: none; }
+.info-lbl { color: #6b7280; font-size: 11px; min-width: 130px; flex-shrink: 0; padding-top: 1px; }
+.info-val { color: #e5e7eb; font-size: 12px; font-weight: 500; }
+
+.img-card { background: #1f2937; border: 1px solid #374151; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+.img-card-title { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 8px; }
+.img-ph { background: #111827; border: 1px dashed #374151; border-radius: 6px; height: 110px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px; color: #4b5563; }
+
+/* Collapsible triggers */
+.coll-trigger { display: flex; align-items: center; gap: 8px; padding: 9px 14px; cursor: pointer; color: #60a5fa; font-size: 12px; font-weight: 600; border-radius: 6px; background: rgba(30,58,95,.2); border: 1px solid rgba(30,58,95,.5); margin-bottom: 6px; transition: background .15s; }
+.coll-trigger:hover { background: rgba(30,58,95,.4); }
+.coll-arrow { font-size: 10px; transition: transform .2s; }
+.coll-trigger.open .coll-arrow { transform: rotate(90deg); }
+.coll-body { display: none; padding-bottom: 10px; }
+.coll-body.open { display: block; }
+
+/* VNPT cards */
+.vnpt-card { background: #1f2937; border: 1px solid #374151; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+.vnpt-ch { padding: 10px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid transparent; transition: background .15s; }
+.vnpt-ch:hover { background: #1a2332; }
+.vnpt-ch .vi-arrow { margin-left: auto; font-size: 10px; transition: transform .2s; }
+.vnpt-ch.open { border-bottom-color: #374151; }
+.vnpt-ch.open .vi-arrow { transform: rotate(180deg); }
+.vnpt-cb { display: none; padding: 12px 14px; }
+.vnpt-cb.open { display: block; }
+.vrow { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #1a2332; }
+.vrow:last-child { border-bottom: none; }
+.vrow-lbl { font-size: 11px; color: #6b7280; }
+.vrow-val { font-size: 12px; font-weight: 600; }
+.vpass { color: #34d399; } .vfail { color: #f87171; } .vwarn { color: #fbbf24; }
+.vneutral { color: #e5e7eb; } .vmono { color: #93c5fd; font-family: monospace; font-size: 11px; }
+.conf { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.conf-h { background: #064e3b; color: #34d399; }
+.conf-m { background: #451a03; color: #fcd34d; }
+.conf-l { background: #450a0a; color: #fca5a5; }
+
+.q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.q-col-title { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; font-weight: 600; }
+
+/* Inline progress in VNPT log */
+.ip-row { display: flex; align-items: center; gap: 6px; }
+.ip-bg { width: 70px; height: 5px; background: #374151; border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+.ip-fill { height: 100%; border-radius: 3px; }
+
+/* ── Attempt History ── */
+.attempt-banner { padding: 12px 16px; border-radius: 8px; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.ab-green { background: rgba(6,78,59,.25); border: 1px solid #065f46; color: #34d399; }
+.ab-amber { background: rgba(69,26,3,.3); border: 1px solid #78350f; color: #fcd34d; }
+.ab-icon { font-size: 18px; }
+.ab-title { font-weight: 700; font-size: 13px; }
+.ab-sub { font-size: 11px; opacity: .8; margin-top: 2px; }
+
+/* Journey dots */
+.journey { display: flex; align-items: center; gap: 4px; margin-bottom: 16px; }
+.jdot { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.jdot-fail { background: #450a0a; color: #fca5a5; border: 2px solid #7f1d1d; }
+.jdot-success { background: #064e3b; color: #34d399; border: 2px solid #065f46; }
+.jline { flex: 1; height: 2px; background: #374151; max-width: 40px; }
+
+.att-item { background: #1f2937; border: 1px solid #374151; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+.att-item.att-fail { border-color: #7f1d1d; }
+.att-item.att-success { border-color: #065f46; }
+.att-hdr { padding: 12px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background .15s; }
+.att-hdr:hover { background: #1a2332; }
+.att-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.ai-fail { background: #450a0a; }
+.ai-success { background: #064e3b; }
+.att-info { flex: 1; }
+.att-num { font-weight: 700; font-size: 13px; color: #e5e7eb; }
+.att-time { font-size: 11px; color: #6b7280; margin-top: 1px; }
+.att-right { display: flex; align-items: center; gap: 8px; }
+.att-body { display: none; padding: 0 16px 16px; }
+.att-body.open { display: block; }
+.att-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 4px; }
+.abox { background: #111827; border-radius: 6px; padding: 10px 12px; border: 1px solid #1a2332; }
+.abox-title { font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; font-weight: 600; }
+.arow { display: flex; justify-content: space-between; padding: 4px 0; font-size: 11px; border-bottom: 1px solid #1a2332; }
+.arow:last-child { border-bottom: none; }
+.arow-l { color: #6b7280; } .arow-v { font-weight: 600; }
+.fail-reason { margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; }
+.fr-red { background: rgba(69,10,10,.3); border: 1px solid #7f1d1d; color: #fca5a5; }
+.fr-amber { background: rgba(69,26,3,.3); border: 1px solid #78350f; color: #fcd34d; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <span style="font-size:22px">🎀</span> EKyc_admin <span class="env-badge">DEV</span>
+  </div>
+  <div class="topbar-right">
+    <span>🏳️ Tiếng Việt ▾</span>
+    <span style="display:flex;align-items:center;gap:6px"><div class="avatar">👤</div> Admin ▾</span>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-label">Menu chính</div>
+    <div class="sidebar-item active" id="nav-dashboard" onclick="navTo('dashboard')">
+      <span class="si-icon">📊</span> Dashboard
+    </div>
+    <div class="sidebar-item" id="nav-list" onclick="navTo('list')">
+      <span class="si-icon">📋</span> Danh sách eKYC
+    </div>
+    <div class="sidebar-label" style="margin-top:8px">Hệ thống</div>
+    <div class="sidebar-item">
+      <span class="si-icon">⚙️</span> Cấu hình
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ═══ PAGE: DASHBOARD ═══ -->
+    <div class="page active" id="pg-dashboard">
+      <div class="page-header">
+        <div class="page-title">📊 Dashboard eKYC</div>
+        <div class="page-subtitle">Tổng quan luồng mở tài khoản — cập nhật 24/05/2026 08:00</div>
+      </div>
+      <div class="dash-body">
+
+        <!-- KPI Row 1 -->
+        <div class="kpi-grid kpi-4">
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-icon">📋</div>
+            <div class="kpi-label">Tổng eKYC (7 ngày)</div>
+            <div class="kpi-value">1,247</div>
+            <div class="kpi-sub">17/05 — 24/05/2026</div>
+            <div class="kpi-trend up">↑ 8.3% so với tuần trước</div>
+          </div>
+          <div class="kpi-card kpi-green">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">Tỉ lệ thành công</div>
+            <div class="kpi-value" style="color:#34d399">87.3%</div>
+            <div class="kpi-sub">1,089 / 1,247 APPROVED</div>
+            <div class="kpi-trend up">↑ 2.1% so với tuần trước</div>
+          </div>
+          <div class="kpi-card kpi-red">
+            <div class="kpi-icon">❌</div>
+            <div class="kpi-label">Thất bại / Pending</div>
+            <div class="kpi-value" style="color:#f87171">158</div>
+            <div class="kpi-sub">135 fail · 23 pending</div>
+            <div class="kpi-trend down">↓ 14 case so với tuần trước</div>
+          </div>
+          <div class="kpi-card kpi-amber">
+            <div class="kpi-icon">🔁</div>
+            <div class="kpi-label">Số lần thử trung bình</div>
+            <div class="kpi-value" style="color:#fbbf24">1.34</div>
+            <div class="kpi-sub">trên mỗi TK thành công</div>
+            <div class="kpi-trend down">↓ 0.05 so với tuần trước</div>
+          </div>
+        </div>
+
+        <!-- KPI Row 2 -->
+        <div class="kpi-grid kpi-3">
+          <div class="kpi-card kpi-purple">
+            <div class="kpi-icon">🛡️</div>
+            <div class="kpi-label">Phát hiện gian lận</div>
+            <div class="kpi-value" style="color:#c4b5fd">8</div>
+            <div class="kpi-sub">case có fraud flags · 7 ngày</div>
+          </div>
+          <div class="kpi-card kpi-blue">
+            <div class="kpi-icon">⏱️</div>
+            <div class="kpi-label">Thời gian xử lý TB</div>
+            <div class="kpi-value">4.2<span style="font-size:14px;font-weight:500;color:#9ca3af"> phút</span></div>
+            <div class="kpi-sub">từ submit → APPROVED</div>
+          </div>
+          <div class="kpi-card kpi-green">
+            <div class="kpi-icon">📝</div>
+            <div class="kpi-label">Tỉ lệ ký hợp đồng</div>
+            <div class="kpi-value" style="color:#34d399">96.2%</div>
+            <div class="kpi-sub">Ký HĐ sau khi APPROVED</div>
+          </div>
+        </div>
+
+        <!-- Chart Row 1 -->
+        <div class="chart-row">
+          <!-- Donut -->
+          <div class="chart-card">
+            <div class="chart-title">Tỉ lệ kết quả eKYC</div>
+            <div class="chart-sub">7 ngày qua · 1,247 submissions</div>
+            <div class="donut-wrap">
+              <!-- circumference = 2π×55 ≈ 345.4 -->
+              <!-- success 87.3% → 301.5 | fail 10.8% → 37.3 | pending 1.9% → 6.6 -->
+              <svg width="140" height="140" viewBox="0 0 140 140" style="flex-shrink:0">
+                <circle cx="70" cy="70" r="55" fill="none" stroke="#374151" stroke-width="18"/>
+                <circle cx="70" cy="70" r="55" fill="none" stroke="#10b981" stroke-width="18"
+                  stroke-dasharray="301.5 345.4" stroke-dashoffset="0" transform="rotate(-90 70 70)"/>
+                <circle cx="70" cy="70" r="55" fill="none" stroke="#ef4444" stroke-width="18"
+                  stroke-dasharray="37.3 308.1" stroke-dashoffset="-301.5" transform="rotate(-90 70 70)"/>
+                <circle cx="70" cy="70" r="55" fill="none" stroke="#f59e0b" stroke-width="18"
+                  stroke-dasharray="6.6 338.8" stroke-dashoffset="-338.8" transform="rotate(-90 70 70)"/>
+                <text x="70" y="65" text-anchor="middle" fill="#f9fafb" font-size="20" font-weight="800" font-family="sans-serif">87.3%</text>
+                <text x="70" y="80" text-anchor="middle" fill="#6b7280" font-size="10" font-family="sans-serif">Thành công</text>
+              </svg>
+              <div style="flex:1">
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:#10b981"></div>
+                  <div class="legend-label">APPROVED</div>
+                  <div><div class="legend-val">1,089</div><div class="legend-pct">87.3%</div></div>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:#ef4444"></div>
+                  <div class="legend-label">REJECTED / Fail</div>
+                  <div><div class="legend-val">135</div><div class="legend-pct">10.8%</div></div>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-dot" style="background:#f59e0b"></div>
+                  <div class="legend-label">PENDING</div>
+                  <div><div class="legend-val">23</div><div class="legend-pct">1.9%</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Failure reasons bar -->
+          <div class="chart-card">
+            <div class="chart-title">Nguyên nhân thất bại</div>
+            <div class="chart-sub">Phân tích 135 case fail trong 7 ngày</div>
+            <div class="bar-chart">
+              <div class="bar-row">
+                <div class="bar-label-col">Ảnh mờ (blur)</div>
+                <div class="bar-track"><div class="bar-fill-h" style="width:45%;background:#ef4444">45%</div></div>
+                <div class="bar-count">61</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label-col">Lotte từ chối</div>
+                <div class="bar-track"><div class="bar-fill-h" style="width:28%;background:#f59e0b">28%</div></div>
+                <div class="bar-count">38</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label-col">VNPT OCR lỗi</div>
+                <div class="bar-track"><div class="bar-fill-h" style="width:18%;background:#3b82f6">18%</div></div>
+                <div class="bar-count">24</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label-col">Matching rate thấp</div>
+                <div class="bar-track"><div class="bar-fill-h" style="width:9%;background:#8b5cf6">9%</div></div>
+                <div class="bar-count">12</div>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:10px 12px;background:rgba(239,68,68,.1);border:1px solid #7f1d1d;border-radius:6px;font-size:11px;color:#fca5a5">
+              💡 <strong>Insight:</strong> Ảnh mờ chiếm 45% nguyên nhân fail — cần cải thiện UX hướng dẫn chụp ảnh
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart Row 2 -->
+        <div class="chart-row-31">
+          <!-- Trend line -->
+          <div class="chart-card">
+            <div class="chart-title">Xu hướng eKYC theo ngày</div>
+            <div class="chart-sub">17/05 — 23/05/2026 · tổng submissions vs thành công</div>
+            <svg width="100%" height="130" viewBox="0 0 460 130" style="overflow:visible">
+              <line x1="0" y1="15" x2="460" y2="15" stroke="#374151" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="0" y1="55" x2="460" y2="55" stroke="#374151" stroke-width="1" stroke-dasharray="4"/>
+              <line x1="0" y1="95" x2="460" y2="95" stroke="#374151" stroke-width="1" stroke-dasharray="4"/>
+              <text x="-4" y="19" fill="#4b5563" font-size="9" text-anchor="end">200</text>
+              <text x="-4" y="59" fill="#4b5563" font-size="9" text-anchor="end">150</text>
+              <text x="-4" y="99" fill="#4b5563" font-size="9" text-anchor="end">100</text>
+              <!-- Total: 162,158,171,184,195,178,199 → y=115-(v-100)/100*100 -->
+              <polyline points="0,53 75,57 150,44 225,31 300,20 375,37 450,16"
+                fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linejoin="round"/>
+              <circle cx="0" cy="53" r="3.5" fill="#3b82f6"/>
+              <circle cx="75" cy="57" r="3.5" fill="#3b82f6"/>
+              <circle cx="150" cy="44" r="3.5" fill="#3b82f6"/>
+              <circle cx="225" cy="31" r="3.5" fill="#3b82f6"/>
+              <circle cx="300" cy="20" r="3.5" fill="#3b82f6"/>
+              <circle cx="375" cy="37" r="3.5" fill="#3b82f6"/>
+              <circle cx="450" cy="16" r="3.5" fill="#3b82f6"/>
+              <!-- Success: 141,136,152,162,172,156,176 -->
+              <polyline points="0,64 75,69 150,58 225,48 300,38 375,54 450,34"
+                fill="none" stroke="#10b981" stroke-width="2" stroke-linejoin="round"/>
+              <text x="0" y="118" fill="#4b5563" font-size="9" text-anchor="middle">17/05</text>
+              <text x="75" y="118" fill="#4b5563" font-size="9" text-anchor="middle">18/05</text>
+              <text x="150" y="118" fill="#4b5563" font-size="9" text-anchor="middle">19/05</text>
+              <text x="225" y="118" fill="#4b5563" font-size="9" text-anchor="middle">20/05</text>
+              <text x="300" y="118" fill="#4b5563" font-size="9" text-anchor="middle">21/05</text>
+              <text x="375" y="118" fill="#4b5563" font-size="9" text-anchor="middle">22/05</text>
+              <text x="450" y="118" fill="#4b5563" font-size="9" text-anchor="middle">23/05</text>
+            </svg>
+            <div style="display:flex;gap:16px;margin-top:4px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280">
+                <div style="width:14px;height:2.5px;background:#3b82f6;border-radius:2px"></div> Tổng
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280">
+                <div style="width:14px;height:2px;background:#10b981;border-radius:2px"></div> Thành công
+              </div>
+            </div>
+          </div>
+
+          <!-- Fraud stats -->
+          <div class="chart-card">
+            <div class="chart-title">🛡️ Fraud Detection</div>
+            <div class="chart-sub">Cảnh báo VNPT · 7 ngày</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:11px;color:#9ca3af">Tampering (chỉnh sửa)</span>
+                  <span style="font-size:11px;font-weight:700;color:#f87171">3 case</span>
+                </div>
+                <div class="prog-bg"><div class="prog-fill prog-red" style="width:38%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:11px;color:#9ca3af">CCCD giả (ID fake)</span>
+                  <span style="font-size:11px;font-weight:700;color:#f87171">2 case</span>
+                </div>
+                <div class="prog-bg"><div class="prog-fill prog-red" style="width:25%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:11px;color:#9ca3af">Photocopy / Screen</span>
+                  <span style="font-size:11px;font-weight:700;color:#fbbf24">2 case</span>
+                </div>
+                <div class="prog-bg"><div class="prog-fill prog-yellow" style="width:25%"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:11px;color:#9ca3af">Trùng lặp CCCD</span>
+                  <span style="font-size:11px;font-weight:700;color:#fbbf24">1 case</span>
+                </div>
+                <div class="prog-bg"><div class="prog-fill prog-yellow" style="width:12%"></div></div>
+              </div>
+              <div style="margin-top:4px;padding:10px 12px;background:rgba(6,78,59,.2);border:1px solid #065f46;border-radius:7px">
+                <div style="font-size:10px;color:#6b7280;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px">Cần xử lý ngay</div>
+                <div style="font-size:22px;font-weight:800;color:#34d399">8 <span style="font-size:12px;font-weight:400;color:#6b7280">case đang chờ review</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- High-retry cases table -->
+        <div class="chart-card">
+          <div class="chart-title">Case nhiều lần thử nhất (7 ngày)</div>
+          <div class="chart-sub">Khách hàng gặp khó khăn trong quá trình eKYC</div>
+          <table class="sum-table" style="margin-top:10px">
+            <thead><tr>
+              <th>Họ tên</th><th>CCCD</th><th>Số lần thử</th>
+              <th>Kết quả</th><th>Nguyên nhân fail chính</th><th>Hoàn thành</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>TRẦN THỊ BÌNH</strong></td>
+                <td style="font-family:monospace;font-size:11px">001083005678</td>
+                <td><span class="ab ab-total">5 lần</span><span class="ab ab-fail">4 fail</span></td>
+                <td><span class="pill pill-amber">⏳ PENDING</span></td>
+                <td style="color:#fbbf24;font-size:11px">⚠ Fraud flags · CCCD giả</td>
+                <td style="color:#6b7280">—</td>
+              </tr>
+              <tr>
+                <td><strong>NGUYỄN VĂN AN</strong></td>
+                <td style="font-family:monospace;font-size:11px">038094001234</td>
+                <td><span class="ab ab-total">3 lần</span><span class="ab ab-fail">2 fail</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="color:#9ca3af;font-size:11px">Ảnh mờ → Matching thấp</td>
+                <td style="color:#6b7280">18/05/2026</td>
+              </tr>
+              <tr>
+                <td><strong>ĐỖ LỆNH TÚ</strong></td>
+                <td style="font-family:monospace;font-size:11px">025077012166</td>
+                <td><span class="ab ab-total">2 lần</span><span class="ab ab-fail">1 fail</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="color:#9ca3af;font-size:11px">VNPT OCR timeout</td>
+                <td style="color:#6b7280">23/05/2026</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div><!-- /pg-dashboard -->
+
+    <!-- ═══ PAGE: DANH SÁCH ═══ -->
+    <div class="page" id="pg-list">
+      <div class="page-header">
+        <div class="page-title">📋 Danh sách eKYC</div>
+        <div class="page-subtitle">Tra cứu và quản lý hồ sơ mở tài khoản eKYC</div>
+      </div>
+      <div class="filter-bar">
+        <span class="filter-label">Từ ngày</span><input type="date" class="fi" value="2026-05-17">
+        <span class="filter-label">Đến ngày</span><input type="date" class="fi" value="2026-05-24">
+        <span class="filter-label">Trạng thái</span>
+        <select class="fi">
+          <option>Tất cả</option><option>APPROVED</option><option>PENDING</option><option>REJECTED</option>
+        </select>
+        <span class="filter-label">Tìm kiếm</span>
+        <input type="text" class="fi" placeholder="Họ tên / CCCD / SĐT">
+        <button class="btn btn-secondary btn-sm">✕ Xóa</button>
+        <button class="btn btn-primary btn-sm">🔄 Làm mới</button>
+        <div class="ml-auto">
+          <button class="btn btn-success btn-sm">⚡ Update PENDING Requests</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="mt">
+          <thead><tr>
+            <th>#</th><th>eKYC-ID</th><th>Ngày tạo</th><th>Loại</th>
+            <th>Số CCCD</th><th>Họ tên</th><th>Ngày sinh</th>
+            <th>Matching Rate</th><th>Lần thử</th><th>Trạng thái</th>
+            <th>Số TK</th><th>Chi tiết</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td style="color:#6b7280">1</td>
+              <td style="font-weight:700;color:#93c5fd">85169</td>
+              <td style="color:#9ca3af">23/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">030207010063</td>
+              <td><strong>NGUYỄN TUẤN PHONG</strong></td>
+              <td style="color:#9ca3af">22/11/2007</td>
+              <td><span class="rate-h">98.22%</span></td>
+              <td><span class="ab ab-total">1 lần</span></td>
+              <td><span class="pill pill-green">✅ APPROVED</span></td>
+              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C202465</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280">2</td>
+              <td style="font-weight:700;color:#93c5fd">85168</td>
+              <td style="color:#9ca3af">23/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">025077012166</td>
+              <td><strong>ĐỖ LỆNH TÚ</strong></td>
+              <td style="color:#9ca3af">14/03/1977</td>
+              <td><span class="rate-h">98.80%</span></td>
+              <td><span class="ab ab-total">2 lần</span><span class="ab ab-fail">1 fail</span></td>
+              <td><span class="pill pill-green">✅ APPROVED</span></td>
+              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C570283</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280">3</td>
+              <td style="font-weight:700;color:#93c5fd">85163</td>
+              <td style="color:#9ca3af">21/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">040091038104</td>
+              <td><strong>PHAN QUỐC HUY</strong></td>
+              <td style="color:#9ca3af">06/11/1991</td>
+              <td><span class="rate-h">98.39%</span></td>
+              <td><span class="ab ab-total">1 lần</span></td>
+              <td><span class="pill pill-green">✅ APPROVED</span></td>
+              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C110266</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280">4</td>
+              <td style="font-weight:700;color:#93c5fd">85144</td>
+              <td style="color:#9ca3af">18/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">079084039653</td>
+              <td><strong>NGUYỄN HỮU THÉ</strong></td>
+              <td style="color:#9ca3af">28/01/1984</td>
+              <td><span class="rate-h">99.02%</span></td>
+              <td><span class="ab ab-total">1 lần</span></td>
+              <td><span class="pill pill-green">✅ APPROVED</span></td>
+              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C600685</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280">5</td>
+              <td style="font-weight:700;color:#93c5fd">85102</td>
+              <td style="color:#9ca3af">15/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">038094001234</td>
+              <td><strong>NGUYỄN VĂN AN</strong></td>
+              <td style="color:#9ca3af">10/05/1994</td>
+              <td><span class="rate-m">92.10%</span></td>
+              <td><span class="ab ab-total">3 lần</span><span class="ab ab-fail">2 fail</span></td>
+              <td><span class="pill pill-green">✅ APPROVED</span></td>
+              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C123456</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
+            </tr>
+            <tr>
+              <td style="color:#6b7280">6</td>
+              <td style="font-weight:700;color:#93c5fd">85088</td>
+              <td style="color:#9ca3af">13/05/2026</td>
+              <td><span class="pill pill-blue">CCCD</span></td>
+              <td style="font-family:monospace;font-size:11px">001083005678</td>
+              <td><strong>TRẦN THỊ BÌNH</strong></td>
+              <td style="color:#9ca3af">08/03/1983</td>
+              <td><span class="rate-l">74.50%</span></td>
+              <td><span class="ab ab-total">5 lần</span><span class="ab ab-fail">4 fail</span><span class="ab ab-warn">⚠ Fraud</span></td>
+              <td><span class="pill pill-amber">⏳ PENDING</span></td>
+              <td style="color:#4b5563">—</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="openModal('fraud')">👁 Xem</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /pg-list -->
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ═══ MODAL ═══ -->
+<div class="overlay" id="modal-overlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <h3>Chi tiết eKYC</h3>
+        <div class="modal-meta" id="modal-meta">ID: 85169 · CCCD: 030207010063</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchTab('personal')">👤 Thông tin cá nhân</div>
+      <div class="modal-tab" onclick="switchTab('additional')">📋 Thông tin bổ sung</div>
+      <div class="modal-tab" onclick="switchTab('contract')">📝 Hợp đồng</div>
+      <div class="modal-tab" onclick="switchTab('attempts')">🕐 Lịch sử thử eKYC</div>
+    </div>
+    <div class="modal-body">
+
+      <!-- Tab: Personal -->
+      <div class="tab-pane active" id="pane-personal">
+        <div class="info-grid">
+          <div>
+            <div class="info-sec">
+              <div class="info-sec-title">Thông tin định danh</div>
+              <div class="info-row"><span class="info-lbl">eKYC-ID</span><span class="info-val" id="d-id">85169</span></div>
+              <div class="info-row"><span class="info-lbl">Họ tên</span><span class="info-val" id="d-name">NGUYỄN TUẤN PHONG</span></div>
+              <div class="info-row"><span class="info-lbl">Số CCCD/CMND</span><span class="info-val" id="d-cccd" style="font-family:monospace">030207010063</span></div>
+              <div class="info-row"><span class="info-lbl">Giới tính</span><span class="info-val">Nam</span></div>
+              <div class="info-row"><span class="info-lbl">Ngày sinh</span><span class="info-val" id="d-dob">22/11/2007</span></div>
+              <div class="info-row"><span class="info-lbl">Nơi cấp CCCD</span><span class="info-val" style="font-size:11px;line-height:1.5">CỤC TRƯỞNG CỤC CẢNH SÁT QUẢN LÝ HÀNH CHÍNH VỀ TRẬT TỰ XÃ HỘI</span></div>
+              <div class="info-row"><span class="info-lbl">SĐT</span><span class="info-val" id="d-phone">0393052800</span></div>
+              <div class="info-row"><span class="info-lbl">Email</span><span class="info-val" id="d-email" style="font-size:11px">phongnguyen123xx@gmail.com</span></div>
+            </div>
+            <div class="info-sec">
+              <div class="info-sec-title">Kết quả eKYC</div>
+              <div class="info-row"><span class="info-lbl">Matching Rate</span><span class="info-val rate-h" id="d-rate">98.22%</span></div>
+              <div class="info-row"><span class="info-lbl">Trạng thái</span><span class="info-val"><span class="pill pill-green" id="d-status-pill">✅ APPROVED</span></span></div>
+              <div class="info-row"><span class="info-lbl">Số tài khoản</span><span class="info-val" id="d-acc" style="font-family:monospace;color:#93c5fd">039C202465</span></div>
+              <div class="info-row"><span class="info-lbl">Mã số thuế</span><span class="info-val">5555555</span></div>
+              <div class="info-row"><span class="info-lbl">Ngân hàng liên kết</span><span class="info-val"><div>MB — NGUYỄN TUẤN PHONG</div><div style="color:#6b7280;font-size:10px;margin-top:2px">0387647880 · CN 01311001</div></span></div>
+            </div>
+          </div>
+          <div>
+            <div class="img-card">
+              <div class="img-card-title">Ảnh CCCD mặt trước</div>
+              <div class="img-ph" style="height:115px"><span style="font-size:28px">🪪</span><span style="font-size:11px">CCCD Mặt trước</span></div>
+            </div>
+            <div class="img-card">
+              <div class="img-card-title">Ảnh CCCD mặt sau</div>
+              <div class="img-ph" style="height:115px"><span style="font-size:28px">🪪</span><span style="font-size:11px">CCCD Mặt sau</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Additional -->
+      <div class="tab-pane" id="pane-additional">
+        <div class="info-sec" style="margin-bottom:12px">
+          <div class="info-sec-title">Tùy chọn mở tài khoản</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+            <div class="info-row"><span class="info-lbl">Ký quỹ</span><span class="info-val">Không</span></div>
+            <div class="info-row"><span class="info-lbl">Giao dịch online</span><span class="info-val" style="color:#34d399">Có</span></div>
+            <div class="info-row"><span class="info-lbl">Xác thực</span><span class="info-val">OTP</span></div>
+            <div class="info-row"><span class="info-lbl">Nhận OTP qua</span><span class="info-val">EMAIL</span></div>
+            <div class="info-row"><span class="info-lbl">Ứng trước tiền</span><span class="info-val">Không</span></div>
+            <div class="info-row"><span class="info-lbl">SMS Method</span><span class="info-val">BASIC</span></div>
+            <div class="info-row"><span class="info-lbl">Nguồn giới thiệu</span><span class="info-val">Quảng cáo - tiktok</span></div>
+            <div class="info-row"><span class="info-lbl">FATCA</span><span class="info-val">Không</span></div>
+          </div>
+        </div>
+
+        <div class="coll-trigger" onclick="toggleColl(this)">
+          <span class="coll-arrow">▶</span> Thông tin người thụ hưởng
+        </div>
+        <div class="coll-body">
+          <div class="info-sec">
+            <div class="info-row"><span class="info-lbl">Tên</span><span class="info-val">NGUYỄN TUẤN PHONG</span></div>
+            <div class="info-row"><span class="info-lbl">CCCD</span><span class="info-val" style="font-family:monospace">030207010063</span></div>
+            <div class="info-row"><span class="info-lbl">Quan hệ</span><span class="info-val">Bản thân</span></div>
+          </div>
+        </div>
+
+        <div class="coll-trigger" onclick="toggleColl(this)">
+          <span class="coll-arrow">▶</span> Thông tin kinh nghiệm đầu tư
+        </div>
+        <div class="coll-body">
+          <div class="info-sec">
+            <div class="info-row"><span class="info-lbl">Có kinh nghiệm</span><span class="info-val">Không</span></div>
+            <div class="info-row"><span class="info-lbl">Mục tiêu đầu tư</span><span class="info-val">Dài hạn</span></div>
+            <div class="info-row"><span class="info-lbl">Khẩu vị rủi ro</span><span class="info-val">Trung bình</span></div>
+          </div>
+        </div>
+
+        <!-- VNPT Log -->
+        <div style="margin-top:14px">
+          <div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+            🔍 VNPT's eKYC Log
+            <span style="font-size:10px;font-weight:400;color:#6b7280">Dữ liệu raw từ VNPT OCR & Fraud Detection</span>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              📄 OCR — Thông tin đọc từ CCCD <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div class="vrow"><span class="vrow-lbl">VNPT Status</span><span class="vrow-val vpass">✓ Success (0)</span></div>
+              <div class="vrow"><span class="vrow-lbl">Số CCCD đọc được</span><span class="vrow-val vmono" id="vl-cccd">030207010063</span></div>
+              <div class="vrow"><span class="vrow-lbl">Họ tên đọc được</span><span class="vrow-val vneutral" id="vl-name">NGUYEN TUAN PHONG</span></div>
+              <div class="vrow"><span class="vrow-lbl">Loại thẻ</span><span class="vrow-val vneutral">CCCD mới (CC)</span></div>
+              <div class="vrow"><span class="vrow-lbl">Confidence số CCCD</span><span class="vrow-val"><span class="conf conf-h">95%</span></span></div>
+              <div class="vrow"><span class="vrow-lbl">Confidence ngày sinh</span><span class="vrow-val"><span class="conf conf-h">91%</span></span></div>
+              <div class="vrow"><span class="vrow-lbl">Điểm MRZ</span><span class="vrow-val"><span class="conf conf-m">8 / 10</span></span></div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              🛡️ Fraud Detection — Kiểm tra giả mạo <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div class="vrow"><span class="vrow-lbl">Tampering (chỉnh sửa)</span><span class="vrow-val vpass" id="vl-tamper">✓ Hợp lệ</span></div>
+              <div class="vrow"><span class="vrow-lbl">Số CCCD giả (id_fake_prob)</span><span class="vrow-val vpass" id="vl-idfake">✓ Không (2%)</span></div>
+              <div class="vrow"><span class="vrow-lbl">Ngày sinh giả</span><span class="vrow-val vpass">✓ Không</span></div>
+              <div class="vrow"><span class="vrow-lbl">Địa chỉ giả</span><span class="vrow-val vpass">✓ Không</span></div>
+              <div class="vrow"><span class="vrow-lbl">Ngày cấp giả</span><span class="vrow-val vpass">✓ Không</span></div>
+              <div class="vrow"><span class="vrow-lbl">Tên giả (name_fake_warning)</span><span class="vrow-val vpass" id="vl-namefake">✓ Không</span></div>
+              <div class="vrow"><span class="vrow-lbl">Trùng lặp CCCD</span><span class="vrow-val vpass" id="vl-dup">✓ Không</span></div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              🖼️ Image Quality — Chất lượng ảnh <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div class="q-grid">
+                <div>
+                  <div class="q-col-title">Mặt trước</div>
+                  <div class="vrow">
+                    <span class="vrow-lbl">Độ nét (blur)</span>
+                    <span class="vrow-val">
+                      <div class="ip-row"><div class="ip-bg"><div class="ip-fill prog-green" id="front-blur-bar" style="width:88%"></div></div>
+                      <span id="front-blur-val" class="vpass">0.88 ✓</span></div>
+                    </span>
+                  </div>
+                  <div class="vrow">
+                    <span class="vrow-lbl">Độ sáng</span>
+                    <span class="vrow-val">
+                      <div class="ip-row"><div class="ip-bg"><div class="ip-fill prog-green" style="width:75%"></div></div>
+                      <span class="vpass">0.75 ✓</span></div>
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div class="q-col-title">Mặt sau</div>
+                  <div class="vrow">
+                    <span class="vrow-lbl">Độ nét (blur)</span>
+                    <span class="vrow-val">
+                      <div class="ip-row"><div class="ip-bg"><div class="ip-fill prog-green" style="width:72%"></div></div>
+                      <span class="vpass">0.72 ✓</span></div>
+                    </span>
+                  </div>
+                  <div class="vrow">
+                    <span class="vrow-lbl">Độ sáng</span>
+                    <span class="vrow-val">
+                      <div class="ip-row"><div class="ip-bg"><div class="ip-fill prog-green" style="width:80%"></div></div>
+                      <span class="vpass">0.80 ✓</span></div>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              🔍 Card Integrity — Tính toàn vẹn thẻ <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div class="q-grid">
+                <div>
+                  <div class="q-col-title">Mặt trước</div>
+                  <div class="vrow"><span class="vrow-lbl">Chụp màn hình</span><span class="vrow-val vpass" id="vl-recap-f">✓ Ảnh gốc</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Chỉnh sửa ảnh</span><span class="vrow-val vpass">✓ 1%</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Photocopy</span><span class="vrow-val vpass" id="vl-photo-f">✓ Gốc</span></div>
+                </div>
+                <div>
+                  <div class="q-col-title">Mặt sau</div>
+                  <div class="vrow"><span class="vrow-lbl">Chụp màn hình</span><span class="vrow-val vpass">✓ Ảnh gốc</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Chỉnh sửa ảnh</span><span class="vrow-val vpass">✓ 1%</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Photocopy</span><span class="vrow-val vpass">✓ Gốc</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              🔄 Cross Validation — Khớp 2 mặt thẻ <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div class="q-grid">
+                <div>
+                  <div class="vrow"><span class="vrow-lbl">Số CCCD</span><span class="vrow-val vpass">✓ Khớp</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Họ tên</span><span class="vrow-val vpass">✓ Khớp</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Giới tính</span><span class="vrow-val vpass">✓ Khớp</span></div>
+                </div>
+                <div>
+                  <div class="vrow"><span class="vrow-lbl">Ngày sinh</span><span class="vrow-val vpass">✓ Khớp</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Ngày hết hạn</span><span class="vrow-val vpass">✓ Khớp</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch open" onclick="toggleVnpt(this)">
+              🔤 MRZ — Machine Readable Zone <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb open">
+              <div style="margin-bottom:10px">
+                <div class="vrow"><span class="vrow-lbl">Dòng 1 MRZ</span><span class="vrow-val vmono" style="font-size:11px;letter-spacing:1.5px">IDVNM030207010063&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span></div>
+                <div class="vrow"><span class="vrow-lbl">Dòng 2 MRZ</span><span class="vrow-val vmono" style="font-size:11px;letter-spacing:1.5px">0301230M3001158VNM&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;4</span></div>
+                <div class="vrow"><span class="vrow-lbl">Confidence MRZ</span><span class="vrow-val"><span class="conf conf-h">97%</span></span></div>
+                <div class="vrow"><span class="vrow-lbl">MRZ Valid Score</span><span class="vrow-val"><span class="conf conf-h">9 / 10</span></span></div>
+              </div>
+              <div style="font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 8px">Cross-Check MRZ vs OCR Visual</div>
+              <div class="q-grid">
+                <div>
+                  <div class="vrow"><span class="vrow-lbl">Số CCCD</span><span class="vrow-val vpass">✓ MATCH</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Ngày sinh</span><span class="vrow-val vpass">✓ MATCH</span></div>
+                </div>
+                <div>
+                  <div class="vrow"><span class="vrow-lbl">Giới tính</span><span class="vrow-val vpass">✓ MATCH</span></div>
+                  <div class="vrow"><span class="vrow-lbl">Ngày hết hạn</span><span class="vrow-val vpass">✓ MATCH</span></div>
+                </div>
+              </div>
+              <div class="vrow" style="margin-top:8px"><span class="vrow-lbl">Kết quả tổng hợp</span><span class="vrow-val vpass" style="font-weight:700">✓ PASS — Tất cả khớp</span></div>
+            </div>
+          </div>
+
+          <div class="vnpt-card">
+            <div class="vnpt-ch" onclick="toggleVnpt(this)">
+              📊 Log IDs — Tra cứu phiên VNPT <span class="vi-arrow">▲</span>
+            </div>
+            <div class="vnpt-cb">
+              <div class="vrow"><span class="vrow-lbl">OCR Log ID</span><span class="vrow-val vmono" id="vl-ocr-log">LOG-VNPT-20260523-09231</span></div>
+              <div class="vrow"><span class="vrow-lbl">Card Liveness Log ID</span><span class="vrow-val vmono">LIV-VNPT-20260523-09235</span></div>
+              <div class="vrow"><span class="vrow-lbl">Face Compare Log ID</span><span class="vrow-val vmono">CMP-VNPT-20260523-09238</span></div>
+              <div class="vrow"><span class="vrow-lbl">Face Mask Log ID</span><span class="vrow-val vmono">MSK-VNPT-20260523-09239</span></div>
+              <div class="vrow"><span class="vrow-lbl">VNPT Server version</span><span class="vrow-val vneutral">v3.2.1</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Contract -->
+      <div class="tab-pane" id="pane-contract">
+        <div class="info-grid">
+          <div class="info-sec">
+            <div class="info-sec-title">Thông tin hợp đồng</div>
+            <div class="info-row"><span class="info-lbl">Số HĐ</span><span class="info-val" style="font-family:monospace">00-00-18893-EKYC</span></div>
+            <div class="info-row"><span class="info-lbl">Ngày tạo HĐ</span><span class="info-val">23/05/2026 16:45:26</span></div>
+            <div class="info-row"><span class="info-lbl">Ref ID</span><span class="info-val" style="font-family:monospace;font-size:10px">1f1f9406-7863-4929-86ce</span></div>
+            <div class="info-row"><span class="info-lbl">Envelope ID</span><span class="info-val" style="font-family:monospace;font-size:10px">00001100kuzy0Xc2QpW0oOIH</span></div>
+            <div class="info-row"><span class="info-lbl">KH ký HĐ</span><span class="info-val"><span class="pill pill-green">✅ signed</span></span></div>
+            <div class="info-row"><span class="info-lbl">CTCK ký HĐ</span><span class="info-val"><span class="pill pill-amber">⏳ processing</span></span></div>
+            <div class="info-row"><span class="info-lbl">Trạng thái HĐ</span><span class="info-val"><span class="pill pill-green">✅ completed</span></span></div>
+            <div class="info-row"><span class="info-lbl">File HĐ</span><span class="info-val"><button class="btn btn-ghost btn-sm">⬇ Tải xuống</button></span></div>
+          </div>
+          <div>
+            <div class="img-card">
+              <div class="img-card-title">Chữ ký khách hàng</div>
+              <div class="img-ph" style="height:160px"><span style="font-size:28px">✍️</span><span style="font-size:11px">Chữ ký KH</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Attempt History -->
+      <div class="tab-pane" id="pane-attempts">
+        <div class="attempt-banner ab-green" id="ah-banner">
+          <div class="ab-icon">✅</div>
+          <div class="ab-text">
+            <div class="ab-title">Kết quả cuối: APPROVED</div>
+            <div class="ab-sub">Tài khoản <strong id="ah-acc">039C202465</strong> mở thành công sau <strong id="ah-total">1</strong> lần thử</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Hành trình</div>
+          <div class="journey" id="ah-journey"></div>
+        </div>
+
+        <!-- Fail #1 -->
+        <div class="att-item att-fail" id="ah-fail1" style="display:none">
+          <div class="att-hdr" onclick="toggleAtt(this)">
+            <div class="att-icon ai-fail">❌</div>
+            <div class="att-info">
+              <div class="att-num">Lần thử #1</div>
+              <div class="att-time">15/05/2026 09:23:14</div>
+            </div>
+            <div class="att-right">
+              <span class="pill pill-red">Thất bại</span>
+              <span style="font-size:11px;color:#f87171;font-weight:600">📸 Ảnh mờ</span>
+              <span style="color:#6b7280">▾</span>
+            </div>
+          </div>
+          <div class="att-body">
+            <div class="att-grid">
+              <div class="abox">
+                <div class="abox-title">📄 OCR Results</div>
+                <div class="arow"><span class="arow-l">Số CCCD</span><span class="arow-v vpass">Khớp ✓</span></div>
+                <div class="arow"><span class="arow-l">Confidence</span><span class="arow-v"><span class="conf conf-h">95%</span></span></div>
+                <div class="arow"><span class="arow-l">Điểm MRZ</span><span class="arow-v"><span class="conf conf-m">8/10</span></span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">🖼️ Image Quality</div>
+                <div class="arow"><span class="arow-l">Trước blur</span><span class="arow-v vfail">0.23 ❌</span></div>
+                <div class="arow"><span class="arow-l">Trước sáng</span><span class="arow-v vpass">0.75 ✓</span></div>
+                <div class="arow"><span class="arow-l">Sau blur</span><span class="arow-v vpass">0.72 ✓</span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">🛡️ Fraud Flags</div>
+                <div class="arow"><span class="arow-l">Tampering</span><span class="arow-v vpass">✓ OK</span></div>
+                <div class="arow"><span class="arow-l">CCCD giả</span><span class="arow-v vpass">✓ Không</span></div>
+                <div class="arow"><span class="arow-l">Photocopy</span><span class="arow-v vpass">✓ Gốc</span></div>
+              </div>
+            </div>
+            <div class="abox" style="margin-top:8px">
+              <div class="abox-title">🔤 MRZ Cross-Check — MRZ vs OCR Visual</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;font-size:11px">
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Số CCCD</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Ngày sinh</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Giới tính</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Hết hạn</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0a1a0a;border-radius:4px;border:1px solid #134e13">
+                  <div style="color:#6b7280;margin-bottom:4px">Tổng hợp</div>
+                  <div style="color:#34d399;font-weight:700">✓ PASS</div>
+                </div>
+              </div>
+              <div style="font-size:10px;color:#4b5563;margin-top:6px">Confidence MRZ: <span style="color:#9ca3af">97%</span> &nbsp;|&nbsp; Valid Score: <span style="color:#9ca3af">8/10</span></div>
+            </div>
+            <!-- OCR Fail Images — hiển thị khi failureStep = VNPT_OCR -->
+            <div style="margin-top:10px;background:#0d1117;border-radius:6px;padding:10px 12px;border:1px solid #1a2332">
+              <div style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;font-weight:600">📸 Ảnh OCR lần thử này</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div>
+                  <div style="font-size:10px;color:#9ca3af;margin-bottom:4px">Mặt trước</div>
+                  <div style="background:#111827;border:1px solid #374151;border-radius:4px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer" onclick="alert('Xem ảnh: ekyc/038xxx/attempt-1-front.jpg')">
+                    <span style="font-size:22px">🖼️</span>
+                    <span style="font-size:10px;color:#f87171">Blur 0.23 ❌</span>
+                    <span style="font-size:9px;color:#6b7280">Click để xem</span>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:10px;color:#9ca3af;margin-bottom:4px">Mặt sau</div>
+                  <div style="background:#111827;border:1px solid #374151;border-radius:4px;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer" onclick="alert('Xem ảnh: ekyc/038xxx/attempt-1-back.jpg')">
+                    <span style="font-size:22px">🖼️</span>
+                    <span style="font-size:10px;color:#34d399">Blur 0.72 ✓</span>
+                    <span style="font-size:9px;color:#6b7280">Click để xem</span>
+                  </div>
+                </div>
+              </div>
+              <div style="font-size:9px;color:#4b5563;margin-top:6px">Lưu tại: ekyc/038xxx/attempt-1-*.jpg &nbsp;·&nbsp; Presigned URL có TTL 1h</div>
+            </div>
+            <div class="fail-reason fr-red">
+              ⚠️ <div><strong>Lý do thất bại:</strong> Ảnh mặt trước quá mờ — blur_score = 0.23 (yêu cầu ≥ 0.50)<br>
+              <span style="font-size:11px;opacity:.8">Bước: VNPT_OCR · Mã: VNPT_IMAGE_BLURRED</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fail #2 -->
+        <div class="att-item att-fail" id="ah-fail2" style="display:none">
+          <div class="att-hdr" onclick="toggleAtt(this)">
+            <div class="att-icon ai-fail">❌</div>
+            <div class="att-info">
+              <div class="att-num">Lần thử #2</div>
+              <div class="att-time">16/05/2026 14:11:32</div>
+            </div>
+            <div class="att-right">
+              <span class="pill pill-red">Thất bại</span>
+              <span style="font-size:11px;color:#fbbf24;font-weight:600">🏛️ LOTTE_REJECTED</span>
+              <span style="color:#6b7280">▾</span>
+            </div>
+          </div>
+          <div class="att-body">
+            <div class="att-grid">
+              <div class="abox">
+                <div class="abox-title">📄 OCR Results</div>
+                <div class="arow"><span class="arow-l">Số CCCD</span><span class="arow-v vpass">Khớp ✓</span></div>
+                <div class="arow"><span class="arow-l">Confidence</span><span class="arow-v"><span class="conf conf-h">97%</span></span></div>
+                <div class="arow"><span class="arow-l">Điểm MRZ</span><span class="arow-v"><span class="conf conf-h">9/10</span></span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">🖼️ Image Quality</div>
+                <div class="arow"><span class="arow-l">Trước blur</span><span class="arow-v vpass">0.81 ✓</span></div>
+                <div class="arow"><span class="arow-l">Trước sáng</span><span class="arow-v vpass">0.79 ✓</span></div>
+                <div class="arow"><span class="arow-l">Matching rate</span><span class="arow-v vwarn">74% ⚠</span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">🛡️ Fraud Flags</div>
+                <div class="arow"><span class="arow-l">Tampering</span><span class="arow-v vpass">✓ OK</span></div>
+                <div class="arow"><span class="arow-l">CCCD giả</span><span class="arow-v vpass">✓ Không</span></div>
+                <div class="arow"><span class="arow-l">Photocopy</span><span class="arow-v vpass">✓ Gốc</span></div>
+              </div>
+            </div>
+            <div class="abox" style="margin-top:8px">
+              <div class="abox-title">🔤 MRZ Cross-Check — MRZ vs OCR Visual</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;font-size:11px">
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Số CCCD</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Ngày sinh</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Giới tính</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Hết hạn</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0a1a0a;border-radius:4px;border:1px solid #134e13">
+                  <div style="color:#6b7280;margin-bottom:4px">Tổng hợp</div>
+                  <div style="color:#34d399;font-weight:700">✓ PASS</div>
+                </div>
+              </div>
+              <div style="font-size:10px;color:#4b5563;margin-top:6px">Confidence MRZ: <span style="color:#9ca3af">97%</span> &nbsp;|&nbsp; Valid Score: <span style="color:#9ca3af">9/10</span></div>
+            </div>
+            <div class="fail-reason fr-amber">
+              ⚠️ <div><strong>Lý do thất bại:</strong> Lotte từ chối — Matching rate 74% dưới ngưỡng 80%<br>
+              <span style="font-size:11px;opacity:.8">Bước: LOTTE_SUBMIT · Mã: MATCHING_RATE_TOO_LOW</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Final success -->
+        <div class="att-item att-success">
+          <div class="att-hdr" onclick="toggleAtt(this)" style="background:rgba(6,78,59,.12)">
+            <div class="att-icon ai-success">✅</div>
+            <div class="att-info">
+              <div class="att-num" id="ah-final-label">Lần thử #1</div>
+              <div class="att-time" id="ah-final-date">23/05/2026 16:43:00</div>
+            </div>
+            <div class="att-right">
+              <span class="pill pill-green">Thành công</span>
+              <span style="font-size:11px;color:#34d399;font-weight:600">Matching: <span id="ah-final-rate">98.22%</span></span>
+              <span style="color:#6b7280">▾</span>
+            </div>
+          </div>
+          <div class="att-body">
+            <div class="att-grid">
+              <div class="abox">
+                <div class="abox-title">📄 OCR Results</div>
+                <div class="arow"><span class="arow-l">Số CCCD</span><span class="arow-v vpass">Khớp ✓</span></div>
+                <div class="arow"><span class="arow-l">Confidence</span><span class="arow-v"><span class="conf conf-h">95%</span></span></div>
+                <div class="arow"><span class="arow-l">Điểm MRZ</span><span class="arow-v"><span class="conf conf-h">9/10</span></span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">🖼️ Image Quality</div>
+                <div class="arow"><span class="arow-l">Trước blur</span><span class="arow-v vpass">0.88 ✓</span></div>
+                <div class="arow"><span class="arow-l">Trước sáng</span><span class="arow-v vpass">0.75 ✓</span></div>
+                <div class="arow"><span class="arow-l">Matching rate</span><span class="arow-v vpass"><span id="ah-final-rate2">98.22%</span> ✓</span></div>
+              </div>
+              <div class="abox">
+                <div class="abox-title">✅ Kết quả</div>
+                <div class="arow"><span class="arow-l">Tất cả flags</span><span class="arow-v vpass">✓ OK</span></div>
+                <div class="arow"><span class="arow-l">Ký HĐ lúc</span><span class="arow-v vneutral" id="ah-sign-time">23/05/26 16:45</span></div>
+                <div class="arow"><span class="arow-l">Số TK</span><span class="arow-v vmono" id="ah-acc2">039C202465</span></div>
+              </div>
+            </div>
+            <div class="abox" style="margin-top:8px">
+              <div class="abox-title">🔤 MRZ Cross-Check — MRZ vs OCR Visual</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:6px;font-size:11px">
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Số CCCD</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Ngày sinh</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Giới tính</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0d1117;border-radius:4px;border:1px solid #1a2332">
+                  <div style="color:#6b7280;margin-bottom:4px">Hết hạn</div>
+                  <div class="vpass" style="font-weight:700">✓ MATCH</div>
+                </div>
+                <div style="text-align:center;padding:6px;background:#0a1a0a;border-radius:4px;border:1px solid #134e13">
+                  <div style="color:#6b7280;margin-bottom:4px">Tổng hợp</div>
+                  <div style="color:#34d399;font-weight:700">✓ PASS</div>
+                </div>
+              </div>
+              <div style="font-size:10px;color:#4b5563;margin-top:6px">Confidence MRZ: <span style="color:#9ca3af">99%</span> &nbsp;|&nbsp; Valid Score: <span style="color:#9ca3af">9/10</span></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /pane-attempts -->
+
+    </div><!-- /modal-body -->
+  </div><!-- /modal -->
+</div><!-- /overlay -->
+
+<script>
+function navTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  document.getElementById('pg-' + page).classList.add('active');
+  document.getElementById('nav-' + page).classList.add('active');
+}
+
+const MODAL_DATA = {
+  success: {
+    id:'85169', name:'NGUYỄN TUẤN PHONG', cccd:'030207010063', dob:'22/11/2007',
+    rate:'98.22%', rateClass:'rate-h', status:'APPROVED', acc:'039C202465',
+    phone:'0393052800', email:'phongnguyen123xx@gmail.com',
+    vnpt:{ tamper:'✓ Hợp lệ', idfake:'✓ Không (2%)', namefake:'✓ Không', dup:'✓ Không', recap:'✓ Ảnh gốc', photo:'✓ Gốc' },
+    logs:{ ocr:'LOG-VNPT-20260523-09231' },
+    attempts:1, failBefore:0,
+    finalLabel:'Lần thử #1', finalDate:'23/05/2026 16:43:00', finalRate:'98.22%', signTime:'23/05/26 16:45'
+  },
+  multiattempt: {
+    id:'85102', name:'NGUYỄN VĂN AN', cccd:'038094001234', dob:'10/05/1994',
+    rate:'92.10%', rateClass:'rate-m', status:'APPROVED', acc:'039C123456',
+    phone:'0901234567', email:'annguyen@gmail.com',
+    vnpt:{ tamper:'✓ Hợp lệ', idfake:'✓ Không (2%)', namefake:'✓ Không', dup:'✓ Không', recap:'✓ Ảnh gốc', photo:'✓ Gốc' },
+    logs:{ ocr:'LOG-VNPT-20260518-10051' },
+    attempts:3, failBefore:2,
+    finalLabel:'Lần thử #3', finalDate:'18/05/2026 10:05:00', finalRate:'92.10%', signTime:'18/05/26 10:42'
+  },
+  fraud: {
+    id:'85088', name:'TRẦN THỊ BÌNH', cccd:'001083005678', dob:'08/03/1983',
+    rate:'74.50%', rateClass:'rate-l', status:'PENDING', acc:'—',
+    phone:'0912345678', email:'binh.tran@gmail.com',
+    vnpt:{ tamper:'⚠ Nghi vấn (N)', idfake:'⚠ CCCD giả (91%)', namefake:'⚠ Cảnh báo', dup:'⚠ Phát hiện', recap:'✓ Ảnh gốc', photo:'❌ Photocopy' },
+    logs:{ ocr:'LOG-VNPT-20260513-08301' },
+    attempts:5, failBefore:4,
+    finalLabel:'Lần thử #5', finalDate:'13/05/2026 08:30:00', finalRate:'74.50%', signTime:'—'
+  }
+};
+
+function openModal(type) {
+  const d = MODAL_DATA[type];
+  document.getElementById('d-id').textContent = d.id;
+  document.getElementById('d-name').textContent = d.name;
+  document.getElementById('d-cccd').textContent = d.cccd;
+  document.getElementById('d-dob').textContent = d.dob;
+  document.getElementById('d-phone').textContent = d.phone;
+  document.getElementById('d-email').textContent = d.email;
+  document.getElementById('d-rate').textContent = d.rate;
+  document.getElementById('d-rate').className = 'info-val ' + d.rateClass;
+  const sp = document.getElementById('d-status-pill');
+  sp.textContent = d.status === 'APPROVED' ? '✅ APPROVED' : (d.status === 'PENDING' ? '⏳ PENDING' : '❌ REJECTED');
+  sp.className = 'pill ' + (d.status === 'APPROVED' ? 'pill-green' : d.status === 'PENDING' ? 'pill-amber' : 'pill-red');
+  document.getElementById('d-acc').textContent = d.acc;
+  document.getElementById('modal-meta').textContent = 'ID: ' + d.id + ' · CCCD: ' + d.cccd;
+  document.getElementById('vl-cccd').textContent = d.cccd;
+  document.getElementById('vl-name').textContent = d.name.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  document.getElementById('vl-ocr-log').textContent = d.logs.ocr;
+  ['tamper','idfake','namefake','dup'].forEach(k => {
+    const el = document.getElementById('vl-' + k);
+    if (!el) return;
+    el.textContent = d.vnpt[k];
+    el.className = 'vrow-val ' + (d.vnpt[k].includes('✓') ? 'vpass' : d.vnpt[k].includes('⚠') ? 'vwarn' : 'vfail');
+  });
+  document.getElementById('vl-recap-f').textContent = d.vnpt.recap;
+  document.getElementById('vl-photo-f').textContent = d.vnpt.photo;
+  document.getElementById('vl-photo-f').className = 'vrow-val ' + (d.vnpt.photo.includes('✓') ? 'vpass' : 'vfail');
+  const blurOk = type !== 'fraud';
+  document.getElementById('front-blur-val').textContent = type === 'fraud' ? '0.31 ❌' : (type === 'multiattempt' ? '0.92 ✓' : '0.88 ✓');
+  document.getElementById('front-blur-val').className = blurOk ? 'vpass' : 'vfail';
+  document.getElementById('front-blur-bar').className = 'ip-fill ' + (blurOk ? 'prog-green' : 'prog-red');
+  document.getElementById('front-blur-bar').style.width = type === 'fraud' ? '31%' : (type === 'multiattempt' ? '92%' : '88%');
+  // Attempts
+  document.getElementById('ah-fail1').style.display = d.failBefore >= 1 ? 'block' : 'none';
+  document.getElementById('ah-fail2').style.display = d.failBefore >= 2 ? 'block' : 'none';
+  document.getElementById('ah-final-label').textContent = d.finalLabel;
+  document.getElementById('ah-final-date').textContent = d.finalDate;
+  document.getElementById('ah-final-rate').textContent = d.finalRate;
+  document.getElementById('ah-final-rate2').textContent = d.finalRate;
+  document.getElementById('ah-sign-time').textContent = d.signTime;
+  document.getElementById('ah-acc2').textContent = d.acc;
+  // Banner
+  const banner = document.getElementById('ah-banner');
+  const ok = d.status === 'APPROVED';
+  banner.className = 'attempt-banner ' + (ok ? 'ab-green' : 'ab-amber');
+  banner.querySelector('.ab-icon').textContent = ok ? '✅' : '⏳';
+  banner.querySelector('.ab-title').textContent = ok ? 'Kết quả cuối: APPROVED' : 'Đang xử lý — Chưa mở được TK';
+  document.getElementById('ah-acc').textContent = d.acc;
+  document.getElementById('ah-total').textContent = d.attempts;
+  // Journey timeline
+  let jHtml = '';
+  for (let i = 0; i < d.failBefore; i++) {
+    jHtml += `<div class="jdot jdot-fail">${i+1}</div><div class="jline"></div>`;
+  }
+  jHtml += `<div class="jdot jdot-success">${d.attempts}</div>`;
+  document.getElementById('ah-journey').innerHTML = jHtml;
+  switchTab('personal');
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function closeOnOverlay(e) { if (e.target === document.getElementById('modal-overlay')) closeModal(); }
+
+function switchTab(name) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById('pane-' + name).classList.add('active');
+  const map = { personal:0, additional:1, contract:2, attempts:3 };
+  document.querySelectorAll('.modal-tab')[map[name]].classList.add('active');
+}
+
+function toggleColl(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+
+function toggleVnpt(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+function toggleAtt(el) {
+  el.nextElementSibling.classList.toggle('open');
+}
+</script>
+</body>
+</html>
