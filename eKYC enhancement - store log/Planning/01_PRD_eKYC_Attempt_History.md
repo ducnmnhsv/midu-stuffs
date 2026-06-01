@@ -131,6 +131,7 @@ Từ phân tích App flow, các trường sau hiện đang được dùng để 
 | Outcome | Ý nghĩa | Failure Step |
 |---------|---------|-------------|
 | `VNPT_FAILED` | VNPT trả lỗi (OCR, liveness, quality) | `VNPT_OCR` / `VNPT_LIVENESS` / `VNPT_QUALITY` |
+| `MRZ_FAILED` | MRZ checksum sai hoặc MRZ ↔ OCR không khớp | `MRZ_VALIDATION` / `MRZ_CROSS_CHECK` |
 | `FACE_COMPARE_FAILED` | Matching rate dưới ngưỡng (< 80%) | `FACE_COMPARE` |
 | `LOTTE_REJECTED` | Lotte từ chối khi submit | `LOTTE_SUBMIT` |
 | `USER_ABANDONED` | Không ký HĐ trong 48h sau APPROVED | `CONTRACT_SIGN` |

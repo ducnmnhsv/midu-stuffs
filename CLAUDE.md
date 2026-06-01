@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 날짜 | 변경 내용 | 대상 | 사유 |
 |------|----------|------|------|
 | 2026-06-01 | 초기 구성 | 전체 | 신규 하네스 구축 |
+| 2026-06-01 | Nâng cấp Agent Teams | orchestrator + 3 agents | Bật CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS |
 
 ---
 

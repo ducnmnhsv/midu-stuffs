@@ -340,7 +340,7 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
             }
         } catch (Exception e) {
             // Parse fail → vẫn lưu raw_data, không throw
-            log.warn("Failed to parse VNPT rawData for attempt log", e);
+            logger.warn("Failed to parse VNPT rawData for attempt log", e);
         }
     }
     return log;
@@ -557,13 +557,149 @@ Response 200:
 
 ---
 
-## 5. API: eKYC Attempt Log (App → TradeX)
+## 5. Service: `EKycAttemptLogService`
+
+**File:** `service/EKycAttemptLogService.java`
+
+```java
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EKycAttemptLogService {
+
+    private final EKycAttemptLogRepository eKycAttemptLogRepository;
+    private final ImageStorageService imageStorageService;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Xử lý request từ POST /ekycs/attempt-log.
+     * Được gọi bởi EKycAttemptLogResource.
+     */
+    public EKycAttemptLogResponseDTO processAttemptLog(
+            EKycAttemptLogRequest req,
+            String identifierId,  // lấy từ JWT, không từ request body
+            String phoneNo
+    ) {
+        int attemptNumber = eKycAttemptLogRepository.countByIdentifierId(identifierId) + 1;
+
+        EKycAttemptLog log = new EKycAttemptLog();
+        log.setIdentifierId(identifierId);
+        log.setPhoneNo(phoneNo);
+        log.setAttemptNumber(attemptNumber);
+        log.setAttemptAt(ZonedDateTime.now());
+        log.setOutcome(req.getOutcome());
+        log.setFailureStep(req.getFailureStep());
+        log.setFailureCode(req.getFailureCode());
+        log.setFailureMessage(req.getFailureMessage());
+
+        // Extract VNPT fields từ rawData nếu có
+        if (StringUtils.isNotBlank(req.getVnptRawData())) {
+            buildAttemptLog(log, req.getVnptRawData(), identifierId, attemptNumber);
+        }
+
+        // Map MRZ fields từ request (SDK-only, không có trong rawData)
+        log.setMrzLine1(req.getMrzLine1());
+        log.setMrzLine2(req.getMrzLine2());
+        log.setMrzOverallProb(req.getMrzProb());
+        log.setVnptMrzValidScore(req.getMrzValidScore());
+        log.setMrzCrossCheck(req.getMrzCrossCheck());
+        log.setMrzCheckId(req.getMrzCheckId());
+        log.setMrzCheckDob(req.getMrzCheckDob());
+        log.setMrzCheckGender(req.getMrzCheckGender());
+        log.setMrzCheckExpiry(req.getMrzCheckExpiry());
+
+        // Map liveness & face compare fields
+        log.setLivenessCardFrontResult(req.getLivenessCardFrontResult());
+        log.setLivenessCardRearResult(req.getLivenessCardRearResult());
+        log.setLivenessFaceResult(req.getLivenessFaceResult());
+        log.setFaceMaskResult(req.getFaceMaskResult());
+        log.setFakeLivenessProb(req.getFakeLivenessProb());
+        log.setFakePrintPhotoProb(req.getFakePrintPhotoProb());
+        log.setFaceCompareMsg(req.getFaceCompareMsg());
+        log.setFaceCompareProb(req.getFaceCompareProb());
+
+        // Upload ảnh nếu có
+        if (StringUtils.isNotBlank(req.getImageFrontBase64())) {
+            String frontUrl = imageStorageService.uploadBase64(
+                req.getImageFrontBase64(),
+                "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-front.jpg"
+            );
+            log.setImageFrontUrl(frontUrl);
+        }
+        if (StringUtils.isNotBlank(req.getImageBackBase64())) {
+            String backUrl = imageStorageService.uploadBase64(
+                req.getImageBackBase64(),
+                "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-back.jpg"
+            );
+            log.setImageBackUrl(backUrl);
+        }
+
+        EKycAttemptLog saved = eKycAttemptLogRepository.save(log);
+        return new EKycAttemptLogResponseDTO(saved.getId());
+    }
+}
+```
+
+**DTO:**
+
+```java
+// Request DTO
+public class EKycAttemptLogRequest {
+    @NotBlank String outcome;
+    String failureStep;
+    String failureCode;
+    String failureMessage;
+    String vnptRawData;
+    // MRZ fields
+    String mrzLine1; String mrzLine2; Double mrzProb; Integer mrzValidScore;
+    String mrzCrossCheck; String mrzCheckId; String mrzCheckDob;
+    String mrzCheckGender; String mrzCheckExpiry;
+    // Liveness & face compare
+    String livenessCardFrontResult; String livenessCardRearResult;
+    String livenessFaceResult; String faceMaskResult;
+    Double fakeLivenessProb; Double fakePrintPhotoProb;
+    String faceCompareMsg; Double faceCompareProb;
+    // Images (base64)
+    String imageFrontBase64;
+    String imageBackBase64;
+}
+
+// Response DTO
+public record EKycAttemptLogResponseDTO(Long attemptId) {}
+```
+
+**REST Controller:**
+
+```java
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
+public class EKycAttemptLogResource {
+
+    private final EKycAttemptLogService eKycAttemptLogService;
+
+    @PostMapping("/ekycs/attempt-log")
+    @ResponseStatus(HttpStatus.CREATED)
+    public EKycAttemptLogResponseDTO logAttempt(
+            @Valid @RequestBody EKycAttemptLogRequest req,
+            @AuthenticationPrincipal UserDetails userDetails  // lấy identifierId từ JWT
+    ) {
+        String identifierId = extractIdentifierId(userDetails);
+        String phoneNo      = extractPhoneNo(userDetails);
+        return eKycAttemptLogService.processAttemptLog(req, identifierId, phoneNo);
+    }
+}
+```
+
+---
+
+## 7. API: eKYC Attempt Log (App → TradeX)
 
 > **Nguyên tắc thiết kế quan trọng:**
 > - `POST /lotte/ekycs` — **KHÔNG THAY ĐỔI**. Chỉ gửi những gì Lotte cần. Không thêm field mới.
 > - `POST /ekycs/attempt-log` — API TradeX mới. **App gọi cho MỌI lần thử** để lưu log user journey vào hệ thống TradeX (không liên quan Lotte).
 
-### 5.0 Tổng quan luồng gọi API
+### 7.0 Tổng quan luồng gọi API
 
 ```
 ──── Pre-submit failure (SDK thất bại trước khi gọi Lotte) ────
@@ -600,7 +736,7 @@ App ──[VNPT SDK]──► All checks pass
 
 ---
 
-### 5.1 Endpoint
+### 7.1 Endpoint
 
 ```
 POST /ekycs/attempt-log
@@ -612,7 +748,7 @@ Content-Type: application/json
 
 ---
 
-### 5.2 Request Body
+### 7.2 Request Body
 
 ```json
 {
@@ -658,7 +794,7 @@ Content-Type: application/json
 
 ---
 
-### 5.3 Validation Rules
+### 7.3 Validation Rules
 
 | Field | Rule |
 |-------|------|
@@ -672,7 +808,7 @@ Content-Type: application/json
 
 ---
 
-### 5.4 BE Processing Logic
+### 7.4 BE Processing Logic
 
 ```
 1. Parse JWT → lấy identifierId, phoneNo (không yêu cầu App truyền lại)
@@ -708,7 +844,7 @@ Content-Type: application/json
 
 ---
 
-### 5.5 Outcome → failureStep Mapping (hướng dẫn cho App)
+### 7.5 Outcome → failureStep Mapping (hướng dẫn cho App)
 
 | Scenario | outcome | failureStep | Ảnh bắt buộc? |
 |----------|---------|-------------|--------------|
@@ -724,7 +860,7 @@ Content-Type: application/json
 
 ---
 
-### 5.6 Response
+### 7.6 Response
 
 ```json
 // 201 Created
@@ -745,7 +881,7 @@ Content-Type: application/json
 
 ---
 
-## 6. Image Storage Service
+## 8. Image Storage Service
 
 **Interface:** `ImageStorageService`  
 **Impl:** `MinioImageStorageService` / `S3ImageStorageService`

@@ -258,6 +258,9 @@ ALTER TABLE e_kyc
         <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_outcome">
             <column name="outcome"/>
         </createIndex>
+        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_final_ekyc">
+            <column name="final_ekyc_id"/>
+        </createIndex>
     </changeSet>
 
     <changeSet id="20260524000002" author="duc.nguyen">

@@ -36,11 +36,13 @@ MRZ là cơ chế bảo mật mạnh nhất trên CCCD: chứa **checksum tích 
 
 ### Timeline
 
-| Phase | Nội dung | Estimate |
-|-------|---------|---------|
-| Phase 1 | Fix `default: break` → block + analytics | 0.5 ngày |
-| Phase 2 | Đọc & validate MRZ (valid_score + cross-check) | 1 ngày |
-| Phase 3 | Gửi MRZ data lên BE | 0.5 ngày |
+| Phase | Nội dung | Estimate | Phụ thuộc |
+|-------|---------|---------|-----------|
+| Phase 1 | Fix `default: break` → block + analytics | 0.5 ngày | ✅ Không phụ thuộc — **có thể bắt đầu ngay** |
+| Phase 2 | Đọc & validate MRZ (`valid_score` + cross-check) | 1 ngày | 🔴 **Chờ VNPT confirm** `mrz_valid_score` threshold (Q1) |
+| Phase 3 | Gửi MRZ data lên BE (`POST /ekycs/attempt-log`) | 0.5 ngày | 🟡 Chờ BE deploy endpoint |
+
+> **Khuyến nghị:** Phase 1 nên làm ngay trong sprint này vì không có dependency. Phase 2 & 3 chờ unblock.
 
 **Tổng:** ~2 ngày dev + 1 ngày test
 
