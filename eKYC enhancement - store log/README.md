@@ -32,14 +32,15 @@ Hệ thống hiện tại **xóa** các lần thử PENDING cũ khi user submit 
 | DB Specification (v2.0) | ✅ Hoàn thành |
 | Backend Specification (v2.0) | ✅ Hoàn thành |
 | FE Issue | ✅ Hoàn thành |
-| Admin UI Demo | ✅ [admin-ui-demo.html](../admin-ui-demo.html) |
+| Admin UI Demo | ✅ [admin-ui-demo.html](demos/admin-ui-demo.html) |
 | Implementation | 🔲 Chưa bắt đầu |
 
 ## Documents
 
 - [01_PRD_eKYC_Attempt_History.md](Planning/01_PRD_eKYC_Attempt_History.md) — Yêu cầu nghiệp vụ (v2.0)
-- [DB_Schema_Spec.md](Specifications/DB_Schema_Spec.md) — Schema DB đầy đủ (v2.0, 46 cột)
-- [Backend_Spec.md](Specifications/Backend_Spec.md) — Code changes + API endpoints + Image upload service
-- [FE_Issue_Admin_eKYC_Journey.md](Issues/FE_Issue_Admin_eKYC_Journey.md) — FE issue cho Admin UI
+- [Backend_Spec.md](Specifications/Backend_Spec.md) — DB Schema + Code changes + API endpoints + Image upload service
+- [FE_Issue_Admin_UI.md](Issues/FE_Issue_Admin_UI.md) — FE issue: Dashboard Analytics + Tra cứu Hành trình
+- [FE_Issue_MRZ_Validation_CrossCheck.md](Issues/FE_Issue_MRZ_Validation_CrossCheck.md) — FE issue: MRZ Validation (App)
+- [demos/](demos/) — UI prototypes & analysis HTML files
 
 **Document Status:** Draft v2.0 | **For:** Dev Team + BA | **Next Steps:** Review với team backend trước khi implement
