@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+@/Users/ducnguyen/Documents/project/nhsv-mts-rn/CLAUDE.md
+
+---
+
+## ⚠️ CRITICAL RULE — nhsv-mts-rn (READ-ONLY)
+
+`/Users/ducnguyen/Documents/project/nhsv-mts-rn` là FE codebase của app **NHSV Pro** (React Native).
+
+- **TUYỆT ĐỐI KHÔNG** chỉnh sửa, tạo file, hoặc thay đổi bất kỳ thứ gì trong repo này
+- Chỉ dùng để **đọc và tham chiếu** (read-only reference)
+- Khi task liên quan đến FE (component, screen, API call, navigation, type definitions...) → tự động scan codebase nhsv-mts-rn để lấy context, không cần người dùng nhắc
+- Mọi output (issue, spec, doc) được ghi vào `tradex-monitoring`, không phải nhsv-mts-rn
+
 ---
 
 ## 하네스: TradeX Monitoring
