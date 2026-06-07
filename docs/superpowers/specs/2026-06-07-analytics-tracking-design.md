@@ -37,8 +37,6 @@ analyticsService.trackXxx()     ← API công khai duy nhất
 events.ts (tên event type-safe)
       ↓
 Firebase GA4 Analytics
-      ↓ (tương lai)
-AppsFlyer (bật bằng cách thêm 1 dòng vào service)
 ```
 
 **Cấu trúc file trong nhsv-mts-rn:**
@@ -53,7 +51,6 @@ src/utils/analytics/
 **Nguyên tắc:**
 - `analyticsService.ts` là file DUY NHẤT import `@react-native-firebase/analytics`
 - Tất cả lệnh `analytics().logEvent()` trực tiếp hiện tại trong screens/sagas được refactor qua service
-- AppsFlyer (`utils/appFlyers.ts`) có thể bật sau bằng cách thêm call vào service — không cần sửa code ở screens
 
 ---
 
@@ -116,18 +113,19 @@ search | watchlist | market_table | top_stocks | recently_viewed | notification
 | Event | Tham số chính | Trigger |
 |-------|--------------|---------|
 | `order_initiated` | `order_type`, `side`, `symbol`, `market`, `screen_name` | User mở form lệnh / bắt đầu điền |
-| `order_confirmed` | `order_type`, `side`, `symbol`, `market`, `is_first_order` | User bấm xác nhận — lệnh gửi lên API |
+| `order_confirmed` | `order_type`, `side`, `symbol`, `market` | User bấm xác nhận — lệnh gửi lên API |
 | `order_cancelled` | `symbol`, `source` (user_action/system), `screen_name` | Lệnh bị hủy |
 | `portfolio_viewed` | `account_type`, `view_mode`, `screen_name` | User mở tab danh mục |
-| `cash_flow_viewed` | `screen_name` | User mở lịch sử dòng tiền |
+| `cash_flow_viewed` | `transaction_type`, `view_mode`, `screen_name` | User mở CashFlowScreen |
 
 **Enum `order_type`:** `LO | MP | ATO | ATC | MAK | MOK | PLO | TP | SL | OCO | STOP`
 **Enum `market`:** `equity | derivatives`
 **Enum `side`:** `buy | sell`
 
-**`is_first_order`** (boolean): Set `true` ở lần `order_confirmed` đầu tiên của user. Đây là mốc **Trading Activation** — KPI quan trọng nhất sau khi hoàn thành eKYC.
+**Enum `transaction_type`** (cho `cash_flow_viewed`): `withdraw | internal_transfer | cash_in_advance`
+**Enum `view_mode`** (cho `cash_flow_viewed`): `request | history`
 
-> **Ghi chú triển khai:** Phát hiện qua flag AsyncStorage `"analytics_has_placed_order"`. Khi `order_confirmed` đầu tiên, nếu flag chưa có → set `is_first_order: true` và ghi flag. Các lần sau → `is_first_order: false`.
+> **Ghi chú `cash_flow_viewed`:** Screen có 2 cấp tab — tab loại giao dịch (withdraw/internal_transfer/cash_in_advance) × tab chế độ (request form / history list). Event fire mỗi khi user chuyển tab ở cấp 1. Ví dụ: vào màn hình lần đầu → `transaction_type: withdraw, view_mode: request`; chuyển sang tab History → `transaction_type: withdraw, view_mode: history`.
 
 ---
 
@@ -333,7 +331,6 @@ analytics().setUserProperties({
 - Tracking eKYC, Retention và Trading funnel
 
 **Ngoài phạm vi:**
-- Bật AppsFlyer (hạ tầng đã sẵn, bật ở sprint sau)
 - BigQuery export / Looker Studio (Phase 2 khi team cần query SQL)
 - Web analytics
 - Tracking phía backend
