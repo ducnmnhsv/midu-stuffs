@@ -1,100 +1,100 @@
-# Analytics Tracking System Design
+# Thiết Kế Hệ Thống Analytics Tracking
 **NHSV Pro — GA4 Analytics**
 
-- **Date:** 2026-06-07
-- **Author:** Duc Nguyen (BA/PM)
-- **Status:** Draft — Pending Implementation
+- **Ngày:** 2026-06-07
+- **Tác giả:** Duc Nguyen (BA/PM)
+- **Trạng thái:** Bản nháp — Chờ triển khai
 - **GA4 Property:** NHSV Pro (`properties/478227972`)
 
 ---
 
-## 1. Objectives
+## 1. Mục Tiêu
 
-Build a comprehensive analytics tracking system for NHSV Pro to support data-driven product decisions.
+Xây dựng hệ thống analytics toàn diện cho NHSV Pro nhằm hỗ trợ ra quyết định sản phẩm dựa trên dữ liệu.
 
-**Goals:**
-1. **Retention & Engagement** — Understand how users return to the app and which features they use (app-level + feature-level)
-2. **eKYC Funnel Optimization** — Full visibility into drop-off, errors, and time-to-complete
-3. **Trading Activation** — Track the journey from registration to first trade
+**Mục tiêu cụ thể:**
+1. **Retention & Engagement** — Hiểu cách user quay lại app và sử dụng tính năng nào (cả app-level lẫn feature-level)
+2. **Tối ưu eKYC Funnel** — Nắm rõ điểm drop-off, lỗi phát sinh và thời gian hoàn thành
+3. **Trading Activation** — Theo dõi hành trình từ đăng ký đến giao dịch đầu tiên
 
-**Primary consumers:**
-- **PM/BA team** — GA4 Explore dashboards (feature adoption, funnel analysis)
-- **Management** — KPI scorecards (DAU/MAU, retention rates, conversion rates)
+**Đối tượng sử dụng:**
+- **Đội PM/BA** — GA4 Explore dashboards (feature adoption, funnel analysis)
+- **Ban quản lý** — KPI scorecard (DAU/MAU, tỷ lệ retention, tỷ lệ conversion)
 
 ---
 
-## 2. Architecture
+## 2. Kiến Trúc
 
-### Approach: Centralized Analytics Service
+### Hướng tiếp cận: Centralized Analytics Service
 
-All analytics code routes through a single service layer. No screen or saga calls Firebase directly.
+Toàn bộ code analytics đi qua một service layer duy nhất. Không có screen hay saga nào gọi Firebase trực tiếp.
 
 ```
 Screen / Redux Saga
       ↓
-analyticsService.trackXxx()     ← Single public API
+analyticsService.trackXxx()     ← API công khai duy nhất
       ↓
-events.ts (type-safe names)
+events.ts (tên event type-safe)
       ↓
 Firebase GA4 Analytics
-      ↓ (future)
-AppsFlyer (enable by adding 1 line to service)
+      ↓ (tương lai)
+AppsFlyer (bật bằng cách thêm 1 dòng vào service)
 ```
 
-**File structure in nhsv-mts-rn:**
+**Cấu trúc file trong nhsv-mts-rn:**
 ```
 src/utils/analytics/
-├── analyticsService.ts     ← Public API — all tracking calls go here
-├── events.ts               ← Event name constants + TypeScript param types
-├── userProperties.ts       ← User property setters
-└── ekycTracking.ts         ← eKYC-specific helpers (timestamp, step tracking)
+├── analyticsService.ts     ← Public API — mọi tracking call đều vào đây
+├── events.ts               ← Hằng số tên event + kiểu TypeScript cho params
+├── userProperties.ts       ← Hàm set user properties
+└── ekycTracking.ts         ← Helper riêng cho eKYC (timestamp, theo dõi step)
 ```
 
-**Principles:**
-- `analyticsService.ts` is the ONLY file that imports `@react-native-firebase/analytics`
-- All existing direct `analytics().logEvent()` calls in screens/sagas are refactored to use the service
-- AppsFlyer (`utils/appFlyers.ts`) can be enabled later by adding calls inside the service — zero changes to screens required
+**Nguyên tắc:**
+- `analyticsService.ts` là file DUY NHẤT import `@react-native-firebase/analytics`
+- Tất cả lệnh `analytics().logEvent()` trực tiếp hiện tại trong screens/sagas được refactor qua service
+- AppsFlyer (`utils/appFlyers.ts`) có thể bật sau bằng cách thêm call vào service — không cần sửa code ở screens
 
 ---
 
-## 3. Event Naming Convention
+## 3. Quy Ước Đặt Tên Event
 
-**Pattern:** `{noun}_{verb}` — noun first, then action
+**Pattern:** `{danh từ}_{động từ}` — danh từ trước, hành động sau
 
 ```
-✅ feature_viewed          (not view_feature)
-✅ order_initiated         (not initiate_order)
-✅ ekyc_step_entered       (not enter_ekyc_step)
+✅ feature_viewed          (không phải view_feature)
+✅ order_initiated         (không phải initiate_order)
+✅ ekyc_step_entered       (không phải enter_ekyc_step)
 ✅ notification_opened
 ✅ symbol_searched
 ```
 
-**Standard parameters on every event:**
+**Tham số chuẩn có trong mọi event:**
 ```typescript
 {
-  screen_name: string      // current screen (reuses existing GA4 dimension)
-  timestamp_ms: number     // epoch ms — used to calculate duration between events
+  screen_name: string      // màn hình hiện tại (tái sử dụng GA4 dimension có sẵn)
+  timestamp_ms: number     // epoch ms — dùng để tính khoảng thời gian giữa các event
 }
 ```
 
 ---
 
-## 4. Event Catalog
+## 4. Danh Mục Event
 
-### 4.1 — Feature Usage (P1)
+### 4.1 — Sử Dụng Tính Năng (P1)
 
-Track which features users actually engage with, not just view.
+Theo dõi tính năng nào user thực sự tương tác, không chỉ xem qua.
 
-| Event | Key Parameters | Trigger |
-|-------|---------------|---------|
-| `feature_viewed` | `feature_name`, `screen_name` | User lands on a main tab/screen |
-| `feature_action` | `feature_name`, `action_type`, `screen_name` | User performs a meaningful interaction (filter, tap stock, scroll depth) |
-| `tab_switched` | `from_tab`, `to_tab` | User switches bottom navigation tab |
-| `symbol_searched` | `query`, `result_count` | User types in search box |
-| `symbol_selected` | `symbol`, `source` | User taps a stock symbol |
-| `stock_detail_viewed` | `symbol`, `source`, `screen_name` | User opens stock detail screen |
+| Event | Tham số chính | Trigger |
+|-------|--------------|---------|
+| `feature_viewed` | `feature_name`, `screen_name` | User vào tab/màn hình chính |
+| `feature_action` | `feature_name`, `action_type`, `screen_name` | User thực hiện thao tác có nghĩa (lọc, tap cổ phiếu, cuộn) |
+| `tab_switched` | `from_tab`, `to_tab` | User chuyển tab bottom navigation |
+| `symbol_searched` | `query`, `result_count` | User gõ vào ô tìm kiếm |
+| `symbol_selected` | `symbol`, `source` | User tap vào mã cổ phiếu |
+| `stock_detail_viewed` | `symbol`, `source`, `screen_name` | User mở màn hình chi tiết cổ phiếu |
 
-**`feature_name` enum values:**
+**Giá trị enum `feature_name`:**
 ```
 market_equity | market_derivatives | market_watchlist | market_topstocks |
 market_cw | market_etf | market_index | order_trade | order_onetouch |
@@ -102,7 +102,7 @@ portfolio | asset | orderbook | news | education | broker_chat |
 cash_flow | rights | margin
 ```
 
-**`source` enum for symbol_selected:**
+**Enum `source` cho symbol_selected:**
 ```
 search | watchlist | market_table | top_stocks | recently_viewed | notification
 ```
@@ -111,241 +111,240 @@ search | watchlist | market_table | top_stocks | recently_viewed | notification
 
 ### 4.2 — Trading Funnel (P0)
 
-**Critical gap** — zero trading events currently tracked. These are the core business metrics.
+**Khoảng trống nghiêm trọng** — hiện tại không có event trading nào. Đây là core business metrics.
 
-| Event | Key Parameters | Trigger |
-|-------|---------------|---------|
-| `order_initiated` | `order_type`, `side`, `symbol`, `market`, `screen_name` | User opens order form / starts filling |
-| `order_confirmed` | `order_type`, `side`, `symbol`, `market`, `is_first_order` | User taps confirm — order sent to API |
-| `order_cancelled` | `symbol`, `source` (user_action/system), `screen_name` | Order cancelled |
-| `portfolio_viewed` | `account_type`, `view_mode`, `screen_name` | User opens portfolio tab |
-| `cash_flow_viewed` | `screen_name` | User opens cash flow / transaction history |
+| Event | Tham số chính | Trigger |
+|-------|--------------|---------|
+| `order_initiated` | `order_type`, `side`, `symbol`, `market`, `screen_name` | User mở form lệnh / bắt đầu điền |
+| `order_confirmed` | `order_type`, `side`, `symbol`, `market`, `is_first_order` | User bấm xác nhận — lệnh gửi lên API |
+| `order_cancelled` | `symbol`, `source` (user_action/system), `screen_name` | Lệnh bị hủy |
+| `portfolio_viewed` | `account_type`, `view_mode`, `screen_name` | User mở tab danh mục |
+| `cash_flow_viewed` | `screen_name` | User mở lịch sử dòng tiền |
 
-**`order_type` enum:** `LO | MP | ATO | ATC | MAK | MOK | PLO | TP | SL | OCO | STOP`
-**`market` enum:** `equity | derivatives`
-**`side` enum:** `buy | sell`
+**Enum `order_type`:** `LO | MP | ATO | ATC | MAK | MOK | PLO | TP | SL | OCO | STOP`
+**Enum `market`:** `equity | derivatives`
+**Enum `side`:** `buy | sell`
 
-**`is_first_order`** (boolean): Set `true` on the first `order_confirmed` ever for this user. Used as the **Trading Activation** milestone — the most important KPI after eKYC completion.
+**`is_first_order`** (boolean): Set `true` ở lần `order_confirmed` đầu tiên của user. Đây là mốc **Trading Activation** — KPI quan trọng nhất sau khi hoàn thành eKYC.
 
-> **Implementation note:** Detect via AsyncStorage flag `"analytics_has_placed_order"`. On first `order_confirmed`, if flag is absent → set `is_first_order: true` and write flag. Subsequent orders → `is_first_order: false`.
+> **Ghi chú triển khai:** Phát hiện qua flag AsyncStorage `"analytics_has_placed_order"`. Khi `order_confirmed` đầu tiên, nếu flag chưa có → set `is_first_order: true` và ghi flag. Các lần sau → `is_first_order: false`.
 
 ---
 
 ### 4.3 — eKYC Full Funnel (P0)
 
-**Replace and extend** existing eKYC events. All old events are deprecated in favor of these.
+**Thay thế và mở rộng** các eKYC event hiện tại. Toàn bộ event cũ được deprecated.
 
-| New Event | Replaces | Key Parameters |
-|-----------|---------|---------------|
+| Event mới | Thay thế | Tham số chính |
+|-----------|---------|--------------|
 | `ekyc_started` | `ekyc_start` | `entry_point`, `timestamp_ms` |
 | `ekyc_step_entered` | `ekyc_screen_view` | `step_name`, `step_index`, `timestamp_ms` |
-| `ekyc_step_completed` | *(new)* | `step_name`, `step_index`, `duration_ms` |
-| `ekyc_drop_off` | `ekyc_drop_off` (**broken**) | `step_name`, `step_index`, `time_spent_ms` |
-| `ekyc_scan_attempted` | *(new)* | `doc_type`, `attempt_number` |
+| `ekyc_step_completed` | *(mới)* | `step_name`, `step_index`, `duration_ms` |
+| `ekyc_drop_off` | `ekyc_drop_off` (**đang lỗi**) | `step_name`, `step_index`, `time_spent_ms` |
+| `ekyc_scan_attempted` | *(mới)* | `doc_type`, `attempt_number` |
 | `ekyc_scan_result` | `ekyc_scan_id_success` + `ekyc_error` | `doc_type`, `success`, `error_code?`, `attempt_number` |
 | `ekyc_completed` | `ekyc_complete` | `total_duration_ms`, `retry_count` |
 
-**`step_name` enum (ordered):**
+**Enum `step_name` (theo thứ tự):**
 ```
 otp_verification → document_selection → scan_id_front → scan_id_back →
 scan_face → personal_info → additional_services → bank_registration →
 policy_confirm → sign_contract
 ```
 
-**`doc_type` enum:** `id_front | id_back | face`
+**Enum `doc_type`:** `id_front | id_back | face`
 
-**Timestamp logic (implemented in `ekycTracking.ts`):**
+**Logic timestamp (triển khai trong `ekycTracking.ts`):**
 ```typescript
-// On step_entered: record start time
+// Khi vào step: ghi lại thời điểm bắt đầu
 ekycTracking.enterStep('scan_id_front')
 
-// On step_completed: calculate duration automatically
+// Khi hoàn thành step: tự động tính duration
 ekycTracking.completeStep('scan_id_front')
-// → fires ekyc_step_completed with duration_ms calculated internally
+// → fire ekyc_step_completed với duration_ms tính toán nội bộ
 ```
 
-**`ekyc_drop_off` fix (Bug #1):**
+**Sửa bug `ekyc_drop_off` (Bug #1):**
 
-Current bug: event fires in only ~3 of 10 expected drop-off scenarios. Fix requires attaching the event to `AppState` change (app backgrounded) + navigation `beforeRemove` listener for ALL eKYC screens — not just the ones currently instrumented.
-
----
-
-### 4.4 — Retention Signals (P1)
-
-| Event | Key Parameters | Trigger |
-|-------|---------------|---------|
-| `app_opened` | `open_source`, `notification_type?` | App comes to foreground |
-| `session_ended` | `session_duration_ms`, `last_feature` | App goes to background |
-| `notification_received` | `notification_type` | Push notification arrives |
-| `notification_opened` | `notification_type`, `deep_link_target` | User taps notification |
-| `notification_permission` | `granted` (boolean) | After permission prompt |
-
-**`open_source` enum:** `direct | push_order_match | push_otp | push_news | push_promo | widget`
-**`notification_type` enum:** `order_match | otp | news | promo | system`
+Bug hiện tại: event chỉ fire ở ~3/10 trường hợp drop-off thực tế. Cần gắn event vào `AppState` change (app chuyển sang background) + listener `navigation.beforeRemove` cho TẤT CẢ màn hình eKYC — không chỉ các màn hình đang được instrument.
 
 ---
 
-### 4.5 — User Properties (set once, segment everything)
+### 4.4 — Tín Hiệu Retention (P1)
 
-User properties allow filtering ANY report by user segment. Set on login and update when relevant data changes.
+| Event | Tham số chính | Trigger |
+|-------|--------------|---------|
+| `app_opened` | `open_source`, `notification_type?` | App lên foreground |
+| `session_ended` | `session_duration_ms`, `last_feature` | App xuống background |
+| `notification_received` | `notification_type` | Push notification đến |
+| `notification_opened` | `notification_type`, `deep_link_target` | User tap vào notification |
+| `notification_permission` | `granted` (boolean) | Sau khi hiện prompt xin quyền |
+
+**Enum `open_source`:** `direct | push_order_match | push_otp | push_news | push_promo | widget`
+**Enum `notification_type`:** `order_match | otp | news | promo | system`
+
+---
+
+### 4.5 — User Properties (set một lần, segment mọi thứ)
+
+User properties cho phép lọc BẤT KỲ report nào theo phân khúc user. Set khi đăng nhập và cập nhật khi có dữ liệu thay đổi.
 
 ```typescript
-// Called after login + after eKYC completion
-analytics().setUserId(sha256(userId))  // hashed — never send raw ID
+// Gọi sau khi đăng nhập + sau khi hoàn thành eKYC
+analytics().setUserId(sha256(userId))  // hash — không bao giờ gửi ID gốc
 
 analytics().setUserProperties({
   user_type: 'registered_only' | 'ekyc_completed' | 'active_trader',
   account_type: 'normal' | 'margin' | 'none',
   has_derivatives_account: 'true' | 'false',
   preferred_market: 'equity' | 'derivatives' | 'both' | 'unknown',
-  // days_since_first_trade: updated each session open (as string)
 })
 ```
 
-**Update triggers:**
-- `user_type` → upgrade to `ekyc_completed` on `ekyc_complete`, upgrade to `active_trader` on first `order_confirmed`
-- `preferred_market` → recalculate after `order_confirmed`: equity ≥ 70% of total → `equity`; derivatives ≥ 70% → `derivatives`; else → `both`. Minimum 3 orders before switching from `unknown`
+**Điều kiện cập nhật:**
+- `user_type` → nâng lên `ekyc_completed` khi `ekyc_complete`, nâng lên `active_trader` khi `order_confirmed` đầu tiên
+- `preferred_market` → tính lại sau mỗi `order_confirmed`: equity ≥ 70% tổng → `equity`; derivatives ≥ 70% → `derivatives`; còn lại → `both`. Cần tối thiểu 3 lệnh trước khi chuyển khỏi `unknown`
 
 ---
 
-## 5. GA4 Configuration
+## 5. Cấu Hình GA4
 
-### 5.1 — Existing Dimensions (Reuse / Fix)
+### 5.1 — Dimensions Hiện Có (Tái sử dụng / Sửa)
 
-| Dimension | Action | Notes |
-|-----------|--------|-------|
-| `error_code` | ✅ Reuse | Used in `ekyc_scan_result`, `order_*` errors |
-| `error_type` | ✅ Reuse + Fix UI name | UI currently shows `"error_typ"` — fix typo in GA4 Admin |
-| `screen_name` | ✅ Reuse | UI currently shows `"dropoff_screen"` — rename to `"screen_name"` |
-| `ekyc_status` | ✅ Reuse | Keep for `ekyc_started` |
-| `broker_manager` | ➡️ Keep as-is | Not in scope |
-| `referrer_type` | ➡️ Keep as-is | Not in scope |
+| Dimension | Hành động | Ghi chú |
+|-----------|----------|---------|
+| `error_code` | ✅ Tái sử dụng | Dùng trong `ekyc_scan_result`, lỗi `order_*` |
+| `error_type` | ✅ Tái sử dụng + Sửa tên UI | Hiện UI hiển thị `"error_typ"` — sửa typo trong GA4 Admin |
+| `screen_name` | ✅ Tái sử dụng | Hiện UI hiển thị `"dropoff_screen"` — đổi tên thành `"screen_name"` |
+| `ekyc_status` | ✅ Tái sử dụng | Giữ cho `ekyc_started` |
+| `broker_manager` | ➡️ Giữ nguyên | Ngoài phạm vi |
+| `referrer_type` | ➡️ Giữ nguyên | Ngoài phạm vi |
 
-### 5.2 — New Dimensions to Register
+### 5.2 — Dimensions Cần Thêm Mới
 
 **Event-scoped:**
-| Param name | UI name | Used in |
-|------------|---------|---------|
+| Tên param | Tên UI | Dùng trong |
+|-----------|--------|-----------|
 | `feature_name` | Feature Name | `feature_viewed`, `feature_action` |
 | `order_type` | Order Type | `order_initiated`, `order_confirmed` |
 | `ekyc_step` | eKYC Step | `ekyc_step_entered`, `ekyc_step_completed`, `ekyc_drop_off` |
 | `open_source` | App Open Source | `app_opened` |
 | `notification_type` | Notification Type | `notification_*` |
 
-**User-scoped (new — currently none exist):**
-| Property name | UI name | Values |
-|---------------|---------|--------|
+**User-scoped (mới hoàn toàn — hiện chưa có):**
+| Tên property | Tên UI | Giá trị |
+|--------------|--------|---------|
 | `user_type` | User Type | registered_only / ekyc_completed / active_trader |
 | `account_type` | Account Type | none / normal / margin |
 | `has_derivatives_account` | Has Derivatives | true / false |
 | `preferred_market` | Preferred Market | equity / derivatives / both / unknown |
 
-### 5.3 — Existing Metrics (Reuse)
+### 5.3 — Metrics Hiện Có (Tái sử dụng)
 
-| Metric | Type | Used for |
+| Metric | Loại | Dùng cho |
 |--------|------|---------|
-| `time_spent` | SECONDS | Per-step duration in eKYC |
-| `total_time_spent` | SECONDS | Total eKYC completion time |
-| `total_attempts` | INTEGER | Scan retry count |
+| `time_spent` | SECONDS | Thời gian từng step trong eKYC |
+| `total_time_spent` | SECONDS | Tổng thời gian hoàn thành eKYC |
+| `total_attempts` | INTEGER | Số lần thử scan lại |
 
-> **Note:** New events send duration in `_ms` (milliseconds) in the event param, but GA4 stores it via the existing `time_spent` metric registered as SECONDS. The service layer handles the conversion.
+> **Lưu ý:** Event mới gửi duration theo `_ms` (milliseconds) trong tham số event, nhưng GA4 lưu qua metric `time_spent` đã đăng ký dạng SECONDS. Service layer xử lý việc chuyển đổi này.
 
 ---
 
-## 6. Bugs to Fix (Immediate)
+## 6. Bugs Cần Sửa Ngay
 
-| # | Bug | Impact | Fix |
-|---|-----|--------|-----|
-| 1 | `ekyc_drop_off` fires on only ~22% of actual drop-offs | Cannot trust funnel data | Add `AppState` + `navigation.beforeRemove` listeners to ALL eKYC screens |
-| 2 | `error_type` GA4 UI name typo (`"error_typ"`) | Reports show wrong label | Fix in GA4 Admin → Custom definitions |
-| 3 | `screen_name` GA4 UI name is `"dropoff_screen"` | Misleading in reports | Rename in GA4 Admin → Custom definitions |
-| 4 | No `setUserId()` call anywhere | Cannot track user journeys across sessions | Add to login success handler |
+| # | Bug | Ảnh hưởng | Cách sửa |
+|---|-----|----------|---------|
+| 1 | `ekyc_drop_off` chỉ fire ~22% trường hợp drop-off thực tế | Không thể tin vào dữ liệu funnel | Thêm `AppState` + listener `navigation.beforeRemove` vào TẤT CẢ màn hình eKYC |
+| 2 | Tên UI `error_type` bị typo thành `"error_typ"` | Report hiển thị nhãn sai | Sửa trong GA4 Admin → Custom definitions |
+| 3 | Tên UI `screen_name` đang là `"dropoff_screen"` | Gây hiểu nhầm trong report | Đổi tên trong GA4 Admin → Custom definitions |
+| 4 | Không có lệnh `setUserId()` ở bất kỳ đâu | Không thể theo dõi hành trình user qua các session | Thêm vào login success handler |
 
 ---
 
 ## 7. GA4 Reports & Dashboards
 
-### For PM/BA — GA4 Explore
+### Dành cho PM/BA — GA4 Explore
 
-**Report 1: Feature Adoption**
-- Visualization: Bar chart — `feature_viewed` count by `feature_name`, weekly
-- Secondary: Funnel — `feature_viewed` → `feature_action` (shows passive vs active users)
-- Segment by `user_type`: active_trader vs registered_only — see which features each segment uses
+**Report 1: Feature Adoption (Mức độ sử dụng tính năng)**
+- Biểu đồ: Bar chart — số lần `feature_viewed` theo `feature_name`, theo tuần
+- Phụ: Funnel — `feature_viewed` → `feature_action` (phân biệt user thụ động vs chủ động)
+- Segment theo `user_type`: active_trader vs registered_only — tính năng nào phục vụ phân khúc nào
 
 **Report 2: eKYC Funnel**
-- Visualization: Funnel — 10 steps from `ekyc_started` → `ekyc_completed`
-- Table: Average `time_spent` per step — flag steps >120 seconds
-- Chart: `ekyc_scan_result` success rate by `doc_type` — ID vs face scan failure rates
-- Trend: Drop-off rate by step week-over-week (measures UX improvement after each release)
+- Biểu đồ: Funnel — 10 bước từ `ekyc_started` → `ekyc_completed`
+- Bảng: Thời gian trung bình `time_spent` mỗi bước — đánh dấu bước >120 giây
+- Biểu đồ: Tỷ lệ thành công `ekyc_scan_result` theo `doc_type` — so sánh scan CCCD vs scan mặt
+- Xu hướng: Tỷ lệ drop-off theo từng bước, theo tuần (đo cải thiện UX sau mỗi release)
 
 **Report 3: Trading Activation**
-- Funnel: `ekyc_completed` → `order_initiated` → `order_confirmed` (filter `is_first_order: true`)
-- Breakdown by `order_type` and `market` — what do new traders use first?
+- Funnel: `ekyc_completed` → `order_initiated` → `order_confirmed` (lọc `is_first_order: true`)
+- Phân tích theo `order_type` và `market` — trader mới dùng loại lệnh gì đầu tiên?
 
-### For Management — KPI Scorecard
+### Dành cho Ban Quản Lý — KPI Scorecard
 
-| KPI | Source | Target |
-|-----|--------|--------|
-| DAU / MAU | Active Users (built-in) | Track weekly trend |
-| D1 / D7 / D30 Retention | User Retention report (built-in) | Baseline after implementation |
-| eKYC Conversion | `ekyc_completed` / `ekyc_started` | Current: 58% — target 70% |
-| Trading Activation Rate | users(`order_confirmed`) / users(`ekyc_completed`) | Baseline TBD |
-| Feature Engagement Rate | users(`feature_action`) / users(`feature_viewed`) | Baseline TBD |
-| Push Notification CTR | `notification_opened` / `notification_received` | Baseline TBD |
+| KPI | Nguồn dữ liệu | Mục tiêu |
+|-----|--------------|---------|
+| DAU / MAU | Active Users (có sẵn trong GA4) | Theo dõi xu hướng hàng tuần |
+| D1 / D7 / D30 Retention | User Retention report (có sẵn) | Lấy baseline sau khi triển khai |
+| Tỷ lệ hoàn thành eKYC | `ekyc_completed` / `ekyc_started` | Hiện tại: 58% — mục tiêu 70% |
+| Tỷ lệ Trading Activation | users(`order_confirmed`) / users(`ekyc_completed`) | Lấy baseline sau triển khai |
+| Tỷ lệ tương tác tính năng | users(`feature_action`) / users(`feature_viewed`) | Lấy baseline sau triển khai |
+| Tỷ lệ click Push Notification | `notification_opened` / `notification_received` | Lấy baseline sau triển khai |
 
 ---
 
-## 8. Implementation Rollout
+## 8. Kế Hoạch Triển Khai
 
-### Sprint 1 — P0 (Foundation)
-- [ ] Create `src/utils/analytics/` folder structure
-- [ ] Implement `analyticsService.ts` with Firebase wrapper
-- [ ] Implement `events.ts` with all event name constants and param types
-- [ ] Add `setUserId()` in login success handler
-- [ ] Set user properties on login + eKYC completion
-- [ ] Fix `ekyc_drop_off` bug (AppState + beforeRemove listeners on all eKYC screens)
-- [ ] Add `ekyc_step_entered` + `ekyc_step_completed` with timestamp tracking (`ekycTracking.ts`)
-- [ ] Add `order_initiated` + `order_confirmed` (with `is_first_order` detection)
+### Sprint 1 — P0 (Nền tảng)
+- [ ] Tạo cấu trúc thư mục `src/utils/analytics/`
+- [ ] Triển khai `analyticsService.ts` bọc Firebase
+- [ ] Triển khai `events.ts` với hằng số tên event và kiểu tham số
+- [ ] Thêm `setUserId()` vào login success handler
+- [ ] Set user properties khi đăng nhập + hoàn thành eKYC
+- [ ] Sửa bug `ekyc_drop_off` (AppState + beforeRemove listeners cho tất cả màn hình eKYC)
+- [ ] Thêm `ekyc_step_entered` + `ekyc_step_completed` với timestamp tracking (`ekycTracking.ts`)
+- [ ] Thêm `order_initiated` + `order_confirmed` (với logic phát hiện `is_first_order`)
 
 ### Sprint 2 — P1 (Engagement)
-- [ ] Add `feature_viewed` + `feature_action` to all major screens
-- [ ] Add `tab_switched` to bottom navigation
-- [ ] Add `app_opened` with `open_source` detection
-- [ ] Add `session_ended` with duration + `last_feature`
-- [ ] Add `notification_received` + `notification_opened` to OneSignal handlers
-- [ ] Add `symbol_searched` + `symbol_selected` to search flow
+- [ ] Thêm `feature_viewed` + `feature_action` cho tất cả màn hình chính
+- [ ] Thêm `tab_switched` vào bottom navigation
+- [ ] Thêm `app_opened` với logic phát hiện `open_source`
+- [ ] Thêm `session_ended` với duration + `last_feature`
+- [ ] Thêm `notification_received` + `notification_opened` vào OneSignal handlers
+- [ ] Thêm `symbol_searched` + `symbol_selected` vào search flow
 
 ### Sprint 3 — P2 (GA4 & Dashboards)
-- [ ] Fix GA4 custom dimension UI names (`error_typ` → `error_type`, `dropoff_screen` → `screen_name`)
-- [ ] Register 5 new event-scoped dimensions in GA4 Admin
-- [ ] Register 4 user-scoped properties in GA4 Admin
-- [ ] Build Feature Adoption report in GA4 Explore
-- [ ] Build eKYC Funnel report in GA4 Explore
-- [ ] Build Trading Activation funnel in GA4 Explore
-- [ ] Build Management KPI scorecard
+- [ ] Sửa tên UI custom dimension trong GA4 (`error_typ` → `error_type`, `dropoff_screen` → `screen_name`)
+- [ ] Đăng ký 5 event-scoped dimensions mới trong GA4 Admin
+- [ ] Đăng ký 4 user-scoped properties trong GA4 Admin
+- [ ] Xây dựng report Feature Adoption trong GA4 Explore
+- [ ] Xây dựng report eKYC Funnel trong GA4 Explore
+- [ ] Xây dựng funnel Trading Activation trong GA4 Explore
+- [ ] Xây dựng KPI Scorecard cho Ban quản lý
 
 ---
 
-## 9. Scope & Constraints
+## 9. Phạm Vi & Ràng Buộc
 
-**In scope:**
-- nhsv-mts-rn (NHSV Pro mobile app)
-- Firebase GA4 as primary analytics platform
-- eKYC + Retention + Trading funnel tracking
+**Trong phạm vi:**
+- nhsv-mts-rn (app mobile NHSV Pro)
+- Firebase GA4 là nền tảng analytics chính
+- Tracking eKYC, Retention và Trading funnel
 
-**Out of scope:**
-- AppsFlyer activation (infrastructure ready, enable in future sprint)
-- BigQuery export / Looker Studio (Phase 2 when team needs SQL-level queries)
+**Ngoài phạm vi:**
+- Bật AppsFlyer (hạ tầng đã sẵn, bật ở sprint sau)
+- BigQuery export / Looker Studio (Phase 2 khi team cần query SQL)
 - Web analytics
-- Backend event tracking
+- Tracking phía backend
 
-**GA4 Standard limits (current usage vs limit):**
-- Event-scoped custom dimensions: 6 used + 5 new = **11 / 50** ✅
-- User-scoped custom dimensions: 0 used + 4 new = **4 / 25** ✅
-- Custom metrics: 3 used + 0 new = **3 / 50** ✅
+**Giới hạn GA4 Standard (đang dùng vs giới hạn):**
+- Event-scoped custom dimensions: 6 đang dùng + 5 mới = **11 / 50** ✅
+- User-scoped custom dimensions: 0 đang dùng + 4 mới = **4 / 25** ✅
+- Custom metrics: 3 đang dùng + 0 mới = **3 / 50** ✅
 
 ---
 
-**Document Status:** Draft
-**For:** PM/BA, Mobile Dev Team
-**Next Steps:** Dev team review → Sprint 1 planning → Implementation
+**Trạng thái tài liệu:** Bản nháp
+**Dành cho:** PM/BA, Đội Mobile Dev
+**Bước tiếp theo:** Dev team review → Sprint 1 planning → Triển khai
