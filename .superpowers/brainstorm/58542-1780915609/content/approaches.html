@@ -1,0 +1,76 @@
+<h2>GTGD Chart — 3 Approaches</h2>
+<p class="subtitle">Vấn đề: MongoDB chỉ có giá trị cuối ngày, cần per-minute data để vẽ "GTGD phiên trước"</p>
+
+<div class="options">
+
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Extend EOD Flush — lưu per-minute GTGD vào MongoDB</h3>
+      <p><strong>BE:</strong> Sửa job flush 15:30 trong <code>realtime-v2</code>: thay vì bỏ, ghi toàn bộ time-series GTGD theo phút vào collection mới <code>symbolValueMinutes</code> hoặc thêm field <code>cv</code> (cumulative value) vào <code>symbolQuoteMinutes</code>.</p>
+      <p><strong>API:</strong> Extend <code>/tradingview/history</code> — khi <code>from/to</code> là ngày hôm qua, query MongoDB <code>symbolValueMinutes</code> trả về đúng format <code>{ t, v }</code>.</p>
+      <p><strong>FE:</strong> Gọi API 2 lần — một cho hôm nay, một cho phiên trước (from/to = ngày hôm qua). WebSocket cập nhật today line real-time.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Tận dụng API đã có, FE thay đổi ít</li>
+          <li>Consistent với TradingView format</li>
+          <li>Data lưu vĩnh viễn, có thể query nhiều ngày</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Cần sửa realtime-v2 (Java)</li>
+          <li>Chưa có data cho các ngày trước khi deploy</li>
+          <li>Job flush cần chạy đúng, nếu miss = mất data</li>
+        </ul></div>
+      </div>
+      <p style="margin-top:8px;padding:8px;background:rgba(99,102,241,0.15);border-radius:6px;font-size:13px;">⭐ <strong>Recommended</strong> — Bền vững nhất, tái sử dụng infrastructure</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Redis Key Preservation — giữ key hôm qua trong 24h</h3>
+      <p><strong>BE:</strong> Trước khi clear Redis key <code>SYMBOL_QUOTE_MINUTE_{code}</code> lúc EOD, copy nó sang key mới <code>SYMBOL_QUOTE_MINUTE_{code}_PREV</code> với TTL 24h.</p>
+      <p><strong>API:</strong> Thêm param <code>prevSession=true</code> vào <code>/tradingview/history</code> → query từ Redis key <code>_PREV</code>.</p>
+      <p><strong>FE:</strong> Gọi 2 API: 1 normal + 1 với <code>prevSession=true</code>.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Implement nhanh nhất</li>
+          <li>Không cần MongoDB schema change</li>
+          <li>Data có ngay từ ngày đầu deploy</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Chỉ có T-1, không có lịch sử dài hơn</li>
+          <li>Redis TTL: nếu server restart mất data</li>
+          <li>Tăng Redis memory (double key)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>New Dedicated API — tách riêng endpoint GTGD</h3>
+      <p><strong>BE:</strong> Tạo endpoint mới <code>GET /market/gtgd/history</code> nhận <code>symbol</code> + <code>date</code>. Logic: nếu date = today → query Redis; nếu date = trước → query MongoDB <code>symbolValueMinutes</code> (cần tạo collection này).</p>
+      <p><strong>FE:</strong> Component <code>GtgdAreaChart</code> gọi API mới, không phụ thuộc <code>tradingview/history</code>.</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>API clean, đúng purpose</li>
+          <li>Response format tối ưu cho chart (không cần OHLC)</li>
+          <li>Không ảnh hưởng TradingView flow</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Nhiều effort nhất — thêm endpoint mới hoàn toàn</li>
+          <li>Vẫn cần sửa realtime-v2 để lưu per-minute GTGD</li>
+          <li>FE cần integrate API mới thay vì tái dùng existing</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:24px;padding:16px;background:rgba(255,255,255,0.05);border-radius:8px;">
+  <p style="margin:0;font-size:13px;opacity:0.7;">Click chọn approach bạn muốn, hoặc trả lời trong terminal.</p>
+</div>

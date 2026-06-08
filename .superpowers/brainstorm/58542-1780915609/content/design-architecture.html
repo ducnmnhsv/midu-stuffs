@@ -1,0 +1,80 @@
+<h2>Design — Section 1: Architecture & Data Flow</h2>
+<p class="subtitle">Approach A: Extend EOD Flush để lưu per-minute cumulative GTGD vào MongoDB</p>
+
+<div class="section">
+  <h3>Vấn đề hiện tại</h3>
+  <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;line-height:1.8;">
+    <span style="color:#f87171;">✗ TODAY</span>  Redis  <code>SYMBOL_QUOTE_MINUTE_{code}</code>  →  <code>/tradingview/history</code>  →  FE (✅ works)<br>
+    <span style="color:#f87171;">✗ PREV </span>  MongoDB  <code>symbolQuoteMinutes</code>  →  chỉ có daily total  →  <span style="color:#f87171;">không có per-minute</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Flow sau khi implement</h3>
+  <div style="display:grid;grid-template-columns:1fr;gap:12px;">
+
+    <!-- Flow 1: Today -->
+    <div style="background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:8px;padding:16px;">
+      <div style="color:#fb923c;font-weight:600;margin-bottom:8px;">📊 GTGD hôm nay (real-time)</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;">
+        WebSocket <code>market.quote.{symbol}</code> → field <code>va</code> (cumulative GTGD)<br>
+        &nbsp;&nbsp;↓<br>
+        FE subscribes → push to today series (real-time update)<br>
+        &nbsp;&nbsp;+<br>
+        <code>GET /tradingview/history?from=todayOpen&amp;to=now</code><br>
+        &nbsp;&nbsp;→ <code>realtime-v2</code> Redis <code>SYMBOL_QUOTE_MINUTE_{code}</code><br>
+        &nbsp;&nbsp;→ returns <code>{ t[], v[] }</code>  (v = cumulative GTGD per minute)
+      </div>
+    </div>
+
+    <!-- Flow 2: Prev session -->
+    <div style="background:rgba(148,163,184,0.1);border:1px solid rgba(148,163,184,0.3);border-radius:8px;padding:16px;">
+      <div style="color:#94a3b8;font-weight:600;margin-bottom:8px;">📈 GTGD phiên trước (static)</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;">
+        <code>GET /tradingview/history?from=prevOpen&amp;to=prevClose</code><br>
+        &nbsp;&nbsp;→ <code>market-query-v2</code> MongoDB <code>symbolQuoteMinutes</code><br>
+        &nbsp;&nbsp;→ <span style="color:#4ade80;">NEW: query field <code>cv</code> (cumulative value)</span> → map to response <code>v</code>
+      </div>
+    </div>
+
+    <!-- EOD Flush -->
+    <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:8px;padding:16px;">
+      <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">⚙️ EOD Flush Job (15:30 daily) — KEY CHANGE</div>
+      <div style="font-family:monospace;font-size:12px;line-height:2;">
+        <code>realtime-v2</code> FlushJob:<br>
+        &nbsp;&nbsp;1. Read Redis <code>SYMBOL_QUOTE_MINUTE_{code}</code> (all today's bars)<br>
+        &nbsp;&nbsp;2. <span style="color:#4ade80;">NEW: include <code>tradingValue</code> (= cumulative GTGD)</span> khi save<br>
+        &nbsp;&nbsp;3. Write to MongoDB <code>symbolQuoteMinutes</code> với field <code>cv</code><br>
+        &nbsp;&nbsp;4. Clear Redis key (như hiện tại)
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <h3>Services thay đổi</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+    <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;">
+      <div style="font-weight:600;margin-bottom:6px;">BE Changes</div>
+      <ul style="margin:0;padding-left:16px;line-height:1.8;font-size:13px;">
+        <li><code>realtime-v2</code> — add <code>cv</code> field to EOD flush</li>
+        <li><code>market-query-v2</code> — map <code>cv</code> → <code>v</code> khi query MongoDB history</li>
+        <li>MongoDB schema — thêm field <code>cv: number</code> vào <code>symbolQuoteMinutes</code></li>
+      </ul>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:12px;">
+      <div style="font-weight:600;margin-bottom:6px;">FE Changes</div>
+      <ul style="margin:0;padding-left:16px;line-height:1.8;font-size:13px;">
+        <li>New component <code>GtgdAreaChart</code></li>
+        <li>New hook <code>useGtgdChart</code> (2 API calls)</li>
+        <li>WebSocket tap vào field <code>va</code> đã có</li>
+        <li>Integrate vào Index + Symbol screens</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:16px;padding:12px;background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:8px;font-size:13px;">
+  ✅ <strong>Không cần API endpoint mới</strong> — reuse <code>/tradingview/history</code>, chỉ ensure MongoDB có <code>cv</code> field
+</div>
