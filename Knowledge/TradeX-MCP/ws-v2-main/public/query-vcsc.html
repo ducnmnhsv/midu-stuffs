@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Query</title>
+    <script type="text/javascript" src="socketcluster.js"></script>
+    <script type="text/javascript" src="sc-codec-min-bin.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <table>
+            <tr>
+                <td>grant type</td>
+                <td>
+                    <input id="grant_type" value="password_otp" />
+                </td>
+
+                <td>client id</td>
+                <td>
+                    <input id="client_id" value="vcsc" />
+                </td>
+
+                <td>client secret</td>
+                <td>
+                    <input id="client_secret" value="vcsc" />
+                </td>
+            </tr>
+            <tr>
+                <td>username</td>
+                <td>
+                    <input id="username" value="068C003249" />
+                </td>
+
+                <td>password</td>
+                <td>
+                    <input id="password" type="password" value="" />
+                </td>
+
+                <td></td>
+                <td>
+                    <button onclick="login()">Login</button>
+                </td>
+            </tr>
+            <tr id="otp_section">
+                <td>otp index</td>
+                <td id="otp_index">
+                </td>
+
+                <td>otp value</td>
+                <td>
+                    <input id="otp_value" value="" />
+                </td>
+
+                <td></td>
+                <td>
+                    <button onclick="verifyOtp()">verify otp</button>
+                </td>
+            </tr>
+            
+            <tr>
+                <td></td>
+                <td>
+                </td>
+
+                <td></td>
+                <td>
+                    <button onclick="logout()">Logout</button>
+                </td>
+
+                <td></td>
+                <td>
+                    <button onclick="checkLoginStatus()">Check status</button>
+                </td>
+            </tr>
+
+            
+            <tr>
+                <td>access_token<br/>domain</td>
+                <td>
+                    <input id="access_token" value="" />
+                    <input id="domain" value="" />
+                </td>
+
+                <td>refresh_token</td>
+                <td>
+                    <input id="refresh_token" value="" />
+                </td>
+
+                <td>userinfo</td>
+                <td>
+                    <textarea id="userinfo" ></textarea>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <button onclick="loginWithAccessToken()">Login With Access Token</button>
+                </td>
+                <td></td>
+
+                <td>
+                    <button onclick="loginWithRefreshToken()">Login With Refresh Token</button>
+                </td>
+            </tr>
+    
+            <tr>
+                <td colspan="6">
+                    <table id="tblquery">
+                        
+                    </table>
+                    <button onclick="addQuery()">Add More</button>
+                    <button onclick="loadQuery()">Load Previous Query</button>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <button onclick="send()">Send</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script type="text/javascript">
+        var stockQuoteCount = 0;
+        var loginStep = 0;// 1 login wihtout otp, 2 after verify otp
+        var getQueryTemplate = function(uri='get:/api/v1/market/index/list', body={}, headers={
+                    "accept-language": "en"
+                }) {
+            return {
+                uri: uri,
+                body: body,
+                headers: headers,
+            };
+        } 
+        var queryData = [
+            getQueryTemplate(),
+            getQueryTemplate('get:/api/v1/locale', {
+              "msNames": "mts"
+            })
+        ];
+
+        var otpTable = [
+        9488,
+        1793,
+        8081,
+        6169,
+        6990,
+        8953,
+        9014,
+        2532,
+        7647,
+        9796,
+        6310,
+        3813,
+        1479,
+        4085,
+        7768,
+        1655,
+        8109,
+        4832,
+        1432,
+        1340,
+        7810,
+        3619,
+        1772,
+        5130,
+        3913,
+        7277,
+        4419,
+        8750,
+        4129,
+        8838,
+        6494,
+        9644,
+        7670,
+        4045,
+        2137
+        ];
+
+        var renderQuery = function() {
+            var innerHtml = '';
+            for(var i =0; i< queryData.length; i++) {
+                innerHtml += `<tr>
+                            <td>uri</td>
+                            <td>
+                                <input onchange="onUriChange(event)" rowno="${i}" value="${queryData[i].uri}" />
+                            </td>
+            
+                            <td>body</td>
+                            <td>
+                                <textarea onchange="onBodyChange(event)" rowno="${i}" cols="30" rows="10">${JSON.stringify(queryData[i].body)}</textarea>
+                            </td>
+            
+                            <td>headers</td>
+                            <td>
+                                <textarea onchange="onHeaderChange(event)" rowno="${i}" cols="30" rows="10">${JSON.stringify(queryData[i].headers)}</textarea>
+                            </td>
+                            <td>
+                              <button onclick="sendIndexOne(${i})">Send</button>
+                            </td>
+                        </tr>`;
+            }
+            document.getElementById('tblquery').innerHTML = innerHtml;
+        }
+
+        function loadQuery() {
+            if (window.localStorage.queries) {
+                queryData = JSON.parse(window.localStorage.queries);
+                renderQuery();
+            }
+        }
+
+        function addQuery() {
+            queryData.push(getQueryTemplate());
+            renderQuery();
+        }
+
+        function onUriChange(e) {
+            queryData[e.target.getAttribute('rowno')].uri = e.target.value;
+        }
+
+        function onBodyChange(e) {
+            queryData[e.target.getAttribute('rowno')].body = JSON.parse(e.target.value);
+        }
+
+        function onHeaderChange(e) {
+            queryData[e.target.getAttribute('rowno')].headers = JSON.parse(e.target.value);
+        }
+
+        function send() {
+            window.localStorage.queries = JSON.stringify(queryData);
+            for (var i = 0; i < queryData.length; i++) {
+                sendOne(queryData[i]);
+            }
+        }
+
+        function sendIndexOne(index) {
+          sendOne(queryData[index]);
+        }
+
+        function sendOne(body) {
+            socket.emit('doQuery', body, function (err, data) {
+                if (err) {
+                    console.log(body, err.status);
+                    console.error(body, err.code, err);
+                } else {
+                    console.log('query success', body, data);
+                }
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function(){
+            renderQuery();
+        });
+
+        // Initiate the connection to the server
+        var socket = socketCluster.connect({
+            codecEngine: scCodecMinBin,
+        });
+        socket.on('error', function (err) {
+            console.error(err.code, err);
+        });
+
+        socket.on('connect', function () {
+            console.log('Socket is connected');
+        });
+
+        function setLoginData(data) {
+            if (data.data) {
+                document.getElementById('access_token').value = data.data.accessToken;
+                document.getElementById('refresh_token').value = data.data.refreshToken;
+                document.getElementById('userinfo').value = data.data.userInfo ? JSON.stringify(data.data.userInfo) : '';
+            }
+        }
+
+        function logout() {
+            socket.emit('logout', {});
+        }
+
+        function checkLoginStatus() {
+            console.log(socket.authState);
+            console.log(socket.authToken);
+        }
+
+        function loginWithAccessToken() {
+            socket.emit('login', {
+                body: {
+                    grant_type: 'access_token',
+                    access_token: document.getElementById('access_token').value,
+                    domain: document.getElementById('domain').value,
+                },
+                headers: getQueryTemplate().headers
+            }, function (err, data) {
+                if (err) {
+                    console.error(err.code, err);
+                } else {
+                    console.log('login access token success', data);
+                    setLoginData(data)
+                }
+            });
+        }
+
+        function loginWithRefreshToken() {
+            socket.emit('login', {
+                body: {
+                    grant_type: 'refresh_token',
+                    client_id: document.getElementById('client_id').value,
+                    client_secret: document.getElementById('client_secret').value,
+                    refresh_token: document.getElementById('refresh_token').value,
+                },
+                headers: getQueryTemplate().headers
+            }, function (err, data) {
+                if (err) {
+                    console.error(err.code, err);
+                } else {
+                    console.log('login refresh token success', data);
+                    setLoginData(data)
+                }
+            });
+        }
+
+        function login() {
+            socket.emit('login', {
+                body: {
+                    grant_type: document.getElementById('grant_type').value,
+                    client_id: document.getElementById('client_id').value,
+                    client_secret: document.getElementById('client_secret').value,
+                    username: document.getElementById('username').value,
+                    password: document.getElementById('password').value,
+                },
+                headers: getQueryTemplate().headers 
+            }, function (err, data) {
+                if (err) {
+                    console.error(err.code, err);
+                } else {
+                    console.log('login success', data);
+                    loginStep = 1;
+                    document.getElementById('otp_index').innerHTML = `${data.data.otpIndex}`;
+                    document.getElementById('otp_value').value = `${otpTable[parseInt(data.data.otpIndex) - 1]}`;
+                    setLoginData(data)
+                }
+            });
+        }
+        
+        function verifyOtp() {
+            socket.emit('login/sec/verifyOTP', {
+                body: {
+                  otp_value: document.getElementById('otp_value').value,
+                },
+                headers: getQueryTemplate().headers 
+            }, function (err, data) {
+                if (err) {
+                    console.error(err.code, err);
+                } else {
+                    console.log('verify otp success', data);
+                    loginStep = 2;
+                    setLoginData(data)
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

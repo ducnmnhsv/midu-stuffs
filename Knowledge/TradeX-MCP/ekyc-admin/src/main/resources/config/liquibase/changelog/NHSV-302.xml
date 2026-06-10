@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="NHSV-302-1" author="Manh">
+        <modifyDataType tableName="econtract_info" columnName="sign_file_content" newDataType="TEXT"/>
+        <modifyDataType tableName="econtract_info" columnName="contract_file_content" newDataType="TEXT"/>
+    </changeSet>
+    <changeSet author="Manh" id="NHSV-302-2">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('E_KYC_E_CONTRACT_STATUS', 'post:/api/v1/ekyc-admin/eContractStatus', NULL, NULL,
+            CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+            'CONNECTION', '{"uri": "/api/v1/ekyc-admin/eContractStatus", "service": "ekyc-admin",
+            "forwardType": "SERVICE"}');
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'E_KYC_E_CONTRACT_STATUS'
+            AND tsg.scope_group_name = 'PUBLIC';
+        </sql>
+    </changeSet>
+    <changeSet author="Manh" id="NHSV-302-3">
+        <addColumn tableName="econtract_info">
+        <column name="customer_signatue_status" type="varchar(25)"/>
+        <column name="securities_signature_status" type="varchar(25)"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycCreatorStatus": {
+      "home": {
+        "title": "E Kyc Creator Statuses",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 E Kyc Creator Status",
+        "createOrEditLabel": "创建或编辑 E Kyc Creator Status",
+        "notFound": "No E Kyc Creator Statuses found"
+      },
+      "created": "E Kyc Creator Status {{ param }} 创建成功",
+      "updated": "E Kyc Creator Status {{ param }} 更新成功",
+      "deleted": "E Kyc Creator Status {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 E Kyc Creator Status {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "E Kyc Creator Status"
+      },
+      "id": "ID",
+      "status": "Status",
+      "reason": "Reason",
+      "updatedAt": "Updated At",
+      "updatedBy": "Updated By",
+      "fullResult": "Full Result",
+      "eKyc": "E Kyc"
+    }
+  }
+}

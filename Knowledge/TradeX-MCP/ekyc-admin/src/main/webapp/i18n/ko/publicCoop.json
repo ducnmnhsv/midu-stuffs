@@ -1,0 +1,27 @@
+{
+  "eKycAdminApp": {
+    "publicCoop": {
+      "home": {
+        "title": "Public Coops",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Public Coop",
+        "createOrEditLabel": "Create or edit a Public Coop",
+        "notFound": "No Public Coops found"
+      },
+      "created": "A new Public Coop is created with identifier {{ param }}",
+      "updated": "A Public Coop is updated with identifier {{ param }}",
+      "deleted": "A Public Coop is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Public Coop {{ id }}?"
+      },
+      "detail": {
+        "title": "Public Coop"
+      },
+      "id": "ID",
+      "companyName": "Company Name",
+      "stock": "Stock",
+      "position": "Position",
+      "eKycAdditionalInfo": "E Kyc Additional Info"
+    }
+  }
+}

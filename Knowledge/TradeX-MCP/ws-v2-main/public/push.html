@@ -1,0 +1,131 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Query</title>
+    <script type="text/javascript" src="socketcluster.js"></script>
+    <script type="text/javascript" src="sc-codec-min-bin.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <table>
+            <tr>
+                <td>Channel Name</td>
+                <td>
+                    <input id="channel" value="market.stock.bidoffer.VIC" />
+                </td>
+
+                <td>data</td>
+                <td>
+                    <textarea id="data">{}</textarea>
+                </td>
+
+                <td></td>
+                <td>
+                    <button onclick="publish()">Publish</button>
+                </td>
+
+
+                <td>
+                    <input type="number" id="interval"></td>
+                </td>
+                <td>
+                    <button onclick="push()">Publish</button>
+                    <button onclick="stopPush()">Stop Publish</button>
+                </td>
+            </tr>
+        </table>
+        <table id="checker">
+            <tr>
+                <input type="number" id="maxChannel"></td>
+                <button onclick="start_checker()">Start Checker</button>
+                <button onclick="stop_checker()">Stop Checker</button>
+            </tr>
+          </table>
+        <table id="myTable">
+            <tr>
+              <td>Channel</td>
+              <td>Timeout</td>
+              <td>Msgs</td>
+            </tr>
+          </table>
+    </div>
+
+    <script type="text/javascript">
+        // Initiate the connection to the server
+        var socket = socketCluster.connect({
+            codecEngine: scCodecMinBin,
+        });
+        socket.on('error', function (err) {
+            console.error(err);
+        });
+
+        socket.on('connect', function () {
+            console.log('Socket is connected');
+        });
+
+
+        function start_checker(){
+            console.log(document.getElementById('maxChannel').value);
+            socket.emit('start_checker', document.getElementById('maxChannel').value);
+        }
+
+        function stop_checker(){
+            socket.emit('stop_checker', {});
+        }
+
+        function publish() {
+            console.log(document.getElementById('channel').value);
+            console.log(document.getElementById('data').value);
+            socket.publish(document.getElementById('channel').value, document.getElementById('data').value);
+        }
+
+        function publishInterval(count) {
+            console.log(document.getElementById('channel').value);
+            socket.publish(document.getElementById('channel').value, `{value:${count}}`);
+        }
+
+        // var interval;
+        let list = [];
+        function push() {
+            // var timeout = parseInt(document.getElementById('interval').value);
+            // let count = 0;
+            // interval = setInterval(()=> {
+            //     publishInterval(count);
+            //     count++;
+            // }, timeout);
+            var table = document.getElementById("myTable");
+            for(let i = 0; i < maxChannel; i++){
+                let row = table.insertRow(i+1);
+                let cell1 = row.insertCell(0);
+                let cell2 = row.insertCell(1);
+                let cell3 = row.insertCell(2);
+                cell1.innerHTML = 'c' + i;
+                var timeout = parseInt(Math.floor(Math.random() * 500) + 50);
+                cell2.innerHTML = timeout;
+                let count = 0;
+                let interval = setInterval(()=> {
+                    socket.publish("market.stock.bidoffer." + i, `{value:${count}}`);
+                    count++;
+                    cell3.innerHTML = count;
+                }, timeout);
+                list.push(interval);
+            }
+        }
+
+        var maxChannel = 3000;
+
+        function stopPush() {
+        //     clearInterval(interval);
+        //   interval = null;
+            for(let i in list)
+                clearInterval(list[i]);
+        }
+
+        
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,10 @@
+{
+  "eKycAdminApp": {
+    "EkycType": {
+      "null": "",
+      "CMND": "CMND",
+      "CC": "CC",
+      "PASSPORT": "PASSPORT"
+    }
+  }
+}

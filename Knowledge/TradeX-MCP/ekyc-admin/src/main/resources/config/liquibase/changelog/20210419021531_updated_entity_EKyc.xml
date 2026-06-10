@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity EKyc.
+    -->
+    <changeSet id="20210419021531-1" author="jhipster">
+        <addColumn tableName="e_kyc">
+            <column name="e_kyc_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="tax_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="online_trading" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="authen_method" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="otp_receive_method" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="advanced_cash_included" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="sms_method" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="email_notification" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="referral" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="partner_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="partner_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="customer_support" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="cs_partner_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="cs_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="contract_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="contract_status" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fatca" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

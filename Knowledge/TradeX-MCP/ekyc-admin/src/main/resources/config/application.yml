@@ -1,0 +1,347 @@
+# ===================================================================
+# Spring Boot configuration.
+#
+# This configuration will be overridden by the Spring profile you use,
+# for example application-dev.yml if you use the "dev" profile.
+#
+# More information on profiles: https://www.jhipster.tech/profiles/
+# More information on configuration properties: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+# ===================================================================
+# Standard Spring Boot properties.
+# Full reference is available at:
+# http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+# ===================================================================
+
+management:
+  endpoints:
+    web:
+      base-path: /management
+      exposure:
+        include: [ 'configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump', 'liquibase' ]
+  endpoint:
+    health:
+      show-details: when_authorized
+      roles: 'ROLE_ADMIN'
+      probes:
+        enabled: true
+    jhimetrics:
+      enabled: true
+  info:
+    git:
+      mode: full
+  health:
+    group:
+      liveness:
+        include: livenessState
+      readiness:
+        include: readinessState,datasource
+    mail:
+      enabled: false # When using the MailService, configure an SMTP server and set this to true
+  metrics:
+    export:
+      # Prometheus is the default metrics backend
+      prometheus:
+        enabled: true
+        step: 60
+    enable:
+      http: true
+      jvm: true
+      logback: true
+      process: true
+      system: true
+    distribution:
+      percentiles-histogram:
+        all: true
+      percentiles:
+        all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
+    tags:
+      application: ${spring.application.name}
+    web:
+      server:
+        request:
+          autotime:
+            enabled: true
+
+spring:
+  application:
+    name: ekyc-admin
+  profiles:
+    # The commented value for `active` can be replaced with valid Spring profiles to load.
+    # Otherwise, it will be filled in by maven when building the JAR file
+    # Either way, it can be overridden by `--spring.profiles.active` value passed in the commandline or `-Dspring.profiles.active` set in `JAVA_OPTS`
+    active: #spring.profiles.active#
+    group:
+      dev:
+        - dev
+        - api-docs
+        # Uncomment to activate TLS for the dev profile
+        #- tls
+  jmx:
+    enabled: false
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: jdbc:mysql://172.31.224.7:3306/ekyc_admin?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: admin
+    password: 7TCDcWyKmxZFgW7RYSG2VWEL
+  data:
+    jpa:
+      repositories:
+        bootstrap-mode: deferred
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+      hibernate.id.new_generator_mappings: true
+      hibernate.connection.provider_disables_autocommit: true
+      hibernate.cache.use_second_level_cache: false
+      hibernate.cache.use_query_cache: false
+      hibernate.generate_statistics: false
+      # modify batch size as necessary
+      hibernate.jdbc.batch_size: 25
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+      hibernate.query.fail_on_pagination_over_collection_fetch: true
+      hibernate.query.in_clause_parameter_padding: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+  messages:
+    basename: i18n/messages
+  main:
+    allow-bean-definition-overriding: true
+  task:
+    execution:
+      thread-name-prefix: e-kyc-admin-task-
+      pool:
+        core-size: 2
+        max-size: 50
+        queue-capacity: 10000
+    scheduling:
+      thread-name-prefix: e-kyc-admin-scheduling-
+      pool:
+        size: 2
+  thymeleaf:
+    mode: HTML
+  output:
+    ansi:
+      console-available: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+
+# Properties to be exposed on the /info management endpoint
+info:
+  # Comma separated list of profiles that will trigger the ribbon to show
+  display-ribbon-on-profiles: 'dev'
+
+# ===================================================================
+# JHipster specific properties
+#
+# Full reference is available at: https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+jhipster:
+  clientApp:
+    name: 'eKycAdminApp'
+  # By default CORS is disabled. Uncomment to enable.
+  # cors:
+  #   allowed-origins: "http://localhost:8100,http://localhost:9000"
+  #   allowed-methods: "*"
+  #   allowed-headers: "*"
+  #   exposed-headers: "Authorization,Link,X-Total-Count,X-${jhipster.clientApp.name}-alert,X-${jhipster.clientApp.name}-error,X-${jhipster.clientApp.name}-params"
+  #   allow-credentials: true
+  #   max-age: 1800
+  mail:
+    from: eKyc_admin@localhost
+  api-docs:
+    default-include-pattern: ${server.servlet.context-path:}/api/.*
+    management-include-pattern: ${server.servlet.context-path:}/management/.*
+    title: eKyc_admin API
+    description: eKyc_admin API documentation
+    version: 0.0.1
+    terms-of-service-url:
+    contact-name:
+    contact-url:
+    contact-email:
+    license: unlicensed
+    license-url:
+  security:
+    content-security-policy: "default-src 'self'; frame-src 'self' data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://storage.googleapis.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; img-src 'self' data:; font-src 'self' https://fonts.gstatic.com data:"
+# ===================================================================
+# Application specific properties
+# Add your own application properties here, see the ApplicationProperties class
+# to have type-safe configuration, like in the JHipsterProperties above
+#
+# More documentation is available at:
+# https://www.jhipster.tech/common-application-properties/
+# ===================================================================
+
+app:
+  domain: 'kis'
+  kafkaUrl: 172.31.235.7:9092
+  clusterId: ${spring.application.name}
+  nodeId: ${app.clusterId}.${TRADEX_ENV_NODE_ID}.${TRADEX_ENV_INSTANCE_ID}
+  enableCallTllOpenAccount: true
+  callCoreNoAsync: true
+  checkMatchingRate: true
+  core: 'lotte'
+  topics:
+    notification: 'notification'
+  defaulltIdCardExpiredTime: 15 #years
+  handlerVerifyOtpFail: false
+  otpLength: 6
+  otpGenTime: 5 #seconds
+  otpMaxGenTime: 20
+  otpKeyLifeTime: 86400 #seconds ~ 1 day
+  optMaxVerifyFail: 3
+  otpLifeTime: #seconds
+    sms:
+      REGISTER: 180
+      RESET_PASSWORD: 180
+      NEW_DEVICE: 180
+      E_KYC: 180
+      DEFAULT_EXPIRE_TIME: 180
+    email:
+      REGISTER: 900
+      RESET_PASSWORD: 900
+      NEW_DEVICE: 900
+      E_KYC: 900
+      DEFAULT_EXPIRE_TIME: 900
+  redis:
+    host: localhost
+    port: 6379
+  ttlConfig:
+    channelId: 'INT'
+    operatorId: 'ADMIN'
+    operatorPassword: 'abcd1234'
+    equityBaseUrl: 'http://bamboo.local:30174'
+    derivativeBaseUrl: 'http://bamboo.local:30174'
+    operatorLoginUrl: '#{eqtUrl}/operatorLogin'
+    openAccountUrl: '#{eqtUrl}/account/eqt/createClientTradingAM'
+  lotteConfig:
+    apiKey: 'ZV0N9HEpUXsk6Xb1MFX6I5mVc18urCdm'
+    rootUrl: 'http://172.33.30.23:8100'
+    createAccountUrl: '#{rootUrl}/tsol/apikey/tuxsvc/ekyc/create-account'
+    updateAccountUrl: '#{rootUrl}/tsol/apikey/tuxsvc/ekyc/update-account'
+    uploadImageUrl: '#{rootUrl}/tsol/apikey/fileupl/eky-image'
+    updateStatusContractUrl: '#{rootUrl}/tsol/apikey/tuxsvc/ekyc/update-status-contract'
+    responseCodeSuccess: '0000'
+    responseErrorCodeBusiness: '1005;1006'
+  schedulers:
+    ttlOpenAccountReload: '0 */30 * * * MON-FRI'
+  maxBankList: 3
+  maxPublicCoop: 2
+  maxBlockholder: 2
+  feignClient:
+    lotteApi:
+      name: 'lotte-api'
+      host: 'https://tnhsvpro.nhsv.vn/lotte/tsol/apikey'
+      apiKey: 'ZV0N9HEpUXsk6Xb1MFX6I5mVc18urCdm'
+      timeoutMinutes: 30 # 30'
+      maxTimeoutMinutes: 1410 # 23.5h
+      periodMilliseconds: 900000 # 15'
+    fpt:
+      eContract:
+        name: 'fptEcontract'
+        host: 'https://demo.econtract.fpt.com.vn/app'
+        loginInfo:
+          username: 'mietftu@gmail.com'
+          password: '123456'
+          clientId: 'fpt'
+          clientSecret: '123456'
+        template:
+          alias:
+            hdmtk: 'HDMTK'
+  vnpt:
+    publicKey: ''
+    algorithmSignature: ''
+  difisoft:
+    testing: false
+    publicKey: ''
+    algorithmSignature: ''
+  matchThresholdPercent:
+    lotte:
+  threadPool:
+    threadNamePrefixSet: 'eKyc-pool-'
+    corePoolSize: 100
+    queueCapacity: 20
+    maxPoolSize: 500
+    keepAliveSeconds: 120
+    awaitTerminationSeconds: 300
+    waitForTasksToCompleteOnShutdown: true
+    # scheduler
+    schedulerThreadNamePrefixSet: 'scheduler-eKyc-pool-'
+    schedulerPoolSize: 100
+    schedulerAwaitTerminationSeconds: 300
+    schedulerWaitForTasksToCompleteOnShutdown: true
+    # app
+    maxPeriodQuerySeconds: 1800 # 30'
+    firstPeriodTimeSecond: 60
+    firstPeriodDelayTimeMillisecond: 2000
+    last29MinutestPeriodDelayMillisecond: 180000 # 3'
+
+  cron:
+    eKycUpdateAccNumJob: '0 */15 * * * ?'
+    eKycUpdateAccNumJobActiveStatus: false
+    initiateFptEContractJob: '0 */30 * * * ?'
+    initiateFptEContractJobJobActiveStatus: false
+    eKycUpdateAccNumJobTimeIntervalMilliseconds: 480000 # 8' The timeout duration is equal to half of the job's rerun time.
+    initiateFptEContractJobIntervalMilliseconds: 900000 # 15' The timeout duration is equal to half of the job's rerun time.
+  # HDMTK
+  templateEContract:
+    defaultFields:
+      hdmtk:
+        attrs: 'null'
+        # HDMTK: Custom data
+        selector: 'flow_start_nhsv_create_econtract_from_template_integrate'
+        payload: 'PLHD'
+        recipientId: 'p_002_r_001'
+        country: 'Việt Nam'
+        type: 'FCA'
+        photoFrontSideIDCardContentType: 'truoc.jpg'
+        photoBackSideIDCardContentType: 'sau.jpg'
+        statusCode: '0'
+        passportID: 'null'
+        resourceType: 'internal'
+        refId: 'internal'
+        # HDMTK: Input data
+        alias: 'HDMTK'
+        syncType: 'sync'
+        # HDMTK: Input data -> datas
+        datas:
+          dfvEnvNo: 'HDMTK-20241124/001'
+          dfvEnvSubmittedFrom: '/1899/5511'
+          dfvP_001: 'CÔNG TY TRÁCH NHIỆM HỮU HẠN CHỨNG KHOÁN NH VIỆT NAM'
+          dfvP_001_r_001_name_recipient: 'NH'
+          dfvP_001_r_001_mail_recipient: 'mietftu@gmail.com'
+          dfvP_001_r_001_phone_recipient: 'null'
+          dfvP_001_r_001_contact_recipient: '123456789'
+          dfvP_002: 'individual'
+          dfvP_002_r_001_applicationForm_recipient: ' '
+          dfvIssueOrganization_CCSQLHCVTTXH: 'Cục cảnh sát QLHC về TTXH'
+          dfvIssueOrganization_CCSDKQLCTVDLQGVDC: 'Cục Cảnh Sát ĐKDL Cư trú và DLQG về Dân cư'
+          dfvNhsvRepresentative: 'Ông Kim Jong Seok'
+          dfvNhsvRepresentativePotition: 'Tổng Giám đốc'
+          dfvAuthorizationDocNo: ''
+          dfvAuthorizationDate: ''
+          dfvAccountTypeA: 'x'
+          dfvAccountTypeB: ' '
+          dfvAccountTypeC: ' '
+          dfvDueDays: '30'
+  fileStorage:
+    storageType: 'MINIO' # MINIO or S3
+    minio:
+      baseUrl: 'https://file.nhsv-dev.tradex.vn'
+      accessKey: 'J3nq1XTWxFQzv6Js51OY'
+      privateKey: 'bnGZo6an7bgiF0lTB83xmrVfujYEAVnYwAFpiPTU'
+    ekycImagesBucket: 'ekyc-images' # ekyc images bucket
+    presignedURLDurationInSeconds: 28800 # 8 hour
+    frontIDCardImageSuffix: '_frontImage.jpg'
+    backIDCardImageSuffix: '_backImage.jpg'

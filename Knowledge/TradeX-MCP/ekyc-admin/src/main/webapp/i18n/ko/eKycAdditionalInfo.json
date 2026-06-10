@@ -1,0 +1,41 @@
+{
+  "eKycAdminApp": {
+    "eKycAdditionalInfo": {
+      "home": {
+        "title": "E Kyc Additional Infos",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new E Kyc Additional Info",
+        "createOrEditLabel": "Create or edit a E Kyc Additional Info",
+        "notFound": "No E Kyc Additional Infos found"
+      },
+      "created": "A new E Kyc Additional Info is created with identifier {{ param }}",
+      "updated": "A E Kyc Additional Info is updated with identifier {{ param }}",
+      "deleted": "A E Kyc Additional Info is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete E Kyc Additional Info {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Additional Info"
+      },
+      "id": "ID",
+      "fullName": "Full Name",
+      "birthDay": "Birth Day",
+      "nationality": "Nationality",
+      "identifierId": "Identifier Id",
+      "issueDate": "Issue Date",
+      "issuePlace": "Issue Place",
+      "permanentAddress": "Permanent Address",
+      "contactAddress": "Contact Address",
+      "occupation": "Occupation",
+      "position": "Position",
+      "phoneNumber": "Phone Number",
+      "visaNo": "Visa No",
+      "visaIssuePlace": "Visa Issue Place",
+      "foreignResidence": "Foreign Residence",
+      "investmentGoal": "Investment Goal",
+      "risk": "Risk",
+      "experienced": "Experienced",
+      "eKyc": "E Kyc"
+    }
+  }
+}

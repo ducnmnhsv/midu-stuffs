@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <property name="now" value="now()" dbms="h2"/>
+    <property name="now" value="now()" dbms="mysql, mariadb"/>
+    <property name="floatType" value="float4" dbms="postgresql, h2"/>
+    <property name="floatType" value="float" dbms="mysql, oracle, mssql, mariadb"/>
+    <property name="clobType" value="clob" dbms="h2"/>
+    <property name="clobType" value="clob" dbms="mysql, oracle, mssql, mariadb, postgresql"/>
+    <property name="uuidType" value="varchar(36)" dbms="h2, mysql, mariadb"/>
+    <property name="datetimeType" value="datetime(6)" dbms="mysql, mariadb"/>
+    <property name="datetimeType" value="datetime" dbms="oracle, mssql, postgresql, h2"/>
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20210419021530_added_entity_EKyc.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20220113153221_added_entity_EKycCreatorStatus.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20220114014849_added_entity_TtlIssuePlaceCodeMap.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20220801011914_added_entity_EKycExt.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129071923_added_entity_EKycBankList.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129072805_added_entity_EKycAdditionalInfo.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129073013_added_entity_PublicCoop.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129073128_added_entity_Blockholder.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231211062818_added_entity_EContract.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231211063114_added_entity_EContractInfo.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20240110075543_added_entity_MatchingRate.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
+    <include file="config/liquibase/changelog/20220113153221_added_entity_constraints_EKycCreatorStatus.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20220801011914_added_entity_constraints_EKycExt.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129071923_added_entity_constraints_EKycBankList.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129073013_added_entity_constraints_PublicCoop.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129073128_added_entity_constraints_Blockholder.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231129072805_added_entity_constraints_EKycAdditionalInfo.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231211062818_added_entity_constraints_EContract.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231211063114_added_entity_constraints_EContractInfo.xml" relativeToChangelogFile="false"/>
+    <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
+    <!-- jhipster-needle-liquibase-add-incremental-changelog - JHipster will add incremental liquibase changelogs here -->
+    <include file="config/liquibase/changelog/NHSV-302.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-412.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20210419021531_updated_entity_EKyc" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-734.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-1226.xml" relativeToChangelogFile="false"/>
+</databaseChangeLog>

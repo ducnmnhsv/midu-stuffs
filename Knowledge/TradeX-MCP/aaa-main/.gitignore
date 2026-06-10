@@ -1,0 +1,9 @@
+aaa
+env.js
+node_modules/**
+keys/**
+.idea/**
+.vscode/**
+build/**
+*.iml
+src/env.js

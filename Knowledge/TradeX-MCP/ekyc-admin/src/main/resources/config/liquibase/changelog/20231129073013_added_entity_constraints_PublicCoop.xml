@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    <!--
+        Added the constraints for entity PublicCoop.
+    -->
+    <changeSet id="20231129073013-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="e_kyc_additional_info_id"
+                                 baseTableName="public_coop"
+                                 constraintName="fk_public_coop__e_kyc_additional_info_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="ekyc_additional_info"/>
+    </changeSet>
+</databaseChangeLog>

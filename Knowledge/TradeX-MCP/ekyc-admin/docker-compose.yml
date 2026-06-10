@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  ekyc-admin:
+    build: .
+    container_name: ekyc-admin
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-Xmx512m -Djava.security.egd=file:/dev/./urandom
+      - JHIPSTER_SLEEP=0
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/management/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - ekyc-network
+
+  # Optional: Add database service if needed
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: ekyc-mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: ekyc
+  #     MYSQL_USER: ekyc
+  #     MYSQL_PASSWORD: ekyc
+  #   ports:
+  #     - "3306:3306"
+  #   volumes:
+  #     - mysql_data:/var/lib/mysql
+  #   networks:
+  #     - ekyc-network
+
+networks:
+  ekyc-network:
+    driver: bridge
+
+# volumes:
+#   mysql_data:

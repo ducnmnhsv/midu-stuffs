@@ -1,0 +1,301 @@
+{
+  "applications": "*",
+  "changelogDate": "20210419021530",
+  "databaseType": "sql",
+  "dto": "no",
+  "embedded": false,
+  "entityTableName": "e_kyc",
+  "fields": [
+    {
+      "fieldName": "identifierId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "20",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "fullName",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "50",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "phoneNo",
+      "fieldType": "String",
+      "fieldValidateRules": ["pattern"],
+      "fieldValidateRulesPattern": "^[+]{0,1}[-\\s0-9]*$"
+    },
+    {
+      "fieldName": "gender",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "EkycType",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "CMND,CC,PASSPORT"
+    },
+    {
+      "fieldName": "birthDay",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "expiredDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "issueDate",
+      "fieldType": "LocalDate",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "issuePlace",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "address",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "occupation",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "homeTown",
+      "fieldType": "String",
+      "fieldValidateRules": ["minlength", "maxlength"],
+      "fieldValidateRulesMaxlength": "100",
+      "fieldValidateRulesMinlength": "1"
+    },
+    {
+      "fieldName": "permanentProvince",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "permanentDistrict",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "permanentAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contactProvince",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contactDistrict",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contactAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "referrerIdName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "referrerBranch",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankAccount",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "accountName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "branch",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nationality",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Status",
+      "fieldValidateRules": ["required"],
+      "fieldValues": "PENDING,REJECT,APPROVED,AUTO_APPROVED"
+    },
+    {
+      "fieldName": "frontImageUrl",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "backImageUrl",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "portraitImageUrl",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "signatureImageUrl",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "tradingCodeImageUrl",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "isMargin",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "matchingRate",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "branchId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "channelId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "eKycId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "taxNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "onlineTrading",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "authenMethod",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "otpReceiveMethod",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "advancedCashIncluded",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "smsMethod",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "emailNotification",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "referral",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "partnerId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "partnerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerSupport",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "csPartnerId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "csName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contractId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contractStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fatca",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "contractNo",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "accountNumber",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "ocrLogId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cardLivenessLogId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "cardRearLogId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "compareLogId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "faceLivenessLogId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "faceMaskLogId",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [],
+  "entityTableName": "e_kyc",
+  "dto": "no",
+  "pagination": "no",
+  "readOnly": false,
+  "searchEngine": "no",
+  "service": "serviceClass",
+  "serviceClass": "no"
+}

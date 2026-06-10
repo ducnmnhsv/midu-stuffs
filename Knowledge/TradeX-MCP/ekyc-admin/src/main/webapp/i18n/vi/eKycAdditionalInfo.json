@@ -1,0 +1,41 @@
+{
+  "eKycAdminApp": {
+    "eKycAdditionalInfo": {
+      "home": {
+        "title": "E Kyc Additional Infos",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một E Kyc Additional Info",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật E Kyc Additional Info",
+        "notFound": "No E Kyc Additional Infos found"
+      },
+      "created": "Một E Kyc Additional Info mới được tạo với định danh {{ param }}",
+      "updated": "Một E Kyc Additional Info cập nhật với định danh {{ param }}",
+      "deleted": "Một E Kyc Additional Info đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa E Kyc Additional Info {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Additional Info"
+      },
+      "id": "ID",
+      "fullName": "Full Name",
+      "birthDay": "Birth Day",
+      "nationality": "Nationality",
+      "identifierId": "Identifier Id",
+      "issueDate": "Issue Date",
+      "issuePlace": "Issue Place",
+      "permanentAddress": "Permanent Address",
+      "contactAddress": "Contact Address",
+      "occupation": "Occupation",
+      "position": "Position",
+      "phoneNumber": "Phone Number",
+      "visaNo": "Visa No",
+      "visaIssuePlace": "Visa Issue Place",
+      "foreignResidence": "Foreign Residence",
+      "investmentGoal": "Investment Goal",
+      "risk": "Risk",
+      "experienced": "Experienced",
+      "eKyc": "E Kyc"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "eKycAdminApp": {
+    "Status": {
+      "null": "",
+      "PENDING": "PENDING",
+      "REJECT": "REJECT",
+      "APPROVED": "APPROVED",
+      "AUTO_APPROVED": "AUTO_APPROVED"
+    }
+  }
+}

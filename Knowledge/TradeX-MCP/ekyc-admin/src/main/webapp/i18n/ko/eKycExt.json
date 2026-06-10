@@ -1,0 +1,26 @@
+{
+  "eKycAdminApp": {
+    "eKycExt": {
+      "home": {
+        "title": "E Kyc Exts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new E Kyc Ext",
+        "createOrEditLabel": "Create or edit a E Kyc Ext",
+        "notFound": "No E Kyc Exts found"
+      },
+      "created": "A new E Kyc Ext is created with identifier {{ param }}",
+      "updated": "A E Kyc Ext is updated with identifier {{ param }}",
+      "deleted": "A E Kyc Ext is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete E Kyc Ext {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Ext"
+      },
+      "id": "ID",
+      "logId": "Log Id",
+      "rawData": "Raw Data",
+      "eKyc": "E Kyc"
+    }
+  }
+}

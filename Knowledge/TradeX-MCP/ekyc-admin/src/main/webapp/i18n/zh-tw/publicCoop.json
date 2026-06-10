@@ -1,0 +1,27 @@
+{
+  "eKycAdminApp": {
+    "publicCoop": {
+      "home": {
+        "title": "Public Coops",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "建立一筆新的 Public Coop",
+        "createOrEditLabel": "建立或編輯 Public Coop",
+        "notFound": "No Public Coops found"
+      },
+      "created": "新的 Public Coop 建立成功，識別碼為 {{ param }}",
+      "updated": "識別碼為 {{ param }} 的 Public Coop 更新成功",
+      "deleted": "識別碼為 {{ param }} 的 Public Coop 刪除成功",
+      "delete": {
+        "question": "您確定要刪除 Public Coop {{ id }} 嗎?"
+      },
+      "detail": {
+        "title": "Public Coop"
+      },
+      "id": "ID",
+      "companyName": "Company Name",
+      "stock": "Stock",
+      "position": "Position",
+      "eKycAdditionalInfo": "E Kyc Additional Info"
+    }
+  }
+}

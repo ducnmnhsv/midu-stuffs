@@ -1,0 +1,27 @@
+{
+  "eKycAdminApp": {
+    "blockholder": {
+      "home": {
+        "title": "Blockholders",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Blockholder",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Blockholder",
+        "notFound": "No Blockholders found"
+      },
+      "created": "Một Blockholder mới được tạo với định danh {{ param }}",
+      "updated": "Một Blockholder cập nhật với định danh {{ param }}",
+      "deleted": "Một Blockholder đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Blockholder {{ id }}?"
+      },
+      "detail": {
+        "title": "Blockholder"
+      },
+      "id": "ID",
+      "companyName": "Company Name",
+      "stock": "Stock",
+      "position": "Position",
+      "eKycAdditionalInfo": "E Kyc Additional Info"
+    }
+  }
+}

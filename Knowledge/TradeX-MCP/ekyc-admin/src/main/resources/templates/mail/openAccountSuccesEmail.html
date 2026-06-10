@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+
+<head>
+  <title th:text="#{email.createAccount.subject}"></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+  <p th:text="#{email.createAccount.text1(${fullName})}"></p>
+  <p th:text="#{email.createAccount.text2}"></p>
+  <p th:text="#{email.createAccount.text3}"></p>
+  <div style="background-color: #FFF2CC;">
+    <p>
+      <span th:text="#{email.createAccount.text4}"></span>
+      <span style="font-style: italic;" th:text="${fullName}"></span>
+    </p>
+    <p>
+      <span th:text="#{email.createAccount.text5}"></span>
+      <span style="font-style: italic;" th:text="${account}"></span>
+    </p>
+  </div>
+  <p style="font-style: italic;" th:text="#{email.createAccount.text6}"></p>
+  <p th:text="#{email.createAccount.text8}"></p>
+  <p>
+    <span> -&emsp;&emsp;</span>
+    <span th:text="#{email.createAccount.text9}"></span>
+    <a th:href="#{email.createAccount.link1}">Xem tại đây</a>
+  </p>
+  <p>
+    <span> -&emsp;&emsp;</span>
+    <span th:text="#{email.createAccount.text10}"></span>
+    <a th:href="#{email.createAccount.link2}">Xem tại đây</a>
+  </p>
+  <p>
+    <span> -&emsp;&emsp;</span>
+    <span th:text="#{email.createAccount.text11}"></span>
+    <a th:href="#{email.createAccount.link2}">Xem tại đây</a>
+  </p>
+  <p>
+    <span> -&emsp;&emsp;</span>
+    <span th:text="#{email.createAccount.text12}"></span>
+    <a th:href="#{email.createAccount.link2}">Xem tại đây</a>
+  </p>
+  <p style="font-style: italic;" th:text="#{email.createAccount.text13}"></p>
+  <p th:text="#{email.createAccount.text15}"></p>
+  <p th:text="#{email.createAccount.text16}"></p>
+  <p th:text="#{email.createAccount.signature}"></p>
+</body>
+<footer style="border-top: 2px solid gray;">
+  <p th:text="#{email.createAccount.footer}"></p>
+</footer>
+</html>

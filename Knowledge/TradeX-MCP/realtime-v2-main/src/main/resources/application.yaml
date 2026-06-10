@@ -1,0 +1,120 @@
+spring:
+  application:
+    name: realtime-v2
+  profiles:
+    active: ${TECHX_ENV:default}
+  devtools:
+    restart:
+      exclude: resources/db/**
+  jackson:
+    default-property-inclusion: non_null
+  data:
+    mongodb:
+      uri: mongodb://tradexmts:techxcompany123@172.31.245.221:27017/tradex-market
+    redis:
+      host: 172.31.245.221
+      port: 6379
+      repositories:
+        enabled: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
+    com.techx: INFO
+    in: WARN
+    out: WARN
+#  pattern:
+#    file: "%d{yyyy-MM-dd HH:mm:ss} %-5p %C %M %L - %m%n"
+#    console: "%d{yyyy-MM-dd HH:mm:ss} %-5p %C{1} %M %L - %m%n"
+  file:
+    name: /logs/application.log
+
+app:
+  kafkaUrl: 172.31.245.221:9092
+  clusterId: ${spring.application.name}
+  consumerCount: 3
+  sslOptions: ""
+  producerPattern: "kafka://{topic}?brokers=${app.kafkaUrl}${app.sslOptions}"
+  consumerPattern: "kafka://{topic}?brokers=${app.kafkaUrl}&groupId={groupId}&consumersCount=${app.consumerCount}${app.sslOptions}"
+  marketConf:
+    symbolStaticBucket: paave-mobile-resource-uat
+    indexName:
+      hnx: "HNX"
+      upcom: "UPCOM"
+      vn: "VN"
+    fileConfig:
+      defaultType: MINIO
+      minio:
+        baseUrl: http://172.33.30.21:9000
+        accessKey: "J3nq1XTWxFQzv6Js51OY"
+        privateKey: "bnGZo6an7bgiF0lTB83xmrVfujYEAVnYwAFpiPTU"
+        urlRewriteTo: "https://tnhsvbackendpro.nhsv.vn"
+        buckets:
+          - name: market
+  maxNoThreadMap:
+    quoteUpdate: 1
+    extraUpdate: 1
+    bidOfferUpdate: 1
+    bidOfferOddLotUpdate: 1
+  topics:
+    quoteMonitor: quoteMonitor
+    symbolInfoUpdate: symbolInfoUpdate
+    quoteUpdate: quoteUpdate
+    quoteRecover: quoteRecover
+    quoteOddLotUpdate: quoteOddLotUpdate
+    extraUpdate: extraUpdate
+    bidOfferUpdate: bidOfferUpdate
+    bidOfferOddLotUpdate: bidOfferOddLotUpdate
+    advertisedUpdate: advertisedUpdate
+    dealNoticeUpdate: dealNoticeUpdate
+    realtimeJob: realtimeJob-v2
+    tblUpdate: tblUpdate
+    marketStatus: marketStatus
+    marketInit: marketInit
+    requestResponseListener: ${spring.application.name}.{uuid}
+    requestListener: ${app.clusterId}
+    userUtility: user-utility
+    virtualCore: paave-virtual-core
+    virtualNotification: paave-notification
+    indexStockListUpdate: indexStockListUpdate
+  socketCluster:
+    enable: true
+    hostname: "172.31.43.101"
+    port: 8000
+    path: "socketcluster/"
+    autoReconnection: true
+    logMessage: false
+  schedulers:
+    removeAutoData: "0 0 1 * * MON-FRI"
+    clearSymbolDaily: "0 0 1 * * MON-FRI"
+    refreshSymbolInfo: "0 35 1 * * MON-FRI"
+    saveRedisToDatabase: "0 15 10,11 * * MON-FRI"
+    restartService: "0 0 0,23 * * *"
+    rollerSymbolInfo: "0 0 23 * * *"
+    saveMonitorData: "0 0 10,11 * * MON-FRI"
+    resetMonitorData: "0 0 16,17 * * MON-FRI"
+    updateThemeStatistic: "0 * 1-9 * * MON-FRI"
+    stockTopWorstReturns: "0 5 8 * * MON-FRI"
+  publishV2Statistic:
+    topic: statisticUpdate
+    channel: market.statistic
+  holidayUrl: ${TRADEX_ENV_HOLIDAY_URL|https://paave-mobile-resource-uat.s3.ap-southeast-1.amazonaws.com/holidays.json}
+  holidayLocalFile: "/data/holidays.json"
+  enableSaveStatistic: true
+  enableTheme: true
+  enableSaveBidOffer: false
+  enableCheckOrderQuote: true
+  # save redis to database
+  enableSaveQuote: true
+  enableSaveQuoteMinute: true
+  enableSaveBidAsk: false
+  enableSaveWrongOrderQuote: false
+  enableInitData: false
+  enableQuotePartition: false
+  batchSize: 10000
+  notifications:
+    stockTopWordsNumberRank: 5
+    stockTopWordsRedirectUrl: "https://paave.onelink.me/xDMU/applink?af_dp=paave.io//&af_force_deeplink=true&screen_name=SymbolInfoOverview&params_symboType=VnIndex"
+    ceilingOrFloorPrice:
+      isActive: false

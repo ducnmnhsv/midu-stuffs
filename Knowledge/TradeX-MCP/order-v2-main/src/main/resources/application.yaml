@@ -1,0 +1,86 @@
+spring:
+  application:
+    name: order
+  profiles:
+    active: ${TECHX_ENV:default}
+  devtools:
+    restart:
+      exclude: resources/db/**
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+    default-property-inclusion: non_null
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.33.30.21:3306/order?useSSL=false
+    username: admin
+    password: 7TCDcWyKmxZFgW7RYSG2VWEL
+  data:
+    redis:
+      host: 172.33.30.21
+      port: 6379
+#  jpa:
+#    show-sql: true
+hibernate:
+  bytecode:
+    provider: none
+logging:
+  file:
+    name: /logs/application.log
+  level:
+    root: WARN
+    org.springframework: WARN
+    com.difisoft: INFO
+    com.techx: INFO
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql: TRACE
+#    org.hibernate.orm.jdbc.bind: trace
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+app:
+  domain: ${TRADEX_ENV_DOMAIN}
+#  domain: kis
+  enablePlaceOrderAfterMarketClose: true
+  core: lotte
+  kafkaUrl: 172.33.30.21:9092
+  clusterId: ${spring.application.name}
+  nodeId: null
+  maxThread: 3
+  sslOptions: ""
+  # ENGINE: run only matching and add|remove|modify order
+  # QUERY: run to query order information
+  # ENGINE_AND_QUERY: legacy mode. both query and engine
+  mode: ENGINE_AND_QUERY
+  producerPattern: "kafka://{topic}?brokers=${app.kafkaUrl}${app.sslOptions}"
+  consumerPattern: "kafka://{topic}?brokers=${app.kafkaUrl}&groupId={groupId}&consumersCount=${app.consumerCount}${app.sslOptions}"
+  topics:
+    requestResponseListener: ${spring.application.name}.{uuid}
+    requestListener: ${app.clusterId}
+    fssRestBridge: "fss-rest-bridge"
+    masRestBridge: "mas-rest-bridge"
+    market: "market"
+    quoteUpdate: "quoteUpdate-test"
+    notification: "notification"
+    tuxedo: "tuxedo"
+    orderMatch: "orderMatch"
+    updateConditionalOrder: "updateConditionalOrder"
+    lotteBridge: "lotte-bridge"
+  uri:
+    marketStockList: "/api/v1/market/stock/list"
+    marketFuturesList: "/api/v1/market/futures/list"
+    marketCwList: "/api/v1/market/cw/list"
+    fssAuthenOrder: "/api/v1/equity/verifyOrder"
+    fssPlaceOrder: "/api/v1/equity/account/stopOrder/active"
+    masEqtPlaceOrder: "/api/v1/services/cookieFree/enterEqtOrder"
+    masDrPlaceOrder: "/api/v1/services/cookieFree/enterDrOrder"
+    masEqtCancelOrder: "/api/v1/services/cookieFree/cancelEqtOrder"
+    masDrCancelOrder: "/api/v1/services/cookieFree/cancelDrOrder"
+    placeNormalOrder: '/api/v1/equity/order'
+    tuxEquityOrder: '/api/v1/equity/order'
+    tuxDrOrder: '/api/v1/derivatives/order'
+    lotteEquityOrder: 'post:/api/v1/lotte/equity/order'
+  schedulers:
+    resetCache: "0 40 1,14,15,16,17 * * MON-FRI"
+    updateTrailingOrderToDatabase: "*/5 * 1-7 * * MON-FRI"
+    cancelAllTrailingOrder: "0 0 9-16 * * MON-FRI"
+    cancelAllStopOrder: "0 0 9-16 * * MON-FRI"

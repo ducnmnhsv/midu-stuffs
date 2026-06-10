@@ -1,0 +1,33 @@
+{
+  "eKycAdminApp": {
+    "eContractInfo": {
+      "home": {
+        "title": "E Contract Infos",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 E Contract Info",
+        "createOrEditLabel": "创建或编辑 E Contract Info",
+        "notFound": "No E Contract Infos found"
+      },
+      "created": "E Contract Info {{ param }} 创建成功",
+      "updated": "E Contract Info {{ param }} 更新成功",
+      "deleted": "E Contract Info {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 E Contract Info {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "E Contract Info"
+      },
+      "id": "ID",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "templateId": "Template Id",
+      "requestData": "Request Data",
+      "contactId": "Contact Id",
+      "contactIdAction": "Contact Id Action",
+      "contractStatus": "Contract Status",
+      "signFileContent": "Sign File Content",
+      "contractFileContent": "Contract File Content",
+      "eContract": "E Contract"
+    }
+  }
+}

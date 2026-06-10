@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Copy Trading Schema</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+            <style>
+            @media print {
+                @page {
+                    size: A4;
+                    margin: 2cm 1.5cm;
+                }
+                body {
+                    margin: 0;
+                    padding: 20px;
+                }
+            }
+            @media screen {
+                body {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
+                }
+            }
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+            }
+            .markdown-body img {
+                max-width: 100%;
+                height: auto;
+                page-break-inside: avoid;
+            }
+            .markdown-body table {
+                page-break-inside: avoid;
+            }
+            .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+                page-break-after: avoid;
+            }
+            </style>
+            </head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Copy Trading Schema</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#copy-trading-database-schema"
+id="toc-copy-trading-database-schema">Copy Trading Database Schema</a>
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#entity-relationship-diagram"
+id="toc-entity-relationship-diagram">Entity Relationship
+Diagram</a></li>
+<li><a href="#field-descriptions" id="toc-field-descriptions">Field
+Descriptions</a>
+<ul>
+<li><a href="#t_user" id="toc-t_user">t_user</a></li>
+<li><a href="#t_copy_portfolio"
+id="toc-t_copy_portfolio">t_copy_portfolio</a></li>
+<li><a href="#t_copy_portfolio_details"
+id="toc-t_copy_portfolio_details">t_copy_portfolio_details</a></li>
+<li><a href="#t_copy_portfolio_history"
+id="toc-t_copy_portfolio_history">t_copy_portfolio_history</a></li>
+<li><a href="#t_copy_portfolio_detail_history"
+id="toc-t_copy_portfolio_detail_history">t_copy_portfolio_detail_history</a></li>
+<li><a href="#t_copy_subscriber"
+id="toc-t_copy_subscriber">t_copy_subscriber</a></li>
+<li><a href="#t_copy_subscriber_details"
+id="toc-t_copy_subscriber_details">t_copy_subscriber_details</a></li>
+<li><a href="#t_copy_subscriber_history"
+id="toc-t_copy_subscriber_history">t_copy_subscriber_history</a></li>
+<li><a href="#t_copy_trading_order"
+id="toc-t_copy_trading_order">t_copy_trading_order</a></li>
+<li><a href="#t_copy_trading_register"
+id="toc-t_copy_trading_register">t_copy_trading_register</a></li>
+<li><a href="#t_copy_market_leader_details"
+id="toc-t_copy_market_leader_details">t_copy_market_leader_details</a></li>
+<li><a href="#t_copy_market_leader_profit_loss"
+id="toc-t_copy_market_leader_profit_loss">t_copy_market_leader_profit_loss</a></li>
+<li><a href="#t_copy_market_leader_profit_loss_details"
+id="toc-t_copy_market_leader_profit_loss_details">t_copy_market_leader_profit_loss_details</a></li>
+</ul></li>
+<li><a href="#core-entities" id="toc-core-entities">Core Entities</a>
+<ul>
+<li><a href="#t_user-1" id="toc-t_user-1">t_user</a></li>
+<li><a href="#t_copy_portfolio-1"
+id="toc-t_copy_portfolio-1">t_copy_portfolio</a></li>
+<li><a href="#t_copy_portfolio_details-1"
+id="toc-t_copy_portfolio_details-1">t_copy_portfolio_details</a></li>
+<li><a href="#t_copy_subscriber-1"
+id="toc-t_copy_subscriber-1">t_copy_subscriber</a></li>
+<li><a href="#t_copy_subscriber_details-1"
+id="toc-t_copy_subscriber_details-1">t_copy_subscriber_details</a></li>
+<li><a href="#t_copy_trading_order-1"
+id="toc-t_copy_trading_order-1">t_copy_trading_order</a></li>
+<li><a href="#t_copy_market_leader_details-1"
+id="toc-t_copy_market_leader_details-1">t_copy_market_leader_details</a></li>
+<li><a href="#t_copy_market_leader_profit_loss-1"
+id="toc-t_copy_market_leader_profit_loss-1">t_copy_market_leader_profit_loss</a></li>
+</ul></li>
+<li><a href="#copy-trading-flow" id="toc-copy-trading-flow">Copy Trading
+Flow</a></li>
+<li><a href="#subscription-flow" id="toc-subscription-flow">Subscription
+Flow</a></li>
+<li><a href="#market-leader-tracking"
+id="toc-market-leader-tracking">Market Leader Tracking</a></li>
+<li><a href="#history-tracking" id="toc-history-tracking">History
+Tracking</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="copy-trading-database-schema">Copy Trading Database Schema</h1>
+<p>This document describes the database schema for the Copy Trading
+domain.</p>
+<h2 id="overview">Overview</h2>
+<p>The Copy Trading domain manages portfolios, subscribers, trading
+orders, and market leader tracking. It enables users to copy trades from
+market leaders (brokers) to subscribers.</p>
+<h2 id="entity-relationship-diagram">Entity Relationship Diagram</h2>
+<figure>
+<img
+src="/Users/hiepnguyen/works/NHSV-source/database_documentation/pdf_output/images/COPY_TRADING_SCHEMA_bb84679a.png"
+alt="Database Schema Diagram" />
+<figcaption aria-hidden="true">Database Schema Diagram</figcaption>
+</figure>
+<h2 id="field-descriptions">Field Descriptions</h2>
+<h3 id="t_user">t_user</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the user</li>
+<li><strong>login</strong>: Unique login username</li>
+<li><strong>password_hash</strong>: Hashed password</li>
+<li><strong>full_name</strong>: User’s full name</li>
+<li><strong>email</strong>: User’s email address</li>
+<li><strong>image_url</strong>: URL to user’s profile image</li>
+<li><strong>activated</strong>: Flag indicating if the account is
+activated</li>
+<li><strong>lang_key</strong>: Language preference key</li>
+<li><strong>activation_key</strong>: Key used for account
+activation</li>
+<li><strong>reset_key</strong>: Key used for password reset</li>
+<li><strong>created_date</strong>: Timestamp when the account was
+created</li>
+<li><strong>reset_date</strong>: Timestamp when password was reset</li>
+<li><strong>created_by</strong>: User who created this account</li>
+<li><strong>last_modified_by</strong>: User who last modified this
+account</li>
+<li><strong>last_modified_date</strong>: Timestamp when account was last
+modified</li>
+<li><strong>deactivated_at</strong>: Timestamp when account was
+deactivated</li>
+<li><strong>deactivated_by</strong>: User who deactivated this
+account</li>
+</ul>
+<h3 id="t_copy_portfolio">t_copy_portfolio</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the portfolio</li>
+<li><strong>created_at</strong>: Timestamp when the portfolio was
+created</li>
+<li><strong>ml_user_id</strong>: Foreign key to the market leader
+user</li>
+</ul>
+<h3 id="t_copy_portfolio_details">t_copy_portfolio_details</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the portfolio
+detail</li>
+<li><strong>portfolio_id</strong>: Foreign key to the portfolio</li>
+<li><strong>symbol</strong>: Stock symbol (e.g., “VIC”, “VNM”)</li>
+<li><strong>quantity</strong>: Number of shares</li>
+<li><strong>price</strong>: Price per share</li>
+<li><strong>order_type</strong>: Type of order (BUY, SELL, etc.)</li>
+<li><strong>created_at</strong>: Timestamp when the detail was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the detail was last
+updated</li>
+</ul>
+<h3 id="t_copy_portfolio_history">t_copy_portfolio_history</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the portfolio
+history record</li>
+<li><strong>portfolio_id</strong>: Foreign key to the portfolio</li>
+<li><strong>action</strong>: Action performed (CREATE, UPDATE, DELETE,
+etc.)</li>
+<li><strong>details</strong>: Additional details about the action</li>
+<li><strong>created_at</strong>: Timestamp when the action occurred</li>
+</ul>
+<h3
+id="t_copy_portfolio_detail_history">t_copy_portfolio_detail_history</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the portfolio detail
+history record</li>
+<li><strong>portfolio_detail_id</strong>: Foreign key to the portfolio
+detail</li>
+<li><strong>action</strong>: Action performed (CREATE, UPDATE, DELETE,
+etc.)</li>
+<li><strong>old_value</strong>: Previous value before the change</li>
+<li><strong>new_value</strong>: New value after the change</li>
+<li><strong>created_at</strong>: Timestamp when the change occurred</li>
+</ul>
+<h3 id="t_copy_subscriber">t_copy_subscriber</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the subscriber</li>
+<li><strong>account_number</strong>: Subscriber’s account number</li>
+<li><strong>sub_number</strong>: Subscriber number/identifier</li>
+<li><strong>user_name</strong>: Username of the subscriber</li>
+<li><strong>allocated_ratio</strong>: Ratio of capital allocated for
+copy trading</li>
+<li><strong>order_set_type</strong>: Type of order set
+configuration</li>
+<li><strong>created_at</strong>: Timestamp when the subscriber was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the subscriber was last
+updated</li>
+<li><strong>device_unique_id</strong>: Unique identifier of the
+device</li>
+<li><strong>customer_name</strong>: Customer’s full name</li>
+<li><strong>ml_user_id</strong>: Foreign key to the market leader user
+being followed</li>
+</ul>
+<h3 id="t_copy_subscriber_details">t_copy_subscriber_details</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the subscriber
+detail</li>
+<li><strong>subscriber_id</strong>: Foreign key to the subscriber</li>
+<li><strong>symbol</strong>: Stock symbol</li>
+<li><strong>quantity</strong>: Number of shares</li>
+<li><strong>price</strong>: Price per share</li>
+<li><strong>order_type</strong>: Type of order (BUY, SELL, etc.)</li>
+<li><strong>created_at</strong>: Timestamp when the detail was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the detail was last
+updated</li>
+</ul>
+<h3 id="t_copy_subscriber_history">t_copy_subscriber_history</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the subscriber
+history record</li>
+<li><strong>subscriber_id</strong>: Foreign key to the subscriber</li>
+<li><strong>action</strong>: Action performed (SUBSCRIBE, UNSUBSCRIBE,
+UPDATE, etc.)</li>
+<li><strong>details</strong>: Additional details about the action</li>
+<li><strong>created_at</strong>: Timestamp when the action occurred</li>
+</ul>
+<h3 id="t_copy_trading_order">t_copy_trading_order</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the trading
+order</li>
+<li><strong>portfolio_id</strong>: Foreign key to the portfolio that
+generated this order</li>
+<li><strong>subscriber_id</strong>: Foreign key to the subscriber
+receiving this order</li>
+<li><strong>symbol</strong>: Stock symbol</li>
+<li><strong>quantity</strong>: Number of shares</li>
+<li><strong>price</strong>: Price per share</li>
+<li><strong>order_type</strong>: Type of order (BUY, SELL, etc.)</li>
+<li><strong>status</strong>: Order status (PENDING, EXECUTED, CANCELLED,
+etc.)</li>
+<li><strong>created_at</strong>: Timestamp when the order was
+created</li>
+<li><strong>executed_at</strong>: Timestamp when the order was
+executed</li>
+</ul>
+<h3 id="t_copy_trading_register">t_copy_trading_register</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the
+registration</li>
+<li><strong>user_id</strong>: Foreign key to the user registering</li>
+<li><strong>ml_user_id</strong>: Foreign key to the market leader
+user</li>
+<li><strong>status</strong>: Registration status (PENDING, APPROVED,
+REJECTED, etc.)</li>
+<li><strong>registered_at</strong>: Timestamp when registration
+occurred</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the record was last
+updated</li>
+</ul>
+<h3 id="t_copy_market_leader_details">t_copy_market_leader_details</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the market leader
+detail</li>
+<li><strong>user_id</strong>: Foreign key to the user who is a market
+leader</li>
+<li><strong>account_number</strong>: Market leader’s account number</li>
+<li><strong>total_profit_loss</strong>: Total profit/loss amount</li>
+<li><strong>total_trades</strong>: Total number of trades executed</li>
+<li><strong>win_rate</strong>: Win rate percentage</li>
+<li><strong>last_trade_date</strong>: Date of the last trade</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the record was last
+updated</li>
+</ul>
+<h3
+id="t_copy_market_leader_profit_loss">t_copy_market_leader_profit_loss</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the profit/loss
+record</li>
+<li><strong>market_leader_detail_id</strong>: Foreign key to the market
+leader detail</li>
+<li><strong>period</strong>: Period identifier (DAILY, WEEKLY, MONTHLY,
+etc.)</li>
+<li><strong>profit_loss</strong>: Profit/loss amount for the period</li>
+<li><strong>trade_count</strong>: Number of trades in the period</li>
+<li><strong>win_count</strong>: Number of winning trades</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+</ul>
+<h3
+id="t_copy_market_leader_profit_loss_details">t_copy_market_leader_profit_loss_details</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the profit/loss
+detail</li>
+<li><strong>profit_loss_id</strong>: Foreign key to the profit/loss
+record</li>
+<li><strong>symbol</strong>: Stock symbol</li>
+<li><strong>quantity</strong>: Number of shares</li>
+<li><strong>price</strong>: Price per share</li>
+<li><strong>profit_loss</strong>: Profit/loss amount for this
+symbol</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+</ul>
+<h2 id="core-entities">Core Entities</h2>
+<h3 id="t_user-1">t_user</h3>
+<p>System users who can be either market leaders (brokers) or
+subscribers. This table appears in multiple repositories.</p>
+<p><strong>Key Relationships:</strong> - One-to-many with
+<code>t_copy_portfolio</code> (users own portfolios) - One-to-many with
+<code>t_copy_subscriber</code> (users can subscribe) - One-to-many with
+<code>t_copy_trading_order</code> (users place orders) - One-to-many
+with <code>t_copy_market_leader_details</code> (users can be market
+leaders)</p>
+<h3 id="t_copy_portfolio-1">t_copy_portfolio</h3>
+<p>Portfolios owned by market leaders. Contains the trading positions
+and history.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (owned by market leader) - One-to-many with
+<code>t_copy_portfolio_details</code> (contains positions) - One-to-many
+with <code>t_copy_portfolio_history</code> (tracks changes) -
+One-to-many with <code>t_copy_trading_order</code> (generates
+orders)</p>
+<h3 id="t_copy_portfolio_details-1">t_copy_portfolio_details</h3>
+<p>Individual positions within a portfolio (stocks, quantities,
+prices).</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_copy_portfolio</code> (belongs to portfolio) - One-to-many with
+<code>t_copy_portfolio_detail_history</code> (tracks changes)</p>
+<h3 id="t_copy_subscriber-1">t_copy_subscriber</h3>
+<p>Subscribers who copy trades from market leaders.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (subscriber user) - Many-to-one with
+<code>t_user</code> (market leader being followed) - One-to-many with
+<code>t_copy_subscriber_details</code> (has positions) - One-to-many
+with <code>t_copy_subscriber_history</code> (tracks changes) -
+One-to-many with <code>t_copy_trading_order</code> (receives orders)</p>
+<h3 id="t_copy_subscriber_details-1">t_copy_subscriber_details</h3>
+<p>Individual positions for subscribers (copied from market leader
+portfolios).</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_copy_subscriber</code> (belongs to subscriber)</p>
+<h3 id="t_copy_trading_order-1">t_copy_trading_order</h3>
+<p>Trading orders generated from market leader portfolios and executed
+for subscribers.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_copy_portfolio</code> (originates from portfolio) - Many-to-one
+with <code>t_copy_subscriber</code> (executed for subscriber)</p>
+<h3
+id="t_copy_market_leader_details-1">t_copy_market_leader_details</h3>
+<p>Market leader statistics and performance metrics.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_user</code> (belongs to market leader) - One-to-many with
+<code>t_copy_market_leader_profit_loss</code> (has profit/loss
+records)</p>
+<h3
+id="t_copy_market_leader_profit_loss-1">t_copy_market_leader_profit_loss</h3>
+<p>Profit/loss records for market leaders by time period.</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_copy_market_leader_details</code> (belongs to market leader) -
+One-to-many with <code>t_copy_market_leader_profit_loss_details</code>
+(has detailed records)</p>
+<h2 id="copy-trading-flow">Copy Trading Flow</h2>
+<pre><code>Market Leader Portfolio → Trading Order → Subscriber Portfolio</code></pre>
+<ol type="1">
+<li><strong>Market Leader</strong> creates a portfolio
+(<code>t_copy_portfolio</code>)</li>
+<li>Portfolio contains positions
+(<code>t_copy_portfolio_details</code>)</li>
+<li>When market leader trades, orders are generated
+(<code>t_copy_trading_order</code>)</li>
+<li>Orders are distributed to <strong>Subscribers</strong>
+(<code>t_copy_subscriber</code>)</li>
+<li>Subscribers receive positions in their details
+(<code>t_copy_subscriber_details</code>)</li>
+</ol>
+<h2 id="subscription-flow">Subscription Flow</h2>
+<pre><code>User → Register → Subscribe → Receive Orders</code></pre>
+<ol type="1">
+<li>User registers for copy trading
+(<code>t_copy_trading_register</code>)</li>
+<li>User subscribes to a market leader
+(<code>t_copy_subscriber</code>)</li>
+<li>Subscriber receives orders from market leader portfolio</li>
+<li>Orders are executed and tracked in subscriber details</li>
+</ol>
+<h2 id="market-leader-tracking">Market Leader Tracking</h2>
+<pre><code>User → Market Leader Details → Profit/Loss → Profit/Loss Details</code></pre>
+<ol type="1">
+<li>User becomes a market leader</li>
+<li>Market leader details are tracked
+(<code>t_copy_market_leader_details</code>)</li>
+<li>Profit/loss is calculated by period
+(<code>t_copy_market_leader_profit_loss</code>)</li>
+<li>Detailed profit/loss by symbol is stored
+(<code>t_copy_market_leader_profit_loss_details</code>)</li>
+</ol>
+<h2 id="history-tracking">History Tracking</h2>
+<p>All major entities have history tables: -
+<code>t_copy_portfolio_history</code> - Portfolio change history -
+<code>t_copy_portfolio_detail_history</code> - Position change history -
+<code>t_copy_subscriber_history</code> - Subscriber change history</p>
+<p>These tables track all modifications for audit and analysis
+purposes.</p>
+</body>
+</html>

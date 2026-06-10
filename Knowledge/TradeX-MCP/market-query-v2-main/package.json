@@ -1,0 +1,65 @@
+{
+  "name": "tradex-market",
+  "version": "1.0.0",
+  "description": "TradeX-market service of TradeX system",
+  "scripts": {
+    "clean": "rimraf coverage build tmp",
+    "build": "npm run fix && npm run compile",
+    "watch": "tsc -w -p tsconfig.json",
+    "run-local": "cp src/env.js build/src/env.js && cd build/src && node index.js",
+    "build-local": "npm run build && npm run run-local",
+    "compile": "tsc -p tsconfig.json",
+    "fix": "eslint src/**/*.ts --fix"
+  },
+  "author": "cuongth@techx.vn",
+  "license": "ISC",
+  "dependencies": {
+    "ajv": "^6.10.2",
+    "fetch-to-curl": "^0.5.2",
+    "moment": "^2.22.2",
+    "mongodb": "^3.3.3",
+    "node-fetch": "^2.6.1",
+    "node-schedule": "^2.1.1",
+    "redis": "^4.6.12",
+    "reflect-metadata": "^0.1.12",
+    "tradex-common": "git+https://github.com/difisoft/tradex-common-16.16.0.git",
+    "tradex-models-business-info": "github:difisoft/tradex-models-business-info-ts",
+    "tradex-models-business-info-validator": "github:difisoft/tradex-models-business-info-validator-ts",
+    "tradex-models-common": "github:difisoft/tradex-models-common-ts",
+    "tradex-models-market": "github:difisoft/tradex-models-market-ts",
+    "tradex-models-market-validator": "github:difisoft/tradex-models-market-validator-ts",
+    "typedi": "^0.8.0"
+  },
+  "devDependencies": {
+    "@types/mongodb": "^3.3.6",
+    "@types/node": "^10.14.13",
+    "@types/node-schedule": "^2.1.5",
+    "@types/redis": "^4.0.11",
+    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/parser": "^6.18.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-standard-with-typescript": "^43.0.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^16.6.1",
+    "eslint-plugin-prettier": "^5.1.2",
+    "eslint-plugin-promise": "^6.1.1",
+    "husky": "^8.0.3",
+    "prettier": "^3.1.1",
+    "rimraf": "^2.6.3",
+    "tslib": "^2.6.2",
+    "tsutils": "^3.21.0",
+    "typescript": "^5.3.3"
+  },
+  "bin": "build/src/index.js",
+  "pkg": {
+    "assets": [],
+    "options": [
+      "experimental-modules"
+    ],
+    "targets": [
+      "node16-alpine-x64"
+    ],
+    "output": "dist/entrypoint"
+  }
+}

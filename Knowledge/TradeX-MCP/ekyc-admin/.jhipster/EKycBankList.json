@@ -1,0 +1,37 @@
+{
+  "fields": [
+    {
+      "fieldName": "bankId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "bankAccNo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "ownerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "branchId",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eKyc",
+      "otherEntityName": "eKyc",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "id"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "no",
+  "name": "EKycBankList",
+  "changelogDate": "20231129071923"
+}

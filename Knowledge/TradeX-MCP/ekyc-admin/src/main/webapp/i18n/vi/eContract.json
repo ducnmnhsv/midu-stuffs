@@ -1,0 +1,32 @@
+{
+  "eKycAdminApp": {
+    "eContract": {
+      "home": {
+        "title": "E Contracts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một E Contract",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật E Contract",
+        "notFound": "No E Contracts found"
+      },
+      "created": "Một E Contract mới được tạo với định danh {{ param }}",
+      "updated": "Một E Contract cập nhật với định danh {{ param }}",
+      "deleted": "Một E Contract đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa E Contract {{ id }}?"
+      },
+      "detail": {
+        "title": "E Contract"
+      },
+      "id": "ID",
+      "refId": "Ref Id",
+      "envelopeId": "Envelope Id",
+      "identifierId": "Identifier Id",
+      "templateId": "Template Id",
+      "alias": "Alias",
+      "companyType": "Company Type",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "eKyc": "E Kyc"
+    }
+  }
+}

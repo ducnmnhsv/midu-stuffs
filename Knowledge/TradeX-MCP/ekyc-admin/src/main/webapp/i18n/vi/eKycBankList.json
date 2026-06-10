@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycBankList": {
+      "home": {
+        "title": "E Kyc Bank Lists",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một E Kyc Bank List",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật E Kyc Bank List",
+        "notFound": "No E Kyc Bank Lists found"
+      },
+      "created": "Một E Kyc Bank List mới được tạo với định danh {{ param }}",
+      "updated": "Một E Kyc Bank List cập nhật với định danh {{ param }}",
+      "deleted": "Một E Kyc Bank List đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa E Kyc Bank List {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Bank List"
+      },
+      "id": "ID",
+      "bankId": "Bank Id",
+      "bankName": "Bank Name",
+      "bankAccNo": "Bank Acc No",
+      "ownerName": "Owner Name",
+      "branchId": "Branch Id",
+      "eKyc": "E Kyc"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "fields": [
+    {
+      "fieldName": "core",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "matchingRate",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    }
+  ],
+  "relationships": [],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "no",
+  "name": "MatchingRate",
+  "changelogDate": "20240110075543"
+}

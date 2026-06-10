@@ -1,0 +1,29 @@
+{
+  "fields": [
+    {
+      "fieldName": "companyName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "stock",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "position",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eKycAdditionalInfo",
+      "otherEntityName": "eKycAdditionalInfo",
+      "relationshipType": "many-to-one",
+      "otherEntityField": "id"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "no",
+  "name": "PublicCoop",
+  "changelogDate": "20231129073013"
+}

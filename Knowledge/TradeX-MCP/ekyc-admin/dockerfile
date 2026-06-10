@@ -1,0 +1,88 @@
+# Docker image for JHipster eKyc Admin Application
+# Multi-stage build for efficient image creation
+
+# Stage 1: Node.js builder for frontend
+FROM node:14.16.0-alpine AS node-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY ekyc-admin/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY ekyc-admin/ ./
+
+# Build frontend
+RUN npm run webapp:build:prod
+
+# Stage 2: Maven builder with Java 8 (includes tradex-common build)
+FROM maven:3.8.6-openjdk-8 AS maven-builder
+
+WORKDIR /workspace
+
+# Copy the tradex-common project first
+COPY tradex-common-java ./tradex-common-java
+
+# Build and install tradex-common to local Maven repository
+WORKDIR /workspace/tradex-common-java
+RUN mvn clean install -DskipTests
+
+# Return to workspace and copy ekyc-admin project
+WORKDIR /workspace
+COPY ekyc-admin ./ekyc-admin
+
+# Copy built frontend from node-builder stage
+COPY --from=node-builder /app/target/classes/static ./ekyc-admin/target/classes/static
+
+# Change to ekyc-admin directory for the main build
+WORKDIR /workspace/ekyc-admin
+
+# Now build the complete application with Maven (tradex-common should be available)
+RUN mvn clean package -DskipTests -Pprod
+
+# Stage 3: Production runtime
+FROM openjdk:8-jre-alpine AS production
+
+# Install dumb-init for proper signal handling
+RUN apk add --no-cache bash
+
+# Create app user
+RUN addgroup -g 1001 -S app && \
+    adduser -u 1001 -S app -G app
+
+# Set working directory
+WORKDIR /app
+
+# Copy the built JAR file from build stage
+COPY --from=maven-builder /workspace/ekyc-admin/target/*.jar ./app.jar
+
+# Copy entrypoint script
+COPY --from=maven-builder /workspace/ekyc-admin/src/main/docker/jib/entrypoint.sh ./entrypoint.sh
+
+# Make entrypoint script executable
+RUN chmod +x ./entrypoint.sh
+
+# Change ownership to app user
+RUN chown -R app:app /app
+
+# Switch to app user
+USER app
+
+# Expose port (default Spring Boot port)
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/management/health || exit 1
+
+# Set default JVM options
+ENV JAVA_OPTS="-Xmx512m -Djava.security.egd=file:/dev/./urandom"
+
+# Set default JHipster sleep time
+ENV JHIPSTER_SLEEP=0
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh", "java -jar app.jar"]

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Notification Schema</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown.min.css" />
+
+            <style>
+            @media print {
+                @page {
+                    size: A4;
+                    margin: 2cm 1.5cm;
+                }
+                body {
+                    margin: 0;
+                    padding: 20px;
+                }
+            }
+            @media screen {
+                body {
+                    max-width: 1200px;
+                    margin: 0 auto;
+                    padding: 40px 20px;
+                }
+            }
+            .markdown-body {
+                box-sizing: border-box;
+                min-width: 200px;
+                max-width: 100%;
+                margin: 0;
+                padding: 20px;
+            }
+            .markdown-body img {
+                max-width: 100%;
+                height: auto;
+                page-break-inside: avoid;
+            }
+            .markdown-body table {
+                page-break-inside: avoid;
+            }
+            .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+                page-break-after: avoid;
+            }
+            </style>
+            </head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Notification Schema</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#notification-database-schema"
+id="toc-notification-database-schema">Notification Database Schema</a>
+<ul>
+<li><a href="#overview" id="toc-overview">Overview</a></li>
+<li><a href="#entity-relationship-diagram"
+id="toc-entity-relationship-diagram">Entity Relationship
+Diagram</a></li>
+<li><a href="#field-descriptions" id="toc-field-descriptions">Field
+Descriptions</a>
+<ul>
+<li><a href="#t_notification_list"
+id="toc-t_notification_list">t_notification_list</a></li>
+<li><a href="#t_fpt_sms_history"
+id="toc-t_fpt_sms_history">t_fpt_sms_history</a></li>
+</ul></li>
+<li><a href="#core-entities" id="toc-core-entities">Core Entities</a>
+<ul>
+<li><a href="#t_notification_list-1"
+id="toc-t_notification_list-1">t_notification_list</a></li>
+<li><a href="#t_fpt_sms_history-1"
+id="toc-t_fpt_sms_history-1">t_fpt_sms_history</a></li>
+</ul></li>
+<li><a href="#notification-flow" id="toc-notification-flow">Notification
+Flow</a></li>
+<li><a href="#sms-notification-flow" id="toc-sms-notification-flow">SMS
+Notification Flow</a></li>
+<li><a href="#notification-types"
+id="toc-notification-types">Notification Types</a></li>
+<li><a href="#status-values" id="toc-status-values">Status Values</a>
+<ul>
+<li><a href="#t_notification_list.status"
+id="toc-t_notification_list.status">t_notification_list.status</a></li>
+<li><a href="#t_fpt_sms_history.status"
+id="toc-t_fpt_sms_history.status">t_fpt_sms_history.status</a></li>
+</ul></li>
+<li><a href="#retry-mechanism" id="toc-retry-mechanism">Retry
+Mechanism</a></li>
+<li><a href="#template-system" id="toc-template-system">Template
+System</a></li>
+<li><a href="#integration-points"
+id="toc-integration-points">Integration Points</a>
+<ul>
+<li><a href="#fpt-sms-gateway" id="toc-fpt-sms-gateway">FPT SMS
+Gateway</a></li>
+<li><a href="#email-service" id="toc-email-service">Email
+Service</a></li>
+<li><a href="#push-notification-service"
+id="toc-push-notification-service">Push Notification Service</a></li>
+</ul></li>
+<li><a href="#audit-and-tracking" id="toc-audit-and-tracking">Audit and
+Tracking</a></li>
+<li><a href="#notes" id="toc-notes">Notes</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="notification-database-schema">Notification Database Schema</h1>
+<p>This document describes the database schema for the Notification
+domain.</p>
+<h2 id="overview">Overview</h2>
+<p>The Notification domain handles SMS notifications, email
+notifications, and general notification management for the NHSV
+platform.</p>
+<h2 id="entity-relationship-diagram">Entity Relationship Diagram</h2>
+<figure>
+<img
+src="/Users/hiepnguyen/works/NHSV-source/database_documentation/pdf_output/images/NOTIFICATION_SCHEMA_e0f1d64d.png"
+alt="Database Schema Diagram" />
+<figcaption aria-hidden="true">Database Schema Diagram</figcaption>
+</figure>
+<h2 id="field-descriptions">Field Descriptions</h2>
+<h3 id="t_notification_list">t_notification_list</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the
+notification</li>
+<li><strong>notification_type</strong>: Type of notification (SMS,
+EMAIL, PUSH, IN_APP)</li>
+<li><strong>recipient_type</strong>: Type of recipient (USER, BROKER,
+SYSTEM, etc.)</li>
+<li><strong>recipient_id</strong>: ID of the recipient</li>
+<li><strong>recipient_phone</strong>: Phone number for SMS
+notifications</li>
+<li><strong>recipient_email</strong>: Email address for email
+notifications</li>
+<li><strong>title</strong>: Notification title/subject</li>
+<li><strong>content</strong>: Notification content/message body</li>
+<li><strong>template_id</strong>: Template identifier used for the
+notification</li>
+<li><strong>status</strong>: Current status (PENDING, SENT, FAILED,
+DELIVERED, CANCELLED)</li>
+<li><strong>retry_count</strong>: Number of retry attempts made</li>
+<li><strong>scheduled_at</strong>: Timestamp when notification should be
+sent (for scheduled notifications)</li>
+<li><strong>sent_at</strong>: Timestamp when notification was actually
+sent</li>
+<li><strong>created_at</strong>: Timestamp when the notification was
+created</li>
+<li><strong>updated_at</strong>: Timestamp when the notification was
+last updated</li>
+</ul>
+<h3 id="t_fpt_sms_history">t_fpt_sms_history</h3>
+<ul>
+<li><strong>id</strong>: Primary key identifier for the SMS history
+record</li>
+<li><strong>notification_id</strong>: Foreign key to the notification in
+t_notification_list</li>
+<li><strong>phone_number</strong>: Recipient phone number</li>
+<li><strong>message</strong>: SMS message content</li>
+<li><strong>status</strong>: SMS status (SENT, DELIVERED, FAILED,
+PENDING)</li>
+<li><strong>response_code</strong>: Response code from FPT SMS
+gateway</li>
+<li><strong>response_message</strong>: Response message from FPT SMS
+gateway</li>
+<li><strong>sent_at</strong>: Timestamp when SMS was sent to the
+gateway</li>
+<li><strong>delivered_at</strong>: Timestamp when SMS was delivered to
+recipient (if applicable)</li>
+<li><strong>created_at</strong>: Timestamp when the record was
+created</li>
+</ul>
+<h2 id="core-entities">Core Entities</h2>
+<h3 id="t_notification_list-1">t_notification_list</h3>
+<p>Main notification queue and management table. Stores all
+notifications to be sent or that have been sent.</p>
+<p><strong>Key Fields:</strong> - <code>notification_type</code>: Type
+of notification (SMS, EMAIL, PUSH, etc.) - <code>recipient_type</code>:
+Type of recipient (USER, BROKER, SYSTEM, etc.) -
+<code>recipient_id</code>: ID of the recipient -
+<code>recipient_phone</code>: Phone number for SMS notifications -
+<code>recipient_email</code>: Email address for email notifications -
+<code>title</code>: Notification title - <code>content</code>:
+Notification content/message - <code>template_id</code>: Template used
+for the notification - <code>status</code>: Current status (PENDING,
+SENT, FAILED, DELIVERED) - <code>retry_count</code>: Number of retry
+attempts - <code>scheduled_at</code>: When notification should be sent -
+<code>sent_at</code>: When notification was actually sent</p>
+<p><strong>Key Relationships:</strong> - One-to-many with
+<code>t_fpt_sms_history</code> (SMS notifications tracked)</p>
+<h3 id="t_fpt_sms_history-1">t_fpt_sms_history</h3>
+<p>SMS notification history specifically for FPT SMS service. Tracks all
+SMS messages sent through the FPT gateway.</p>
+<p><strong>Key Fields:</strong> - <code>phone_number</code>: Recipient
+phone number - <code>message</code>: SMS message content -
+<code>status</code>: SMS status (SENT, DELIVERED, FAILED) -
+<code>response_code</code>: Response code from SMS gateway -
+<code>response_message</code>: Response message from SMS gateway -
+<code>sent_at</code>: When SMS was sent - <code>delivered_at</code>:
+When SMS was delivered (if applicable)</p>
+<p><strong>Key Relationships:</strong> - Many-to-one with
+<code>t_notification_list</code> (belongs to notification)</p>
+<h2 id="notification-flow">Notification Flow</h2>
+<pre><code>Notification Request → Queue → Process → Send → Track</code></pre>
+<ol type="1">
+<li><strong>Notification Request</strong>: System creates notification
+record (<code>t_notification_list</code>)</li>
+<li><strong>Queue</strong>: Notification is queued with
+<code>status = PENDING</code></li>
+<li><strong>Process</strong>: Notification service processes the
+queue</li>
+<li><strong>Send</strong>:
+<ul>
+<li>For SMS: Sends via FPT gateway, creates
+<code>t_fpt_sms_history</code> record</li>
+<li>For Email: Sends via email service</li>
+<li>For Push: Sends via push notification service</li>
+</ul></li>
+<li><strong>Track</strong>: Status updated, delivery tracked</li>
+</ol>
+<h2 id="sms-notification-flow">SMS Notification Flow</h2>
+<pre><code>Notification → FPT SMS Gateway → Delivery Status → History</code></pre>
+<ol type="1">
+<li>Notification is created with
+<code>notification_type = SMS</code></li>
+<li>SMS is sent via FPT gateway</li>
+<li>FPT SMS history record is created
+(<code>t_fpt_sms_history</code>)</li>
+<li>Delivery status is updated based on gateway response</li>
+<li>History is maintained for audit and tracking</li>
+</ol>
+<h2 id="notification-types">Notification Types</h2>
+<ul>
+<li><strong>SMS</strong>: Text messages sent to phone numbers</li>
+<li><strong>EMAIL</strong>: Email notifications</li>
+<li><strong>PUSH</strong>: Push notifications (mobile apps)</li>
+<li><strong>IN_APP</strong>: In-app notifications</li>
+</ul>
+<h2 id="status-values">Status Values</h2>
+<h3 id="t_notification_list.status">t_notification_list.status</h3>
+<ul>
+<li><code>PENDING</code>: Waiting to be sent</li>
+<li><code>SENT</code>: Successfully sent</li>
+<li><code>FAILED</code>: Failed to send</li>
+<li><code>DELIVERED</code>: Delivered to recipient</li>
+<li><code>CANCELLED</code>: Cancelled before sending</li>
+</ul>
+<h3 id="t_fpt_sms_history.status">t_fpt_sms_history.status</h3>
+<ul>
+<li><code>SENT</code>: SMS sent to gateway</li>
+<li><code>DELIVERED</code>: SMS delivered to recipient</li>
+<li><code>FAILED</code>: SMS failed to send</li>
+<li><code>PENDING</code>: Waiting for delivery confirmation</li>
+</ul>
+<h2 id="retry-mechanism">Retry Mechanism</h2>
+<p>Notifications can be retried if they fail: - <code>retry_count</code>
+tracks number of retry attempts - System can retry failed notifications
+based on configuration - Maximum retry count can be set per notification
+type</p>
+<h2 id="template-system">Template System</h2>
+<p>Notifications can use templates: - <code>template_id</code>
+references notification templates - Templates define message format and
+content - Supports variable substitution for personalized messages</p>
+<h2 id="integration-points">Integration Points</h2>
+<h3 id="fpt-sms-gateway">FPT SMS Gateway</h3>
+<ul>
+<li><code>t_fpt_sms_history</code> integrates with FPT SMS service</li>
+<li>Tracks response codes and messages from gateway</li>
+<li>Monitors delivery status</li>
+</ul>
+<h3 id="email-service">Email Service</h3>
+<ul>
+<li>Email notifications are sent via email service</li>
+<li>Delivery tracking can be added if needed</li>
+</ul>
+<h3 id="push-notification-service">Push Notification Service</h3>
+<ul>
+<li>Push notifications for mobile apps</li>
+<li>Can be extended with delivery tracking</li>
+</ul>
+<h2 id="audit-and-tracking">Audit and Tracking</h2>
+<ul>
+<li>All notifications are logged in
+<code>t_notification_list</code></li>
+<li>SMS notifications have detailed history in
+<code>t_fpt_sms_history</code></li>
+<li>Timestamps track creation, scheduling, sending, and delivery</li>
+<li>Status fields provide visibility into notification lifecycle</li>
+</ul>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>The notification system is designed to be extensible</li>
+<li>Additional notification types can be added</li>
+<li>SMS history is specifically tracked for FPT gateway</li>
+<li>Email and push notification tracking can be extended similarly</li>
+<li>The system supports scheduled notifications via
+<code>scheduled_at</code> field</li>
+</ul>
+</body>
+</html>

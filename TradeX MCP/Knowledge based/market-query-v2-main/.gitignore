@@ -1,8 +1,0 @@
-node_modules
-/build
-.idea
-.prettierrc
-env.js
-.vscode/
-src/test.ts
-market.log

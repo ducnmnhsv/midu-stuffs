@@ -1,0 +1,27 @@
+{
+  "eKycAdminApp": {
+    "blockholder": {
+      "home": {
+        "title": "Blockholders",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 Blockholder",
+        "createOrEditLabel": "创建或编辑 Blockholder",
+        "notFound": "No Blockholders found"
+      },
+      "created": "Blockholder {{ param }} 创建成功",
+      "updated": "Blockholder {{ param }} 更新成功",
+      "deleted": "Blockholder {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 Blockholder {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "Blockholder"
+      },
+      "id": "ID",
+      "companyName": "Company Name",
+      "stock": "Stock",
+      "position": "Position",
+      "eKycAdditionalInfo": "E Kyc Additional Info"
+    }
+  }
+}

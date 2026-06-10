@@ -1,0 +1,88 @@
+{
+  "fields": [
+    {
+      "fieldName": "fullName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "birthDay",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "nationality",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "identifierId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "issueDate",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "issuePlace",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "permanentAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contactAddress",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "occupation",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "position",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "phoneNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "visaNo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "visaIssuePlace",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "foreignResidence",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "investmentGoal",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "risk",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "experienced",
+      "fieldType": "Boolean"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eKyc",
+      "otherEntityName": "eKyc",
+      "relationshipType": "one-to-one",
+      "otherEntityField": "id",
+      "ownerSide": true,
+      "id": true,
+      "otherEntityRelationshipName": "eKycAdditionalInfo"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "no",
+  "name": "EKycAdditionalInfo",
+  "changelogDate": "20231129072805"
+}

@@ -1,0 +1,1216 @@
+openapi: 3.0.0
+info:
+  title: NHSV Market Data API Specification
+  version: 1.0.0
+  description: NHSV Market Data API Specification
+servers:
+  - url: https://nhsv-dev.tradex.vn/rest
+    description: NHSV DEV Server
+paths:
+  /api/v2/market/symbol/staticInfo:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol Static Info
+      parameters:
+        - in: query
+          name: symbolList
+          schema:
+            type: array
+            items:
+              type: string
+          required: true
+          description: Symbol List
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    b:
+                      type: string
+                      description: base code
+                    s:
+                      type: string
+                      description: symbol code
+                    t:
+                      enum:
+                        - INDEX
+                        - STOCK
+                        - CW
+                      type: string
+                      description: symbol type
+                    n1:
+                      type: string
+                      description: vietnamese name
+                    n2:
+                      type: string
+                      description: english name
+                    m:
+                      enum:
+                        - HOSE
+                        - HNX
+                        - UPCOM
+                      type: string
+                      description: market type
+                    bs:
+                      enum:
+                        - INDEX
+                        - BOND
+                      type: string
+                      description: base code securities type (INDEX/BOND)
+                    re:
+                      type: number
+                      description: reference price
+                    ce:
+                      type: number
+                      description: ceiling price
+                    fl:
+                      type: number
+                      description: floor price
+                    ltd:
+                      type: string
+                      description: last trade date (YYYYMMDD) of CW
+                    md:
+                      type: string
+                      description: maturity date (YYYYMMDD) of CW
+                    ud:
+                      type: string
+                      description: underlying symbol
+                    i:
+                      type: boolean
+                      description: is highlight
+                    mv:
+                      type: number
+                      description: matched volume
+                    tb:
+                      type: number
+                      description: total bid
+                    to:
+                      type: number
+                      description: total offer
+                    ss:
+                      type: string
+                      description: current market session
+                    bb:
+                      type: array
+                      description: best bid list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: bid price
+                          v:
+                            type: number
+                            description: bid volume
+                          c:
+                            type: number
+                            description: volume change
+                    bo:
+                      type: array
+                      description: best offer list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: offer price
+                          v:
+                            type: number
+                            description: offer volume
+                          c:
+                            type: number
+                            description: volume change
+                    ftd:
+                      type: string
+                      description: first trade date (YYYYMMDD)
+          description: Query Symbol Static Info Successfully
+  /api/v2/market/symbol/latest:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol Latest Information
+      parameters:
+        - in: query
+          name: symbolList
+          schema:
+            type: array
+            items:
+              type: string
+          required: true
+          description: Symbol List
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    s:
+                      type: string
+                      description: symbol code
+                    t:
+                      enum:
+                        - INDEX
+                        - STOCK
+                        - CW
+                      type: string
+                      description: 'symbol type: INDEX/STOCK/CW'
+                    o:
+                      type: number
+                      description: open price
+                    h:
+                      type: number
+                      description: high price
+                    l:
+                      type: number
+                      description: low price
+                    c:
+                      type: number
+                      description: close price
+                    a:
+                      type: number
+                      description: average price
+                    ch:
+                      type: number
+                      description: change value
+                    ra:
+                      type: number
+                      description: change rate (%)
+                    vo:
+                      type: number
+                      description: total trading volume
+                    va:
+                      type: number
+                      description: total trading value
+                    tor:
+                      type: number
+                      description: turnover rate
+                    bot:
+                      type: string
+                      description: bid offer lastest updated time (hhmmss)  
+                    mc: 
+                      type: number
+                      description: market capital                                           
+                    hly:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          h:
+                            type: number
+                            description: high price
+                          l:
+                            type: number
+                            description: low price
+                          hd:
+                            type: string
+                            description: high date (yyyymmdd)
+                          ld:
+                            type: string
+                            description: low date (yyyymmdd)
+                    mv:
+                      type: number
+                      description: matched volume
+                    tb:
+                      type: number
+                      description: total bid volume
+                    to:
+                      type: number
+                      description: total offer volume
+                    ss:
+                      type: string
+                      description: current session
+                    bb:
+                      type: array
+                      description: best bid list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: bid price
+                          v:
+                            type: number
+                            description: bid volume
+                          c:
+                            type: number
+                            description: volume change
+                    bo:
+                      type: array
+                      description: best offer list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: offer price
+                          v:
+                            type: number
+                            description: offer volume
+                          c:
+                            type: number
+                            description: volume change
+                    fr:
+                      type: object
+                      properties:
+                        bv:
+                          type: number
+                          description: buy volume
+                        sv:
+                          type: number
+                          description: sell volume
+                        tr:
+                          type: number
+                          description: total room
+                        cr:
+                          type: number
+                          description: current room
+                      description: foreigner data
+                    ic:
+                      type: object
+                      properties:
+                        ce:
+                          type: number
+                          description: ceiling count
+                        fl:
+                          type: number
+                          description: floor count
+                        up:
+                          type: number
+                          description: up count
+                        dw:
+                          type: number
+                          description: down count
+                        tc:
+                          type: number
+                          description: reference count
+                        utc:
+                          type: number
+                          description: unchange count
+                      description: index change
+                    pvo:
+                      type: number
+                      description: total put-through volume
+          description: Query Symbol Latest Successfully
+          
+  /api/v2/market/symbol/oddlotLatest:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol's Oddlot Latest BidOffer
+      parameters:
+        - in: query
+          name: symbolList
+          schema:
+            type: array
+            items:
+              type: string
+          required: true
+          description: Symbol List
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    s:
+                      type: string
+                      description: symbol code
+                    vo:
+                      type: number
+                      description: total trading volume
+                    va:
+                      type: number
+                      description: total trading value
+                      nullable: true 
+                      example: null 
+                    bot: 
+                      type: string
+                      description: bid offer lastest updated time (hhmmss)  
+                      nullable: true
+                      example: null
+                    mc: 
+                      type: number
+                      description: market capital
+                      nullable: true 
+                      example: null                                           
+                    tb:
+                      type: number
+                      description: total bid volume
+                      nullable: true
+                      example: null
+                    to:
+                      type: number
+                      description: total offer volume
+                      nullable: true
+                      example: null                      
+                    bb:
+                      type: array
+                      description: best oddlot bid list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: bid price
+                          v:
+                            type: number
+                            description: bid volume
+                          c:
+                            type: number
+                            description: volume change
+                    bo:
+                      type: array
+                      description: best oddlot offer list
+                      items:
+                        type: object
+                        properties:
+                          p:
+                            type: number
+                            description: offer price
+                          v:
+                            type: number
+                            description: offer volume
+                          c:
+                            type: number
+                            description: volume change
+                    fr:
+                      type: object
+                      properties:
+                        bv:
+                          type: number
+                          description: buy volume
+                        sv:
+                          type: number
+                          description: sell volume
+                        tr:
+                          type: number
+                          description: total room
+                        cr:
+                          type: number
+                          description: current room
+                      description: foreigner data
+                    pvo:
+                      type: number
+                      description: total put-through volume
+                      nullable: true
+                      example: null                      
+                    pva:
+                      type: number
+                      description: total put-through value
+                      nullable: true
+                      example: null                      
+          description: Query Symbol oddlot's Latest BidOffer Successfully
+  
+
+  /api/v2/market/symbol/{symbol}/quote:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol Quote List
+      parameters:
+        - in: path
+          name: symbol
+          schema:
+            type: string
+          required: true
+          description: Symbol Code
+        - in: query
+          name: lastTradingVolume
+          schema:
+            type: number
+          description: >-
+            To query quote list having tradingVolume below this
+            lastTradingVolume value
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: >-
+            The number of record that user want to see at each page (default
+            value is 100)
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    o:
+                      type: number
+                      description: open price
+                    t:
+                      type: string
+                      description: close price updated time (hhmmss)
+                    c:
+                      type: number
+                      description: close price
+                    ch:
+                      type: number
+                      description: change value
+                    h:
+                      type: number
+                      description: high price
+                    l:
+                      type: number
+                      description: low price
+                    mb:
+                      type: string
+                      description: matched by BID or OFFER
+                    mv:
+                      type: number
+                      description: matched volume
+                    ra:
+                      type: number
+                      description: change rate (%)
+                    se:
+                      type: number
+                      description: sequence number
+                    va:
+                      type: number
+                      description: total trading value
+                    vo:
+                      type: number
+                      description: total trading volume
+          description: Query Symbol Quote List Successfully
+  /api/v2/market/symbol/{symbol}/period/{periodType}:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol in Period
+      parameters:
+        - in: path
+          name: symbol
+          schema:
+            type: string
+          required: true
+          description: Symbol Code
+        - in: path
+          name: periodType
+          schema:
+            enum:
+              - DAILY
+              - WEEKLY
+              - MONTHLY
+            type: string
+          required: true
+          description: 'Period Type: daily/weekly/monthly'
+        - in: query
+          name: baseDate
+          schema:
+            type: string
+          description: Base date for query next (YYYYMMDD)
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: The number of record to be returned in one query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    o:
+                      type: number
+                      description: open price
+                    h:
+                      type: number
+                      description: high price
+                    l:
+                      type: number
+                      description: low price
+                    c:
+                      type: number
+                      description: close price
+                    ch:
+                      type: number
+                      description: change value
+                    ra:
+                      type: number
+                      description: change rate (%)
+                    vo:
+                      type: number
+                      description: trading volume
+                    va:
+                      type: number
+                      description: trading value
+                    d:
+                      type: string
+                      description: date (YYYYMMDD)
+          description: Query Symbol data in selcted period Successfully
+          
+  /api/v2/market/sessionStatus:
+    get:
+      tags:
+        - MARKET
+      summary: Query Market Session Status
+      parameters:
+        - in: query
+          name: market
+          schema:
+            enum:
+              - ALL
+              - HNX
+              - HOSE
+              - UPCOM
+            type: string
+          description: 'Market Exchange: ALL is default'
+        - in: query
+          name: type
+          schema:
+            enum:
+              - EQUITY
+            type: string
+          description: 'type: EQUITY'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    market:
+                      enum:
+                        - HNX
+                        - HOSE
+                        - UPCOM
+                      type: string
+                      description: 'market: HNX, HOSE, UPCOM'
+                    time:
+                      type: string
+                      description: time (hhmmss)
+                    status:
+                      enum:
+                        - ATO
+                        - LO
+                        - INTERMISSION
+                        - ATC
+                        - PLO
+                        - CLOSED
+                      type: string
+                      description: 'status: ATO, LO, INTERMISSION, ATC, PLO, CLOSED'
+                    type:
+                      enum:
+                        - EQUITY
+                      type: string
+                      description: 'type: EQUITY'
+          description: Query Market Session Status Successfully
+
+  /api/v2/market/ranking/trade:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol Ranking by Trades
+      parameters:
+        - in: query
+          name: marketType
+          schema:
+            enum:
+              - ALL
+              - HNX
+              - HOSE
+              - UPCOM
+            type: string
+          description: 'Market Exchange: ALL is default'
+        - in: query
+          name: sortType
+          schema:
+            enum:
+              - turnoverRate
+              - tradingVolume
+              - tradingValue
+            type: string
+          description: Sorting Option
+        - in: query
+          name: offset
+          schema:
+            type: number
+          description: The starting querying point
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: The number of records to be returned in one query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  c:
+                    type: string
+                    description: symbol code
+                  cn:
+                    type: number
+                    description: change value
+                  l:
+                    type: number
+                    description: close/last price
+                  r:
+                    type: number
+                    description: change rate (%)
+                  to:
+                    type: number
+                    description: turnover rate
+                  tr:
+                    type: number
+                    description: total trading value
+                  tv:
+                    type: number
+                    description: total trading volume
+          description: Query Symbol Ranking by Trades Successfully
+  /api/v2/tradingview/history:
+    get:
+      tags:
+        - MARKET
+      summary: Query Symbol History Data
+      parameters:
+        - in: query
+          name: symbol
+          schema:
+            type: string
+          required: true
+          description: Symbol Code
+        - in: query
+          name: from
+          schema:
+            type: number
+          required: true
+          description: From date in seconds format
+        - in: query
+          name: to
+          schema:
+            type: number
+          required: true
+          description: To date in seconds format
+        - in: query
+          name: resolution
+          schema:
+            enum:
+              - '1'
+              - '3'
+              - '5'
+              - '10'
+              - '15'
+              - '30'
+              - '60'
+              - D
+              - 1D
+              - W
+              - 1W
+              - M
+              - 1M
+              - 6M
+            type: string
+          required: true
+          description: Resolution Option
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  t:
+                    type: array
+                    items:
+                      type: number
+                    description: time list
+                  o:
+                    type: array
+                    items:
+                      type: number
+                    description: open price list
+                  h:
+                    type: array
+                    items:
+                      type: number
+                    description: high price list
+                  l:
+                    type: array
+                    items:
+                      type: number
+                    description: low price list
+                  c:
+                    type: array
+                    items:
+                      type: number
+                    description: close price list
+                  v:
+                    type: array
+                    items:
+                      type: number
+                    description: trading value list
+                  s:
+                    type: string
+                    description: status
+                  nextTime:
+                    type: number
+                    description: nextTime
+          description: Query History Successfully
+
+  /api/v2/market/symbol/{symbol}/statistic:
+    get:
+      tags: 
+        - MARKET
+      summary: Stock's currrent volume analysis
+      parameters:
+          - in: path
+            name: symbol
+            description: Stock Code
+            schema: 
+              type: string
+            required: true
+          - in: query
+            name: sortBy
+            description: Sort Option
+            required: true       
+            schema:
+              type: string
+              enum: ["price", "rate"]
+          - in: query 
+            name: pageNumber
+            required: true             
+            schema: 
+              type: number
+              description: Page Number 
+          - in: query 
+            name: pageSize
+            required: true             
+            schema:
+              type: number
+              description: Number of records to be returned in one query
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  s:
+                    type: string
+                    description: symbol code
+                  t: 
+                    type: string
+                    description: 'symbol type: STOCK/CW'
+                  vo: 
+                    type: number
+                    description: total trading volume
+                  tbv: 
+                    type: number
+                    description: total buy matched volume
+                  tbr: 
+                    type: number
+                    description: buy matched ratio
+                  tsv: 
+                    type: number
+                    description: total sell matched volume
+                  tsr: 
+                    type: number
+                    description: sell matched ratio
+                  tuv: 
+                    type: number 
+                    description: total unknown matched volume
+                  tur: 
+                    type: number
+                    description: unknown matched ratio
+                  ps: 
+                    type: array
+                    description: price step details
+                    items:
+                      type: object
+                      properties:
+                        p:
+                          type: number
+                          description: price step
+                        av:
+                          type: number
+                          description: accumulated matched volume for each price
+                        ar:
+                          type: number
+                          description: rate of accumulated matched volume for each price
+                        ab:
+                          type: number
+                          description: accumulated matched buy volume for each price
+                        br:
+                          type: number
+                          description: buy matched ratio for each price
+                        as:
+                          type: number
+                          description: accumulated matched sell volume for each price
+                        sr:
+                          type: number
+                          description: sell matched ratio for each price
+                        au:
+                          type: number
+                          description: accumulated matched unknown volume for each price
+                        ur:
+                          type: number
+                          description: unknown matched ratio for each price
+          description: OK  
+
+  /api/v2/market/stock/ranking/period:
+    get:
+      tags:
+        - MARKET
+      summary: Get top ranking increase/decreases in period
+      parameters:
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['ALL', 'HOSE', 'HNX', 'UPCOM']
+          description: Market Exchange
+        - in: query
+          name: ranking
+          schema:
+            type: string
+            enum: ['UP', 'DOWN']
+          description: 'Sorting Type (UP: descending order, DOWN: ascending order)'
+          required: true
+        - in: query
+          name: period
+          schema: 
+            type: string
+            enum: ['5', '20', '250']
+          description: ranking period (days)
+          required: true
+        - in: query
+          name: pageNumber
+          schema: 
+            type: number
+          description: 'Located page number (default is 0)'
+        - in: query
+          name: pageSize
+          schema:
+            type: number
+          description: Number of records to be returned in one page
+      responses:
+        '200':
+          description: Query top ranking of increases/descreases in period successfully
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    sq:
+                      type: number
+                      description: sequence number
+                    s:
+                      type: string
+                      description: stock code
+                    c:
+                      type: number
+                      description: current price
+                    ch:
+                      type: number
+                      description: change value
+                    ra:
+                      type: number
+                      description: change rate
+                    vo:
+                      type: number
+                      description: trading volume
+                    udra:
+                      type: number
+                      description: change rate in selected period
+                    udrg: 
+                      type: number
+                      description: change range in selected period
+                    sp:
+                      type: number
+                      description: initial price in selected period
+                    ep:
+                      type: number
+                      description: final price in selected period
+                      
+  /api/v2/market/symbol/{symbol}/foreigner:
+    get:
+      tags:
+        - MARKET
+      summary: Get symbol's daily foreigner information
+      parameters:
+        - in: path
+          name: symbol
+          description: symbol code
+          schema: 
+            type: string
+          required: true  
+        - in: query
+          name: baseDate
+          description: to query foreigner data before this baseDate (yyyymmdd)
+          schema: 
+            type: string
+        - in: query
+          name: fetchCount
+          description: The number of record that user want to see at each page 
+          schema: 
+            type: number          
+      responses:
+        '200':
+          description: Query symbol's daily foreigner information successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    br:
+                      type: number
+                      description: Foreigner Buyable Ratio
+                    bvo:
+                      type: number
+                      description: Foreigner Buy Volume
+                    svo:
+                      type: number
+                      description: Foreigner Sell Volume  
+                    nvo:
+                      type: number
+                      description: Foreigner Net Buy Volume
+                    bva: 
+                      type: number
+                      description: Foreign Buy Value (current value is 0)
+                    nva: 
+                      type: number
+                      description: Foreign Net Buy Value (current value is 0)
+                    cr:
+                      type: number
+                      description: Foreigner Current Room
+                    hr:
+                      type: number
+                      description: Foreigner Hold Ratio
+                    hv:
+                      type: number
+                      description: Foreigner Hold Volume
+                    tr:
+                      type: number
+                      description: Foreigner Total Room
+                    d:
+                      type: string
+                      description: day (format yyyymmdd)
+
+  /api/v2/market/index/list:
+    get:
+      tags:
+        - MARKET
+      summary: Get Index List in Exchange
+      parameters:
+        - in: query
+          name: market
+          description: Market Exchange (default is ALL)
+          schema: 
+            type: string
+            enum: ["ALL", "HOSE", "HNX", "UPCOM"]
+      responses:
+        '200':
+          description: Query exchange's index list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string      
+                  
+  /api/v2/market/symbol/{symbol}/right:
+    get: 
+      tags:
+        - MARKET
+      summary: Get Symbol's Right Information
+      parameters: 
+        - in: path
+          name: symbol
+          description: symbol code
+          schema: 
+            type: string 
+          required: true
+      responses: 
+        '200': 
+          description: Query Symbol's Right Information Successfully
+          content: 
+            application/json:
+              schema: 
+                type: object 
+                properties: 
+                  div: 
+                    type: object
+                    properties: 
+                      bd:   
+                        type: string
+                        description: 'dividend base date (format: yyyymmdd)'
+                      br:
+                        type: string 
+                        description: dividend base rate
+                      sr:
+                        type: string
+                        description: stock dividend rate (allocation rate stock)
+                      cr:
+                        type: string
+                        description: 'cash dividend rate (allocation rate cash)' 
+                      cpd: 
+                        type: string
+                        description: 'cash dividend payment date (format: yyyymmdd)'
+                      fpd: 
+                        type: string
+                        description: 'fraction payment date (format: yyyymmdd)'
+                      fp:   
+                        type: number
+                        description: fraction stock price
+                      ed: 
+                        type: number
+                        description: effective date
+                  bonus: 
+                    type: object
+                    properties:   
+                      bd: 
+                        type: string
+                        description: base date (format yyyymmdd)
+                      br: 
+                        type: string
+                        description: base rate 
+                      r:  
+                        type: string
+                        description: dividend rate
+                      p: 
+                        type: number
+                        description: fraction stock price
+                      pd:   
+                        type: string 
+                        description: fraction payment date (format yyyymmdd)
+                      ed: 
+                        type: string 
+                        description: effective date 
+                  issue: 
+                    type: object
+                    properties: 
+                      bd: 
+                        type: string 
+                        description: base date
+                      br: 
+                        type: string
+                        description: base rate
+                      r: 
+                        type: string
+                        description: allocation rate
+                      p: 
+                        type: number 
+                        description: issue price
+                      ap: 
+                        type: string 
+                        description: 'apply period of subscription (format: dd/mm/yyyy ~ dd/mm/yyyy)'
+                      tp: 
+                        type: string 
+                        description: 'possible period of transfering (format: dd/mm/yyyy ~ dd/mm/yyyy)' 
+                      ed: 
+                        type: string 
+                        description: effective date (format yyyymmdd)
+                  md:
+                    type: string
+                    description: meeting event�s holding date (format yyyymmdd)
+                    
+  /api/v2/market/ranking/foreigner: 
+    get: 
+      tags:
+        - MARKET
+      summary: Query Top 10 Foreigner BUY/SELL
+      parameters: 
+        - in: query
+          name: market
+          description: market exchange (ALL is default)
+          schema: 
+            type: string 
+            enum: 
+              - ALL
+              - HOSE
+              - HNX
+              - UPCOM
+        - in: query
+          name: type
+          description: Foreiger BUY/SELL type
+          schema: 
+            type: string
+            enum: 
+              - BUY
+              - SELL
+          required: true
+      responses:
+        '200': 
+          description: Query Top Foreigner BUY/SELL Successfully
+          content: 
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties: 
+                    s: 
+                      type: string
+                      description: symbol code
+                    c: 
+                      type: number
+                      description: close price
+                    r: 
+                      type: number
+                      description: change rate 
+                    ch: 
+                      type: number
+                      description: change value
+                    tvo: 
+                      type: number
+                      description: total trading volume
+                    tva: 
+                      type: number
+                      description: total trading value
+                    fb: 
+                      type: number
+                      description: foreigner buy volume
+                    fs:   
+                      type: number
+                      description: foreigner sell volume
+  
+  /api/v2/market/indexStockList/{indexCode}:
+    get: 
+      tags:
+        - MARKET
+      summary: Query Selected Index's Stock List
+      parameters: 
+        - in: path
+          name: indexCode
+          schema: 
+            type: string
+          description: index code
+          required: true
+      responses:
+        '200':
+          description: Query index's stock list successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string 
+
+
+tags:
+  - name: MARKET  

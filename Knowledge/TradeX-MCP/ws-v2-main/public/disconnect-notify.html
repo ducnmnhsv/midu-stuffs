@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Disconnect Notify</title>
+    <script type="text/javascript" src="socketcluster.js"></script>
+</head>
+<body>
+<div class="container">
+    <table>
+      <tr>
+        <td>count: </td>
+        <td><p id ='labelCount'></p></td>
+      </tr>
+    </table>
+
+    <textarea id="result" cols="80" rows="20"></textarea>
+
+</div>
+<script type="text/javascript">
+
+    var count = 0;
+
+    // Initiate the connection to the server
+    var socket = socketCluster.connect();
+    socket.on('error', function (err) {
+        console.error(err);
+    });
+
+    socket.on('connect', function () {
+        // console.log('Socket is connected');
+        appendToResult('Socket is connected');
+
+        var urlParams = new URLSearchParams(window.location.search);
+
+        if (urlParams.has('username')) {
+          var username = urlParams.get('username');
+          var channelName = 'disconnectNotify.'+ username;
+          appendToResult('subscribe channel: '+ channelName);
+
+          var socketChannel = socket.subscribe(channelName);
+
+          socketChannel.on('subscribeFail', function (err) {
+              appendToResult('Failed to subscribe to the due to error: ' + err);
+          });
+
+          socketChannel.watch(function (data) {
+              console.log(data);
+              count ++;
+              document.getElementById('labelCount').innerHTML = ''+count;
+          });
+        } else {
+          appendToResult('username undefined');
+        }
+    });
+
+
+
+    function appendToResult(text) {
+        document.getElementById('result').value += text + "\n";
+    }
+
+    function resetResult() {
+        document.getElementById('result').value += "";
+    }
+</script>
+</body>
+</html>

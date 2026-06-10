@@ -1,0 +1,27 @@
+{
+  "eKycAdminApp": {
+    "publicCoop": {
+      "home": {
+        "title": "Public Coops",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một Public Coop",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật Public Coop",
+        "notFound": "No Public Coops found"
+      },
+      "created": "Một Public Coop mới được tạo với định danh {{ param }}",
+      "updated": "Một Public Coop cập nhật với định danh {{ param }}",
+      "deleted": "Một Public Coop đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa Public Coop {{ id }}?"
+      },
+      "detail": {
+        "title": "Public Coop"
+      },
+      "id": "ID",
+      "companyName": "Company Name",
+      "stock": "Stock",
+      "position": "Position",
+      "eKycAdditionalInfo": "E Kyc Additional Info"
+    }
+  }
+}

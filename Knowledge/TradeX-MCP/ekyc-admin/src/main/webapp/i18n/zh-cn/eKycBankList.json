@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycBankList": {
+      "home": {
+        "title": "E Kyc Bank Lists",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 E Kyc Bank List",
+        "createOrEditLabel": "创建或编辑 E Kyc Bank List",
+        "notFound": "No E Kyc Bank Lists found"
+      },
+      "created": "E Kyc Bank List {{ param }} 创建成功",
+      "updated": "E Kyc Bank List {{ param }} 更新成功",
+      "deleted": "E Kyc Bank List {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 E Kyc Bank List {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "E Kyc Bank List"
+      },
+      "id": "ID",
+      "bankId": "Bank Id",
+      "bankName": "Bank Name",
+      "bankAccNo": "Bank Acc No",
+      "ownerName": "Owner Name",
+      "branchId": "Branch Id",
+      "eKyc": "E Kyc"
+    }
+  }
+}

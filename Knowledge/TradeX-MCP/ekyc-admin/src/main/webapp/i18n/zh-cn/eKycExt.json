@@ -1,0 +1,26 @@
+{
+  "eKycAdminApp": {
+    "eKycExt": {
+      "home": {
+        "title": "E Kyc Exts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 E Kyc Ext",
+        "createOrEditLabel": "创建或编辑 E Kyc Ext",
+        "notFound": "No E Kyc Exts found"
+      },
+      "created": "E Kyc Ext {{ param }} 创建成功",
+      "updated": "E Kyc Ext {{ param }} 更新成功",
+      "deleted": "E Kyc Ext {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 E Kyc Ext {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "E Kyc Ext"
+      },
+      "id": "ID",
+      "logId": "Log Id",
+      "rawData": "Raw Data",
+      "eKyc": "E Kyc"
+    }
+  }
+}

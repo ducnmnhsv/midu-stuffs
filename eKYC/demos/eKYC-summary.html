@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>eKYC Enhancement — Store Log | Tổng hợp</title>
+<style>
+  :root {
+    --blue: #2563eb; --blue-light: #dbeafe; --blue-dark: #1e40af;
+    --green: #16a34a; --green-light: #dcfce7;
+    --red: #dc2626; --red-light: #fee2e2;
+    --orange: #ea580c; --orange-light: #ffedd5;
+    --gray: #6b7280; --gray-light: #f3f4f6; --gray-border: #e5e7eb;
+    --yellow: #ca8a04; --yellow-light: #fef9c3;
+    --purple: #7c3aed; --purple-light: #ede9fe;
+    --text: #111827; --text-muted: #6b7280;
+    --radius: 10px; --shadow: 0 2px 12px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: var(--text); font-size: 14px; line-height: 1.6; }
+
+  /* Layout */
+  .sidebar { position: fixed; top: 0; left: 0; width: 240px; height: 100vh; background: #1e293b; overflow-y: auto; padding: 20px 0; z-index: 100; }
+  .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid #334155; }
+  .sidebar-logo h2 { color: #fff; font-size: 15px; font-weight: 700; }
+  .sidebar-logo p { color: #94a3b8; font-size: 11px; margin-top: 4px; }
+  .nav-group { padding: 16px 20px 4px; }
+  .nav-group-label { color: #64748b; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .nav-link { display: block; color: #94a3b8; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; margin-top: 2px; transition: all .15s; }
+  .nav-link:hover, .nav-link.active { background: #334155; color: #fff; }
+  .nav-link .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; }
+
+  .main { margin-left: 240px; padding: 32px 40px; max-width: 1100px; }
+
+  /* Sections */
+  section { margin-bottom: 48px; scroll-margin-top: 20px; }
+  h1 { font-size: 26px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  h2 { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid var(--gray-border); }
+  h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+  p { color: var(--text-muted); margin-bottom: 8px; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: var(--radius); border: 1px solid var(--gray-border); padding: 20px; box-shadow: var(--shadow); }
+  .card + .card { margin-top: 16px; }
+  .card-grid { display: grid; gap: 16px; }
+  .card-grid.col2 { grid-template-columns: 1fr 1fr; }
+  .card-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-blue { background: var(--blue-light); color: var(--blue-dark); }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-red { background: var(--red-light); color: var(--red); }
+  .badge-orange { background: var(--orange-light); color: var(--orange); }
+  .badge-gray { background: var(--gray-light); color: var(--gray); }
+  .badge-purple { background: var(--purple-light); color: var(--purple); }
+  .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
+
+  /* Status pill */
+  .status-done { background: var(--green-light); color: var(--green); }
+  .status-pending { background: var(--gray-light); color: var(--gray); }
+  .status-block { background: var(--red-light); color: var(--red); }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--gray-light); text-align: left; padding: 8px 12px; font-weight: 600; color: var(--text); border-bottom: 1px solid var(--gray-border); }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--gray-border); color: var(--text-muted); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .table-wrap { border: 1px solid var(--gray-border); border-radius: var(--radius); overflow: hidden; }
+
+  /* Flow diagram */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 0; margin: 16px 0; }
+  .flow-box { background: var(--blue-light); border: 1.5px solid var(--blue); border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--blue-dark); white-space: nowrap; }
+  .flow-box.green { background: var(--green-light); border-color: var(--green); color: var(--green); }
+  .flow-box.red { background: var(--red-light); border-color: var(--red); color: var(--red); }
+  .flow-box.gray { background: var(--gray-light); border-color: #d1d5db; color: var(--gray); }
+  .flow-box.orange { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+  .flow-box.purple { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+  .flow-arrow { color: #9ca3af; font-size: 18px; margin: 0 6px; }
+  .flow-label { font-size: 10px; color: var(--gray); text-align: center; margin-top: 4px; }
+
+  /* Code */
+  code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; font-family: 'SF Mono', Menlo, monospace; font-size: 12px; color: #be123c; }
+  pre { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 16px; font-size: 12px; overflow-x: auto; line-height: 1.7; margin: 12px 0; }
+  pre code { background: none; border: none; color: inherit; padding: 0; }
+  .kw { color: #7dd3fc; } .str { color: #86efac; } .cmt { color: #64748b; }
+  .fn { color: #fde68a; } .type { color: #c4b5fd; }
+
+  /* Alert */
+  .alert { border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; border-left: 4px solid; font-size: 13px; }
+  .alert-red { background: var(--red-light); border-color: var(--red); color: #991b1b; }
+  .alert-yellow { background: var(--yellow-light); border-color: var(--yellow); color: #854d0e; }
+  .alert-green { background: var(--green-light); border-color: var(--green); color: #14532d; }
+  .alert-blue { background: var(--blue-light); border-color: var(--blue); color: #1e3a8a; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content:''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--gray-border); }
+  .tl-item { position: relative; margin-bottom: 20px; }
+  .tl-dot { position: absolute; left: -24px; top: 3px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--gray-border); }
+  .tl-dot.green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot.blue { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+  .tl-dot.orange { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .tl-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
+  .tl-body { font-size: 12px; color: var(--text-muted); }
+
+  /* API method */
+  .method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 800; font-family: monospace; margin-right: 6px; }
+  .method-get { background: #dcfce7; color: #166534; }
+  .method-post { background: #dbeafe; color: #1e3a8a; }
+  .method-put { background: #fef9c3; color: #713f12; }
+  .endpoint-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 1px solid var(--gray-border); border-radius: 8px; margin-bottom: 8px; }
+  .endpoint-path { font-family: monospace; font-size: 12px; color: var(--text); font-weight: 600; }
+  .endpoint-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Hero */
+  .hero { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%); border-radius: 14px; padding: 32px 36px; color: #fff; margin-bottom: 40px; }
+  .hero h1 { color: #fff; font-size: 28px; }
+  .hero p { color: #bfdbfe; font-size: 14px; margin-top: 8px; }
+  .hero-meta { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; }
+  .hero-meta-item { background: rgba(255,255,255,.12); border-radius: 8px; padding: 8px 16px; }
+  .hero-meta-item .label { font-size: 10px; color: #93c5fd; text-transform: uppercase; letter-spacing: .06em; }
+  .hero-meta-item .value { font-size: 14px; font-weight: 700; color: #fff; margin-top: 2px; }
+
+  /* Divider */
+  .divider { border: none; border-top: 1px solid var(--gray-border); margin: 32px 0; }
+
+  /* Checklist */
+  .check-list { list-style: none; }
+  .check-list li { padding: 6px 0; font-size: 13px; color: var(--text-muted); display: flex; align-items: flex-start; gap: 8px; }
+  .check-list li::before { content: '✅'; flex-shrink: 0; }
+  .check-list li.pending::before { content: '🔲'; }
+  .check-list li.block::before { content: '🔴'; }
+
+  /* two-column problem/solution */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .compare-box { border-radius: 8px; padding: 16px; }
+  .compare-box h4 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+  .compare-now { background: #fee2e2; }
+  .compare-now h4 { color: #991b1b; }
+  .compare-after { background: #dcfce7; }
+  .compare-after h4 { color: #14532d; }
+  .compare-box ul { list-style: none; }
+  .compare-box ul li { font-size: 12px; padding: 3px 0; color: var(--text); }
+  .compare-now ul li::before { content: '✗ '; color: var(--red); }
+  .compare-after ul li::before { content: '✓ '; color: var(--green); }
+
+  /* Column layout for DB */
+  .col-group { margin-bottom: 16px; }
+  .col-group-title { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; padding: 4px 8px; background: var(--gray-light); border-radius: 4px; }
+  .col-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .col-tag { font-size: 11px; font-family: monospace; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 2px 8px; color: #334155; }
+
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 20px; }
+    .card-grid.col2, .card-grid.col3 { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>eKYC Enhancement</h2>
+    <p>Store Log — v2.0</p>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Tổng quan</div>
+    <a href="#overview" class="nav-link"><span class="dot" style="background:#2563eb"></span>Giới thiệu</a>
+    <a href="#problem" class="nav-link"><span class="dot" style="background:#dc2626"></span>Vấn đề & Mục tiêu</a>
+    <a href="#flow" class="nav-link"><span class="dot" style="background:#16a34a"></span>Luồng hệ thống</a>
+    <a href="#scope" class="nav-link"><span class="dot" style="background:#7c3aed"></span>Phạm vi ảnh hưởng</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Backend</div>
+    <a href="#db" class="nav-link"><span class="dot" style="background:#ea580c"></span>DB Schema</a>
+    <a href="#apis" class="nav-link"><span class="dot" style="background:#2563eb"></span>API Endpoints</a>
+    <a href="#service" class="nav-link"><span class="dot" style="background:#7c3aed"></span>Service Logic</a>
+    <a href="#image" class="nav-link"><span class="dot" style="background:#16a34a"></span>Image Storage</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Frontend</div>
+    <a href="#admin-journey" class="nav-link"><span class="dot" style="background:#2563eb"></span>Admin: Journey</a>
+    <a href="#admin-dashboard" class="nav-link"><span class="dot" style="background:#ea580c"></span>Admin: Dashboard</a>
+    <a href="#app-mrz" class="nav-link"><span class="dot" style="background:#dc2626"></span>App: MRZ Validation</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-group-label">Delivery</div>
+    <a href="#checklist" class="nav-link"><span class="dot" style="background:#16a34a"></span>Checklist</a>
+    <a href="#openq" class="nav-link"><span class="dot" style="background:#ca8a04"></span>Open Questions</a>
+  </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>eKYC Enhancement — Store Log</h1>
+    <p>Lưu trữ toàn bộ lịch sử các lần thử eKYC, tra cứu hành trình mở tài khoản, và Dashboard phân tích tỉ lệ fail theo nguyên nhân.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><div class="label">Version</div><div class="value">v2.0</div></div>
+      <div class="hero-meta-item"><div class="label">Service</div><div class="value">ekyc-admin</div></div>
+      <div class="hero-meta-item"><div class="label">Trạng thái</div><div class="value">Ready to Dev</div></div>
+      <div class="hero-meta-item"><div class="label">Ảnh hưởng</div><div class="value">BE · Admin UI · App</div></div>
+    </div>
+  </div>
+
+  <!-- Overview -->
+  <section id="overview">
+    <h2>Giới thiệu</h2>
+    <div class="card-grid col3">
+      <div class="card">
+        <h3>🔍 Vấn đề</h3>
+        <p>Mỗi lần user submit lại eKYC, hệ thống <strong>xóa bản ghi PENDING cũ</strong>. Không truy vết được user fail bao nhiêu lần, fail ở bước nào.</p>
+      </div>
+      <div class="card">
+        <h3>🎯 Giải pháp</h3>
+        <p>Tạo bảng <code>ekyc_attempt_log</code> lưu <strong>mọi lần thử</strong> (append-only). Ảnh CCCD mỗi lần fail được upload S3/MinIO.</p>
+      </div>
+      <div class="card">
+        <h3>👥 Ai hưởng lợi</h3>
+        <p><strong>Ops/CS</strong> — tra cứu case. <strong>BA/PM</strong> — phân tích Dashboard. <strong>Security</strong> — phát hiện fraud. <strong>Dev</strong> — debug production.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section id="problem">
+    <h2>Vấn đề & Mục tiêu</h2>
+    <div class="compare">
+      <div class="compare-box compare-now">
+        <h4>Hiện tại — Vấn đề</h4>
+        <ul>
+          <li><code>CustomEKycService.java:211</code> xóa record PENDING cũ khi retry</li>
+          <li>App không gửi data VNPT khi fail trước khi gọi BE (blur, liveness...)</li>
+          <li><code>ekyc_ext.raw_data</code> lưu JSON thô, không query được</li>
+          <li>Ảnh CCCD từng lần thử không được lưu</li>
+          <li>Không có Dashboard số liệu</li>
+          <li><code>default: break</code> trong switch → cho pass qua warning không biết</li>
+        </ul>
+      </div>
+      <div class="compare-box compare-after">
+        <h4>Sau khi hoàn thành</h4>
+        <ul>
+          <li>Mọi lần thử được ghi vào <code>ekyc_attempt_log</code> — không bao giờ xóa</li>
+          <li>App gọi <code>POST /ekycs/attempt-log</code> ngay khi SDK fail</li>
+          <li>46 cột structured — query theo fraud flags, quality score</li>
+          <li>Ảnh CCCD upload S3/MinIO per attempt, Admin xem được</li>
+          <li>Dashboard KPI 7 cards + 4 charts</li>
+          <li>MRZ validation + cross-check chặn giả mạo</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Phân loại kết quả (outcome)</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Outcome</th><th>Ý nghĩa</th><th>Failure Step</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-red">VNPT_FAILED</span></td><td>VNPT trả lỗi (OCR, liveness, quality)</td><td><code>VNPT_OCR</code> / <code>VNPT_LIVENESS</code></td></tr>
+            <tr><td><span class="badge badge-orange">MRZ_FAILED</span></td><td>MRZ checksum sai hoặc MRZ ↔ OCR không khớp</td><td><code>MRZ_VALIDATION</code> / <code>MRZ_CROSS_CHECK</code></td></tr>
+            <tr><td><span class="badge badge-red">FACE_COMPARE_FAILED</span></td><td>Matching rate dưới ngưỡng (&lt; 80%)</td><td><code>FACE_COMPARE</code></td></tr>
+            <tr><td><span class="badge badge-orange">LOTTE_REJECTED</span></td><td>Lotte từ chối khi submit</td><td><code>LOTTE_SUBMIT</code></td></tr>
+            <tr><td><span class="badge badge-gray">USER_ABANDONED</span></td><td>Không ký HĐ trong 48h sau APPROVED</td><td><code>CONTRACT_SIGN</code></td></tr>
+            <tr><td><span class="badge badge-green">SUCCESS</span></td><td>Tài khoản mở thành công</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flow -->
+  <section id="flow">
+    <h2>Luồng hệ thống</h2>
+
+    <div class="card">
+      <h3>Luồng 1 — Pre-submit failure (SDK thất bại)</h3>
+      <div class="flow" style="margin-top:12px">
+        <div class="flow-box">User chụp CCCD</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">VNPT SDK</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box red">Fail (blur / liveness / MRZ)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box orange">POST /ekycs/attempt-log <br><small style="font-weight:400">outcome: VNPT_FAILED</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box gray">Hiển thị lỗi cho user</div>
+      </div>
+      <p style="margin-top:8px;font-size:12px">→ <strong>Không gọi</strong> <code>/lotte/ekycs</code></p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h3>Luồng 2 — Post-submit (SDK pass, gọi Lotte)</h3>
+      <div class="flow" style="margin-top:12px">
+        <div class="flow-box">SDK pass</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">POST /lotte/ekycs <br><small style="font-weight:400">(giữ nguyên, không đổi)</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">Lotte OK</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box purple">POST /ekycs/attempt-log <br><small style="font-weight:400">outcome: SUCCESS</small></div>
+      </div>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-box" style="opacity:0;pointer-events:none">SDK pass</div>
+        <div class="flow-arrow" style="opacity:0">→</div>
+        <div class="flow-box" style="opacity:0;pointer-events:none">POST /lotte/ekycs</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box red">Lotte Reject</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box orange">POST /ekycs/attempt-log <br><small style="font-weight:400">outcome: LOTTE_REJECTED</small></div>
+      </div>
+      <div class="alert alert-blue" style="margin-top:12px">
+        <strong>Nguyên tắc:</strong> <code>POST /lotte/ekycs</code> — <strong>KHÔNG THAY ĐỔI</strong>. <code>POST /ekycs/attempt-log</code> là API TradeX riêng, App gọi song song sau khi biết kết quả Lotte.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h3>Luồng dữ liệu ảnh CCCD</h3>
+      <div class="flow" style="margin-top:12px">
+        <div class="flow-box">VNPT SDK trả<br><code>imgs.img_front</code><br><code>imgs.img_back</code><br><small style="font-weight:400">(base64)</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box">BE nhận base64</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box orange">Upload S3/MinIO<br><small style="font-weight:400">ekyc/{id}/attempt-N-front.jpg</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">Lưu URL vào<br><code>image_front_url</code><br><code>image_back_url</code></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box purple">Admin UI<br>xem ảnh</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Scope -->
+  <section id="scope">
+    <h2>Phạm vi ảnh hưởng</h2>
+    <div class="card-grid col3">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:24px">⚙️</span>
+          <div><h3 style="margin:0">Backend (ekyc-admin)</h3><span class="badge badge-orange">Java / Spring Boot</span></div>
+        </div>
+        <ul class="check-list">
+          <li>Entity <code>EKycAttemptLog</code> + Repository</li>
+          <li>Service <code>EKycAttemptLogService</code></li>
+          <li>Liquibase migration (bảng mới + 2 cột <code>e_kyc</code>)</li>
+          <li>API <code>POST /ekycs/attempt-log</code></li>
+          <li>4 Admin API endpoints</li>
+          <li>Update <code>final_ekyc_id</code> khi APPROVED</li>
+          <li>Interface <code>ImageStorageService</code> + MinIO impl</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:24px">📱</span>
+          <div><h3 style="margin:0">App (nhsv-mts-rn)</h3><span class="badge badge-blue">React Native</span></div>
+        </div>
+        <ul class="check-list">
+          <li>Gọi <code>POST /ekycs/attempt-log</code> sau SDK</li>
+          <li>Fix <code>default: break</code> → block + analytics</li>
+          <li>Validate <code>mrz_valid_score</code></li>
+          <li>MRZ cross-check với OCR visual</li>
+          <li>Gửi MRZ + liveness + face compare lên BE</li>
+          <li>Thêm 3 i18n keys cảnh báo MRZ</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <span style="font-size:24px">🖥️</span>
+          <div><h3 style="margin:0">Admin UI (ekyc-admin)</h3><span class="badge badge-purple">Web</span></div>
+        </div>
+        <ul class="check-list">
+          <li>Trang Dashboard Analytics (mới)</li>
+          <li>Màn hình Tìm kiếm (mới)</li>
+          <li>Màn hình Customer Journey (mới)</li>
+          <li>Màn hình Chi tiết lần thử (mới)</li>
+          <li>Cột "Lần thử" trong danh sách eKYC</li>
+          <li>Tab "Lịch sử thử" trong Modal detail</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- DB -->
+  <section id="db">
+    <h2>DB Schema</h2>
+
+    <div class="alert alert-blue">
+      <strong>Nguyên tắc append-only:</strong> <code>ekyc_attempt_log</code> không bao giờ bị UPDATE hay DELETE. Mọi lần thử đều được lưu vĩnh viễn.
+    </div>
+
+    <div class="card">
+      <h3>Bảng mới: <code>ekyc_attempt_log</code> (46+ cột)</h3>
+      <div style="margin-top:12px">
+        <div class="col-group">
+          <div class="col-group-title">Định danh & Kết quả</div>
+          <div class="col-tags">
+            <span class="col-tag">id PK</span>
+            <span class="col-tag">identifier_id NOT NULL</span>
+            <span class="col-tag">phone_no</span>
+            <span class="col-tag">attempt_number NOT NULL</span>
+            <span class="col-tag">attempt_at NOT NULL</span>
+            <span class="col-tag">final_ekyc_id FK→e_kyc</span>
+            <span class="col-tag">outcome NOT NULL</span>
+            <span class="col-tag">failure_step</span>
+            <span class="col-tag">failure_code</span>
+            <span class="col-tag">failure_message</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">VNPT OCR Results</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_status_code</span>
+            <span class="col-tag">vnpt_citizen_id</span>
+            <span class="col-tag">vnpt_name</span>
+            <span class="col-tag">vnpt_card_type</span>
+            <span class="col-tag">vnpt_citizen_id_prob</span>
+            <span class="col-tag">vnpt_mrz_valid_score</span>
+            <span class="col-tag">vnpt_nationality</span>
+            <span class="col-tag">vnpt_citizen_id_chip</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">Fraud Detection</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_is_tampered</span>
+            <span class="col-tag">vnpt_id_fake_warning</span>
+            <span class="col-tag">vnpt_id_fake_prob</span>
+            <span class="col-tag">vnpt_duplication_warning</span>
+            <span class="col-tag">vnpt_dob_fake_warning</span>
+            <span class="col-tag">vnpt_address_fake_warning</span>
+            <span class="col-tag">vnpt_issuedate_fake_warning</span>
+            <span class="col-tag">vnpt_name_fake_warning</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">Card Integrity (mặt trước + mặt sau)</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_front_recaptured</span>
+            <span class="col-tag">vnpt_front_edited_prob</span>
+            <span class="col-tag">vnpt_front_photocopied</span>
+            <span class="col-tag">vnpt_back_recaptured</span>
+            <span class="col-tag">vnpt_back_edited_prob</span>
+            <span class="col-tag">vnpt_back_photocopied</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">Image Quality</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_front_blur_score</span>
+            <span class="col-tag">vnpt_front_luminance_score</span>
+            <span class="col-tag">vnpt_back_blur_score</span>
+            <span class="col-tag">vnpt_back_luminance_score</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">MRZ (Machine Readable Zone)</div>
+          <div class="col-tags">
+            <span class="col-tag">mrz_line1</span>
+            <span class="col-tag">mrz_line2</span>
+            <span class="col-tag">mrz_overall_prob</span>
+            <span class="col-tag">mrz_cross_check</span>
+            <span class="col-tag">mrz_check_id</span>
+            <span class="col-tag">mrz_check_dob</span>
+            <span class="col-tag">mrz_check_gender</span>
+            <span class="col-tag">mrz_check_expiry</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">Liveness (từ SDK)</div>
+          <div class="col-tags">
+            <span class="col-tag">liveness_card_front_result</span>
+            <span class="col-tag">liveness_card_rear_result</span>
+            <span class="col-tag">liveness_face_result</span>
+            <span class="col-tag">face_mask_result</span>
+            <span class="col-tag">fake_liveness_prob</span>
+            <span class="col-tag">fake_print_photo_prob</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">Face Compare + Ảnh Storage</div>
+          <div class="col-tags">
+            <span class="col-tag">face_compare_msg</span>
+            <span class="col-tag">face_compare_prob</span>
+            <span class="col-tag">image_front_url</span>
+            <span class="col-tag">image_back_url</span>
+            <span class="col-tag">vnpt_raw_data LONGTEXT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Thay đổi bảng <code>e_kyc</code> — thêm 2 cột</h3>
+      <div class="col-tags" style="margin-top:10px">
+        <span class="col-tag">total_attempts INT NULL</span>
+        <span class="col-tag">first_attempt_at DATETIME NULL</span>
+      </div>
+      <p style="margin-top:8px;font-size:12px">Backward compatible — nullable, không ảnh hưởng code cũ.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Indexes</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Index</th><th>Cột</th><th>Mục đích</th></tr></thead>
+          <tbody>
+            <tr><td><code>idx_ekyc_attempt_identifier</code></td><td><code>identifier_id</code></td><td>Search theo CCCD — query chính của Admin</td></tr>
+            <tr><td><code>idx_ekyc_attempt_phone</code></td><td><code>phone_no</code></td><td>Search theo SĐT</td></tr>
+            <tr><td><code>idx_ekyc_attempt_at</code></td><td><code>attempt_at</code></td><td>Filter theo thời gian, Dashboard metrics</td></tr>
+            <tr><td><code>idx_ekyc_attempt_outcome</code></td><td><code>outcome</code></td><td>Filter theo kết quả</td></tr>
+            <tr><td><code>idx_ekyc_attempt_final_ekyc</code></td><td><code>final_ekyc_id</code></td><td>FK lookup</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- APIs -->
+  <section id="apis">
+    <h2>API Endpoints</h2>
+
+    <div class="card">
+      <h3>App → TradeX</h3>
+      <div style="margin-top:10px">
+        <div class="endpoint-row">
+          <div>
+            <span class="method method-post">POST</span>
+            <span class="endpoint-path">/ekycs/attempt-log</span>
+          </div>
+          <div>
+            <div class="endpoint-desc">Ghi nhận lần thử eKYC (pre-submit failure và post-submit). App gọi cho MỌI lần thử.</div>
+            <div style="margin-top:4px"><span class="badge badge-green">201 → { attemptId }</span> <span class="badge badge-red">400 → INVALID_PARAMETER</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-yellow" style="margin-top:10px">
+        <strong>Request Body quan trọng:</strong> Trường <code>imageFrontBase64</code> + <code>imageBackBase64</code> là <strong>bắt buộc</strong> khi <code>failureStep = VNPT_OCR</code>. Max 5MB mỗi ảnh sau decode.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Admin UI → BE</h3>
+      <div style="margin-top:10px">
+        <div class="endpoint-row">
+          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/search</span></div>
+          <div><div class="endpoint-desc">Tìm kiếm theo <code>?identifierId=</code> hoặc <code>&phoneNo=</code></div></div>
+        </div>
+        <div class="endpoint-row">
+          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/{identifierId}</span></div>
+          <div><div class="endpoint-desc">Danh sách tất cả lần thử của 1 khách hàng</div></div>
+        </div>
+        <div class="endpoint-row">
+          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/{identifierId}/{attemptNumber}</span></div>
+          <div><div class="endpoint-desc">Chi tiết đầy đủ 1 lần thử (VNPT flags, liveness, fraud, ảnh)</div></div>
+        </div>
+        <div class="endpoint-row">
+          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/dashboard</span></div>
+          <div><div class="endpoint-desc">Metrics Dashboard: KPI, outcome breakdown, failure step breakdown, daily trend, fraud stats. Params: <code>?fromDate=&toDate=</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Outcome → failureStep mapping (hướng dẫn App)</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Scenario</th><th>outcome</th><th>failureStep</th><th>Ảnh bắt buộc?</th></tr></thead>
+          <tbody>
+            <tr><td>SDK trả blur/warning OCR</td><td><span class="badge badge-red">VNPT_FAILED</span></td><td><code>VNPT_OCR</code></td><td>✅ Có</td></tr>
+            <tr><td>MRZ checksum fail</td><td><span class="badge badge-orange">MRZ_FAILED</span></td><td><code>MRZ_VALIDATION</code></td><td>✅ Có (mặt sau)</td></tr>
+            <tr><td>MRZ ↔ OCR mismatch</td><td><span class="badge badge-orange">MRZ_FAILED</span></td><td><code>MRZ_CROSS_CHECK</code></td><td>✅ Có</td></tr>
+            <tr><td>Liveness card fail</td><td><span class="badge badge-red">VNPT_FAILED</span></td><td><code>VNPT_LIVENESS</code></td><td>❌ Không</td></tr>
+            <tr><td>Face compare NOMATCH</td><td><span class="badge badge-red">FACE_COMPARE_FAILED</span></td><td><code>FACE_COMPARE</code></td><td>❌ Không</td></tr>
+            <tr><td>Lotte từ chối</td><td><span class="badge badge-orange">LOTTE_REJECTED</span></td><td><code>LOTTE_SUBMIT</code></td><td>❌ Không</td></tr>
+            <tr><td>Thành công</td><td><span class="badge badge-green">SUCCESS</span></td><td>—</td><td>❌ Không</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Service -->
+  <section id="service">
+    <h2>Service Logic</h2>
+    <div class="card-grid col2">
+      <div class="card">
+        <h3>EKycAttemptLogService — xử lý POST /ekycs/attempt-log</h3>
+        <div class="timeline" style="margin-top:12px">
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-title">1. Parse JWT</div>
+            <div class="tl-body">Lấy <code>identifierId</code> và <code>phoneNo</code> từ token — App không cần truyền thủ công</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-title">2. Tính attempt_number</div>
+            <div class="tl-body"><code>COUNT(*) FROM ekyc_attempt_log WHERE identifier_id = ? + 1</code></div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-title">3. Extract VNPT fields</div>
+            <div class="tl-body">Nếu có <code>vnptRawData</code> → parse base64 JSON → map 30+ fields vào entity</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot blue"></div>
+            <div class="tl-title">4. Upload ảnh S3/MinIO</div>
+            <div class="tl-body">Chỉ khi có <code>imageFrontBase64</code> / <code>imageBackBase64</code> trong request</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot green"></div>
+            <div class="tl-title">5. Insert vào DB</div>
+            <div class="tl-body">Append-only INSERT — không bao giờ UPDATE record này</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>CustomEKycService — cập nhật khi APPROVED</h3>
+        <div class="timeline" style="margin-top:12px">
+          <div class="tl-item">
+            <div class="tl-dot orange"></div>
+            <div class="tl-title">Khi Lotte reject</div>
+            <div class="tl-body">Repository <code>updateOutcome()</code> cập nhật <code>outcome = LOTTE_REJECTED</code> cho attempt record mới nhất</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot green"></div>
+            <div class="tl-title">Khi account APPROVED</div>
+            <div class="tl-body">
+              1. <code>updateFinalEkycId()</code> — link toàn bộ attempt về <code>e_kyc.id</code> thành công<br>
+              2. Cập nhật <code>e_kyc.total_attempts</code> + <code>e_kyc.first_attempt_at</code>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-green" style="margin-top:12px">
+          Logic duplicate handling PENDING cũ <strong>giữ nguyên hoàn toàn</strong> — không break luồng hiện tại.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Image Storage -->
+  <section id="image">
+    <h2>Image Storage</h2>
+    <div class="card">
+      <div class="card-grid col2">
+        <div>
+          <h3>Storage path convention</h3>
+          <pre><code>ekyc/{identifierId}/attempt-{N}-front.jpg
+ekyc/{identifierId}/attempt-{N}-back.jpg</code></pre>
+          <h3 style="margin-top:16px">Retention policy</h3>
+          <p>Giữ tối thiểu <strong>90 ngày</strong></p>
+        </div>
+        <div>
+          <h3>Bảo mật</h3>
+          <ul class="check-list">
+            <li>Bucket <strong>private</strong> — không public-read</li>
+            <li>Trả về <strong>presigned URL</strong> có TTL (1 giờ)</li>
+            <li>Hoặc Admin UI gọi endpoint riêng <code>GET .../image-url?type=front</code></li>
+            <li>Không lưu base64 vào DB — chỉ lưu URL sau upload thành công</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Admin Journey -->
+  <section id="admin-journey">
+    <h2>FE Issue — Admin: Tra cứu Hành trình</h2>
+    <div class="card-grid col3">
+      <div class="card" style="border-top:3px solid var(--blue)">
+        <h3>Màn hình 1: Tìm kiếm</h3>
+        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts</code></p>
+        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
+          <li>Input: Số CCCD hoặc SĐT</li>
+          <li>Kết quả: họ tên, tổng lần thử, trạng thái TK</li>
+          <li>Nút [Xem hành trình →]</li>
+          <li>Empty state khi không tìm thấy</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--orange)">
+        <h3>Màn hình 2: Customer Journey</h3>
+        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts/:identifierId</code></p>
+        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
+          <li>Header: tên, CCCD, SĐT, tổng lần thử</li>
+          <li>Timeline: Lần 1 → Lần 2 → Lần N</li>
+          <li>Badge màu: SUCCESS/FAILED/REJECTED</li>
+          <li>Link sang chi tiết TK đã mở</li>
+        </ul>
+      </div>
+      <div class="card" style="border-top:3px solid var(--purple)">
+        <h3>Màn hình 3: Chi tiết lần thử</h3>
+        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts/:id/:attemptN</code></p>
+        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
+          <li>Section OCR: số CCCD, tên, loại thẻ</li>
+          <li>Section Chất lượng ảnh: blur + luminance score</li>
+          <li>Section Kiểm tra giả mạo: 7 flags</li>
+          <li>Section Khớp 2 mặt: id/name/dob/expiry</li>
+          <li>Section Lý do thất bại (highlight đỏ)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Outcome badge colors</h3>
+      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
+        <span class="badge badge-green">SUCCESS — xanh lá</span>
+        <span class="badge badge-red">VNPT_FAILED — đỏ</span>
+        <span class="badge badge-red">MRZ_FAILED — đỏ</span>
+        <span class="badge badge-orange">LOTTE_REJECTED — cam</span>
+        <span class="badge badge-gray">USER_ABANDONED — xám</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Admin Dashboard -->
+  <section id="admin-dashboard">
+    <h2>FE Issue — Admin: Dashboard Analytics <span class="badge badge-blue" style="margin-left:8px;font-size:11px">Mới</span></h2>
+
+    <div class="alert alert-blue">
+      Route: <code>/admin/ekyc/dashboard</code> | Filter: 7 ngày qua / 30 ngày / Tùy chọn | Load time SLA: &lt; 3s
+    </div>
+
+    <div class="card">
+      <h3>Hàng 1 — 4 KPI Cards</h3>
+      <div class="card-grid col2" style="margin-top:10px">
+        <div style="background:var(--blue-light);border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:var(--blue-dark);font-weight:700">TỔNG EKYC</div>
+          <div style="font-size:28px;font-weight:800;color:var(--blue-dark)">312</div>
+          <div style="font-size:11px;color:var(--blue)">lượt trong 7 ngày</div>
+        </div>
+        <div style="background:var(--green-light);border-radius:8px;padding:14px">
+          <div style="font-size:11px;color:var(--green);font-weight:700">TỈ LỆ THÀNH CÔNG</div>
+          <div style="font-size:28px;font-weight:800;color:var(--green)">79.5%</div>
+          <div style="font-size:11px;color:var(--green)">approved / total</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>4 Charts</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Chart</th><th>Loại</th><th>Dữ liệu</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Tỉ lệ kết quả eKYC</strong></td><td>Donut</td><td>APPROVED / REJECTED / PENDING — màu xanh/đỏ/vàng</td></tr>
+            <tr><td><strong>Nguyên nhân thất bại</strong></td><td>Horizontal bar</td><td>Breakdown theo failure step, sort desc, label tiếng Việt</td></tr>
+            <tr><td><strong>Xu hướng theo ngày</strong></td><td>Line chart</td><td>2 đường: Tổng vs Thành công (7 ngày), hover tooltip</td></tr>
+            <tr><td><strong>Fraud Detection</strong></td><td>Bar + counter</td><td>Breakdown theo loại fraud: id_fake, tampering, duplication</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Bảng: Top khách hàng nhiều lần thử</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Cột</th><th>Ghi chú</th></tr></thead>
+          <tbody>
+            <tr><td>Họ tên + Số CCCD</td><td>—</td></tr>
+            <tr><td>Số lần thử</td><td>Badge đỏ nếu ≥ 3</td></tr>
+            <tr><td>Kết quả</td><td>Pill APPROVED / PENDING / REJECTED</td></tr>
+            <tr><td>Nguyên nhân fail chính</td><td>Label tiếng Việt</td></tr>
+            <tr><td>Hành trình</td><td>Nút [Xem →] link sang màn hình Journey</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- App MRZ -->
+  <section id="app-mrz">
+    <h2>FE Issue — App: MRZ Validation &amp; Cross-Check <span class="badge badge-red" style="margin-left:8px;font-size:11px">Security</span></h2>
+
+    <div class="alert alert-red">
+      <strong>Lỗ hổng hiện tại:</strong> <code>default: break</code> trong switch xử lý VNPT warning → bất kỳ warning code không biết đều cho user <strong>pass qua</strong>. MRZ hoàn toàn không được đọc dù SDK đã trả về.
+    </div>
+
+    <div class="card">
+      <h3>3 Phases implement</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Phase</th><th>Nội dung</th><th>Estimate</th><th>Phụ thuộc</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Phase 1</strong></td>
+              <td>Fix <code>default: break</code> → block + analytics log</td>
+              <td>0.5 ngày</td>
+              <td><span class="badge badge-green">Bắt đầu ngay</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 2</strong></td>
+              <td>Đọc & validate MRZ (<code>valid_score</code> + cross-check 4 trường)</td>
+              <td>1 ngày</td>
+              <td><span class="badge badge-red">Chờ VNPT confirm threshold</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 3</strong></td>
+              <td>Gửi MRZ data lên BE qua <code>POST /ekycs/attempt-log</code></td>
+              <td>0.5 ngày</td>
+              <td><span class="badge badge-yellow">Chờ BE deploy</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>MRZ Cross-Check — 4 trường so sánh</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <div style="background:var(--blue-light);border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px">🆔</div>
+          <div style="font-size:12px;font-weight:700;color:var(--blue-dark)">Số CCCD</div>
+          <div style="font-size:11px;color:var(--blue)">MRZ pos 0-8 vs OCR id</div>
+        </div>
+        <div style="background:var(--green-light);border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px">🎂</div>
+          <div style="font-size:12px;font-weight:700;color:var(--green)">Ngày sinh</div>
+          <div style="font-size:11px;color:var(--green)">MRZ YYMMDD vs OCR DD/MM/YYYY</div>
+        </div>
+        <div style="background:var(--orange-light);border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px">⚤</div>
+          <div style="font-size:12px;font-weight:700;color:var(--orange)">Giới tính</div>
+          <div style="font-size:11px;color:var(--orange)">MRZ M/F vs OCR</div>
+        </div>
+        <div style="background:var(--purple-light);border-radius:8px;padding:12px 16px;text-align:center">
+          <div style="font-size:20px">📅</div>
+          <div style="font-size:12px;font-weight:700;color:var(--purple)">Ngày hết hạn</div>
+          <div style="font-size:11px;color:var(--purple)">MRZ YYMMDD vs OCR</div>
+        </div>
+      </div>
+      <p style="font-size:12px;margin-top:10px">Nếu bất kỳ trường nào MISMATCH → <strong>block user</strong>, hiển thị cảnh báo, gọi <code>POST /ekycs/attempt-log</code> với <code>outcome: MRZ_FAILED</code>.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Files cần thay đổi trong nhsv-mts-rn</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>File</th><th>Thay đổi</th></tr></thead>
+          <tbody>
+            <tr><td><code>src/sagas/authentication/EKYCScanIdDone.ts</code></td><td>Fix <code>default: break</code>, thêm MRZ validate + cross-check</td></tr>
+            <tr><td><code>src/sagas/authentication/OnPressNextInConfirmPolicyScreen.ts</code></td><td>Gọi <code>POST /ekycs/attempt-log</code> sau Lotte response</td></tr>
+            <tr><td><code>src/reduxs/authentication/ekyc/reducer.ts</code></td><td>Thêm 6 MRZ state fields</td></tr>
+            <tr><td><code>src/interfaces/authentication.ts</code></td><td>Thêm MRZ fields vào request interface</td></tr>
+            <tr><td><code>src/i18n/vi.json</code> + <code>en.json</code></td><td>3 warning keys: MRZ_INVALID, MRZ_OCR_MISMATCH, MRZ_LOW_CONFIDENCE</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Checklist -->
+  <section id="checklist">
+    <h2>Delivery Checklist</h2>
+    <div class="card-grid col2">
+      <div class="card">
+        <h3>Tài liệu</h3>
+        <ul class="check-list">
+          <li>PRD v2.0 — yêu cầu nghiệp vụ đầy đủ</li>
+          <li>DB Schema Spec — SQL + Liquibase XML</li>
+          <li>Backend Spec — Entity, Service, Repository, APIs</li>
+          <li>FE Issue: Admin Journey (3 màn hình)</li>
+          <li>FE Issue: Admin Dashboard Analytics</li>
+          <li>FE Issue: App MRZ Validation (3 phases)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Kỹ thuật — cần làm trước khi implement</h3>
+        <ul class="check-list">
+          <li class="block">Q1: VNPT confirm <code>mrz_valid_score</code> threshold — chặn Phase 2 MRZ</li>
+          <li class="block">Confirm MinIO bucket name và credentials (dev/staging)</li>
+          <li class="pending">Review presigned URL TTL phù hợp với Admin workflow</li>
+          <li class="pending">Estimate effort từ BE dev lead → phân task Sprint</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open Questions -->
+  <section id="openq">
+    <h2>Open Questions</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Câu hỏi</th><th>Người trả lời</th><th>Mức chặn</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Q1</td>
+            <td><code>mrz_valid_score</code> range là bao nhiêu? Ngưỡng hợp lệ để block user là gì?</td>
+            <td>VNPT SDK team</td>
+            <td><span class="badge badge-red">Chặn Phase 2 MRZ</span></td>
+          </tr>
+          <tr>
+            <td>Q2</td>
+            <td>CCCD 12 số vs 9 số trong MRZ: dùng <code>startsWith</code> hay so sánh full để cross-check?</td>
+            <td>BE / VNPT</td>
+            <td><span class="badge badge-yellow">Cần làm rõ</span></td>
+          </tr>
+          <tr>
+            <td>Q3</td>
+            <td><code>mrz_probs</code> (array per-character confidence) có cần lưu BE không?</td>
+            <td>BE team</td>
+            <td><span class="badge badge-gray">Không chặn</span></td>
+          </tr>
+          <tr>
+            <td>Q4</td>
+            <td>Presigned URL TTL cho ảnh CCCD: 1 giờ là đủ với workflow Ops không?</td>
+            <td>Ops team</td>
+            <td><span class="badge badge-gray">Không chặn</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div style="text-align:center;padding:32px 0;color:var(--text-muted);font-size:12px">
+    eKYC Enhancement — Store Log v2.0 · Generated 2026-06-01 · For: Dev Team + BA + Ops
+  </div>
+
+</main>
+
+<script>
+  // Active nav link on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 60) current = s.id; });
+    navLinks.forEach(l => {
+      l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+    });
+  });
+</script>
+</body>
+</html>

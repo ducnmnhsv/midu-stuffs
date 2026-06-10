@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycCreatorStatus": {
+      "home": {
+        "title": "E Kyc Creator Statuses",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một E Kyc Creator Status",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật E Kyc Creator Status",
+        "notFound": "No E Kyc Creator Statuses found"
+      },
+      "created": "Một E Kyc Creator Status mới được tạo với định danh {{ param }}",
+      "updated": "Một E Kyc Creator Status cập nhật với định danh {{ param }}",
+      "deleted": "Một E Kyc Creator Status đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa E Kyc Creator Status {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Creator Status"
+      },
+      "id": "ID",
+      "status": "Status",
+      "reason": "Reason",
+      "updatedAt": "Updated At",
+      "updatedBy": "Updated By",
+      "fullResult": "Full Result",
+      "eKyc": "E Kyc"
+    }
+  }
+}

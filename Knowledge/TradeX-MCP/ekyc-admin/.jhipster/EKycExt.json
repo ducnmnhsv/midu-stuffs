@@ -1,0 +1,31 @@
+{
+  "fields": [
+    {
+      "fieldName": "logId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "rawData",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "text"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eKyc",
+      "otherEntityName": "eKyc",
+      "relationshipType": "one-to-one",
+      "otherEntityField": "id",
+      "ownerSide": true,
+      "id": false,
+      "otherEntityRelationshipName": "eKycExt"
+    }
+  ],
+  "service": "serviceClass",
+  "dto": "no",
+  "jpaMetamodelFiltering": false,
+  "readOnly": false,
+  "pagination": "no",
+  "name": "EKycExt",
+  "changelogDate": "20220801011914"
+}

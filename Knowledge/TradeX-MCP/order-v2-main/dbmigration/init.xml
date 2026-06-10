@@ -1,0 +1,463 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="create_table_t_stop_order">
+        <createTable tableName="t_stop_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(45)">
+                <constraints nullable="true" />
+            </column>
+            <column name="quantity" type="int" />
+            <column name="sell_buy_type" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="stop_price" type="decimal(19,2)" />
+            <column name="stop_volume" type="int">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_price" type="decimal(19,2)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_type" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trading_acc_seq" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)" />
+            <column name="order_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ordered_at" type="timestamp" />
+            <column name="cancelled_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fail_reason" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_type" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="from_date" type="timestamp" />
+            <column name="to_date" type="timestamp" />
+            <column name="header" type="json">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_ip" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="device_unique_id" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="remark" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="mac_address" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_account" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_code" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="ADMIN (generated)" id="create_table_t_trailing_order">
+        <createTable tableName="t_trailing_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+            <column name="quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="sell_buy_type" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="trailing_amount" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="limit_offset" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="current_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="stop_price" type="decimal(19,2)">
+                <constraints nullable="true" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trading_acc_seq" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ordered_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fail_reason" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_code" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_account" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_type" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_ip" type="varchar(25)">
+                <constraints nullable="true" />
+            </column>
+            <column name="error_code" type="varchar(25)">
+                <constraints nullable="true" />
+            </column>
+            <column name="header" type="json">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="ADMIN (generated)" id="create_table_t_bull_bear_order">
+        <createTable tableName="t_bull_bear_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="code" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+            <column name="quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="match_quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="sell_buy_type" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="order_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="profit_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="trigger_loss_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="toler" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trading_acc_seq" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ordered_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fail_reason" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="error_code" type="varchar(25)">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_type" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_ip" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="header" type="json">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="ADMIN (generated)" id="create_table_t_oco_order">
+        <createTable tableName="t_oco_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="bull_bear_id" type="int">
+                <constraints nullable="true" />
+            </column>
+            <column name="code" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+            <column name="quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="match_quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="unmatch_quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="sell_buy_type" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="current_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="profit_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="trigger_loss_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="toler" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="source_ip" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_type" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trading_acc_seq" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(14)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ordered_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fail_reason" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="error_code" type="varchar(25)">
+                <constraints nullable="true" />
+            </column>
+            <column name="header" type="json">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="ADMIN (generated)" id="create_table_t_profit_loss_order">
+        <createTable tableName="t_profit_loss_order">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="bull_bear_id" type="int">
+                <constraints nullable="true" />
+            </column>
+            <column name="oco_id" type="int">
+                <constraints nullable="true" />
+            </column>
+            <column name="code" type="varchar(45)">
+                <constraints nullable="false" />
+            </column>
+            <column name="quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="match_quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="cancelled_quantity" type="int">
+                <constraints nullable="false" />
+            </column>
+            <column name="sell_buy_type" type="varchar(4)">
+                <constraints nullable="false" />
+            </column>
+            <column name="order_price" type="decimal(19,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_type" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="source_ip" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="order_group_number" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="trading_acc_seq" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(12)">
+                <constraints nullable="false" />
+            </column>
+            <column name="profit_loss_type" type="varchar(17)">
+                <constraints nullable="false" />
+            </column>
+            <column name="ordered_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+            <column name="cancelled_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fail_reason" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="error_code" type="varchar(25)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_code" type="varchar(10)">
+                <constraints nullable="true" />
+            </column>
+            <column name="bank_account" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="header" type="json">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_by" type="bigint(20)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="timestamp">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

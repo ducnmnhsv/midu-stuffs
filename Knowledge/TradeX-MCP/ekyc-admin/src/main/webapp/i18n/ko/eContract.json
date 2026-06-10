@@ -1,0 +1,32 @@
+{
+  "eKycAdminApp": {
+    "eContract": {
+      "home": {
+        "title": "E Contracts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new E Contract",
+        "createOrEditLabel": "Create or edit a E Contract",
+        "notFound": "No E Contracts found"
+      },
+      "created": "A new E Contract is created with identifier {{ param }}",
+      "updated": "A E Contract is updated with identifier {{ param }}",
+      "deleted": "A E Contract is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete E Contract {{ id }}?"
+      },
+      "detail": {
+        "title": "E Contract"
+      },
+      "id": "ID",
+      "refId": "Ref Id",
+      "envelopeId": "Envelope Id",
+      "identifierId": "Identifier Id",
+      "templateId": "Template Id",
+      "alias": "Alias",
+      "companyType": "Company Type",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "eKyc": "E Kyc"
+    }
+  }
+}

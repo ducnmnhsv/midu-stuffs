@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycCreatorStatus": {
+      "home": {
+        "title": "E Kyc Creator Statuses",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new E Kyc Creator Status",
+        "createOrEditLabel": "Create or edit a E Kyc Creator Status",
+        "notFound": "No E Kyc Creator Statuses found"
+      },
+      "created": "A new E Kyc Creator Status is created with identifier {{ param }}",
+      "updated": "A E Kyc Creator Status is updated with identifier {{ param }}",
+      "deleted": "A E Kyc Creator Status is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete E Kyc Creator Status {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Creator Status"
+      },
+      "id": "ID",
+      "status": "Status",
+      "reason": "Reason",
+      "updatedAt": "Updated At",
+      "updatedBy": "Updated By",
+      "fullResult": "Full Result",
+      "eKyc": "E Kyc"
+    }
+  }
+}

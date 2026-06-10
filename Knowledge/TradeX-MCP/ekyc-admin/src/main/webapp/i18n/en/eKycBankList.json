@@ -1,0 +1,29 @@
+{
+  "eKycAdminApp": {
+    "eKycBankList": {
+      "home": {
+        "title": "E Kyc Bank Lists",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new E Kyc Bank List",
+        "createOrEditLabel": "Create or edit a E Kyc Bank List",
+        "notFound": "No E Kyc Bank Lists found"
+      },
+      "created": "A new E Kyc Bank List is created with identifier {{ param }}",
+      "updated": "A E Kyc Bank List is updated with identifier {{ param }}",
+      "deleted": "A E Kyc Bank List is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete E Kyc Bank List {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Bank List"
+      },
+      "id": "ID",
+      "bankId": "Bank Id",
+      "bankName": "Bank Name",
+      "bankAccNo": "Bank Acc No",
+      "ownerName": "Owner Name",
+      "branchId": "Branch Id",
+      "eKyc": "E Kyc"
+    }
+  }
+}

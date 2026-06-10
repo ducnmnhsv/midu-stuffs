@@ -1,0 +1,26 @@
+{
+  "eKycAdminApp": {
+    "ttlIssuePlaceCodeMap": {
+      "home": {
+        "title": "Ttl Issue Place Code Maps",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "建立一筆新的 Ttl Issue Place Code Map",
+        "createOrEditLabel": "建立或編輯 Ttl Issue Place Code Map",
+        "notFound": "No Ttl Issue Place Code Maps found"
+      },
+      "created": "新的 Ttl Issue Place Code Map 建立成功，識別碼為 {{ param }}",
+      "updated": "識別碼為 {{ param }} 的 Ttl Issue Place Code Map 更新成功",
+      "deleted": "識別碼為 {{ param }} 的 Ttl Issue Place Code Map 刪除成功",
+      "delete": {
+        "question": "您確定要刪除 Ttl Issue Place Code Map {{ id }} 嗎?"
+      },
+      "detail": {
+        "title": "Ttl Issue Place Code Map"
+      },
+      "id": "ID",
+      "code": "Code",
+      "name": "Name",
+      "enableRegex": "Enable Regex"
+    }
+  }
+}

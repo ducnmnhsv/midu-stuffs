@@ -1,0 +1,32 @@
+{
+  "eKycAdminApp": {
+    "eContract": {
+      "home": {
+        "title": "E Contracts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "创建新 E Contract",
+        "createOrEditLabel": "创建或编辑 E Contract",
+        "notFound": "No E Contracts found"
+      },
+      "created": "E Contract {{ param }} 创建成功",
+      "updated": "E Contract {{ param }} 更新成功",
+      "deleted": "E Contract {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 E Contract {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "E Contract"
+      },
+      "id": "ID",
+      "refId": "Ref Id",
+      "envelopeId": "Envelope Id",
+      "identifierId": "Identifier Id",
+      "templateId": "Template Id",
+      "alias": "Alias",
+      "companyType": "Company Type",
+      "createdAt": "Created At",
+      "updatedAt": "Updated At",
+      "eKyc": "E Kyc"
+    }
+  }
+}

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Smart OTP — Login Integration Analysis</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f5f7; color: #172b4d; line-height: 1.6; }
+
+    .header { background: linear-gradient(135deg, #0052cc, #0065ff); color: white; padding: 40px 48px 32px; }
+    .header h1 { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .header p { opacity: 0.85; font-size: 14px; }
+    .badge { display: inline-block; background: rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 10px; font-size: 12px; margin-top: 10px; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+    .section { background: white; border-radius: 8px; padding: 28px 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .section h2 { font-size: 18px; font-weight: 600; color: #0052cc; margin-bottom: 20px; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+    .section h3 { font-size: 15px; font-weight: 600; color: #172b4d; margin: 20px 0 10px; }
+
+    .key-finding { background: #e3f2fd; border-left: 4px solid #1976d2; border-radius: 0 6px 6px 0; padding: 14px 18px; margin: 16px 0; }
+    .key-finding strong { display: block; margin-bottom: 4px; color: #0d47a1; }
+
+    .answer-box { background: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 0 6px 6px 0; padding: 14px 18px; margin: 16px 0; }
+    .answer-box strong { display: block; margin-bottom: 4px; color: #1b5e20; font-size: 15px; }
+
+    .warning-box { background: #fff8e1; border-left: 4px solid #f9a825; border-radius: 0 6px 6px 0; padding: 14px 18px; margin: 16px 0; }
+    .warning-box strong { display: block; margin-bottom: 4px; color: #e65100; }
+
+    /* Flow diagram */
+    .flow { display: flex; flex-direction: column; gap: 4px; margin: 16px 0; }
+    .flow-step { display: flex; align-items: flex-start; gap: 12px; }
+    .step-num { min-width: 28px; height: 28px; background: #0052cc; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+    .step-num.green { background: #2e7d32; }
+    .step-num.orange { background: #e65100; }
+    .step-content { flex: 1; }
+    .step-content .label { font-weight: 600; font-size: 14px; }
+    .step-content .detail { font-size: 13px; color: #5e6c84; margin-top: 2px; }
+    .step-arrow { text-align: center; color: #c1c7d0; font-size: 18px; margin-left: 14px; }
+    .api-chip { display: inline-block; background: #f4f5f7; border: 1px solid #dfe1e6; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; color: #0052cc; margin: 2px 0; }
+    .method { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-weight: 700; margin-right: 4px; }
+    .post { background: #e8f5e9; color: #2e7d32; }
+
+    /* Case cards */
+    .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    @media(max-width: 680px) { .case-grid { grid-template-columns: 1fr; } }
+    .case-card { border: 2px solid #dfe1e6; border-radius: 8px; padding: 20px; }
+    .case-card.active { border-color: #0052cc; }
+    .case-card.inactive { border-color: #ff8b00; }
+    .case-card.edge { border-color: #bf2600; }
+    .case-tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; margin-bottom: 12px; }
+    .tag-active { background: #e3f2fd; color: #0052cc; }
+    .tag-inactive { background: #fff8e1; color: #e65100; }
+    .tag-edge { background: #ffebe6; color: #bf2600; }
+    .case-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+    .mini-flow { list-style: none; }
+    .mini-flow li { font-size: 13px; padding: 4px 0; border-bottom: 1px solid #f4f5f7; display: flex; gap: 8px; }
+    .mini-flow li:last-child { border-bottom: none; }
+    .mini-flow .icon { font-size: 14px; flex-shrink: 0; }
+
+    /* Comparison table */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 12px; }
+    th { background: #f4f5f7; text-align: left; padding: 10px 14px; font-weight: 600; color: #344563; border: 1px solid #dfe1e6; }
+    td { padding: 10px 14px; border: 1px solid #dfe1e6; vertical-align: top; }
+    tr:hover td { background: #f8f9ff; }
+    .check { color: #2e7d32; font-weight: 700; }
+    .cross { color: #bf2600; font-weight: 700; }
+    .neutral { color: #5e6c84; }
+
+    /* API diff */
+    .api-diff { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+    @media(max-width: 680px) { .api-diff { grid-template-columns: 1fr; } }
+    .diff-block { border-radius: 6px; overflow: hidden; }
+    .diff-block .diff-header { padding: 8px 14px; font-size: 12px; font-weight: 700; }
+    .diff-block.before .diff-header { background: #ffebe6; color: #bf2600; }
+    .diff-block.after .diff-header { background: #e3fcef; color: #006644; }
+    .diff-block pre { background: #f4f5f7; padding: 14px; font-size: 12px; font-family: 'SF Mono', 'Fira Code', monospace; line-height: 1.7; overflow-x: auto; }
+    .diff-block pre .add { color: #006644; background: #e3fcef; display: block; margin: -2px -14px; padding: 2px 14px; }
+    .diff-block pre .same { color: #5e6c84; }
+
+    /* Status bar */
+    .status-bar { background: white; border: 1px solid #dfe1e6; border-radius: 8px; padding: 20px 28px; display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 24px; }
+    .stat { text-align: center; }
+    .stat .num { font-size: 28px; font-weight: 700; color: #0052cc; }
+    .stat .lbl { font-size: 12px; color: #5e6c84; margin-top: 2px; }
+
+    .footer { text-align: center; color: #97a0af; font-size: 12px; padding: 24px; }
+    .tag-pill { display: inline-block; background: #e3f2fd; color: #0052cc; border-radius: 12px; padding: 2px 10px; font-size: 12px; margin: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Smart OTP — Login Integration Analysis</h1>
+  <p>Phân tích thiết kế tích hợp Smart OTP vào luồng đăng nhập NHSV Pro</p>
+  <span class="badge">📋 Awaiting PM Approval → PRD</span>
+  <span class="badge" style="margin-left:8px">📅 2026-05-29</span>
+</div>
+
+<div class="container">
+
+  <!-- Stats -->
+  <div class="status-bar">
+    <div class="stat"><div class="num">2</div><div class="lbl">Bước login hiện tại</div></div>
+    <div class="stat"><div class="num">0</div><div class="lbl">grant_type mới cần tạo</div></div>
+    <div class="stat"><div class="num">3</div><div class="lbl">Cases cần handle</div></div>
+    <div class="stat"><div class="num">2</div><div class="lbl">API thay đổi nhỏ</div></div>
+  </div>
+
+  <!-- Section 1: Câu hỏi cốt lõi -->
+  <div class="section">
+    <h2>❓ Câu trả lời cho 2 câu hỏi của bạn</h2>
+
+    <div class="answer-box">
+      <strong>1. Có cần thêm grant_type mới không?</strong>
+      Không. Smart OTP vẫn dùng <code>grant_type: "password_otp"</code> hiện tại.
+      Chỉ cần mở rộng <strong>Step 2 (verifyOTP)</strong> để nhận thêm param <code>otpType: "SMART_OTP"</code>.
+      Backend tự route sang Smart OTP verification thay vì hash lookup SMS.
+    </div>
+
+    <div class="key-finding">
+      <strong>Tại sao không cần grant_type mới?</strong>
+      grant_type phân biệt <em>cơ chế xác thực</em> (password vs biometric vs social).
+      Smart OTP chỉ thay đổi <em>phương thức xác nhận OTP</em> — vẫn là password + OTP, chỉ OTP source khác.
+      Tương tự SMS OTP vs Push OTP — cùng grant_type, khác delivery method.
+    </div>
+
+    <div class="answer-box">
+      <strong>2. Flow user đã có vs chưa có Smart OTP khác nhau thế nào?</strong>
+      Khác nhau ở Step 2 (màn hình nhập OTP).
+      Step 1 (nhập username/password) hoàn toàn giống nhau.
+      Backend trả về <code>sotpStatus</code> trong response Step 1 → FE tự biết show UI nào.
+    </div>
+  </div>
+
+  <!-- Section 2: Luồng hiện tại -->
+  <div class="section">
+    <h2>🔄 Luồng Đăng Nhập Hiện Tại (Baseline)</h2>
+    <p style="font-size:13px;color:#5e6c84;margin-bottom:16px">Đây là flow đang chạy production. Smart OTP sẽ được tích hợp vào đây.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <div class="label">User nhập username + password</div>
+          <div class="detail"><span class="method post">POST</span><span class="api-chip">/api/v1/login</span> — grant_type: "password_otp"</div>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <div class="label">Backend xác thực password → Lotte trả về OTP hash</div>
+          <div class="detail">Response: <code>accessToken</code> (TẠM THỜI) + <code>mfaData</code> (OTP đã mã hóa RSA)</div>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <div class="label">Backend gửi OTP tới user</div>
+          <div class="detail">OneSignal push notification <em>hoặc</em> SMS (fallback)</div>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <div class="label">User nhập mã OTP nhận được</div>
+          <div class="detail"><span class="method post">POST</span><span class="api-chip">/api/v1/login/sec/verifyOTP</span> — { otpValue: "1234" }</div>
+        </div>
+      </div>
+      <div class="step-arrow">↓</div>
+      <div class="flow-step">
+        <div class="step-num green">✓</div>
+        <div class="step-content">
+          <div class="label">Login thành công</div>
+          <div class="detail">Response: <code>accessToken</code> (FINAL) + <code>refreshToken</code> + <code>userInfo</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="warning-box" style="margin-top:20px">
+      <strong>Vấn đề hiện tại với SMS/Push OTP:</strong>
+      OTP hiện tại hiển thị qua push notification → có thể bị nhìn trộm trên màn hình khóa.
+      Smart OTP giải quyết vấn đề này bằng cách để user <em>tự gen mã</em> trong app, không cần backend gửi.
+    </div>
+  </div>
+
+  <!-- Section 3: 3 Cases -->
+  <div class="section">
+    <h2>📊 3 Cases Cần Handle</h2>
+    <div class="case-grid">
+
+      <div class="case-card active">
+        <span class="case-tag tag-active">Case A — Đã kích hoạt Smart OTP</span>
+        <h4>sotpStatus = "Y"</h4>
+        <ul class="mini-flow">
+          <li><span class="icon">🔐</span>Nhập username + password → Submit</li>
+          <li><span class="icon">📡</span>Step 1 response: <code>otpType: "SMART_OTP"</code></li>
+          <li><span class="icon">📱</span>FE show: "Mở app → nhập PIN → lấy mã Smart OTP"</li>
+          <li><span class="icon">⌨️</span>User nhập mã 6 chữ số từ app</li>
+          <li><span class="icon">✅</span>verifyOTP với <code>otpType: "SMART_OTP"</code></li>
+          <li><span class="icon">🎉</span>Login thành công</li>
+        </ul>
+        <div style="margin-top:12px;padding:10px;background:#e3f2fd;border-radius:6px;font-size:13px">
+          <strong>UX improvement:</strong> Không cần chờ push/SMS. User chủ động lấy mã.
+        </div>
+      </div>
+
+      <div class="case-card inactive">
+        <span class="case-tag tag-inactive">Case B — Chưa kích hoạt Smart OTP</span>
+        <h4>sotpStatus = "N"</h4>
+        <ul class="mini-flow">
+          <li><span class="icon">🔐</span>Nhập username + password → Submit</li>
+          <li><span class="icon">📡</span>Step 1 response: <code>otpType: "PUSH_OTP"</code></li>
+          <li><span class="icon">📲</span>FE show: "Nhập mã OTP vừa gửi qua app/SMS"</li>
+          <li><span class="icon">⌨️</span>User nhập OTP nhận được (flow hiện tại, không đổi)</li>
+          <li><span class="icon">✅</span>Login thành công</li>
+          <li><span class="icon">💬</span>[Optional] Banner: "Kích hoạt Smart OTP để bảo mật hơn?"</li>
+        </ul>
+        <div style="margin-top:12px;padding:10px;background:#fff8e1;border-radius:6px;font-size:13px">
+          <strong>Backward compatible:</strong> Flow cũ hoàn toàn không thay đổi.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="case-card edge" style="margin-top:16px">
+      <span class="case-tag tag-edge">Case C — Edge Case: Mất device / App bị xóa</span>
+      <h4>sotpStatus = "Y" nhưng user không gen được mã (app bị xóa, đổi điện thoại…)</h4>
+      <ul class="mini-flow" style="columns:2;gap:16px">
+        <li><span class="icon">⚠️</span>Step 1 trả về otpType: "SMART_OTP"</li>
+        <li><span class="icon">🔄</span>FE cần có link "Không lấy được mã?"</li>
+        <li><span class="icon">📱</span>User chọn → fallback về SMS OTP</li>
+        <li><span class="icon">✅</span>verifyOTP với <code>otpType: "SMS_OTP"</code></li>
+      </ul>
+      <div style="margin-top:12px;padding:10px;background:#ffebe6;border-radius:6px;font-size:13px">
+        <strong>Yêu cầu kỹ thuật:</strong> Backend phải accept <code>otpType: "SMS_OTP"</code> ngay cả khi sotpStatus = "Y". Cần rate limit riêng để tránh abuse.
+        Sau login thành công qua SMS fallback → gợi ý user kích hoạt lại Smart OTP.
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: API Changes -->
+  <div class="section">
+    <h2>🔧 Thay Đổi API Cần Thiết (Minimal)</h2>
+    <p style="font-size:13px;color:#5e6c84;margin-bottom:16px">Chỉ 2 thay đổi nhỏ — không breaking change, không grant_type mới.</p>
+
+    <h3>Thay đổi 1: Step 1 Response — Thêm <code>otpType</code></h3>
+    <div class="api-diff">
+      <div class="diff-block before">
+        <div class="diff-header">TRƯỚC (hiện tại)</div>
+        <pre><span class="same">POST /api/v1/login
+Response:
+{
+  "accessToken": "temp_token",
+  "otpIndex": "1",
+  "userData": {
+    "mfaData": "RSA_encrypted..."
+  }
+}</span></pre>
+      </div>
+      <div class="diff-block after">
+        <div class="diff-header">SAU (thêm 2 fields)</div>
+        <pre><span class="same">POST /api/v1/login
+Response:
+{
+  "accessToken": "temp_token",
+  "otpIndex": "1",
+  "userData": {
+    "mfaData": "RSA_encrypted..."
+  },</span>
+<span class="add">  "sotpStatus": "Y" | "N",
+  "otpType": "SMART_OTP" | "SMS_OTP"</span>
+<span class="same">}</span></pre>
+      </div>
+    </div>
+
+    <h3 style="margin-top:20px">Thay đổi 2: Step 2 Request — Thêm <code>otpType</code></h3>
+    <div class="api-diff">
+      <div class="diff-block before">
+        <div class="diff-header">TRƯỚC (hiện tại)</div>
+        <pre><span class="same">POST /api/v1/login/sec/verifyOTP
+Body:
+{
+  "otpValue": "1234"
+}</span></pre>
+      </div>
+      <div class="diff-block after">
+        <div class="diff-header">SAU (thêm 1 optional field)</div>
+        <pre><span class="same">POST /api/v1/login/sec/verifyOTP
+Body:
+{
+  "otpValue": "123456",</span>
+<span class="add">  "otpType": "SMART_OTP" | "SMS_OTP" // optional, default: SMS_OTP</span>
+<span class="same">}</span></pre>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:14px;background:#f4f5f7;border-radius:6px;font-size:13px">
+      <strong>Backend routing logic (verifyOTP):</strong><br/>
+      Nếu <code>otpType == "SMART_OTP"</code> → gọi nội bộ <code>/api/v1/smartOtp/verify</code> (đã có)<br/>
+      Nếu <code>otpType == "SMS_OTP"</code> hoặc không có → dùng flow hiện tại (apache-crypt hash lookup)
+    </div>
+  </div>
+
+  <!-- Section 5: Comparison -->
+  <div class="section">
+    <h2>📋 So Sánh: Có SOTP vs Chưa có SOTP</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Tiêu chí</th>
+          <th>Chưa có Smart OTP</th>
+          <th>Đã có Smart OTP</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Step 1 (nhập pass)</strong></td>
+          <td class="neutral">Giống nhau</td>
+          <td class="neutral">Giống nhau</td>
+        </tr>
+        <tr>
+          <td><strong>Sau Step 1</strong></td>
+          <td>Backend gửi OTP qua push/SMS</td>
+          <td>Không gửi gì — user tự gen</td>
+        </tr>
+        <tr>
+          <td><strong>otpType trong response</strong></td>
+          <td><code>PUSH_OTP / SMS_OTP</code></td>
+          <td><code>SMART_OTP</code></td>
+        </tr>
+        <tr>
+          <td><strong>UI màn hình OTP</strong></td>
+          <td>"Nhập mã vừa nhận qua app/SMS"</td>
+          <td>"Mở app → nhập PIN → nhập mã"</td>
+        </tr>
+        <tr>
+          <td><strong>Độ dài OTP</strong></td>
+          <td>4 chữ số</td>
+          <td>6 chữ số (TOTP chuẩn)</td>
+        </tr>
+        <tr>
+          <td><strong>Thời gian hết hạn</strong></td>
+          <td>Theo config backend</td>
+          <td>60 giây (TOTP window)</td>
+        </tr>
+        <tr>
+          <td><strong>Sau login thành công</strong></td>
+          <td>Show banner "Kích hoạt Smart OTP?" (optional)</td>
+          <td>Vào thẳng màn hình chính</td>
+        </tr>
+        <tr>
+          <td><strong>Fallback OTP</strong></td>
+          <td class="neutral">N/A</td>
+          <td>Có nút "Dùng SMS OTP thay thế"</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 6: Scope -->
+  <div class="section">
+    <h2>📌 Scope & Out of Scope</h2>
+    <div class="case-grid">
+      <div>
+        <h3 style="color:#2e7d32">✅ Trong scope</h3>
+        <ul style="list-style:none;margin-top:8px">
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">✅ Thêm <code>otpType</code> vào Step 1 response</li>
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">✅ Step 2 verifyOTP nhận Smart OTP code</li>
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">✅ FE hiển thị đúng UI theo otpType</li>
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">✅ Fallback SMS OTP khi mất device</li>
+          <li style="padding:6px 0;font-size:14px">✅ Banner gợi ý kích hoạt SOTP (Case B)</li>
+        </ul>
+      </div>
+      <div>
+        <h3 style="color:#bf2600">❌ Ngoài scope (Phase 1)</h3>
+        <ul style="list-style:none;margin-top:8px">
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">❌ Passwordless login (chỉ Smart OTP, không cần password)</li>
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">❌ Auto-kích hoạt lại SOTP trong flow login</li>
+          <li style="padding:6px 0;border-bottom:1px solid #f4f5f7;font-size:14px">❌ Thay đổi grant_type</li>
+          <li style="padding:6px 0;font-size:14px">❌ WTS/HTS login integration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7: Next Steps -->
+  <div class="section">
+    <h2>🚀 Next Steps (Pending PM Approval)</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Action</th><th>Owner</th><th>Phụ thuộc</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>PM approve approach này → tạo PRD</td><td>PM (bạn)</td><td>—</td></tr>
+        <tr><td>2</td><td>Confirm với Lotte: <code>sotp_stat</code> enum values chính xác</td><td>BE Lead</td><td>#1</td></tr>
+        <tr><td>3</td><td>Update <code>SmartOTP_API_Mapping.md</code> — thêm login flow section</td><td>BA</td><td>#1</td></tr>
+        <tr><td>4</td><td>BE: thêm <code>otpType</code> vào <code>VerifyOtp.ts</code> routing</td><td>BE Dev</td><td>#2 #3</td></tr>
+        <tr><td>5</td><td>FE: conditional UI sau Step 1 response</td><td>FE Dev</td><td>#3</td></tr>
+        <tr><td>6</td><td>FE: fallback SMS flow (Case C)</td><td>FE Dev</td><td>#5</td></tr>
+        <tr><td>7</td><td>QA testing — 3 cases</td><td>QA</td><td>#4 #5 #6</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footer">
+    <span class="tag-pill">Smart OTP</span>
+    <span class="tag-pill">Login Integration</span>
+    <span class="tag-pill">AAA Service</span>
+    <span class="tag-pill">Phase 2</span>
+    <br/><br/>
+    Generated by Claude Code · 2026-05-29 · Awaiting PM approval for PRD creation
+  </div>
+
+</div>
+</body>
+</html>

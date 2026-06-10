@@ -1,0 +1,4316 @@
+openapi: 3.0.0
+info:
+  title: Tuxedo API Specification
+  version: 1.0.0
+  description: Tuxedo API Specification
+servers:
+  - url: https://nhsvpro.nhsv.vn/rest
+    description: TRADEX API PROD Server
+  - url: https://tnhsvpro.nhsv.vn/rest
+    description: TRADEX API UAT Server
+components:
+  securitySchemes:
+    jwt:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "error code"
+        message:
+          type: string
+          description: "error message"
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/Error"
+          description: "error message"
+    LoginResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: access token
+        refreshToken:
+          type: string
+          description: refresh token
+        userInfo:
+          type: object
+          description: information of user 
+          properties:
+              username:
+                type: string
+              id:
+                type: number
+              avatar:
+                type: string
+              birthday:
+                type: string
+              email:
+                type: string
+              phoneCode:
+                type: string
+              phoneNumber:
+                type: string
+              identifierNumber:
+                type: string
+              accounts:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    accountNumber:
+                      type: string
+                    accountName:
+                      type: string
+                    accountSubs:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          subNumber:
+                            type: string
+                          bankAccounts:
+                            type: array
+                            items:
+                              type: object
+                              properties: 
+                                bankCode:
+                                  type: string
+                                bankName: 
+                                  type: string
+                          type: 
+                            type: string
+              userLevel:
+                type: string
+        accExpiredTime:
+          type: number
+          description: expried time
+        refExpiredTime:
+          type: number
+          description: ref expried time
+    LoginPasswordOTPResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: access token
+        refreshToken:
+          type: string
+          description: refresh token
+        otpIndex:
+          type: string
+          description: OTP index on card
+        accExpiredTime:
+          type: number
+          description: expried time
+        refExpiredTime:
+          type: number
+          description: ref expried time
+paths:
+  /api/v1/equity/order/history:
+    get:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Query Order History
+      operationId: EQUITY_ORDER_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: From date
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: To date
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: sellBuyType
+          schema:
+            type: string
+            enum: ['BUY', 'SELL', 'ALL']
+          description: Sell buy type
+        - in: query
+          name: matchType
+          schema:
+            type: string
+            enum: ['MATCHED','UNMATCHED','ALL']
+          description: Match type
+        - in: query
+          name: sortType
+          schema:
+            type: string
+            enum: ['DESC','ASC']
+          description: Sort type
+        - in: query
+          name: nextKey
+          schema:
+            type: string
+          description: To get next record
+        - in: query
+          name: lastOrderDate
+          schema: 
+            type: string
+          description: Order date of the last item
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['HOSE', 'HNX', 'UPCOM', 'ALL']
+          description: Market type
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    accountNumber:
+                      type: string
+                      description: Account number
+                    stockCode: 
+                      type: string
+                      description: Stock code
+                    orderDate:
+                      type: string
+                      description: Order date
+                    orderTime:
+                      type: string
+                      description: Order time
+                    sellBuyType:
+                      type: string
+                      enum: ['BUY', 'SELL', 'ALL']
+                      description: Sell buy type
+                    orderType: 
+                      type: string
+                      enum: ['LO', 'MP', 'ATO', 'ATC', 'AON', 'BIG_LOT', 'MOK', 'MAK','MTL','IO', 'SO_GREATER','SO_LESS', 'SBO','OBO', 'PLO','ALL']
+                      description: Order type
+                    orderQuantity: 
+                      type: number
+                      description: Order amount
+                    orderPrice: 
+                      type: number
+                      description: Order price
+                    matchedPrice:
+                      type: number
+                      description: Matched price
+                    matchedQuantity:
+                      type: number
+                      description: Matched quantity
+                    matchedAmount:
+                      type: number
+                      description: Matched amount
+                    unmatchedQuantity:
+                      type: number
+                      description: Unmatched quantity
+                    modifyCancelType:
+                      type: string
+                      enum: ['NORMAL','PARTIAL_CORRECTION','ALL_CORRECTION','PARTIAL_CANCEL','ALL_CANCEL']
+                      description: Modify cancel type
+                    modifyCancelQuantity:
+                      type: number
+                      description: Modify cancel quantity
+                    orderStatus:
+                      type: string
+                      enum: ['RECEIPT','SEND','ORDER_CONFIRM','RECEIPT_CONFIRM','FULL_FILLED','PARTIAL_FILLED','REJECT']
+                      description: Order status
+                    orderNumber:
+                      type: string
+                      description: Order number
+                    originalOrderNumber:
+                      type: string
+                      description: Original order number
+                    subNumber: 
+                      type: string
+                      description: Sub number
+                    bankName: 
+                      type: string
+                      description: Bank name
+                    sender: 
+                      type: string
+                      description: User who placed order
+                    nextKey: 
+                      type: string
+                      description: To get the next record 
+          description: Query Order History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/profitLoss:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Profit Loss
+      operationId: EQUITY_ACCOUNT_PROFIT_LOSS
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: bankCode
+          schema:
+            type: string
+          description: Bank code - retrieve from /api/v1/equity/account/banks
+        - in: query
+          name: lastStockCode
+          schema:
+            type: string
+          description: Last stock code
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: bankName
+          schema:
+            type: string
+          description: Bank name
+        - in: query
+          name: deviceUniqueId
+          schema: 
+            type: string
+          description: User's device unique ID 
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  t1Deposit:
+                    type: number
+                    description: T1 deposit
+                  t2Deposit:
+                    type: number
+                    description: T2 deposit
+                  tTradeValue:
+                    type: number
+                    description: T trade value
+                  depositAmount:
+                    type: number
+                    description: Deposit amount
+                  totalBuyAmount:
+                    type: number
+                    description: Total buy amount
+                  profitLossItems:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        t1Buy:
+                          type: number
+                          description: T1 buy
+                        t2Buy:
+                          type: number
+                          description: T2 buy
+                        t1Sell:
+                          type: number
+                          description: T1 sell
+                        t2Sell:
+                          type: number
+                          description: T2 sell
+                        todayBuy:
+                          type: number
+                          description: Today buy
+                        stockCode:
+                          type: string
+                          description: Stock code
+                        todaySell:
+                          type: number
+                          description: Today sell
+                        profitLoss:
+                          type: number
+                          description: Profit loss
+                        buyingPrice:
+                          type: number
+                          description: Buying price
+                        buyingAmount:
+                          type: number
+                          description: Buying amount
+                        currentPrice:
+                          type: number
+                          description: Current price
+                        buyingQuantity:
+                          type: number
+                          description: Buying quantity
+                        profitLossRate:
+                          type: number
+                          description: Profit loss rate
+                        balanceQuantity:
+                          type: number
+                          description: Balance quantity
+                        evaluationAmount:
+                          type: number
+                          description: Evaluation amount
+                        sellableQuantity:
+                          type: number
+                          description: Sellable quantity
+                    description: profitLossItems
+                  totalProfitLoss:
+                    type: number
+                    description: Total profit loss
+                  estimatedDeposit:
+                    type: number
+                    description: Estimated deposit
+                  totalProfitLossRate:
+                    type: number
+                    description: Total profit loss rate
+                  totalEvaluationAmount:
+                    type: number
+                    description: Total evaluation amount
+          description: Query Account Profit Loss Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/buyable:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Buy Able
+      operationId: EQUITY_ACCOUNT_BUYABLE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: bankCode
+          schema:
+            type: string
+          description: Bank code - retrieve from /api/v1/equity/account/banks
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+          required: true
+        - in: query
+          name: securitiesType
+          schema:
+            type: string
+            enum: ['STOCK','BOND', 'FUND', 'ETF','CW', 'ALL']
+          description: Securities type
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['HOSE','HNX','UPCOM','ALL']
+          description: Market type
+        - in: query
+          name: orderPrice
+          schema:
+            type: number
+          description: Order price
+          required: true
+        - in: query
+          name: orderQuantity
+          schema:
+            type: number
+          description: Order quantity
+        - in: query
+          name: bankName
+          schema:
+            type: string
+          description: Bank name
+        - in: query
+          name: deviceUniqueId
+          schema: 
+            type: string
+          description: User's device unique ID 
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lackAmount:
+                    type: number
+                    description: Lack amount
+                  buyingPower:
+                    type: number
+                    description: Buying power
+                  depositAmount:
+                    type: number
+                    description: Deposit amount
+                  buyableQuantity:
+                    type: number
+                    description: Buyable quantity
+                  marginLimitation:
+                    type: number
+                    description: Margin limitation
+                  orderBlockAmount:
+                    type: number
+                    description: Order block amount
+                  totalBlockAmount:
+                    type: number
+                    description: Total block amount
+                  assetValuationAmount:
+                    type: number
+                    description: Asset valuation amount
+                  stockValuationAmount:
+                    type: number
+                    description: Stock valuation amount
+                  virtualDepositAmount:
+                    type: number
+                    description: Virtual deposit amount
+          description: Query Account Buy Able Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/sellable:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Sellable
+      operationId: EQUITY_ACCOUNT_SELLABLE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: date
+          schema:
+            type: string
+          description: Date
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema: 
+            type: string
+          description: User's device unique ID 
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    t1Buy:
+                      type: number
+                      description: T1 buy
+                    t2Buy:
+                      type: number
+                      description: T2 buy
+                    t1Sell:
+                      type: number
+                      description: T1 sell
+                    t2Sell:
+                      type: number
+                      description: T2 sell
+                    todayBuy:
+                      type: number
+                      description: Today buy
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    todaySell:
+                      type: number
+                      description: Today sell
+                    balanceQuantity:
+                      type: number
+                      description: Balance quantity
+                    sellableQuantity:
+                      type: number
+                      description: Sellable quantity
+          description: Query Account Sell Able Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/advance:
+    post:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Place Advanced Order
+      operationId: EQUITY_PLACE_ADVANCE_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from /api/v1/equity/account/banks
+                orderType:
+                  type: string
+                  enum: ['LO', 'MP', 'ATO', 'ATC', 'AON', 'BIG_LOT', 'MOK', 'MAK','MTL','IO', 'SO_GREATER', 'SO_LESS', 'SBO','OBO', 'PLO','ALL']
+                  description: Order type
+                stockCode:
+                  type: string
+                  description: Stock code
+                subNumber:
+                  type: string
+                  description: Sub number
+                orderPrice:
+                  type: number
+                  description: Order price
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from /api/v1/equity/account/banks
+                phoneNumber:
+                  type: string
+                  description: Phone number - retrieve from api/v1/lotte/equity/account/info
+                sellBuyType:
+                  type: string
+                  enum: ['BUY', 'SELL']
+                  description: Sell buy type
+                accountNumber:
+                  type: string
+                  description: Account number
+                orderQuantity:
+                  type: number
+                  description: Order quantity
+                securitiesType:
+                  type: string
+                  enum: ['STOCK','BOND', 'FUND', 'ETF','CW', 'ALL']
+                  description: Securities type
+                advanceOrderDate:
+                  type: string
+                  description: Advance order date
+                deviceUniqueId:
+                  type: string
+                  description: Unique ID of user device 
+              required: 
+                - accountNumber
+                - stockCode
+                - orderQuantity
+                - orderPrice
+                - bankCode
+                - deviceUniqueId
+                - sellBuyType
+                - orderType
+                - phoneNumber
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+                  tempOrderNumber:
+                    type: string
+                    description: Temp order number
+          description: Order Stock Advance Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/modify:
+    put:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Modify Stock Order
+      operationId: EQUITY_MODIFY_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from /api/v1/equity/account/banks
+                bankName:
+                  type: string
+                  description: Bank name - retrieve from /api/v1/equity/account/banks
+                orderType:
+                  type: string
+                  description: Order type of selected order - retrieve from response of /api/v1/equity/order/history
+                stockCode:
+                  type: string
+                  description: Stock code
+                subNumber:
+                  type: string
+                  description: Sub number
+                branchCode:
+                  type: string
+                  description: Branch code of selected order - retrieve from accessToken.deptCode or from response of api/v1/login
+                marketType:
+                  type: string
+                  enum: ['HOSE','HNX','UPCOM','ALL']
+                  description: Market type
+                orderPrice:
+                  type: number
+                  description: Order price
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from /api/v1/equity/account/banks
+                orderNumber:
+                  type: string
+                  description: Order number - retrieve from response of /api/v1/equity/order/history?matchType=UNMATCHED
+                sellBuyType:
+                  type: string
+                  description: Sell buy type of selected order - retrieve from response of /api/v1/equity/order/history
+                accountNumber:
+                  type: string
+                  description: Account number
+                orderQuantity:
+                  type: number
+                  description: Order quantity
+                securitiesType:
+                  type: string
+                  enum: ['STOCK','BOND', 'FUND', 'ETF','CW', 'ALL']
+                  description: Securities type
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required:
+              - accountNumber
+              - branchCode
+              - orderNumber
+              - orderQuantity
+              - orderPrice
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                    description: Type
+                  orderNumber:
+                    type: string
+                    description: Order number
+          description: Modify Stock Order Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/cancel:
+    put:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Cancel Stock Order
+      operationId: EQUITY_CANCEL_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subNumber:
+                  type: string
+                  description: Sub number
+                branchCode:
+                  type: string
+                  description: Branch code of selected order - retrieve from accessToken.deptCode or from response of api/v1/login
+                orderNumber:
+                  type: string
+                  description: Order number - retrieve from /api/v1/equity/order/history?matchType=UNMATCHED
+                accountNumber:
+                  type: string
+                  description: Account number
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required:
+                - accountNumber
+                - branchCode
+                - orderNumber  
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderNumber:
+                    type: string
+                    description: Order number
+          description: Cancel Stock Order Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/advance/cancel:
+    put:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Cancel Stock Order Advance
+      operationId: EQUITY_CANCEL_ADVANCE_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subNumber:
+                  type: string
+                  description: Sub number
+                orderNumber:
+                  type: string
+                  description: Order number - retrieve from response of /api/v1/equity/order/advance/history
+                accountNumber:
+                  type: string
+                  description: Account number
+                advanceOrderDate:
+                  type: string
+                  description: Advance order date of selected order - retrieve from response of  /api/v1/equity/order/advance/history
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - accountNumber
+                - orderNumber
+                - advanceOrderDate
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Cancel Stock Order Advance Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/rights/available:
+    get:
+      tags:
+      - TUXEDO
+      - RIGHTS
+      summary: Query Right Available
+      operationId: EQUITY_RIGHTS_AVAILABLE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: rightType
+          schema:
+            type: string
+            enum: ['1', '4']
+          description: |
+            - 1 - Subscription   
+            - 4 - Bond  
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: lastBaseDate
+          schema:
+            type: string
+          description: Last base date
+        - in: query
+          name: lastStockCode
+          schema:
+            type: string
+          description: Last stock code
+        - in: query
+          name: lastSequenceNumber
+          schema:
+            type: string
+          description: Last sequence number
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    note:
+                      type: string
+                      description: Note
+                    endDate:
+                      type: string
+                      description: End date
+                    baseDate:
+                      type: string
+                      description: Base date
+                    startDate:
+                      type: string
+                      description: Start date
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    stockName:
+                      type: string
+                      description: Stock name
+                    issuePrice:
+                      type: number
+                      description: Issue price
+                    rightStatus:
+                      type: string
+                      description: Right status
+                    sequenceNumber:
+                      type: number
+                      description: Sequence number
+                    availableQuantity:
+                      type: number
+                      description: Available quantity
+          description: Query Right Available Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/rights/detail:
+    get:
+      tags:
+      - TUXEDO
+      - RIGHTS
+      summary: Query Right Detail
+      operationId: EQUITY_RIGHTS_DETAIL
+      parameters:
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code - retrieve from response of /api/v1/equity/rights/available
+          required: true
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: baseDate
+          schema:
+            type: string
+          description: Base date of selected right - retrieve from response of /api/v1/equity/rights/available
+          required: true
+        - in: query
+          name: rightType
+          schema:
+            type: string
+            enum: ['1','4']
+          description: | 
+            - 1 : Subscription
+            - 4 : Bond 
+          required: true
+        - in: query
+          name: sequenceNumber
+          schema:
+            type: number
+          description: Sequence number of selected right - retrieve from response of /api/v1/equity/rights/available
+          required: true
+        - in: query
+          name: bankCode
+          schema: 
+            type: string
+          description: Account bank code - retrieve from response of /api/v1/equity/account/banks
+          required: true
+        - in: query
+          name: bankName
+          schema: 
+            type: string
+          description: Account bank name - retrieve from response of /api/v1/equity/account/banks
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    endDate:
+                      type: number
+                      description: End date
+                    quantity:
+                      type: string
+                      description: Quantity
+                    startDate:
+                      type: number
+                      description: Start date
+                    issuePrice:
+                      type: number
+                      description: Issue price
+                    tradeNumber:
+                      type: string
+                      description: Trade number
+                    availableAmount:
+                      type: number
+                      description: Available amount
+                    standardQuantity:
+                      type: number
+                      description: Standard quantity
+                    availableQuantity:
+                      type: number
+                      description: Available quantity
+                    processStatusCode:
+                      type: number
+                      description: Process status code
+                    processStatusName:
+                      type: number
+                      description: Process status name
+                    approveWaitingQuantity:
+                      type: number
+                      description: Approve waiting quantity
+                    bankCancelWaitingQuantity:
+                      type: number
+                      description: Bank cancel waiting quantity
+          description: Query Right Detail Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/rights/register:
+    post:
+      tags:
+      - TUXEDO
+      - RIGHTS
+      summary: Register Right
+      operationId: EQUITY_RIGHTS_REGISTER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  description: Amount 
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from /api/v1/equity/account/banks
+                baseDate:
+                  type: string
+                  description: Base date - retrieve from response of /api/v1/equity/rights/detail
+                quantity:
+                  type: number
+                  description: Quantity
+                rightType:
+                  type: string
+                  description: Right type - retrieve from response of /api/v1/equity/rights/detail
+                stockCode:
+                  type: string
+                  description: Stock code
+                subNumber:
+                  type: string
+                  description: Sub number
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from /api/v1/equity/account/banks
+                tradeNumber:
+                  type: string
+                  description: Trade number - retrieve from response of /api/v1/equity/rights/detail
+                accountNumber:
+                  type: string
+                  description: Account number
+                sequenceNumber:
+                  type: number
+                  description: Sequence number - retrieve from response of /api/v1/equity/rights/detail
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - accountNumber
+                - stockCode
+                - quantity
+                - amount
+                - tradeNumber
+                - sequenceNumber
+                - bankCode
+                - rightType
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Register Right Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/loan/available:
+    get:
+      tags:
+      - TUXEDO
+      - SECURED LOAN
+      summary: Query Available Secured Loan
+      operationId: EQUITY_LOAN_AVAILABLE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true 
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: loanBankCode
+          schema:
+            type: string
+          description: Loan bank code - retrieve from response of /api/v1/equity/loan/banks
+        - in: query
+          name: lastSettleBankCode
+          schema:
+            type: number
+          description: Last settle bank code
+        - in: query
+          name: lastMatchDate
+          schema:
+            type: string
+          description: Last match date
+        - in: query
+          name: lastSettleDate
+          schema:
+            type: string
+          description: Last settle date
+        - in: query
+          name: lastLoanOrderType
+          schema:
+            type: string
+          description: Last loan order type
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    tax:
+                      type: number
+                      description: Tax
+                    feeRate:
+                      type: number
+                      description: Fee rate
+                    matchDate:
+                      type: string
+                      description: Match date
+                    loanPeriod:
+                      type: number
+                      description: Loan period
+                    settleDate:
+                      type: string
+                      description: Settle date
+                    tradingFee:
+                      type: number
+                      description: Trading fee
+                    matchAmount:
+                      type: number
+                      description: Match amount
+                    adjustAmount:
+                      type: number
+                      description: Adjust amount
+                    estimatedFee:
+                      type: number
+                      description: Estimated fee
+                    loanBankName:
+                      type: string
+                      description: Loan bank name
+                    loanOrderName:
+                      type: string
+                      description: Loan order name
+                    loanOrderType:
+                      type: string
+                      description: Loan order type
+                    possibleAmount:
+                      type: number
+                      description: Possible amount
+                    settleBankCode:
+                      type: string
+                      description: Settle bank code
+          description: Query Available Secured Loan Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/loan/detail:
+    get:
+      tags:
+      - TUXEDO
+      - SECURED LOAN
+      summary: Query Secured Loan Detail
+      operationId: EQUITY_LOAN_DETAIL
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: loanBankCode
+          schema:
+            type: string
+          description: Loan bank code - retrieve from response of api/v1/lotte/equity/account/banks
+          required: true
+        - in: query
+          name: settleBankCode
+          schema:
+            type: string
+          description: Settle bank code of selected loan - retrieve from /api/v1/equity/loan/available
+        - in: query
+          name: matchDate
+          schema:
+            type: string
+          description: Match date of selected loan - retrieve from /api/v1/equity/loan/available
+          required: true
+        - in: query
+          name: settleDate
+          schema:
+            type: string
+          description: Settle date of selected loan - retrieve from /api/v1/equity/loan/available
+          required: true
+        - in: query
+          name: loanOrderType
+          schema:
+            type: string
+          description: Loan order type of selected loan - retrieve from /api/v1/equity/loan/available
+          required: true
+        - in: query
+          name: lastSettleBankCode
+          schema:
+            type: string
+          description: Last settle bank code
+        - in: query
+          name: lastStockCode
+          schema:
+            type: string
+          description: Last stock code
+        - in: query
+          name: lastLoanOrderType
+          schema:
+            type: string
+          description: Last loan order type
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    tax:
+                      type: number
+                      description: Tax
+                    matchDate:
+                      type: string
+                      description: Match date
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    settleDate:
+                      type: string
+                      description: Settle date
+                    tradingFee:
+                      type: number
+                      description: Trading fee
+                    matchAmount:
+                      type: number
+                      description: Match amount
+                    adjustAmount:
+                      type: number
+                      description: Adjust amount
+                    loanOrderType:
+                      type: string
+                      description: Loan order type
+                    matchQuantity:
+                      type: number
+                      description: Match quantity
+                    possibleAmount:
+                      type: number
+                      description: Possible amount
+                    settleBankCode:
+                      type: string
+                      description: Settle bank code
+                    settleBankName:
+                      type: string
+                      description: Settle bank name
+          description: Query Secured Loan Detail Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/loan/history:
+    get:
+      tags:
+      - TUXEDO
+      - SECURED LOAN
+      summary: Query Secured Loan History
+      operationId: EQUITY_LOAN_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: loanBankCode
+          schema:
+            type: string
+          description: Loan bank code
+        - in: query
+          name: lastLoanDate
+          schema:
+            type: string
+          description: Last loan date
+        - in: query
+          name: lastLoanBankCode
+          schema:
+            type: string
+          description: Last loan bank code
+        - in: query
+          name: lastMatchDate
+          schema:
+            type: string
+          description: Last match date
+        - in: query
+          name: lastStockCode
+          schema:
+            type: string
+          description: Last stock code
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      description: Status
+                    loanDate:
+                      type: string
+                      description: Loan date
+                    matchDate:
+                      type: string
+                      description: Match date
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    loanAmount:
+                      type: number
+                      description: Loan amount
+                    matchAmount:
+                      type: number
+                      description: Match amount
+                    loanBankCode:
+                      type: string
+                      description: Loan bank code
+                    loanBankName:
+                      type: string
+                      description: Loan bank name
+                    matchQuantity:
+                      type: number
+                      description: Match quantity
+                    loanRepayAmount:
+                      type: number
+                      description: Loan repay amount
+                    loanRemainAmount:
+                      type: number
+                      description: Loan remain amount
+          description: Query Secured Loan History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/loan/register:
+    post:
+      tags:
+      - TUXEDO
+      - SECURED LOAN
+      summary: Register Secured Loan
+      operationId: EQUITY_LOAN_REGISTER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      tax:
+                        type: number
+                        description: Tax - retrieve from response of /api/v1/equity/loan/detail
+                      feeRate:
+                        type: number
+                        description: Fee rate - retrieve from response of /api/v1/equity/loan/detail
+                      matchDate:
+                        type: string
+                        description: Match date - retrieve from response of /api/v1/equity/loan/detail
+                      stockCode:
+                        type: string
+                        description: Stock code - retrieve from response of /api/v1/equity/loan/detail
+                      subNumber:
+                        type: string
+                        description: Sub number - retrieve from response of /api/v1/equity/loan/detail
+                      loanAmount:
+                        type: number
+                        description: Loan amount - retrieve from response of /api/v1/equity/loan/detail
+                      settleDate:
+                        type: string
+                        description: Settle date - retrieve from response of /api/v1/equity/loan/detail
+                      tradingFee:
+                        type: number
+                        description: Trading fee - retrieve from response of /api/v1/equity/loan/detail
+                      matchAmount:
+                        type: number
+                        description: Match amount - retrieve from response of /api/v1/equity/loan/detail
+                      adjustAmount:
+                        type: number
+                        description: Adjust amount - retrieve from response of /api/v1/equity/loan/detail
+                      loanBankCode:
+                        type: string
+                        description: Loan bank code - retrieve from response of /api/v1/equity/loan/detail
+                      accountNumber:
+                        type: string
+                        description: Account number - retrieve from response of /api/v1/equity/loan/detail
+                      loanOrderType:
+                        type: string
+                        description: Loan order type - retrieve from response of /api/v1/equity/loan/detail
+                      matchQuantity:
+                        type: number
+                        description: Match quantity - retrieve from response of /api/v1/equity/loan/detail
+                      possibleAmount:
+                        type: number
+                        description: Possible amount - retrieve from response of /api/v1/equity/loan/detail
+                      settleBankCode:
+                        type: string
+                        enum: ['9999']
+                        description: Settle bank code
+                    
+                    required:
+                    - accountNumber
+                    - subNumber
+                    - loanBankCode
+                    - settleBankCode
+                    - matchDate
+                    - settleDate
+                    - stockCode
+                    - matchQuantity
+                    - matchAmount
+                    - tradingFee
+                    - adjustAmount
+                    - possibleAmount
+                    - loanAmount
+                    - feeRate
+                    - tax
+                    - loanOrderType
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: message
+          description: Register Secured Loan Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/withdraw/banks:
+    get:
+      tags:
+      - TUXEDO
+      - WITHDRAW
+      summary: Query Withdraw Banks
+      operationId: EQUITY_WITHDRAW_BANKS
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bankCode:
+                      type: string
+                      description: Bank code
+                    bankName:
+                      type: string
+                      description: Bank name
+                    bankAccountName:
+                      type: string
+                      description: Bank account name
+                    bankAccountNumber:
+                      type: string
+                      description: Bank account number
+          description: Query Withdraw Banks Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/withdraw/history:
+    get:
+      tags:
+      - TUXEDO
+      - WITHDRAW
+      summary: Query Withdraw History
+      operationId: EQUITY_WITHDRAW_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: ['PENDING', 'CANCELLED', 'APPROVED']
+          description: Status
+          required: true
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: From date
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: To date
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: next
+          schema:
+            type: string
+          description: To query the next record 
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bank:
+                      type: string
+                      description: Bank
+                    note:
+                      type: string
+                      description: Note
+                    amount:
+                      type: number
+                      description: Amount
+                    approver:
+                      type: string
+                      description: Approver
+                    bankCode:
+                      type: string
+                      description: Bank code
+                    bankName:
+                      type: string
+                      description: Bank name
+                    isCancel:
+                      type: boolean
+                      description: Whether the request is cancelled
+                    bankAccount:
+                      type: string
+                      description: Bank account
+                    approvalDate:
+                      type: string
+                      description: Approval date
+                    sequenceNumber:
+                      type: number
+                      description: Sequence number
+                    transactionDate:
+                      type: string
+                      description: Transaction date
+                    transactionSequenceNumber:
+                      type: number
+                      description: Transaction sequence number
+                    next: 
+                      type: string
+                      description: 'Key of the record, enters "next" to query the next record' 
+          description: Query Withdraw History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/withdraw/request:
+    post:
+      tags:
+      - TUXEDO
+      - WITHDRAW
+      summary: Request Withdraw
+      operationId: EQUITY_WITHDRAW_REQUEST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  description: Note
+                amount:
+                  type: number
+                  description: Amount
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from response of /api/v1/equity/withdraw/banks
+                subNumber:
+                  type: string
+                  description: Sub number
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from response of /api/v1/equity/withdraw/banks
+                accountNumber:
+                  type: string
+                  description: Account number
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+              - accountNumber
+              - note
+              - bankCode
+              - bankAccount
+              - amount
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Request Withdraw Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/withdraw/cancel:
+    put:
+      tags:
+      - TUXEDO
+      - WITHDRAW
+      summary: Cancel Withdraw
+      operationId: EQUITY_WITHDRAW_CANCEL
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  description: Note
+                amount:
+                  type: number
+                  description: Amount
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from response of /api/v1/equity/withdraw/banks
+                subNumber:
+                  type: string
+                  description: Sub number
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from response of /api/v1/equity/withdraw/banks
+                accountNumber:
+                  type: string
+                  description: Account number
+                sequenceNumber:
+                  type: string
+                  description: Sequence number - retrieve from response of /api/v1/equity/withdraw/history
+                transactionCode:
+                  type: string
+                  description: Transaction code - retrieve from response of /api/v1/equity/withdraw/history
+                transactionType:
+                  type: string
+                  description: Transaction type - retrieve from response of /api/v1/equity/withdraw/history
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+              - transactionType
+              - accountNumber
+              - transactionCode
+              - bankAccount
+              - bankCode
+              - note
+              - sequenceNumber
+              - amount
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Cancel Withdraw Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/transfer/cash/history:
+    get:
+      tags:
+      - TUXEDO
+      - TRANSFER
+      summary: Query Transfer Cash History
+      operationId: EQUITY_TRANSFER_CASH_HISTORY
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: ['PENDING', 'APPROVED', 'CANCELLED', 'APPROVED_INTERNAL']
+          description: Status
+          required: true
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: From date
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: To date
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: next
+          schema:
+            type: string
+          description: To query the next record
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID      
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    note:
+                      type: string
+                      description: Note
+                    amount:
+                      type: number
+                      description: Amount
+                    isCancel:
+                      type: boolean
+                      description: Is cancel
+                    subNumber:
+                      type: string
+                      description: Sub number
+                    accountNumber:
+                      type: string
+                      description: Account number
+                    sequenceNumber:
+                      type: number
+                      description: Sequence number
+                    transactionDate:
+                      type: string
+                      description: Transaction date
+                    receivedSubNumber:
+                      type: string
+                      description: Received sub number
+                    sendSequenceNumber:
+                      type: number
+                      description: Send sequence number
+                    receivedAccountName:
+                      type: string
+                      description: Received account name
+                    receiveSequenceNumber:
+                      type: number
+                      description: Receive sequence number
+                    receivedAccountNumber:
+                      type: string
+                      description: Received account number
+                    transferSequenceNumber:
+                      type: number
+                      description: Transfer sequence number
+                    next: 
+                      type: string
+                      description: 'Key of the record, enters "next" to query the next record'
+          description: Query Transfer Cash History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/transfer/cash:
+    post:
+      tags:
+      - TUXEDO
+      - TRANSFER
+      summary: Transfer Cash
+      operationId: EQUITY_TRANSFER_CASH
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  description: Note
+                amount:
+                  type: number
+                  description: Amount
+                subNumber:
+                  type: string
+                  description: Sub number
+                accountNumber:
+                  type: string
+                  description: Account number
+                receivedSubNumber:
+                  type: string
+                  description: Received sub number - retrieve from api/v1/equity/transfer/cash/account
+                receivedAccountNumber:
+                  type: string
+                  description: Received account number - retrieve from api/v1/equity/transfer/cash/account
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - accountNumber
+                - note
+                - receivedAccountNumber
+                - receivedSubNumber
+                - amount 
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Transfer Cash Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/transfer/stock/history:
+    get:
+      tags:
+      - TUXEDO
+      - TRANSFER
+      summary: Query Transfer Stock History
+      operationId: EQUITY_TRANSFER_STOCK_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: From date
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: To date
+        - in: query
+          name: branchCode
+          schema:
+            type: string
+          description: Branch code - retrieve from accessToken.deptCode or from response of api/v1/login
+          required: true
+        - in: query
+          name: lastTransactionDate
+          schema:
+            type: string
+          description: Last transaction date
+        - in: query
+          name: lastReceivedAccountNumber
+          schema:
+            type: string
+          description: Last received account number
+        - in: query
+          name: lastSequenceNumber
+          schema:
+            type: number
+          description: Last sequence number
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    note:
+                      type: string
+                      description: Note
+                    quantity:
+                      type: number
+                      description: Quantity
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    subNumber:
+                      type: string
+                      description: Sub number
+                    accountNumber:
+                      type: string
+                      description: Account number
+                    sequenceNumber:
+                      type: string
+                      description: Sequence number
+                    limitedQuantity:
+                      type: number
+                      description: Limited quantity
+                    transactionDate:
+                      type: string
+                      description: Transaction date
+                    receivedSubNumber:
+                      type: string
+                      description: Received sub number
+                    receivedAccountNumber:
+                      type: string
+                      description: Received account number
+          description: Query Transfer Stock History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/transfer/stock:
+    post:
+      tags:
+      - TUXEDO
+      - TRANSFER
+      summary: Transfer Stock
+      operationId: EQUITY_TRANSFER_STOCK
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                note:
+                  type: string
+                  description: Note
+                quantity:
+                  type: number
+                  description: Quantity
+                stockCode:
+                  type: string
+                  description: Stock code - retrieve transferable stock from response of /api/v1/equity/transfer/stock/balance
+                subNumber:
+                  type: string
+                  description: Sub number
+                accountNumber:
+                  type: string
+                  description: Account number
+                limitedQuantity:
+                  type: number
+                  description: Limited quantity of selected stock - retrieve from from response of /api/v1/equity/transfer/stock/balance
+                receivedSubNumber:
+                  type: string
+                  description: Received sub number
+                receivedAccountNumber:
+                  type: string
+                  description: Received account number
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - accountNumber
+                - receivedSubNumber
+                - stockCode
+                - note
+                - quantity
+                - limitedQuantity
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Transfer Stock Successfully
+      security:
+        - jwt: []
+  
+  /api/v1/equity/account/changePin:
+    put:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Change Account PIN
+      operationId: EQUITY_ACCOUNT_CHANGE_ORDER_PASSWORD
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subNumber:
+                  type: string
+                  description: Sub number
+                newPassword:
+                  type: string
+                  description: New password
+                oldPassword:
+                  type: string
+                  description: Old password
+                accountNumber:
+                  type: string
+                  description: Account number
+                deviceUniqueId: 
+                  type: string
+                  description: User's device unique ID 
+              required:
+                - accountNumber
+                - oldPassword
+                - newPassword
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Change Account PIN Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/changePassword:
+    put:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Change Account Password
+      operationId: EQUITY_ACCOUNT_CHANGE_HTS_PASSWORD
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Username
+                newPassword:
+                  type: string
+                  description: New password
+                oldPassword:
+                  type: string
+                  description: Old password
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required:
+                - username
+                - oldPassword
+                - newPassword
+
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Change Account HTS Password Successfully
+      security:
+        - jwt: []
+
+  /api/v1/equity/account/mobile:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Phone Number
+      operationId: EQUITY_ACCOUNT_MOBILE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  phoneNumber:
+                    type: string
+                    description: Phone number
+          description: Query Phone Number Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/advance/history:
+    get:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Query Stock Order Advance History
+      operationId: EQUITY_QUERY_ORDER_ADVANCE_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['HOSE','HNX','UPCOM','ALL'] 
+          description: Market type
+        - in: query
+          name: sellBuyType
+          schema:
+            type: string
+            enum: ['BUY', 'SELL', 'ALL']
+          description: Sell buy type
+        - in: query
+          name: lastOrderDate
+          schema:
+            type: string
+          description: Last order date
+        - in: query
+          name: lastOrderNumber
+          schema:
+            type: string
+          description: Last order number
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    channel:
+                      type: string
+                      description: Channel
+                    username:
+                      type: string
+                      description: Username
+                    orderDate:
+                      type: string
+                      description: Order date
+                    orderTime:
+                      type: string
+                      description: Order time
+                    orderType:
+                      type: string
+                      description: Order type
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    orderPrice:
+                      type: number
+                      description: Order price
+                    orderNumber:
+                      type: string
+                      description: Order number
+                    orderStatus:
+                      type: string
+                      description: Order status
+                    sellBuyType:
+                      type: string
+                      description: Sell buy type
+                    orderQuantity:
+                      type: number
+                      description: Order quantity
+          description: Query Stock Order Advance History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/order/todayUnmatch:
+    get:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Query Order Today Unmatch
+      operationId: EQUITY_QUERY_ORDER_TODAY_UNMATCH
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: date
+          schema:
+            type: string
+          description: Date
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: lastBranchCode
+          schema:
+            type: string
+          description: Last branch code
+        - in: query
+          name: lastOrderNumber
+          schema:
+            type: string
+          description: Last order number
+        - in: query
+          name: lastOrderPrice
+          schema:
+            type: string
+          description: Last order price
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    channel:
+                      type: string
+                      description: Channel
+                    bankCode:
+                      type: string
+                      description: Bank code
+                    bankName:
+                      type: string
+                      description: Bank name
+                    username:
+                      type: string
+                      description: Username
+                    orderDate:
+                      type: string
+                      description: Order date
+                    orderTime:
+                      type: string
+                      description: Order time
+                    orderType:
+                      type: string
+                      description: Order type
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    subNumber:
+                      type: string
+                      description: Sub number
+                    branchCode:
+                      type: string
+                      description: Branch code
+                    marketType:
+                      type: string
+                      description: Market type
+                    orderPrice:
+                      type: number
+                      description: Order price
+                    orderNumber:
+                      type: string
+                      description: Order number
+                    orderStatus:
+                      type: string
+                      description: Order status
+                    sellBuyType:
+                      type: string
+                      description: Sell buy type
+                    matchedPrice:
+                      type: number
+                      description: Matched price
+                    accountNumber:
+                      type: string
+                      description: Account number
+                    matchedAmount:
+                      type: number
+                      description: Matched amount
+                    orderQuantity:
+                      type: number
+                      description: Order quantity
+                    matchedQuantity:
+                      type: number
+                      description: Matched quantity
+                    unmatchedQuantity:
+                      type: number
+                      description: Unmatched quantity
+                    originalOrderNumber:
+                      type: string
+                      description: Original order number
+          description: Query Order Today Unmatch Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/banks:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      - SECURED LOAN
+      summary: Query Bank Account
+      operationId: EQUITY_ACCOUNT_BANKS
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+          required: true
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    bankCode:
+                      type: string
+                      description: Bank code
+                    bankName:
+                      type: string
+                      description: Bank name
+                    bankAccount:
+                      type: number
+                      description: Bank account
+                    
+          description: Query Bank Account Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/transfer/stock/balance:
+    get:
+      tags:
+        - TRANSFER
+      summary: Query Transfer Stock Balance
+      operationId: EQUITY_TRANSFER_STOCK_BALANCE
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: lastStockCode
+          schema:
+            type: string
+          description: Last stock code
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    stockName:
+                      type: string
+                      description: Stock name
+                    availableQuantity:
+                      type: number
+                      description: Available quantity
+                    limitAvailableQuantity:
+                      type: number
+                      description: Limit available quantity
+          description: Query Transfer Stock Balance Successfully
+      security:
+        - jwt: []
+ 
+  /api/v1/equity/account/assetInfo:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Asset Info
+      operationId: EQUITY_ACCOUNT_ASSET_INFO
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true 
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: bankCode
+          schema:
+            type: string
+          description: Bank code - retrieve from /api/v1/equity/account/banks
+        - in: query
+          name: bankAccount
+          schema:
+            type: string
+          description: Bank account - retrieve from /api/v1/equity/account/banks
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cmr:
+                    type: number
+                    description: Cmr
+                  rights:
+                    type: number
+                    description: Rights
+                  dividend:
+                    type: number
+                    description: Dividend
+                  interest:
+                    type: number
+                    description: Interest
+                  netAsset:
+                    type: number
+                    description: Net asset
+                  totalCash:
+                    type: number
+                    description: Total cash
+                  marginLoan:
+                    type: number
+                    description: Margin loan
+                  totalAsset:
+                    type: number
+                    description: Total asset
+                  reuseAmount:
+                    type: number
+                    description: Reuse amount
+                  availableCash:
+                    type: number
+                    description: Available cash
+                  depositoryFee:
+                    type: number
+                    description: Depository fee
+                  virtualDeposit:
+                    type: number
+                    description: Virtual deposit
+                  totalLoanAmount:
+                    type: number
+                    description: Total loan amount
+                  unavailableCash:
+                    type: number
+                    description: Unavailable cash
+                  cashAmountForMMR:
+                    type: number
+                    description: Cash amount for m m r
+                  evaluationAmount:
+                    type: number
+                    description: Evaluation amount
+                  evaluationRights:
+                    type: number
+                    description: Evaluation rights
+                  tlTaOfMarginList:
+                    type: number
+                    description: Tl ta of margin list
+                  totalLoanMortgage:
+                    type: number
+                    description: Total loan mortgage
+                  pendingStockAmount:
+                    type: number
+                    description: Pending stock amount
+                  tlTaOfTotalAccount:
+                    type: number
+                    description: Tl ta of total account
+                  usedVirtualDeposit:
+                    type: number
+                    description: Used virtual deposit
+                  withdrawableAmount:
+                    type: number
+                    description: Withdrawable amount
+                  lackingMarginAmount:
+                    type: number
+                    description: Lacking margin amount
+                  unmatchBuyingAmount:
+                    type: number
+                    description: Unmatch buying amount
+                  availableStockAmount:
+                    type: number
+                    description: Available stock amount
+                  stockEvaluationAmount:
+                    type: number
+                    description: Stock evaluation amount
+                  lackingLoanAmountForT1:
+                    type: number
+                    description: Lacking loan amount for t1
+                  nonSettledBuyingAmount:
+                    type: number
+                    description: Non settled buying amount
+                  unavailableStockAmount:
+                    type: number
+                    description: Unavailable stock amount
+                  stockAmountCanUseMargin:
+                    type: number
+                    description: Stock amount can use margin
+                  buyingStockWaitingAmount:
+                    type: number
+                    description: Buying stock waiting amount
+                  marginPendingStockAmount:
+                    type: number
+                    description: Margin pending stock amount
+                  totalLackingSettledAmount:
+                    type: number
+                    description: Total lacking settled amount
+                  marginAvailableStockAmount:
+                    type: number
+                    description: Margin available stock amount
+                  lackingVirtualDepositAmount:
+                    type: number
+                    description: Lacking virtual deposit amount
+                  evaluationPendingStockAmount:
+                    type: number
+                    description: Evaluation pending stock amount
+                  marginUnavailableStockAmount:
+                    type: number
+                    description: Margin unavailable stock amount
+                  evaluationAvailableStockAmount:
+                    type: number
+                    description: Evaluation available stock amount
+                  evaluationUnavailableStockAmount:
+                    type: number
+                    description: Evaluation unavailable stock amount
+          description: Query Account Asset Info Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/info: 
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Info
+      operationId: EQUITY_ACCOUNT_INFO
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                    description: Email
+                  address:
+                    type: string
+                    description: Address
+                  agencyName:
+                    type: string
+                    description: Agency name
+                  phoneNumber:
+                    type: string
+                    description: Phone number
+                  customerName:
+                    type: string
+                    description: Customer name
+                  identifierNumber:
+                    type: string
+                    description: Identifier number
+          description: Query Account Info Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/loanHistory:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Account Loan History
+      operationId: EQUITY_ACCOUNT_LOAN_HISTORY
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: nextKey
+          schema:
+            type: string
+          description: Next key
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: Fetch count
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      description: Status
+                    nextKey:
+                      type: string
+                      description: Next key
+                    loanDate:
+                      type: string
+                      description: Loan date
+                    loanType:
+                      type: string
+                      description: Loan type
+                    stockCode:
+                      type: string
+                      description: Stock code
+                    loanAmount:
+                      type: number
+                      description: Loan amount
+                    expiredDate:
+                      type: string
+                      description: Expired date
+                    loanInterest:
+                      type: number
+                      description: Loan interest
+                    loanQuantity:
+                      type: number
+                      description: Loan quantity
+                    loanRepayAmount:
+                      type: number
+                      description: Loan repay amount
+                    loanRemainAmount:
+                      type: number
+                      description: Loan remain amount
+          description: Query Account Loan History Successfully
+      security:
+        - jwt: []
+        
+  /api/v1/login:
+    post:
+      tags:
+        - AUTHENTICATION
+        - TUXEDO
+      summary: Login to get access token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  description: type of login
+                  type: string
+                  enum:
+                    - password
+                    - biometric
+                    - password_otp
+                    - biometric_otp 
+                    - client_credentials
+                client_id:
+                  description: id of app
+                  type: string
+                client_secret:
+                  description: A secret for id
+                  type: string
+                username:
+                  description: Paave username
+                  type: string
+                device_id:
+                  type: string
+                  description: unique device id required if client is phone number or grant_type is biometric
+                password:
+                  type: string
+                  description: (for **Password Login**) user password 
+                  format: password
+                signatureValue: 
+                  type: string
+                  description: (for **Biometric Login**) signature generated from private key of biometric and username
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+                - username
+                - password
+                - signatureValue
+      responses:
+        '200':
+          description: Refresh Token Successfully
+          content:
+            application/json:
+              schema:
+                oneOf: 
+                 - $ref: '#/components/schemas/LoginPasswordOTPResponse'
+                 - $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid input param
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/equity/order/stop:
+    post:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Place Stop or Stop Limit Order
+      operationId: ORDER_PLACE_STOP_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accountNumber:
+                  type: string
+                  description: account number to place order
+                subNumber:
+                  type: string
+                  description: 'sub number to place order, default is **00** if not set'
+                code: 
+                  type: string
+                  description: stock code to place order
+                orderQuantity: 
+                  type: number
+                  format: integer
+                  description: quantity of order
+                sellBuyType:
+                  enum:
+                    - BUY
+                    - SELL
+                  type: string
+                  description: indicate sell or buy order
+                orderType: 
+                  enum:
+                    - STOP
+                    - STOP_LIMIT
+                  type: string
+                  description: the type of the stop order'
+                stopPrice:
+                  type: number
+                  format: double
+                  description: stop price of order
+                orderPrice:
+                  type: number
+                  format: double
+                  description: price to place stop limit order
+                fromDate: 
+                  type: string
+                  pattern: '^[0-9]{8}$'
+                  description: 'fromDate, format (YYYYMMDD)'
+                toDate:
+                  type: string
+                  pattern: '^[0-9]{8}$'
+                  description: 'toDate, format (YYYYMMDD)'
+                bankCode:
+                  type: string
+                  description: 'bank using to place order, default is **9999** if not set'
+                bankAccount:
+                  type: string
+                  description: bank account using to place order
+                bankName:
+                  type: string
+                  description: bank name using to place order
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - accountNumber
+                - subNumber
+                - code
+                - orderQuantity
+                -  sellBuyType
+                - orderType
+                - stopPrice
+                - orderPrice
+                - bankCode
+                - bankAccount
+                - bankName
+                - deviceUniqueId
+        description: Order Stop object
+      responses:
+        '200':
+          description: Place Order Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: number
+        '401':
+          description: Your access token is invalid or expired
+      security:
+        - jwt: []
+  /api/v1/equity/order/stop/modify:
+    put:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Modify Stop or Stop Limit Order
+      operationId: ORDER_MODIFY_STOP_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              allOf:
+                - type: object
+                  properties:
+                    stopOrderId:
+                      type: number 
+                      description: stop order ID that needs to modify
+                    orderQuantity:
+                      type: number
+                      description: new order quantity to be updated
+                    stopPrice:
+                      type: number
+                      format: double
+                      description: new stop price to be updated
+                    orderPrice:
+                      type: number
+                      format: double
+                      description: new order price to be updated
+                    fromDate:
+                      type: string
+                      pattern: '^[0-9]{8}$'
+                      description: 'fromDate, format (YYYYMMDD)'
+                    toDate: 
+                      type: string
+                      pattern: '^[0-9]{8}$'
+                      description: 'toDate, format (YYYYMMDD)'
+                    deviceUniqueId:
+                      type: string
+                      description: User's device unique ID
+                  required: 
+                    - stopOrderId
+                    - orderQuantity
+                    - stopPrice
+                    - orderPrice
+                    - fromDate
+                    - toDate
+        description: Order Stop object
+      responses:
+        '200':
+          description: Modify Stop Order Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '401':
+          description: Your access token is invalid or expired
+      security:
+        - jwt: []
+  /api/v1/equity/order/stop/cancel:
+    put:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Cancel Stop or Stop Limit Order
+      operationId: ORDER_CANCEL_STOP_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stopOrderId: 
+                  type: number
+                  description: stop order that needs to cancel
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+                - stopOrderId
+        description: Cancel Stop Order object
+      responses:
+        '200':
+          description: Modify Stop Order Successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+        '401':
+          description: Your access token is invalid or expired
+      security:
+        - jwt: []
+  /api/v1/equity/order/stop/history:
+    get:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Query Stop Order History
+      operationId: ORDER_QUERY_STOP_ORDER
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          required: true
+          description: account number to query
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: 'sub number to query, default is **00** if not set'
+        - in: query
+          name: code
+          schema:
+            type: string
+          description: stock code to place order 
+        - in: query
+          name: sellBuyType
+          schema:
+            enum:
+              - SELL
+              - BUY
+            type: string
+          description: query filter by buy or sell type
+        - in: query
+          name: orderType
+          schema:
+            enum:
+              - STOP
+              - STOP_LIMIT
+            type: string
+          description: query filter by order type
+        - in: query
+          name: status
+          schema:
+            enum:
+              - PENDING
+              - SENDING
+              - COMPLETED
+              - CANCELLED
+              - FAILED
+            type: string
+          description: query filter by status of stop order
+        - in: query
+          name: lastStopOrderId
+          schema: 
+            type: number
+          description: last stop order id 
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: >-
+            query order that place after or on this date, format is
+            **yyyyMMdd**, default is **19700101**
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: >-
+            query order that place before or on this date, format is
+            **yyyyMMdd**, default is **today**
+        - in: query
+          name: fetchCount
+          schema:
+            enum:
+              - '20'
+              - '40'
+              - '60'
+              - '80'
+              - '100'
+            type: integer
+          description: 'the number of records return for each query, default is **20**'
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    stopOrderId: 
+                      type: number
+                      description: ID of stop order 
+                    accountNumber: 
+                      type: string
+                      description: account number
+                    code: 
+                      type: string
+                      description: stock code to place order
+                    orderQuantity:
+                      type: integer
+                      description: quantity of order 
+                    sellBuyType:
+                      enum:
+                        - BUY
+                        - SELL
+                      type: string
+                      description: indicate sell or buy order
+                    stopPrice:
+                      type: number
+                      format: double
+                      description: stop price of order
+                    orderPrice:
+                      type: number
+                      format: double
+                      description: price of order
+                    orderType:
+                      enum:
+                        - STOP
+                        - STOP_LIMIT
+                      type: string
+                      description: the type of the stop order
+                    orderNumber:
+                      type: string
+                      description: the real order number from SEC System
+                    status:
+                      enum:
+                        - PENDING
+                        - SENDING
+                        - COMPLETED
+                        - CANCELLED
+                        - FAILED
+                      type: string
+                      description: query filter by status of stop order  
+                    createTime:
+                      type: string
+                      description: the time that created the stop order
+                    orderTime:
+                      type: string
+                      description: 'the time that placed order, format is ''yyyyMMddhhmmss'''
+                    cancelTime:
+                      type: string
+                      description: >-
+                        the time that cancelled order, format is
+                        'yyyyMMddhhmmss'
+                    errorMessage:
+                      type: string
+                      description: the error message if place real order failed
+                    fromDate:
+                      type: string
+                      pattern: '^[0-9]{8}$'
+                      description: 'fromDate, format (YYYYMMDD)'
+                    toDate: 
+                      type: string
+                      pattern: '^[0-9]{8}$'
+                      description: 'toDate, format (YYYYMMDD)'
+                    channel: 
+                      type: string
+                      description: channel placed order 
+          description: Stop Order History
+        '401':
+          description: Your access token is invalid or expired
+      security:
+        - jwt: []
+        
+  /api/v1/equity/order:
+    post:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Place normal order  
+      operationId: EQUITY_PLACE_ORDER
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stockCode:
+                  type: string
+                  description: Stock Code
+                subNumber:
+                  type: string
+                  description: Sub Number
+                orderPrice:
+                  type: number
+                  description: Order Price
+                accountNumber:
+                  type: string
+                  description: Account number
+                orderQuantity:
+                  type: number
+                  description: Order Quantity
+                securitiesType:
+                  type: string
+                  enum: ['STOCK','BOND', 'FUND', 'ETF','CW', 'ALL']
+                  description: Securities Type
+                sellBuyType:
+                  type: string
+                  enum: ['BUY', 'SELL']
+                  description: sellBuyType
+                bankAccount:
+                  type: string
+                  description: Bank Account - retrieve from /api/v1/equity/account/banks
+                bankName:
+                  type: string
+                  description: Bank Name - retrieve from /api/v1/equity/account/banks
+                bankCode: 
+                  type: string
+                  description: Bank Code - retrieve from /api/v1/equity/account/banks
+                orderType:
+                  type: string
+                  enum: ['LO', 'MP', 'ATO', 'ATC', 'AON', 'BIG_LOT', 'MOK', 'MAK','MTL','IO', 'SO_GREATER','SO_LESS', 'SBO','OBO', 'PLO','ALL']
+                  description: Order Type 
+                deviceUniqueId: 
+                  type: string
+                  description: Unique ID of device 
+              required:
+                - accountNumber
+                - stockCode
+                - orderQuantity
+                - securitiesType
+                - sellBuyType
+                - bankCode
+                - orderType
+                - deviceUniqueId
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+                  orderNumber:
+                    type: string
+                    description: Order number
+          description: Place Order Successfully
+        '400':
+          description: Invalid input param
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - jwt: []
+  /api/v1/equity/account/cashBalance:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Cash Balance  
+      operationId: EQUITY_CASH_BALANCE
+      parameters:
+      - in: query
+        name: accountNumber
+        schema:  
+          type: string
+        description: Account Number
+        required: true
+      - in: query  
+        name: subNumber
+        schema:
+          type: string
+        description: Sub number
+      - in: query
+        name: bankAccount
+        schema:
+          type: string
+        description: Bank Account - retrieve from /api/v1/equity/account/banks
+      - in: query
+        name: bankName
+        schema:
+          type: string
+        description: Bank Name - retrieve from /api/v1/equity/account/banks
+      - in: query
+        name: bankCode
+        schema:
+          type: string
+        description: Bank Code - retrieve from /api/v1/equity/account/banks
+      - in: query
+        name: deviceUniqueId
+        schema:
+          type: string
+        description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  depositAmount:
+                    type: number
+                    description: Deposit Amount
+                  depositBlockAmount:
+                    type: number
+                    description: Deposit Block Amount
+                  orderBlockAmount:
+                    type: number
+                    description: Order Block Amount
+                  stockEvaluationAmount:
+                    type: number
+                    description: Stock Evaluation Amount
+                  withdrawableAmount: 
+                    type: number
+                    description: Withdrawable Amount
+                  marginLoanAmount:
+                    type: number
+                    description: Margin Loan Amount
+                  securedLoanAmount:
+                    type: number
+                    description: Secured Loan Amount
+                  expiredLoanAmount:
+                    type: number
+                    description: Expired Loan Amount
+                  waitSellAmount:
+                    type: number
+                    description: Wait Sell Amount
+          description: Query Cash Balance Successfully
+        '400':
+          description: Invalid input param
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      security:
+        - jwt: []
+        
+  /api/v1/equity/account/margin:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Margin Ratio
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+          required: true
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+          required: true
+        - in: query
+          name: symbolCode
+          schema:
+            type: string
+          description: Symbol Code
+          required: true
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ratio:
+                    type: number
+                    description: Margin Ratio
+          description: Query Margin Ratio Successfully
+      security:
+        - jwt: []
+        
+  /api/v1/equity/order/confirm:
+    get:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Query order confirmation
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: fromDate
+          schema: 
+            type: string
+          description: From date
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: To date
+        - in: query
+          name: confirmStatus
+          schema:
+            type: string
+            enum: ['Y', 'N', 'D']
+          description: |
+            - Y: Confirmed
+            - N: Not confirmed
+            - D: Expired
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['1', '2', '3']
+          description: |
+            - 1: HOSE
+            - 2: HNX
+            - 3: UPCOM
+        - in: query    
+          name: cancelType
+          schema:
+            type: string
+            enum: ['1', '2', '3']
+          description: |
+            - 1: Normal
+            - 2: Correct
+            - 3: Cancelled
+        - in: query
+          name: sellBuyType
+          schema:
+            type: string
+            enum: ['BUY', 'SELL', 'ALL']
+          description: sellBuyType
+        - in: query
+          name: mediaType
+          schema:
+            type: string
+          description: mediaType
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: fetchCount
+        - in: query
+          name: nextKey 
+          schema:
+            type: string
+          description: nextKey
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    accountNumber:
+                      type: string
+                      description: Account number
+                    orderDate:
+                      type: string
+                      description: Order date
+                    orderTime:
+                      type: string
+                      description: Order time
+                    sellBuyType:
+                      type: string
+                      enum: ['1', '2']
+                      description: |
+                          - 1: BUY
+                          - 2: SELL
+                    orderNumber:
+                      type: string
+                      description: Order number
+                    stockCode:
+                      type: string
+                      description: Stock code 
+                    orderQuantity:
+                      type: number
+                      description: Order quantity
+                    orderPrice:
+                      oneOf:
+                        - type: number
+                        - type: string 
+                      description: Order price
+                    matchedQuantity: 
+                      type: number
+                      description: Matched quantity
+                    matchedPrice: 
+                      type: number
+                      description: Matched price 
+                    confirmStatus: 
+                      type: string
+                      description: Status
+                    broker: 
+                      type: string
+                      description: Broker
+                    orderType: 
+                      type: string
+                      enum: ['01', '02', '03', '04', '07', '08', '09', '15']
+                      description: |
+                          - 01: LO
+                          - 02: MP
+                          - 03: ATO
+                          - 04: ATC
+                          - 07: MOK
+                          - 08: MAK
+                          - 09: MTL
+                          - 15: PLO
+                    nextKey:
+                      type: string
+                      description: nextKey 
+          description: Query Order Confirmation Successfully
+      security:
+        - jwt: []
+    post:
+      tags:
+      - TUXEDO
+      - ORDER
+      summary: Confirm order 
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                accountNumber:
+                  type: string
+                  description: Account number
+                subNumber:
+                  type: string
+                  description: Sub number
+                orders:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      orderDate:
+                        type: string
+                        description: Order date
+                      orderNumber:
+                        type: string
+                        description: Order number
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required: 
+              - orderDate
+              - orderNumber
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Confirm Order Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/account/profitLoss/history:
+    get:
+      tags:
+      - TUXEDO
+      - ACCOUNT
+      summary: Query Realized Profit Loss
+      parameters:
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: fromDate
+          schema:
+            type: string
+          description: fromDate
+          required: true
+        - in: query
+          name: toDate
+          schema:
+            type: string
+          description: toDate
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: fetch count 
+        - in: query
+          name: nextKey
+          schema:
+            type: string
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalSellAmount:
+                    type: number
+                    description: Total sell amount
+                  totalCostValue:
+                    type: number
+                    description: Total cost value
+                  totalProfitLoss:
+                    type: number
+                    description: Total profit loss
+                  totalProfitLossRatio:
+                    type: number
+                    description: Total profit loss ratio
+                  items:
+                    type: array
+                    items: 
+                      type: object
+                      properties:
+                        accountNumber: 
+                          type: string
+                          description: account number
+                        subNumber: 
+                          type: string
+                          description: sub number
+                        tradingDate: 
+                          type: string
+                          description: trading date
+                        stockCode: 
+                          type: string
+                          description: stock code
+                        saleVolume:
+                          type: number
+                          description: sale volume
+                        capitalCost: 
+                          type: number
+                          description: capital cost
+                        sellPrice: 
+                          type: number
+                          description: sell price
+                        feeAndTax: 
+                          type: number
+                          description: fee and tax
+                        sellAmount: 
+                          type: number
+                          description: sell amount
+                        costValue: 
+                          type: number 
+                          description: cost value 
+                        profitLoss: 
+                          type: number
+                          description: profit loss
+                        profitLossRatio: 
+                          type: number
+                          description: profit loss rate 
+                        nextKey:
+                          type: string
+                          description: next key
+          description: Query Realized Profit Loss Successfully
+      security:
+        - jwt: []
+
+  /api/v1/login/sec/verifyOTP:
+    post:
+      tags:
+        - AUTHENTICATION
+      summary: Verify OTP after log in
+      operationId: AUTH_VERIFY_OTP
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - otp_value
+              properties:
+                otp_value:
+                  type: string
+                  description: the otp value to verify
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userInfo:
+                    type: object
+                    properties:
+                      accounts:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            accountName:
+                              type: string
+                              description: account owner's name
+                            accountSubs:
+                              type: array
+                              items:
+                                type: object
+                                properties:
+                                  type:
+                                    enum:
+                                      - EQUITY
+                                      - DERIVATIVES
+                                    type: string
+                                    description: the type of the sub number
+                                  subNumber:
+                                    type: string
+                                    description: sub number of sub-account
+                                  bankAccounts:
+                                    type: array
+                                    items:
+                                      type: object
+                                      properties:
+                                        bankCode:
+                                          type: string
+                                          description: the bank code of the bank
+                                        bankName:
+                                          type: string
+                                          description: the name of the bank
+                                    description: >-
+                                      list of bank accounts linking to this
+                                      sub-account
+                              description: list of sub-account
+                            accountNumber:
+                              type: string
+                              description: account number
+                        description: list of account that managed by this user
+                      username:
+                        type: string
+                        description: hts id from HTS System
+                      identifierNumber:
+                        type: string
+                        description: the identifier number of this user
+                      userLevel: 
+                        type: string
+                        description: type of account
+                      branchCode: 
+                        type: string
+                        description: branch code 
+                    description: SEC user information if login using SEC account
+                  accessToken:
+                    type: string
+                    description: token to access all other SEC APIs
+                  refreshToken:
+                    type: string
+                    description: token to renew access_token when it's expired
+                  accExpiredTime: 
+                    type: number
+                    description: access_token expired time 
+                  refExpiredTime: 
+                    type: number
+                    description: refresh_token expired time
+                  
+                  
+          description: Verify OTP Successfully
+      security:
+        - jwt: []
+        
+  /api/v1/equity/rights/history:
+    get:
+      tags:
+      - TUXEDO
+      - RIGHTS
+      summary: Query Right History
+      parameters:
+        - in: query
+          name: subNumber
+          schema:
+            type: string
+          description: Sub number
+        - in: query
+          name: accountNumber
+          schema:
+            type: string
+          description: Account number
+        - in: query
+          name: stockCode
+          schema:
+            type: string
+          description: Stock code
+        - in: query
+          name: marketType
+          schema:
+            type: string
+            enum: ['1','2','4']
+          description: |
+                  - 1: HOSE
+                  - 2: HNX
+                  - 3: UPCOM
+        - in: query
+          name: fetchCount
+          schema:
+            type: number
+          description: fetch count 
+        - in: query
+          name: lastBaseDate
+          schema:
+            type: string
+          description: Base date of the record. Enter base date of the previous record to get the next one
+        - in: query
+          name: lastStockCode
+          schema: 
+            type: string
+          description: Stock code of the record. Enter stock code of the previous record to get the next one
+        - in: query
+          name: lastSequenceNumber
+          schema: 
+            type: string
+          description: Sequence number of the record. Enter sequence number of the previous record to get the next one
+        - in: query
+          name: deviceUniqueId
+          schema:
+            type: string
+          description: User's device unique ID
+      responses: 
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  stockCode:
+                    type: string
+                    description: Stock code
+                  sequenceNumber:
+                    type: number
+                    description: Sequence number
+                  baseDate:
+                    type: string
+                    description: Base date
+                  status:
+                    type: string
+                    description: Status
+                  baseRate:
+                    type: number
+                    description: Base rate
+                  dividendRate: 
+                    type: number
+                    description: Dividend rate
+                  ownQty: 
+                    type: number
+                    description: Own quantity
+                  beginDate:
+                    type: string
+                    description: Begin date
+                  endDate:
+                    type: string
+                    description: End date
+                  issuePrice:
+                    type: number
+                    description: Issue price
+                  availableQty:
+                    type: number
+                    description: Available quantity
+                  requestQty: 
+                    type: number
+                    description: Request quantity
+                  requestAmount: 
+                    type: number
+                    description: Request amount
+                  effectiveDate: 
+                    type: string
+                    description: Effective date
+                  isEffective: 
+                    type: string
+          description: Query Right History Successfully
+      security:
+        - jwt: []
+  /api/v1/equity/rights/cancel:
+    put:
+      tags:
+        - TUXEDO
+        - RIGHTS
+      summary: Cancel Right
+      operationId: EQUITY_RIGHTS_CANCEL
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  description: Amount
+                bankCode:
+                  type: string
+                  description: Bank code - retrieve from /api/v1/equity/account/banks
+                baseDate:
+                  type: string
+                  description: Base date  - retrieve from response of /api/v1/equity/rights/detail
+                quantity:
+                  type: number
+                  description: Quantity
+                rightType:
+                  type: string
+                  description: Right type  - retrieve from response of /api/v1/equity/rights/detail
+                stockCode:
+                  type: string
+                  description: Stock code
+                subNumber:
+                  type: string
+                  description: Sub number
+                bankAccount:
+                  type: string
+                  description: Bank account - retrieve from /api/v1/equity/account/banks
+                tradeNumber:
+                  type: string
+                  description: Trade number - retrieve from response of /api/v1/equity/rights/detail
+                accountNumber:
+                  type: string
+                  description: Account number
+                sequenceNumber:
+                  type: number
+                  description: Sequence number  - retrieve from response of /api/v1/equity/rights/detail
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Message
+          description: Cancel Right Successfully
+      security:
+        - jwt: []
+  /api/v1/account/resetPassword/init:
+    post:
+      tags:
+        - RESET PASSWORD
+      summary: Init and send OTP SMS
+      operationId: TUXEDO_RESET_PASSWORD_INIT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - accountNumber
+                - phoneNumber
+                - identifierNumber
+              properties:
+                accountNumber:
+                  type: string
+                  description: Account number 
+                phoneNumber: 
+                  type: string
+                  description: Phone number
+                identifierNumber:
+                  type: string
+                  description: Identifier number
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  otpKey:
+                    type: string
+          description: Init And Send SMS Successfully
+      security:
+        - jwt: []
+  /api/v1/account/resetPassword/verifyOtp:
+    post:
+      tags:
+        - RESET PASSWORD
+      summary: Verify OTP SMS before reset password 
+      operationId: TUXEDO_RESET_PASSWORD_VERIFY_OTP
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - otpKey
+                - otpValue
+              properties:
+                otpKey:
+                  type: string
+                  description: OTP key - retrieve from response of API /api/v1/lotte/account/resetPassword/init 
+                otpValue: 
+                  type: string
+                  description: OTP value - retrieve from SMS
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  otpKey:
+                    type: string
+          description: Verify OTP Successfully
+      security:
+        - jwt: []
+  /api/v1/account/resetPassword:
+    post:
+      tags:
+        - RESET PASSWORD
+      summary: Reset password
+      operationId: TUXEDO_RESET_PASSWORD
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - otpKey
+                - password
+              properties:
+                otpKey:
+                  type: string
+                  description: OTP key - retrieve from response of API /api/v1/account/resetPassword/verifyOtp 
+                password: 
+                  type: string
+                  description: New password 
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+          description: Reset Password Successfully
+      security:
+        - jwt: []
+        
+  /api/v1/revokeToken:
+    post:
+      tags:
+        - AUTHENTICATION
+      summary: Invalidate your refresh token
+      description: 'Invalidate your refresh token that you cannot use it to get access token anymore, so you need to login again to get new refresh token & access token'
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  description: the refresh token need to be invalidated
+                  type: string
+                deviceUniqueId:
+                  type: string
+                  description: User's device unique ID
+              required:
+                - refresh_token
+      responses:
+        '200':
+          description: Successfully
+          content:
+            application/json:
+              schema: { }
+
+
+tags:
+  - name: ACCOUNT
+  - name: ORDER
+  - name: SECURED LOAN
+  - name: RIGHTS
+  - name: TRANSFER
+  - name: WITHDRAW
+  - name: TUXEDO
+  - name: AUTHENTICATION
+  - name: RESET PASSWORD

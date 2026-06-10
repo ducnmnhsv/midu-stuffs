@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet author="Hoang Manh" id="NHSV-734-01">
+        <createTable tableName="econtract_info_history">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="contract_status" type="varchar(50)">
+                <constraints nullable="true" />
+            </column>
+            <column name="customer_signatue_status" type="varchar(50)">
+                <constraints nullable="true" />
+            </column>
+            <column name="securities_signature_status" type="varchar(50)">
+                <constraints nullable="true" />
+            </column>
+            <column name="e_contract_id" type="bigint">
+                <constraints nullable="true"/>
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="econtract_info_history" columnName="created_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <changeSet id="NHSV-734-02" author="Hoang Manh">
+        <addForeignKeyConstraint baseColumnNames="e_contract_id"
+                                 baseTableName="econtract_info_history"
+                                 constraintName="fk_econtract_info_history__e_contract_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="econtract"/>
+    </changeSet>
+</databaseChangeLog>

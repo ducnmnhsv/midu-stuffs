@@ -1,0 +1,67 @@
+{
+  "fields": [
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "templateId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "requestData",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "text",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "contactId",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "customerSignatueStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "securitiesSignatureStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contractStatus",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "signFileContent",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "contractFileContent",
+      "fieldType": "String"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eContract",
+      "otherEntityName": "eContract",
+      "relationshipType": "one-to-one",
+      "otherEntityField": "id",
+      "ownerSide": true,
+      "id": false,
+      "otherEntityRelationshipName": "eContractInfo"
+    }
+  ],
+  "service": "serviceImpl",
+  "dto": "mapstruct",
+  "jpaMetamodelFiltering": true,
+  "readOnly": false,
+  "pagination": "pagination",
+  "name": "EContractInfo",
+  "changelogDate": "20231211063114"
+}

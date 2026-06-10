@@ -1,0 +1,26 @@
+{
+  "eKycAdminApp": {
+    "ttlIssuePlaceCodeMap": {
+      "home": {
+        "title": "Ttl Issue Place Code Maps",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Create a new Ttl Issue Place Code Map",
+        "createOrEditLabel": "Create or edit a Ttl Issue Place Code Map",
+        "notFound": "No Ttl Issue Place Code Maps found"
+      },
+      "created": "A new Ttl Issue Place Code Map is created with identifier {{ param }}",
+      "updated": "A Ttl Issue Place Code Map is updated with identifier {{ param }}",
+      "deleted": "A Ttl Issue Place Code Map is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Ttl Issue Place Code Map {{ id }}?"
+      },
+      "detail": {
+        "title": "Ttl Issue Place Code Map"
+      },
+      "id": "ID",
+      "code": "Code",
+      "name": "Name",
+      "enableRegex": "Enable Regex"
+    }
+  }
+}

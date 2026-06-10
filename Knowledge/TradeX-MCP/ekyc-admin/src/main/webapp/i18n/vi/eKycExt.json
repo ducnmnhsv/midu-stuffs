@@ -1,0 +1,26 @@
+{
+  "eKycAdminApp": {
+    "eKycExt": {
+      "home": {
+        "title": "E Kyc Exts",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "Thêm mới một E Kyc Ext",
+        "createOrEditLabel": "Thêm mới hoặc cập nhật E Kyc Ext",
+        "notFound": "No E Kyc Exts found"
+      },
+      "created": "Một E Kyc Ext mới được tạo với định danh {{ param }}",
+      "updated": "Một E Kyc Ext cập nhật với định danh {{ param }}",
+      "deleted": "Một E Kyc Ext đã xóa với định danh {{ param }}",
+      "delete": {
+        "question": "Bạn có chắc là muốn xóa E Kyc Ext {{ id }}?"
+      },
+      "detail": {
+        "title": "E Kyc Ext"
+      },
+      "id": "ID",
+      "logId": "Log Id",
+      "rawData": "Raw Data",
+      "eKyc": "E Kyc"
+    }
+  }
+}

@@ -1,0 +1,47 @@
+entity EKyc {
+     identifierId String required minlength(1) maxlength(20)
+     fullName String required minlength(1) maxlength(50)
+     phoneNo String pattern(/^[+]{0,1}[-\s0-9]*$/)
+     gender String
+     type EkycType required
+     birthDay LocalDate required
+     expiredDate LocalDate required
+     issueDate LocalDate required
+     issuePlace String required minlength(1) maxlength(100)
+     address String required minlength(1) maxlength(100)
+     occupation String
+     homeTown String minlength(1) maxlength(100)
+     permanentProvince String
+     permanentDistrict String
+     permanentAddress String
+     contactProvince String
+     contactDistrict String
+     contactAddress String
+     email String required
+     referrerIdName String
+     referrerBranch String
+     bankAccount String
+     accountName String
+     bankName String
+     branch String
+     nationality String
+     status Status required
+     frontImageUrl String required
+     backImageUrl String required
+     portraitImageUrl String
+     signatureImageUrl String
+     tradingCodeImageUrl String
+     isMargin Boolean
+     matchingRate Double
+     updatedAt ZonedDateTime
+     createdAt ZonedDateTime
+ }
+
+enum Status {
+    PENDING, REJECT, APPROVED
+}
+enum EkycType {
+    CMND, CC, PASSPORT
+}
+
+filter EKyc

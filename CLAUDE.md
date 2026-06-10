@@ -12,8 +12,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **TUYỆT ĐỐI KHÔNG** chỉnh sửa, tạo file, hoặc thay đổi bất kỳ thứ gì trong repo này
 - Chỉ dùng để **đọc và tham chiếu** (read-only reference)
-- Khi task liên quan đến FE (component, screen, API call, navigation, type definitions...) → tự động scan codebase nhsv-mts-rn để lấy context, không cần người dùng nhắc
+- Khi task liên quan đến FE (component, screen, API call, navigation, type definitions...) → ưu tiên query `graphify-out/graph.json` trước, nếu không đủ thì mới scan trực tiếp codebase nhsv-mts-rn
 - Mọi output (issue, spec, doc) được ghi vào `tradex-monitoring`, không phải nhsv-mts-rn
+
+### nhsv-mts-rn Knowledge Graph (graphify)
+
+Graph được build từ `/graphify /Users/ducnguyen/Documents/project/nhsv-mts-rn`, output lưu tại:
+- `tradex-monitoring/graphify-out/graph.json` — persistent knowledge graph, query không cần re-read toàn bộ codebase
+- `tradex-monitoring/graphify-out/graph.html` — interactive visualization
+- `tradex-monitoring/graphify-out/GRAPH_REPORT.md` — god nodes, surprising connections, suggested questions
+
+**Khi cần tra cứu FE:**
+1. Query graph: `/graphify query "tên component hoặc concept"`
+2. Nếu graph chưa có → scan trực tiếp nhsv-mts-rn (read-only)
+3. Sau khi có thay đổi lớn trong nhsv-mts-rn → rebuild: `/graphify /Users/ducnguyen/Documents/project/nhsv-mts-rn --update`
 
 ---
 
@@ -40,7 +52,7 @@ Workspace chính cho phân tích và tài liệu hệ thống **TradeX** — Bac
 **Main repos:**
 - `tradex-monitoring` (this workspace) — documentation, specs, issue tracking
 - `nhsv-mts-rn` — FE React Native app (read-only reference)
-- `TradeX MCP/Knowledge based/` — microservice source code (reference)
+- `Knowledge/TradeX-MCP/` — microservice source code (reference)
 
 ---
 
@@ -55,7 +67,7 @@ Khi nhận task mới, tự xác định loại task và áp dụng workflow tư
 | **API Spec** | "API spec", "tạo spec", "viết spec", "API specification" | tradex-api-naming → derivatives-api-spec-format → (if Order API) tradex-order-api-response-standards → tradex-api-conventions |
 | **Documentation** | "tạo docs", "viết tài liệu", "create documentation" | derivatives-doc-structure → derivatives-pm-documentation → (if Specifications/) derivatives-api-spec-format |
 | **FE Issue** | "FE issue", "frontend issue", "tạo issue FE", "Derivatives FE" | Đọc nhsv-mts-rn → viết issue trong tradex-monitoring → derivatives-doc-structure |
-| **System Analysis** | "phân tích API", "trace API", "how does X work", "service nào xử lý" | Check TradeX Knowledge/ first → tradex-analyst workflow → tradex-api-naming |
+| **System Analysis** | "phân tích API", "trace API", "how does X work", "service nào xử lý" | Check Knowledge/TradeX/ first → tradex-analyst workflow → tradex-api-naming |
 | **Order API** | "order API", "lệnh", "đặt lệnh", "hủy lệnh", "sửa lệnh", "TP/SL", "stop order", "OCO" | ALWAYS apply tradex-order-api-response-standards first |
 | **Vague Request** | Request thiếu context, không rõ domain | Clarify → re-route |
 
@@ -64,7 +76,7 @@ Khi nhận task mới, tự xác định loại task và áp dụng workflow tư
 - **C1 — Naming Consistency:** Mọi API output phải check naming conventions (URL `/api/v1/{resource}`, DTO `{Resource}{Action}Request/Response`)
 - **C2 — Response Format:** Order API → luôn check tradex-order-api-response-standards trước
 - **C3 — PM-Readability Gate:** Viết vào `Planning/` folder → NO code blocks
-- **C4 — Knowledge-First:** Check `TradeX Knowledge/` TRƯỚC khi scan codebase
+- **C4 — Knowledge-First:** Check `Knowledge/TradeX/` TRƯỚC khi scan codebase
 - **C5 — Document Footer:** Mọi spec/issue document phải kết thúc bằng: `**Document Status:** | **For:** | **Next Steps:**`
 
 ### Anti-Patterns
@@ -74,7 +86,7 @@ Khi nhận task mới, tự xác định loại task và áp dụng workflow tư
 | Tạo spec không check tradex-api-naming | Check naming first |
 | Viết code trong Planning/ docs | Dùng diagrams/flow |
 | Mix Lotte-integrated & TradeX-native response | Check tradex-order-api-response-standards |
-| Scan codebase trước khi check TradeX Knowledge | Knowledge-first |
+| Scan codebase trước khi check Knowledge/TradeX | Knowledge-first |
 | Tạo issue không có Issues/ folder structure | Follow derivatives-doc-structure |
 
 ---
@@ -353,12 +365,12 @@ Khi tạo FE issue: đọc nhsv-mts-rn để reference đúng path/component →
 
 | Folder | Content | Priority |
 |--------|---------|----------|
-| `TradeX Knowledge/System/` | Live production mechanisms | Read first |
-| `TradeX Knowledge/API Standards/` | Conventions, templates | Read first |
-| `TradeX Knowledge/Planning/` | Future features | For planning |
-| `TradeX MCP/Knowledge based/` | Microservice source code | Scan if needed |
+| `Knowledge/TradeX/System/` | Live production mechanisms | Read first |
+| `Knowledge/TradeX/API Standards/` | Conventions, templates | Read first |
+| `Knowledge/TradeX/Planning/` | Future features | For planning |
+| `Knowledge/TradeX-MCP/` | Microservice source code | Scan if needed |
 
-**Always check `TradeX Knowledge/` BEFORE scanning codebase.**
+**Always check `Knowledge/TradeX/` BEFORE scanning codebase.**
 
 **After new analysis:** Save findings to appropriate folder and update `_index.md`.
 
@@ -382,6 +394,40 @@ Khi tạo FE issue: đọc nhsv-mts-rn để reference đúng path/component →
 
 ---
 
+## File Routing — Auto-assign Output to Correct Folder
+
+Khi tạo bất kỳ file nào, **xác định destination trước khi write**:
+
+### Feature routing
+
+| Feature / Domain | Document type | Destination |
+|---|---|---|
+| Derivatives (futures, VN30F, market data, order, account, cash) | Issue (BE/FE) | `Derivatives/Planning documentation/{Category}/Issues/` |
+| Derivatives | Planning / PRD | `Derivatives/Planning documentation/{Category}/Planning/` |
+| Derivatives | API Specification | `Derivatives/Planning documentation/{Category}/Specifications/` |
+| Smart OTP | Any | `Smart-OTP/{Issues\|Planning\|Specifications}/` |
+| eKYC | Any | `eKYC/{Issues\|Planning\|Specifications}/` |
+| TradeX monitoring / infra | Any | `TradeX-Monitor/` |
+| System knowledge / API standards | Reference | `Knowledge/TradeX/` |
+| Market analysis / research | Reference | `Analytics/NH-Research/` |
+
+### Derivatives category mapping
+
+| Topic | Category folder |
+|---|---|
+| Market data, GTGD, chart, quote, price | `Market data/` |
+| Order, lệnh, TP/SL, OCO, stop | `Order/` |
+| Account, tài khoản, margin | `Account/` |
+| Cash, tiền mặt, nạp rút | `Cash transaction/` |
+| Mở tài khoản phái sinh, sub-account | `Open_DR_Sub_Account/` |
+| Market (general market info, index) | `Market/` |
+
+### _workspace/ rule
+
+Temp staging cho orchestrator pipeline — bị overwrite mỗi lần pipeline chạy. Không lưu output vĩnh viễn vào đây.
+
+---
+
 ## Quick Reference — Servers & Tools
 
 **Environments:**
@@ -400,8 +446,8 @@ Khi tạo FE issue: đọc nhsv-mts-rn để reference đúng path/component →
 
 **Output directories:**
 ```
-/_bmad-output/ba-artifacts/     ← API analysis, BRD, PM Knowledge
-/QA sessions/                   ← Test docs, sync với Postman "TradeX QA session"
+/Archive/_bmad-output/ba-artifacts/  ← API analysis, BRD, PM Knowledge
+/QA/                                 ← Test docs, sync với Postman "TradeX QA session"
 /Derivatives/Planning documentation/{Category}/  ← Specs, issues, planning
 ```
 

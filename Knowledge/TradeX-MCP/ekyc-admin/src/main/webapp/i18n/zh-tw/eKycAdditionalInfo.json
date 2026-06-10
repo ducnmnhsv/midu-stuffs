@@ -1,0 +1,41 @@
+{
+  "eKycAdminApp": {
+    "eKycAdditionalInfo": {
+      "home": {
+        "title": "E Kyc Additional Infos",
+        "refreshListLabel": "Refresh list",
+        "createLabel": "建立一筆新的 E Kyc Additional Info",
+        "createOrEditLabel": "建立或編輯 E Kyc Additional Info",
+        "notFound": "No E Kyc Additional Infos found"
+      },
+      "created": "新的 E Kyc Additional Info 建立成功，識別碼為 {{ param }}",
+      "updated": "識別碼為 {{ param }} 的 E Kyc Additional Info 更新成功",
+      "deleted": "識別碼為 {{ param }} 的 E Kyc Additional Info 刪除成功",
+      "delete": {
+        "question": "您確定要刪除 E Kyc Additional Info {{ id }} 嗎?"
+      },
+      "detail": {
+        "title": "E Kyc Additional Info"
+      },
+      "id": "ID",
+      "fullName": "Full Name",
+      "birthDay": "Birth Day",
+      "nationality": "Nationality",
+      "identifierId": "Identifier Id",
+      "issueDate": "Issue Date",
+      "issuePlace": "Issue Place",
+      "permanentAddress": "Permanent Address",
+      "contactAddress": "Contact Address",
+      "occupation": "Occupation",
+      "position": "Position",
+      "phoneNumber": "Phone Number",
+      "visaNo": "Visa No",
+      "visaIssuePlace": "Visa Issue Place",
+      "foreignResidence": "Foreign Residence",
+      "investmentGoal": "Investment Goal",
+      "risk": "Risk",
+      "experienced": "Experienced",
+      "eKyc": "E Kyc"
+    }
+  }
+}

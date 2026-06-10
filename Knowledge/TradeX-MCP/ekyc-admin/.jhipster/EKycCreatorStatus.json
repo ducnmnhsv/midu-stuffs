@@ -1,0 +1,42 @@
+{
+  "fields": [
+    {
+      "fieldName": "status",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "reason",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fullResult",
+      "fieldType": "byte[]",
+      "fieldTypeBlobContent": "text"
+    }
+  ],
+  "relationships": [
+    {
+      "relationshipName": "eKyc",
+      "otherEntityName": "eKyc",
+      "relationshipType": "one-to-one",
+      "relationshipValidateRules": [],
+      "otherEntityField": "id",
+      "ownerSide": true,
+      "id": true,
+      "otherEntityRelationshipName": "eKycCreatorStatus"
+    }
+  ],
+  "service": "no",
+  "readOnly": false,
+  "pagination": "no",
+  "name": "EKycCreatorStatus",
+  "changelogDate": "20220113153221"
+}
