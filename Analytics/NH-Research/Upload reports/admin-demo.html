@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nhsv-admin · NH Research</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:         #0f2744;
+    --navy-light:   #1e3a6e;
+    --blue:         #1a4a8a;
+    --blue-light:   #dbeafe;
+    --teal:         #0e7490;
+    --teal-light:   #ccfbf1;
+    --violet:       #5b21b6;
+    --violet-light: #ede9fe;
+    --green:        #0f766e;
+    --green-light:  #d1fae5;
+    --amber:        #b45309;
+    --amber-light:  #fef3c7;
+    --red:          #be123c;
+    --red-light:    #ffe4e6;
+    --slate:        #475569;
+    --muted:        #94a3b8;
+    --border:       #e2e8f0;
+    --bg:           #f1f5f9;
+    --white:        #ffffff;
+    --sidebar-w:    220px;
+  }
+
+  body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #1e293b; font-size: 13px; display: flex; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar-w); background: var(--navy); color: white;
+    display: flex; flex-direction: column; flex-shrink: 0; position: fixed;
+    top: 0; left: 0; height: 100vh; z-index: 100;
+  }
+  .sidebar-brand {
+    padding: 18px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .brand-logo {
+    width: 30px; height: 30px; background: var(--blue); border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .brand-name { font-size: 14px; font-weight: 700; line-height: 1.2; }
+  .brand-sub  { font-size: 10px; color: #93c5fd; }
+
+  .nav-section { padding: 12px 0 4px; }
+  .nav-label {
+    font-size: 9px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: #64748b;
+    padding: 0 20px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px; font-size: 12.5px; color: #94a3b8;
+    cursor: pointer; transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #e2e8f0; }
+  .nav-item.active {
+    background: rgba(26,74,138,.45); color: white;
+    border-left-color: #60a5fa;
+  }
+  .nav-icon { width: 16px; text-align: center; font-size: 13px; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--blue); color: white;
+    font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600;
+  }
+
+  /* ── Main layout ── */
+  .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ── Top bar ── */
+  .topbar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 0 28px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .breadcrumb .current { color: var(--navy); font-weight: 600; }
+  .breadcrumb-sep { color: var(--border); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-icon {
+    width: 32px; height: 32px; border-radius: 8px; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    font-size: 14px; color: var(--slate);
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--teal));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white; cursor: pointer;
+  }
+
+  /* ── Page content ── */
+  .page { padding: 24px 28px 40px; }
+
+  .page-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .page-title { font-size: 20px; font-weight: 700; color: var(--navy); }
+  .page-subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 7px; font-size: 12.5px;
+    font-weight: 600; cursor: pointer; border: none; transition: opacity .15s;
+  }
+  .btn:hover { opacity: .88; }
+  .btn-primary { background: var(--navy); color: white; }
+  .btn-secondary { background: white; color: var(--slate); border: 1px solid var(--border); }
+  .btn-sm { padding: 5px 10px; font-size: 11.5px; }
+  .btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #fecdd3; }
+  .btn-ghost { background: transparent; color: var(--slate); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--bg); }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    background: white; border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-select, .filter-input {
+    height: 34px; border: 1px solid var(--border); border-radius: 7px;
+    padding: 0 10px; font-size: 12px; color: #1e293b;
+    background: var(--bg); outline: none;
+  }
+  .filter-select:focus, .filter-input:focus { border-color: #93c5fd; background: white; }
+  .filter-input { width: 220px; }
+  .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+  .filter-label { font-size: 11px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .filter-clear { font-size: 11.5px; color: var(--blue); cursor: pointer; margin-left: auto; }
+  .filter-clear:hover { text-decoration: underline; }
+
+  /* ── Stats row ── */
+  .stats-row { display: flex; gap: 12px; margin-bottom: 16px; }
+  .stat-card {
+    background: white; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; flex: 1; display: flex; align-items: center; gap: 12px;
+  }
+  .stat-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .stat-val { font-size: 20px; font-weight: 700; line-height: 1; }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Table ── */
+  .table-wrap {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .table-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .table-title { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .table-count { font-size: 11.5px; color: var(--muted); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #f8fafc; }
+  th {
+    padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600;
+    color: var(--slate); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td {
+    padding: 12px 14px; border-bottom: 1px solid #f1f5f9;
+    font-size: 12.5px; vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+
+  .col-stt   { width: 44px; color: var(--muted); font-size: 12px; }
+  .col-title { max-width: 240px; }
+  .title-text { font-weight: 500; color: var(--navy); line-height: 1.4; }
+  .title-preview { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+
+  /* ── Category tag ── */
+  .cat-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10.5px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .cat-thi-truong { background: var(--blue-light); color: var(--blue); }
+  .cat-doanh-nghiep { background: var(--teal-light); color: var(--teal); }
+  .cat-vi-mo { background: var(--violet-light); color: var(--violet); }
+
+  /* ── Status badge ── */
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; padding: 3px 9px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .status-published { background: var(--green-light); color: var(--green); }
+  .status-disabled  { background: #f1f5f9; color: var(--slate); }
+  .status-deleted   { background: var(--red-light); color: var(--red); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-published { background: var(--green); }
+  .dot-disabled  { background: var(--muted); }
+  .dot-deleted   { background: var(--red); }
+
+  /* ── PDF cell ── */
+  .pdf-yes {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--teal); font-weight: 500;
+  }
+  .pdf-no { font-size: 11px; color: var(--muted); }
+
+  /* ── Date cell ── */
+  .date-cell { font-size: 12px; color: var(--slate); white-space: nowrap; }
+  .date-cell .time { font-size: 10.5px; color: var(--muted); display: block; margin-top: 1px; }
+
+  /* ── Toggle switch ── */
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+  .toggle {
+    position: relative; width: 36px; height: 20px; cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; border-radius: 20px;
+    background: #cbd5e1; transition: background .2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; height: 14px; width: 14px;
+    left: 3px; top: 3px; border-radius: 50%; background: white;
+    transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-slider { background: #22c55e; }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+  .toggle-lbl { font-size: 11px; color: var(--slate); }
+
+  /* ── Action buttons ── */
+  .action-group { display: flex; gap: 6px; }
+  .action-btn {
+    width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+    background: white; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; transition: background .15s, border-color .15s;
+    color: var(--slate);
+  }
+  .action-btn:hover { background: var(--bg); border-color: #cbd5e1; }
+  .action-btn.edit:hover { background: var(--blue-light); border-color: #93c5fd; color: var(--blue); }
+  .action-btn.del:hover  { background: var(--red-light); border-color: #fecdd3; color: var(--red); }
+
+  /* ── Pagination ── */
+  .pagination {
+    padding: 14px 18px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .pag-info { font-size: 12px; color: var(--muted); }
+  .pag-btns { display: flex; gap: 4px; }
+  .pag-btn {
+    width: 30px; height: 30px; border-radius: 6px; border: 1px solid var(--border);
+    background: white; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 500; color: var(--slate);
+    transition: background .15s;
+  }
+  .pag-btn:hover { background: var(--bg); }
+  .pag-btn.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .pag-btn.disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Modal overlay ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(15,39,68,.45);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: white; border-radius: 14px; width: 560px; max-width: 96vw;
+    max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    transform: translateY(12px); transition: transform .2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+    background: white; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; color: var(--slate);
+  }
+  .modal-close:hover { background: var(--bg); }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; justify-content: flex-end; gap: 8px;
+  }
+
+  /* ── Form ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block; font-size: 12px; font-weight: 600; color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .form-label .req { color: var(--red); margin-left: 2px; }
+  .form-input, .form-select, .form-textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px;
+    padding: 9px 12px; font-size: 13px; color: #1e293b; outline: none;
+    transition: border-color .15s; font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.15);
+  }
+  .form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+  .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 3px; }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .upload-zone:hover { border-color: #60a5fa; background: #eff6ff; }
+  .upload-zone .uz-icon { font-size: 24px; margin-bottom: 6px; }
+  .upload-zone .uz-text { font-size: 12.5px; font-weight: 500; color: var(--navy); }
+  .upload-zone .uz-hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .upload-file-preview {
+    display: flex; align-items: center; gap: 10px;
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 7px;
+    padding: 10px 14px; margin-top: 8px;
+  }
+  .upload-file-icon { font-size: 20px; }
+  .upload-file-name { font-size: 12.5px; font-weight: 500; color: var(--navy); }
+  .upload-file-size { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .upload-remove { margin-left: auto; font-size: 11px; color: var(--red); cursor: pointer; }
+
+  /* ── Delete confirm modal ── */
+  .del-modal { width: 420px; }
+  .del-icon-wrap {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: var(--red-light); display: flex; align-items: center;
+    justify-content: center; font-size: 22px; margin: 0 auto 14px;
+  }
+  .del-body { text-align: center; padding: 8px 0; }
+  .del-title { font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .del-desc { font-size: 12.5px; color: var(--slate); line-height: 1.6; }
+  .del-article-name {
+    margin-top: 10px; padding: 8px 14px; background: #f8fafc;
+    border: 1px solid var(--border); border-radius: 7px;
+    font-size: 12.5px; font-weight: 600; color: var(--navy);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo">N</div>
+    <div>
+      <div class="brand-name">nhsv-admin</div>
+      <div class="brand-sub">UAT · tnhsvpro.nhsv.vn</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Tổng quan</div>
+    <div class="nav-item"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item"><span class="nav-icon">👥</span> Người dùng</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Nội dung</div>
+    <div class="nav-item active"><span class="nav-icon">📰</span> NH Research <span class="nav-badge">12</span></div>
+    <div class="nav-item"><span class="nav-icon">📢</span> Tin tức & Sự kiện</div>
+    <div class="nav-item"><span class="nav-icon">🔔</span> Thông báo</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Hệ thống</div>
+    <div class="nav-item"><span class="nav-icon">⚙️</span> Cấu hình</div>
+    <div class="nav-item"><span class="nav-icon">🔐</span> Phân quyền</div>
+    <div class="nav-item"><span class="nav-icon">📋</span> Audit log</div>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<div class="main">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="breadcrumb">
+      <span>nhsv-admin</span>
+      <span class="breadcrumb-sep">›</span>
+      <span>Nội dung</span>
+      <span class="breadcrumb-sep">›</span>
+      <span class="current">NH Research</span>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-icon">🔔</div>
+      <div class="topbar-icon">❓</div>
+      <div class="avatar">ĐN</div>
+    </div>
+  </div>
+
+  <!-- Page content -->
+  <div class="page">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">NH Research</div>
+        <div class="page-subtitle">Quản lý báo cáo phân tích · Phòng Phân tích NHSV</div>
+      </div>
+      <button class="btn btn-primary" onclick="openModal('create')">
+        ＋ Thêm bài mới
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#dbeafe">📰</div>
+        <div><div class="stat-val" style="color:var(--blue)">12</div><div class="stat-lbl">Tổng bài viết</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--green-light)">✅</div>
+        <div><div class="stat-val" style="color:var(--green)">9</div><div class="stat-lbl">Đang hiển thị</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:#f1f5f9">🔕</div>
+        <div><div class="stat-val" style="color:var(--slate)">3</div><div class="stat-lbl">Đang tắt</div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:var(--amber-light)">📎</div>
+        <div><div class="stat-val" style="color:var(--amber)">10</div><div class="stat-lbl">Có đính kèm PDF</div></div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <span class="filter-label">Lọc:</span>
+      <select class="filter-select">
+        <option value="">Tất cả category</option>
+        <option value="MARKET">Thị trường (MARKET)</option>
+        <option value="COMPANY">Doanh nghiệp (COMPANY)</option>
+        <option value="MACRO">Vĩ mô (MACRO)</option>
+      </select>
+      <select class="filter-select">
+        <option>Tất cả trạng thái</option>
+        <option>Published</option>
+        <option>Disabled</option>
+      </select>
+      <div class="filter-sep"></div>
+      <input class="filter-input" type="text" placeholder="🔍  Tìm theo tiêu đề...">
+      <span class="filter-clear">Xóa bộ lọc</span>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <div class="table-header">
+        <div class="table-title">Danh sách bài viết</div>
+        <div class="table-count">Hiển thị 6 / 12 bài</div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th class="col-stt">#</th>
+            <th>Category</th>
+            <th>Tiêu đề</th>
+            <th>PDF</th>
+            <th>Trạng thái</th>
+            <th>Ngày upload</th>
+            <th>Ngày update</th>
+            <th>Người đăng</th>
+            <th>Hiển thị</th>
+            <th>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Row 1 -->
+          <tr>
+            <td class="col-stt">1</td>
+            <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
+            <td class="col-title">
+              <div class="title-text">VƯỢT QUA RUNG LẮC</div>
+              <div class="title-preview">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên...</div>
+            </td>
+            <td><span class="pdf-yes">📄 2.4 MB</span></td>
+            <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
+            <td class="date-cell">10/06/2026<span class="time">09:15</span></td>
+            <td class="date-cell">10/06/2026<span class="time">09:15</span></td>
+            <td style="font-size:12px;">duc.nguyen</td>
+            <td>
+              <label class="toggle" title="Đang hiển thị — click để tắt">
+                <input type="checkbox" checked onchange="toggleStatus(this, 1)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 1)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 1)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr>
+            <td class="col-stt">2</td>
+            <td><span class="cat-tag cat-vi-mo">Vĩ mô</span></td>
+            <td class="col-title">
+              <div class="title-text">TRIỂN VỌNG KINH TẾ Q3/2026</div>
+              <div class="title-preview">Tăng trưởng GDP dự báo đạt 6.8% trong quý 3, động lực từ xuất khẩu...</div>
+            </td>
+            <td><span class="pdf-yes">📄 5.1 MB</span></td>
+            <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
+            <td class="date-cell">09/06/2026<span class="time">14:30</span></td>
+            <td class="date-cell">09/06/2026<span class="time">14:30</span></td>
+            <td style="font-size:12px;">duc.nguyen</td>
+            <td>
+              <label class="toggle" title="Đang hiển thị — click để tắt">
+                <input type="checkbox" checked onchange="toggleStatus(this, 2)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 2)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 2)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3 — DISABLED -->
+          <tr style="opacity:.7">
+            <td class="col-stt">3</td>
+            <td><span class="cat-tag cat-doanh-nghiep">Doanh nghiệp</span></td>
+            <td class="col-title">
+              <div class="title-text">PHÂN TÍCH HPG — CẬP NHẬT MÔ HÌNH</div>
+              <div class="title-preview">Điều chỉnh giá mục tiêu sau kết quả kinh doanh Q1/2026...</div>
+            </td>
+            <td><span class="pdf-yes">📄 3.2 MB</span></td>
+            <td><span class="status-badge status-disabled"><span class="status-dot dot-disabled"></span>Disabled</span></td>
+            <td class="date-cell">08/06/2026<span class="time">10:00</span></td>
+            <td class="date-cell">09/06/2026<span class="time">16:22</span></td>
+            <td style="font-size:12px;">minh.tran</td>
+            <td>
+              <label class="toggle" title="Đang tắt — click để bật">
+                <input type="checkbox" onchange="toggleStatus(this, 3)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 3)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 3)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4 — No PDF -->
+          <tr>
+            <td class="col-stt">4</td>
+            <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
+            <td class="col-title">
+              <div class="title-text">NHỊP HỒI KHẢ QUAN</div>
+              <div class="title-preview">Thị trường chuyển biến tích cực, lực cầu bắt đáy rõ trong phiên chiều...</div>
+            </td>
+            <td><span class="pdf-no">— Không có</span></td>
+            <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
+            <td class="date-cell">05/06/2026<span class="time">15:45</span></td>
+            <td class="date-cell">05/06/2026<span class="time">15:45</span></td>
+            <td style="font-size:12px;">duc.nguyen</td>
+            <td>
+              <label class="toggle" title="Đang hiển thị — click để tắt">
+                <input type="checkbox" checked onchange="toggleStatus(this, 4)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 4)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 4)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 5 -->
+          <tr>
+            <td class="col-stt">5</td>
+            <td><span class="cat-tag cat-vi-mo">Vĩ mô</span></td>
+            <td class="col-title">
+              <div class="title-text">CẬP NHẬT CHÍNH SÁCH TIỀN TỆ — FED & SBV</div>
+              <div class="title-preview">Tác động của quyết định lãi suất Fed đến thị trường Việt Nam...</div>
+            </td>
+            <td><span class="pdf-yes">📄 4.8 MB</span></td>
+            <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
+            <td class="date-cell">03/06/2026<span class="time">08:30</span></td>
+            <td class="date-cell">04/06/2026<span class="time">09:10</span></td>
+            <td style="font-size:12px;">minh.tran</td>
+            <td>
+              <label class="toggle" title="Đang hiển thị — click để tắt">
+                <input type="checkbox" checked onchange="toggleStatus(this, 5)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 5)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 5)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 6 — DISABLED -->
+          <tr style="opacity:.7">
+            <td class="col-stt">6</td>
+            <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
+            <td class="col-title">
+              <div class="title-text">ĐIỂM LẠI TUẦN — 26/05–30/05</div>
+              <div class="title-preview">Tuần giao dịch cuối tháng 5 với nhiều biến động từ dòng vốn ngoại...</div>
+            </td>
+            <td><span class="pdf-yes">📄 1.9 MB</span></td>
+            <td><span class="status-badge status-disabled"><span class="status-dot dot-disabled"></span>Disabled</span></td>
+            <td class="date-cell">01/06/2026<span class="time">17:00</span></td>
+            <td class="date-cell">02/06/2026<span class="time">08:45</span></td>
+            <td style="font-size:12px;">duc.nguyen</td>
+            <td>
+              <label class="toggle" title="Đang tắt — click để bật">
+                <input type="checkbox" onchange="toggleStatus(this, 6)">
+                <span class="toggle-slider"></span>
+              </label>
+            </td>
+            <td>
+              <div class="action-group">
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 6)">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 6)">🗑️</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <div class="pag-info">Hiển thị 1–6 trong tổng số 12 bài viết</div>
+        <div class="pag-btns">
+          <button class="pag-btn disabled">‹</button>
+          <button class="pag-btn active">1</button>
+          <button class="pag-btn">2</button>
+          <button class="pag-btn">›</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</div><!-- /main -->
+
+
+<!-- ══════════════════ MODAL: TẠO BÀI MỚI ══════════════════ -->
+<div class="modal-overlay" id="modal-create">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Thêm bài viết mới</div>
+      <button class="modal-close" onclick="closeModal('create')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category <span class="req">*</span></label>
+        <select class="form-select">
+          <option value="">— Chọn category —</option>
+          <option value="MARKET">Thị trường (MARKET)</option>
+          <option value="COMPANY">Doanh nghiệp (COMPANY)</option>
+          <option value="MACRO">Vĩ mô (MACRO)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tiêu đề <span class="req">*</span></label>
+        <input class="form-input" type="text" placeholder="Nhập tiêu đề bài viết..." maxlength="500"
+          oninput="document.getElementById('title-count').textContent = this.value.length">
+        <div class="char-count"><span id="title-count">0</span> / 500</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nội dung tóm tắt <span class="req">*</span></label>
+        <textarea class="form-textarea" placeholder="Nội dung ngắn gọn hiển thị trên app. Vĩ mô có thể dài hơn..." rows="5"></textarea>
+        <div class="form-hint">Hiển thị toàn bộ trên màn hình Detail. Preview 2–3 dòng trên card danh sách.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Đính kèm PDF</label>
+        <div class="upload-zone" onclick="simulateUpload()">
+          <div class="uz-icon">📁</div>
+          <div class="uz-text">Kéo thả file vào đây hoặc click để chọn</div>
+          <div class="uz-hint">Chỉ chấp nhận .pdf · Tối đa 20MB</div>
+        </div>
+        <div class="upload-file-preview" id="upload-preview" style="display:none">
+          <div class="upload-file-icon">📄</div>
+          <div>
+            <div class="upload-file-name">NHSV_TT_10062026.pdf</div>
+            <div class="upload-file-size">2.4 MB · Đã upload</div>
+          </div>
+          <div class="upload-remove" onclick="removeUpload()">✕ Xóa</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('create')">Hủy</button>
+      <button class="btn btn-primary">📤 Đăng bài</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════ MODAL: SỬA BÀI ══════════════════ -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">✏️ Sửa bài viết</div>
+      <button class="modal-close" onclick="closeModal('edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Category <span class="req">*</span></label>
+        <select class="form-select">
+          <option selected>Thị trường</option>
+          <option>Doanh nghiệp</option>
+          <option>Vĩ mô</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Tiêu đề <span class="req">*</span></label>
+        <input class="form-input" type="text" value="VƯỢT QUA RUNG LẮC">
+        <div class="char-count">14 / 500</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nội dung tóm tắt <span class="req">*</span></label>
+        <textarea class="form-textarea" rows="5">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên. Lực cầu từ nhà đầu tư trong nước vẫn đủ mạnh để hấp thụ.</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">PDF đính kèm</label>
+        <div class="upload-file-preview">
+          <div class="upload-file-icon">📄</div>
+          <div>
+            <div class="upload-file-name">NHSV_TT_10062026.pdf</div>
+            <div class="upload-file-size">2.4 MB · Đã upload</div>
+          </div>
+          <div class="upload-remove">✕ Thay thế</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Trạng thái</label>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:2px;">
+          <label class="toggle">
+            <input type="checkbox" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span style="font-size:12.5px; color:var(--slate)">Hiển thị trên app (Published)</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('edit')">Hủy</button>
+      <button class="btn btn-primary">💾 Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════ MODAL: XÁC NHẬN XÓA ══════════════════ -->
+<div class="modal-overlay" id="modal-delete">
+  <div class="modal del-modal">
+    <div class="modal-body">
+      <div class="del-body">
+        <div class="del-icon-wrap">🗑️</div>
+        <div class="del-title">Xóa bài viết?</div>
+        <div class="del-desc">
+          Bài viết sẽ bị <strong>ẩn khỏi app ngay lập tức</strong> và không thể khôi phục.<br>
+          File PDF đính kèm vẫn được giữ trên storage.
+        </div>
+        <div class="del-article-name">VƯỢT QUA RUNG LẮC</div>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content:center; gap:12px;">
+      <button class="btn btn-ghost" style="min-width:100px;" onclick="closeModal('delete')">Hủy</button>
+      <button class="btn btn-danger" style="min-width:100px;">Xác nhận xóa</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  function openModal(type, id) {
+    document.getElementById('modal-' + type).classList.add('open');
+  }
+  function closeModal(type) {
+    document.getElementById('modal-' + type).classList.remove('open');
+  }
+
+  // Close on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  function toggleStatus(checkbox, rowId) {
+    const row = checkbox.closest('tr');
+    const badge = row.querySelector('.status-badge');
+    const dot   = row.querySelector('.status-dot');
+    if (checkbox.checked) {
+      row.style.opacity = '1';
+      badge.className = 'status-badge status-published';
+      badge.innerHTML = '<span class="status-dot dot-published"></span>Published';
+      checkbox.title = 'Đang hiển thị — click để tắt';
+    } else {
+      row.style.opacity = '.7';
+      badge.className = 'status-badge status-disabled';
+      badge.innerHTML = '<span class="status-dot dot-disabled"></span>Disabled';
+      checkbox.title = 'Đang tắt — click để bật';
+    }
+  }
+
+  function simulateUpload() {
+    document.getElementById('upload-preview').style.display = 'flex';
+  }
+  function removeUpload() {
+    document.getElementById('upload-preview').style.display = 'none';
+  }
+</script>
+</body>
+</html>

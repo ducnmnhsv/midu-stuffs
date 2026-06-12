@@ -1,7 +1,7 @@
 # CLAUDE.md — tradex-monitoring
 
 > Hot cache cho Claude Code, Claude Chat, và Cowork.
-> Khi cần thêm chi tiết → xem `TradeX Knowledge/` hoặc `Derivatives/Planning documentation/`.
+> Khi cần thêm chi tiết → xem `Knowledge/TradeX/` hoặc `Derivatives/Planning documentation/`.
 
 ---
 
@@ -44,16 +44,26 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 
 ---
 
+## ⚠️ CRITICAL — nhsv-mts-rn (READ-ONLY)
+
+`/Users/ducnguyen/Documents/project/nhsv-mts-rn` là FE codebase của **NHSV Pro** (React Native).
+
+- **TUYỆT ĐỐI KHÔNG** chỉnh sửa, tạo file, hoặc thay đổi bất kỳ thứ gì trong repo này
+- Chỉ dùng để **đọc và tham chiếu** (read-only reference)
+- Khi tạo FE issue: tham chiếu `src/screens/`, `src/components/`, `src/reduxs/`, `src/interfaces/` → viết issue vào `tradex-monitoring`
+
+---
+
 ## Rules — áp dụng mọi lúc
 
 ### API & Naming
-- **C1 — TradeX naming:** Tất cả endpoint, DTO, service method → check `@tradex-api-naming` trước khi finalize.
+- **C1 — TradeX naming:** Tất cả endpoint, DTO, service method → check `Knowledge/TradeX/API Standards/tradex-api-conventions.md` trước khi finalize.
 - **C1 — No Core names:** Request/query params phải dùng tên TradeX, KHÔNG dùng tên field của Core (Lotte). Luôn kèm bảng TradeX → Core mapping.
-- **C2 — Order API response:** Check `@tradex-order-api-response-standards` trước khi finalize bất kỳ Order API response doc nào.
+- **C2 — Order API response:** Check `Knowledge/TradeX/API Standards/tradex-api-conventions.md` (section: Response Format Standards) trước khi finalize bất kỳ Order API response doc nào.
 
 ### Documentation
 - **C3 — PM-readability gate:** Folder `Planning/` → NO code blocks, prose only.
-- **C4 — Knowledge-first:** Trước khi scan codebase cho TradeX system knowledge → check `TradeX Knowledge/` trước.
+- **C4 — Knowledge-first:** Trước khi scan codebase cho TradeX system knowledge → check `Knowledge/TradeX/` trước.
 - **C5 — Derivatives doc footer:** Mọi spec/issue Derivatives phải kết thúc bằng:
   ```
   Document Status: ✅/📋/🔄 | For: [audience] | Next Steps: [action]
@@ -75,14 +85,34 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 
 ---
 
+## File Routing — Output đến đúng folder
+
+| Feature / Domain | Document type | Destination |
+|---|---|---|
+| Derivatives | Issue (BE/FE) | `Derivatives/Planning documentation/{Category}/Issues/` |
+| Derivatives | Planning / PRD | `Derivatives/Planning documentation/{Category}/Planning/` |
+| Derivatives | API Specification | `Derivatives/Planning documentation/{Category}/Specifications/` |
+| Smart OTP | Any | `Smart-OTP/{Issues\|Planning\|Specifications}/` |
+| TradeX monitoring / infra | Any | `TradeX-Monitor/` |
+| System knowledge / API standards | Reference | `Knowledge/TradeX/` |
+| Market analysis / research | Reference | `Analytics/NH-Research/` |
+
+**Derivatives category mapping:**
+
+| Topic | Category folder |
+|---|---|
+| Market data, GTGD, chart, quote | `Market data/` |
+| Order, TP/SL, OCO, stop | `Order/` |
+| Account, margin | `Account/` |
+| Cash, nạp rút | `Cash transaction/` |
+| Mở tài khoản phái sinh | `Open_DR_Sub_Account/` |
+
+---
+
 ## Key References
 
-```
-@TradeX Knowledge/API Standards/tradex-api-naming.md
-@TradeX Knowledge/API Standards/tradex-order-api-response-standards.md
-@TradeX Knowledge/System/
-@Derivatives/Planning documentation/
-```
+@Knowledge/TradeX/API Standards/tradex-api-conventions.md
+@Knowledge/TradeX/API Standards/tradex-api-spec-template.md
 
 ---
 
