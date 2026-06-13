@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA CV Scoring Dashboard — NHSV Pro</title>
+<style>
+:root {
+  --tier-b:#2563EB;--tier-c:#6B7280;--tier-r:#DC2626;
+  --bg:#0F172A;--surface:#1E293B;--surface2:#273344;--border:#334155;
+  --text:#F1F5F9;--muted:#94A3B8;--accent:#38BDF8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border-bottom:1px solid var(--border);padding:20px 32px}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.header h1{font-size:22px;font-weight:700;color:var(--accent)}
+.header-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center;min-width:80px}
+.stat-num{font-size:26px;font-weight:800}
+.stat-label{font-size:10px;color:var(--muted);margin-top:1px}
+.stat.b .stat-num{color:var(--tier-b)}.stat.c .stat-num{color:var(--tier-c)}.stat.r .stat-num{color:var(--tier-r)}.stat.total .stat-num{color:var(--accent)}
+
+/* Filter */
+.filter-bar{padding:12px 32px;display:flex;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);align-items:center}
+.filter-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:500;transition:all .2s}
+.filter-btn:hover{border-color:var(--accent);color:var(--text)}
+.filter-btn.active{background:var(--accent);color:#0F172A;border-color:var(--accent);font-weight:700}
+.filter-btn.fb.active{background:var(--tier-b);border-color:var(--tier-b);color:#fff}
+.filter-btn.fc.active{background:var(--tier-c);border-color:var(--tier-c);color:#fff}
+.filter-btn.fr.active{background:var(--tier-r);border-color:var(--tier-r);color:#fff}
+
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:20px 32px}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(56,189,248,.1)}
+.card.tier-B{border-left:4px solid var(--tier-b)}.card.tier-C{border-left:4px solid var(--tier-c)}.card.tier-REJECT{border-left:4px solid var(--tier-r);opacity:.75}
+.card-header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
+.card-name{font-size:15px;font-weight:700}.card-role{font-size:11px;color:var(--muted);margin-top:2px}
+.card-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.tier-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-B{background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.3)}
+.badge-C{background:rgba(107,114,128,.15);color:#9CA3AF;border:1px solid rgba(107,114,128,.3)}
+.badge-REJECT{background:rgba(220,38,38,.1);color:#F87171;border:1px solid rgba(220,38,38,.3)}
+.notes-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,.1);color:#FCD34D;border:1px solid rgba(251,191,36,.3)}
+.decision-badge{font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.db-proceed{background:rgba(5,150,105,.1);color:#34D399;border:1px solid rgba(5,150,105,.3)}
+.db-reject{background:rgba(220,38,38,.1);color:#F87171;border:1px solid rgba(220,38,38,.2)}
+.db-hold{background:rgba(245,158,11,.1);color:#FCD34D;border:1px solid rgba(245,158,11,.2)}
+
+.card-bars{padding:0 16px 10px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bar-lbl{font-size:10px;color:var(--muted);width:34px;flex-shrink:0}
+.bar-track{flex:1;background:var(--surface2);border-radius:3px;height:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.bd1{background:linear-gradient(90deg,#8B5CF6,#A78BFA)}.bd2{background:linear-gradient(90deg,#3B82F6,#60A5FA)}
+.bd3{background:linear-gradient(90deg,#0891B2,#38BDF8)}.bd4{background:linear-gradient(90deg,#059669,#34D399)}
+.btotal{background:linear-gradient(90deg,#D97706,#FBBF24);height:8px}
+.bar-val{font-size:10px;color:var(--muted);width:22px;text-align:right;flex-shrink:0}
+
+.card-hl{margin:0 16px 10px;background:var(--surface2);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--accent);border-left:2px solid var(--accent)}
+.card-rr{margin:0 16px 10px;background:rgba(220,38,38,.07);border-radius:7px;padding:7px 10px;font-size:11px;color:#F87171;border-left:2px solid var(--tier-r)}
+.card-footer{padding:8px 16px 12px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border)}
+.score-total{font-size:20px;font-weight:800}.score-max{font-size:11px;color:var(--muted)}
+.card-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;border:none;cursor:pointer;transition:all .2s}
+.btn-interview{background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.4)}
+.btn-interview:hover{background:var(--tier-b);color:#fff}
+.btn-test{background:rgba(245,158,11,.1);color:#FCD34D;border:1px solid rgba(245,158,11,.3)}
+.btn-test:hover{background:#D97706;color:#fff}
+.btn-reject{background:rgba(220,38,38,.07);color:#F87171;border:1px solid rgba(220,38,38,.25)}
+.btn-second{background:rgba(245,158,11,.07);color:#FCD34D;border:1px solid rgba(245,158,11,.2)}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:900px;overflow:hidden;transform:translateY(16px);transition:transform .25s;margin:auto}
+.overlay.open .modal{transform:translateY(0)}
+
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.modal-name{font-size:18px;font-weight:800}.modal-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.modal-hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:16px;line-height:1}
+.modal-close:hover{color:var(--text)}
+
+/* Tabs */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);padding:0 20px;gap:0}
+.tab-btn{padding:10px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none;padding:18px 20px;max-height:72vh;overflow-y:auto}
+.tab-content.active{display:block}
+
+/* Score section */
+.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
+.score-detail{background:var(--surface2);border-radius:9px;padding:12px}
+.dim-row{margin-bottom:10px}.dim-row:last-child{margin-bottom:0}
+.dim-hdr{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px}
+.dim-name{color:var(--text);font-weight:600}.dim-val{color:var(--accent);font-weight:700}
+.dim-bar{background:#0F172A;border-radius:3px;height:7px;overflow:hidden}
+.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:5px}
+.sub-item{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
+.sub-item span:last-child{color:var(--text)}
+.total-display{background:var(--surface2);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:14px;margin-top:10px}
+.total-num{font-size:38px;font-weight:900}
+.tn-b{color:#60A5FA}.tn-c{color:#9CA3AF}.tn-r{color:#F87171}
+.total-info{flex:1}.total-tier{font-size:12px;font-weight:700;margin-bottom:3px}.total-group{font-size:10px;color:var(--muted)}
+
+/* Pros/cons */
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pc-box{background:var(--surface2);border-radius:9px;padding:10px}
+.pc-pros{border-top:2px solid #059669}.pc-cons{border-top:2px solid #DC2626}
+.pc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
+.pc-pros .pc-title{color:#34D399}.pc-cons .pc-title{color:#F87171}
+.pc-list{list-style:none}
+.pc-list li{font-size:11px;padding:3px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;line-height:1.45}
+.pc-list li:last-child{border-bottom:none}
+.pc-list.pros li::before{content:'✓';color:#34D399;flex-shrink:0;font-weight:700}
+.pc-list.cons li::before{content:'✕';color:#F87171;flex-shrink:0;font-weight:700}
+.note-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:9px 12px;font-size:11px;color:#FCD34D;margin-top:10px}
+
+/* Interview questions */
+.q-wrap{background:var(--surface2);border-radius:9px;overflow:hidden}
+.q-hdr{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.q-gbadge{font-size:9px;padding:2px 7px;border-radius:8px}
+.gb-b{background:rgba(56,189,248,.1);color:var(--accent)}.gb-c{background:rgba(139,92,246,.1);color:#A78BFA}
+.q-item{border-bottom:1px solid var(--border)}.q-item:last-child{border-bottom:none}
+.q-q{padding:9px 12px;font-size:11px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;line-height:1.5}
+.q-q:hover{background:rgba(255,255,255,.03)}
+.q-num{color:var(--accent);font-weight:700;flex-shrink:0}
+.q-arrow{color:var(--muted);flex-shrink:0;transition:transform .2s;font-size:12px}
+.q-item.open .q-arrow{transform:rotate(90deg)}
+.q-detail{padding:0 12px 9px 26px;font-size:10px;color:var(--muted);line-height:1.6;display:none}
+.q-item.open .q-detail{display:block}
+.q-pass{color:#34D399}.q-warn{color:#FBBF24}
+
+/* CV Tab */
+.cv-toolbar{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.cv-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.cv-open{background:rgba(56,189,248,.1);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
+.cv-open:hover{background:var(--accent);color:#0F172A}
+.cv-dl{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.cv-dl:hover{border-color:var(--accent)}
+.cv-frame-wrap{border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#fff}
+.cv-frame{width:100%;height:560px;border:none;display:block}
+.cv-note{font-size:10px;color:var(--muted);margin-top:7px;padding:7px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--border)}
+
+/* Notes Tab */
+.notes-form{display:flex;flex-direction:column;gap:14px}
+.notes-saved{font-size:10px;color:#34D399;transition:opacity .5s;opacity:0;text-align:right}
+.notes-saved.show{opacity:1}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none;transition:border .2s}
+.form-input:focus{border-color:var(--accent)}
+.form-input::placeholder{color:#475569}
+textarea.form-input{resize:vertical;min-height:70px}
+
+/* Star Rating */
+.ratings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rating-group{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.rating-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.stars{display:flex;gap:4px}
+.star{font-size:20px;cursor:pointer;color:#334155;transition:color .15s;user-select:none}
+.star:hover,.star.lit{color:#FBBF24}
+
+/* Decision */
+.decision-group{background:var(--surface2);border-radius:8px;padding:10px 12px}
+.decision-opts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.decision-opt{display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:7px;border:1px solid var(--border);font-size:12px;transition:all .2s;background:transparent;color:var(--muted)}
+.decision-opt input{display:none}
+.decision-opt.proceed{border-color:rgba(5,150,105,.3);color:#34D399}
+.decision-opt.hold{border-color:rgba(245,158,11,.3);color:#FCD34D}
+.decision-opt.reject-d{border-color:rgba(220,38,38,.3);color:#F87171}
+.decision-opt.selected.proceed{background:rgba(5,150,105,.15);border-color:#059669}
+.decision-opt.selected.hold{background:rgba(245,158,11,.1);border-color:#D97706}
+.decision-opt.selected.reject-d{background:rgba(220,38,38,.1);border-color:#DC2626}
+
+.save-btn{background:var(--accent);color:#0F172A;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;width:100%}
+.save-btn:hover{background:#7DD3FC}
+
+.reject-overlay{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:9px;padding:14px;font-size:12px;color:#F87171;text-align:center}
+
+@media(max-width:640px){
+  .grid{grid-template-columns:1fr;padding:12px 14px}
+  .pc-grid{grid-template-columns:1fr}
+  .form-row,.ratings-grid{grid-template-columns:1fr}
+  .header{padding:14px}
+  .filter-bar{padding:10px 14px;flex-wrap:wrap}
+  .tab-content{max-height:none}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>QA CV Scoring Dashboard — NHSV Pro</h1>
+      <div class="header-meta">Batch June 2026 · 4 Hard Criteria · 100 điểm · Ưu tiên: Securities / Fintech domain</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat total"><div class="stat-num">10</div><div class="stat-label">Tổng CV</div></div>
+    <div class="stat b"><div class="stat-num">3</div><div class="stat-label">Tier B</div></div>
+    <div class="stat c"><div class="stat-num">5</div><div class="stat-label">Tier C</div></div>
+    <div class="stat r"><div class="stat-num">2</div><div class="stat-label">Reject</div></div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filter('all',this)">Tất cả</button>
+  <button class="filter-btn fb" onclick="filter('B',this)">🔵 Tier B</button>
+  <button class="filter-btn fc" onclick="filter('C',this)">⚪ Tier C</button>
+  <button class="filter-btn fr" onclick="filter('REJECT',this)">🔴 Reject</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeOnBg(event)">
+<div class="modal">
+  <div class="modal-hdr">
+    <div>
+      <div class="modal-name" id="m-name"></div>
+      <div class="modal-sub" id="m-sub"></div>
+    </div>
+    <div class="modal-hdr-right">
+      <button class="modal-close" onclick="closeOverlay()">✕</button>
+      <div id="m-decision-badge"></div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('score',this)">📊 Đánh giá</button>
+    <button class="tab-btn" onclick="switchTab('cv',this)">📄 CV</button>
+    <button class="tab-btn" onclick="switchTab('notes',this)">📝 Ghi chú PV</button>
+  </div>
+  <div class="tab-content active" id="tab-score"></div>
+  <div class="tab-content" id="tab-cv"></div>
+  <div class="tab-content" id="tab-notes"></div>
+</div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const IQ = {
+  B:{label:"Group B — QA tốt, chưa có CK domain",cls:"gb-b",qs:[
+    {q:"B1. Đã từng gia nhập dự án với domain hoàn toàn mới chưa? Làm gì trong 2 tuần đầu để hiểu domain và test hiệu quả?",intent:"Learning strategy — tiêu chí quan trọng nhất nhóm này.",pass:"Hỏi domain expert, đọc spec kỹ, shadow user, trace workflow thực tế.",warn:"\"Chỉ cần đọc spec là đủ\" — thiếu chủ động."},
+    {q:"B2. Biết khái niệm CK cơ bản không: lệnh limit, T+2, margin? Đã tự tìm hiểu trước chưa?",intent:"Baseline knowledge và sự chủ động tự học.",pass:"Giải thích được, hoặc thành thật nhưng đã research trước PV.",warn:"Không biết và không chuẩn bị gì."},
+    {q:"B3. Được giao: \"Test màn hình đặt lệnh mua cổ phiếu\" mà chưa dùng app trading — bắt đầu từ đâu?",intent:"Problem-solving khi thiếu domain.",pass:"Hỏi business owner, đọc spec/flow, dùng app thực tế, sau đó identify test cases.",warn:""},
+    {q:"B4. Estimate bao lâu để làm quen đủ với domain CK để test hiệu quả?",intent:"Realistic self-assessment, có action plan.",pass:"2–4 tuần, có plan: tài liệu + mentor + thực hành.",warn:"\"Vài ngày là xong\" — underestimate complexity."},
+    {q:"B5. Mô tả test suite API hoàn chỉnh nhất bạn đã xây. Cover được gì? Integrate vào CI/CD không?",intent:"Xác nhận depth of QA skills — strength chính nhóm này.",pass:"",warn:""},
+    {q:"B6. Test mobile iOS và Android cùng codebase React Native — điều gì phức tạp nhất? Xử lý ra sao?",intent:"Core challenge của NHSV Pro.",pass:"",warn:""},
+    {q:"B7. Automation testing bạn làm ở mức nào? Có tự maintain script khi code thay đổi không?",intent:"Đánh giá ceiling of QA skills.",pass:"",warn:""},
+    {q:"B8. Trong domain cũ, test transaction tiền như thế nào? Điểm tương đồng với trading?",intent:"Transferable financial testing skills.",pass:"",warn:""},
+    {q:"B9. Đã test hệ thống dữ liệu realtime (giá, tồn kho, live tracking) chưa? Thách thức lớn nhất?",intent:"Real-time testing experience.",pass:"",warn:""},
+    {q:"B10. Bug chỉ xảy ra điều kiện cụ thể (user 0đ trong tk, hoặc 14:29 sắp đóng sàn) — test và reproduce?",intent:"Edge case + time-based testing.",pass:"",warn:""},
+    {q:"B11. Trading yêu cầu precision số rất cao (giá, khối lượng) — test rounding errors như thế nào?",intent:"Numeric precision trong fintech.",pass:"",warn:""},
+    {q:"B12. Điều lo ngại nhất khi làm QA lĩnh vực CK? Kế hoạch vượt qua?",intent:"Self-awareness và action plan.",pass:"",warn:""},
+    {q:"B13. (Thực hành) Cho xem Postman collection hoặc demo live một API test.",intent:"Evidence over claim.",pass:"",warn:""},
+    {q:"B14. Tại sao muốn chuyển sang tài chính/CK? Chủ động hay chỉ vì job opportunity?",intent:"Intrinsic motivation — học domain nhanh hơn.",pass:"Có lý do cụ thể, đã research ngành trước PV.",warn:""}
+  ]},
+  C:{label:"Group C — CK/Banking domain, QA kỹ thuật cần train",cls:"gb-c",qs:[
+    {q:"C1. Trong công việc cũ, báo cáo bug bằng cách nào? Quy trình từ phát hiện đến verify fix?",intent:"Verify basic QA process — có structured bug tracking không.",pass:"Title rõ, steps to reproduce, expected vs actual, environment, severity. Dùng tool (JIRA).",warn:"Chỉ report bằng miệng/chat, không có process."},
+    {q:"C2. Đã phát hiện lỗi nghiêm trọng (sai giá, sai số, sai tài khoản) trong hệ thống giao dịch chưa? Xử lý?",intent:"Severity awareness trong fintech, escalation process.",pass:"Hiểu P1/critical, escalate đúng người, không tự xử lý im lặng.",warn:""},
+    {q:"C3. Với kinh nghiệm CK/banking: luồng nào trong trading app risk nhất? Test cẩn thận nhất ở đâu?",intent:"Risk-based thinking từ domain — competitive advantage nhóm này.",pass:"Đặt lệnh, khớp lệnh, cập nhật số dư, margin call, withdraw.",warn:""},
+    {q:"C4. Giải thích forced-sell margin? Ai chịu rủi ro? Từ góc độ QA, test scenario này như thế nào?",intent:"Deep domain → translate thành test scenarios.",pass:"",warn:""},
+    {q:"C5. Trong phiên giao dịch, thời điểm nào hệ thống dễ lỗi nhất? (ATO, ATC, news release...)",intent:"Trading session lifecycle → design time-based test scenarios.",pass:"ATO/ATC peak load, trước/sau khi sàn đóng, lúc news shock.",warn:""},
+    {q:"C6. (Thực hành) Viết tối thiểu 8 test cases cho: \"User nhập số lượng cổ phiếu muốn mua.\"",intent:"Verify basic QA methodology.",pass:"Boundary: 0, âm, max, lẻ. Invalid type, empty, max tài khoản, sàn đóng.",warn:"Chỉ nghĩ happy path → cần train từ đầu."},
+    {q:"C7. Đã dùng Postman test API chưa? Nếu chưa, estimate bao lâu thành thạo cơ bản?",intent:"API testing readiness — critical cho NHSV Pro.",pass:"Gửi request, check response, basic auth. Estimate realistic: 2–4 tuần.",warn:""},
+    {q:"C8. Hiểu \"regression testing\" không? Khi nào chạy? Prioritize test cases thế nào cho mỗi release?",intent:"QA methodology foundation.",pass:"Risk-based: focus critical flows, recent changes, integration points.",warn:""},
+    {q:"C9. Test \"Danh mục lệnh\" trên mobile iOS và Android — bao nhiêu device? Tiêu chí chọn device?",intent:"Mobile testing awareness — NHSV Pro là React Native app.",pass:"Top devices theo market share, OS version range, screen size coverage.",warn:"\"Test 1 device là đủ\"."},
+    {q:"C10. Đã dùng JIRA hoặc issue tracker nào chưa? Workflow từ phát hiện bug đến close?",intent:"Tool proficiency và process familiarity.",pass:"Create → assign → fix → retest → close. Biết severity/priority.",warn:""},
+    {q:"C11. So sánh domain knowledge vs kỹ năng QA kỹ thuật: mạnh/yếu gì? Kế hoạch cải thiện?",intent:"Self-awareness + growth mindset — quan trọng nhất nhóm này.",pass:"Thẳng thắn về gap, có plan học cụ thể (course/tool/timeline).",warn:""},
+    {q:"C12. Estimate bao lâu đạt mức \"QA độc lập\" — tự viết test plan, execute, report?",intent:"Realistic timeline cho hiring manager plan resource.",pass:"1–3 tháng với domain background. Có milestones.",warn:""},
+    {q:"C13. Đã học/dùng ngôn ngữ programming/scripting nào? (Python, JS, SQL...) Muốn học automation?",intent:"Technical ceiling — có thể tiến đến automation QA không.",pass:"",warn:""},
+    {q:"C14. Lý do chuyển sang QA? Domain CK/banking là lợi thế như thế nào trong vai trò này?",intent:"Career motivation + articulate unique value.",pass:"Lý do rõ, articulate được unique value của domain knowledge.",warn:""}
+  ]}
+};
+
+const CV = [
+  {id:"khanh-bt",name:"Bùi Trọng Khánh",role:"Manual / Performance Tester",tier:"B",score:68,hc:true,
+   d1:30,d2:19,d3:12,d4:7,
+   d2s:{"API Testing":[8,12],"Mobile Testing":[6,8],"Automation":[1,6],"Performance":[4,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[5,6],"3rd-party":[1,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"HK Stock Trading App — Philips Securities (19 tháng)",iq:"C",action:"interview",cvFile:"_VNW Bui Trong KHanh.pdf",
+   pros:["EMS HK (Philips Securities): iOS/Android stock trading app, 08/2023–03/2025","Performance testing: JMeter, Jenkins, Grafana, InfluxDb","API testing: Postman + Charles Proxy, regression, SIT","JIRA, SQL Server/PostgreSQL, ISTQB Foundation Performance","Fintech: MCredit (loan app + e-contract)"],
+   cons:["D2=19, thiếu 1 điểm để đạt Tier A (cần D2≥20)","Không có automation framework — chỉ manual + performance","Real-time/WebSocket testing chưa mention cụ thể","Kinh nghiệm CK là HK market, chưa có VN HOSE/HNX context"]},
+
+  {id:"tra-nt",name:"Nguyễn Thị Trà",role:"Senior Tester — Banking Domain",tier:"B",score:55,hc:true,
+   d1:25,d2:14,d3:7,d4:9,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[4,8],"Automation":[2,6],"Performance":[1,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[3,3]},
+   hl:"TPBank 3 năm + MB Bank — Guarantee, Disbursement",iq:"C",action:"interview",cvFile:"_VNW Nguyen Thi Tra.pdf",
+   pros:["TPBank 3 năm: electronic guarantee (IDNES), online disbursement (GNOL), digital docs (CKS)","MB Bank CRM project onsite (2020–2021)","8+ năm QA tổng cộng, senior profile đáng tin cậy","TPBank Outstanding Individual Award 2023","Leadership: lead task, manage team, mentor members"],
+   cons:["D2 thấp (14/30) — không có automation framework thực sự","Katalon chỉ 'basic test scripts' — hạn chế","Không có performance testing (JMeter, k6...)","Mobile testing không rõ — chủ yếu web banking","Không có real-time/WebSocket testing experience"]},
+
+  {id:"dinh-pt",name:"Phạm Thị Định",role:"BA / Tester — FPT FIS Bank",tier:"B",score:47,hc:true,
+   d1:26,d2:6,d3:7,d4:8,
+   d2s:{"API Testing":[5,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[3,6],"3rd-party":[1,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"Core Banking — Sacombank Leasing, CBBank, SCF-TRADFLAT",iq:"C",action:"interview_with_test",cvFile:"_VNW Pham Thi Dinh.pdf",
+   note:"Yêu cầu bài test thực hành API + mobile testing trước khi quyết định",
+   pros:["FPT FIS Bank (08/2022–nay): core banking 3.5 năm","Modules: Tiền gửi, Khoản vay, Tài sản bảo đảm, Cho thuê tài chính","SQL query validate số dư, giao dịch DB","Top 10 Make in Vietnam 2024, Á quân IKhiến FPT","Mentor intern, full UAT + Go-live ownership"],
+   cons:["D2 yếu nhất nhóm B (6/30) — không mobile, automation, performance","Không có mobile testing — NHSV Pro là React Native","API testing cơ bản, thiếu Postman collection evidence","BA-heavy profile: dual BA/QA role","Thiếu real-time, CI/CD, WebSocket"]},
+
+  {id:"linh-ntk",name:"Nguyễn Thị Khánh Linh",role:"QA Lead — Newwave Solutions",tier:"C",score:47,hc:true,
+   d1:10,d2:16,d3:12,d4:9,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[6,8],"Automation":[1,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[4,6],"3rd-party":[3,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[3,3]},
+   hl:"QA Lead 4 năm — Multi-chain Crypto Wallet, Enterprise Platform",iq:"B",action:"second_look",cvFile:"_VNW Nguyen Thi Khanh Linh.pdf",
+   note:"Worth second look nếu Tier B pipeline không đủ. QA skills tốt nhất batch — dùng bộ câu hỏi Group B.",
+   pros:["QA Lead tại Newwave (Jun 2024–nay): lead 3–5 QA members","Mobile iOS/Android: multi-chain crypto wallet (BTC, ETH, XRP, TRON...)","API testing sâu: Postman, Swagger, webhook, pagination, schema","DeFi points management — financial logic testing","MVP Award 2025, UAT ownership, sprint demos"],
+   cons:["Không có CK/banking/fintech truyền thống (D1=10)","Blockchain ≠ stock trading: domain gap lớn với NHSV Pro","Automation chỉ 'basic knowledge'","Không có performance testing","Không có VN regulatory context (HOSE, HNX, T+2)"]},
+
+  {id:"nam-vt",name:"Vũ Thanh Nam",role:"OTT System Engineer — VSTV",tier:"C",score:35,hc:false,
+   d1:10,d2:7,d3:11,d4:7,
+   d2s:{"API Testing":[4,12],"Mobile Testing":[3,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[2,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"VSTV OTT 6.5 năm — iOS/Android apps, payment integration",iq:null,action:"reject",cvFile:"_VNW Vu Thanh Nam.pdf",
+   pros:["6.5 năm VSTV: OTT product, mobile iOS/Android, payment integration","Datadog, Splunk — log analysis skills","Postman, Fiddler, Wireshark","Real-time streaming exposure (OTT)","API specs, product documentation"],
+   cons:["HC-01 FAIL: không có QA job title — Product/System Engineer","\"Participated in\" review test case ≠ QA thực sự","Domain: OTT/telecoms, hiện tại Technical Director maritime","Không có financial domain, không có test case writing evidence"]},
+
+  {id:"tung-lv",name:"Lưu Văn Tùng",role:"Automotive Tester / RD Tester",tier:"C",score:31,hc:true,
+   d1:12,d2:9,d3:4,d4:6,
+   d2s:{"API Testing":[6,12],"Mobile Testing":[0,8],"Automation":[3,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[2,6],"3rd-party":[2,4],"SQL/Log":[0,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"mPay — QR Code payment (BIDV, VPBank, MB)",iq:null,action:"reject",cvFile:"_VNW QA Tung Luu Van.pdf",
+   pros:["mPay payment gateway: BIDV, MB, VPBank — fintech adjacent","Postman API testing tại Minvoice","Selenium WebDriver + TestNG basic automation","GPA 3.2 Thang Long"],
+   cons:["Hiện Automotive Tester INFINIQ — xa software QA","Minvoice 1 năm: chủ yếu BA+Tester, thiếu depth","Không có mobile testing, không có performance","Không có financial/CK domain, JIRA experience mỏng"]},
+
+  {id:"lan-bp",name:"Bùi Phương Lan",role:"Fresher Manual Tester — HBLAB",tier:"C",score:23,hc:true,
+   d1:3,d2:11,d3:4,d4:5,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[2,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[2,6],"3rd-party":[0,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Fresher — Postman, GraphQL, MySQL, 1 năm kinh nghiệm",iq:null,action:"reject",cvFile:"_VNW Bui Phuong Lan.pdf",
+   pros:["Postman + GraphQL API testing — tooling tốt cho level fresher","MySQL/DBeaver database validation","Backlog (Nulab) defect tracking","Test đa platform: Desktop, iPhone, iPad","Proactive: dùng Claude AI generate test cases"],
+   cons:["Fresher — chỉ 1 năm tại HBLAB (03/2025)","Không có domain tài chính — e-commerce anime, localization","Không có automation, performance testing","Projects nhỏ, ít phức tạp"]},
+
+  {id:"tuan-tm",name:"Trần Minh Tuấn",role:"Security Tester — Samsung SDS",tier:"C",score:18,hc:true,
+   d1:0,d2:8,d3:3,d4:7,
+   d2s:{"API Testing":[4,12],"Mobile Testing":[2,8],"Automation":[2,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[1,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"Samsung SDS — Penetration Testing, Burp Suite Certified",iq:null,action:"reject",cvFile:"_VNW Tran Minh Tuan.pdf",
+   pros:["Samsung SDS Security Tester — reputable company","Burp Suite Certified Practitioner","AWS SA Associate, Microsoft SC-900","Security mindset: OWASP Top 10, auth/access control"],
+   cons:["SAI ROLE: Penetration Tester ≠ Functional QA — khác hoàn toàn","D1=0 — không có domain tài chính/CK","Không có functional test case experience","Không có JIRA, TestRail, test management"]},
+
+  {id:"duong-lb",name:"Lai Bình Dương",role:"System Integration Engineer — VNTeleco",tier:"REJECT",score:null,hc:false,
+   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
+   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"_VNW Lai Binh Duong.pdf",
+   rejectReason:"HC-01 FAIL: System Integration Engineer — không có QA/Tester role trong toàn bộ career",
+   pros:["Technical depth: SIP, SMPP, TCP/IP protocols","Database: Oracle, MySQL, Redis, MongoDB","Log analysis, trace log, find bug skills","Team lead experience"],
+   cons:["HC-01 FAIL: không có QA/Tester role","Không có test case design, test plan experience","Không có QA tools: Postman, JIRA, TestRail","Domain: Telecom VAS — không liên quan trading"]},
+
+  {id:"hieu-td",name:"Trần Doãn Hiếu",role:"IT Manager / Developer",tier:"REJECT",score:null,hc:false,
+   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
+   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"_VNW Tran Doan Hieu.pdf",
+   rejectReason:"HC-01 FAIL: Developer & IT Manager — không có QA experience trong toàn bộ career",
+   pros:["10 năm Mottainai Japan — loyalty","Tech breadth: AI, BigData, Docker, TensorFlow","Japanese N3, quản lý team"],
+   cons:["HC-01 FAIL: Developer/IT Manager — không phải QA","Không có QA experience nào","Apply sai vị trí"]}
+];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+let currentId = null;
+let saveTimer = null;
+
+// ─── NOTES ───────────────────────────────────────────────────────────────────
+function getNotes(id) {
+  try { return JSON.parse(localStorage.getItem('qa-notes-'+id)) || {}; } catch { return {}; }
+}
+function hasNotes(id) {
+  const n = getNotes(id);
+  return n.notes || n.decision || n.interviewer || n.date || n.actionItems ||
+    n.domainScore || n.qaScore || n.commScore || n.cultureScore;
+}
+function saveNotes() {
+  if (!currentId) return;
+  const n = {
+    date: (document.getElementById('n-date')||{}).value || '',
+    interviewer: (document.getElementById('n-interviewer')||{}).value || '',
+    domainScore: +((document.querySelector('.stars[data-dim="domain"] .star.lit:last-of-type')||{}).dataset?.val||0),
+    qaScore: +((document.querySelector('.stars[data-dim="qa"] .star.lit:last-of-type')||{}).dataset?.val||0),
+    commScore: +((document.querySelector('.stars[data-dim="comm"] .star.lit:last-of-type')||{}).dataset?.val||0),
+    cultureScore: +((document.querySelector('.stars[data-dim="culture"] .star.lit:last-of-type')||{}).dataset?.val||0),
+    notes: (document.getElementById('n-notes')||{}).value || '',
+    decision: (document.querySelector('.decision-opt.selected')||{}).dataset?.val || '',
+    actionItems: (document.getElementById('n-actions')||{}).value || '',
+    updatedAt: new Date().toLocaleString('vi-VN')
+  };
+  localStorage.setItem('qa-notes-'+currentId, JSON.stringify(n));
+  const el = document.getElementById('n-saved');
+  if (el) { el.textContent = '✓ Đã lưu '+n.updatedAt; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
+  renderCards(currentFilter);
+  refreshDecisionBadge(n.decision);
+}
+function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes,800); }
+
+// ─── RENDER CARDS ─────────────────────────────────────────────────────────────
+function renderCards(f) {
+  currentFilter = f;
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const list = f === 'all' ? CV : CV.filter(c => c.tier === f);
+  list.forEach(c => {
+    const notes = getNotes(c.id);
+    const hasnotes = hasNotes(c.id);
+    const decisionLabel = {proceed:'✅ Tiến hành',reject:'❌ Từ chối',hold:'⏸ Xem xét'}[notes.decision]||'';
+
+    const tierLabel = c.tier==='REJECT'?'🔴 Reject':c.tier==='B'?'🔵 Tier B':'⚪ Tier C';
+    const badgeCls = 'badge-'+c.tier;
+
+    let bars = '';
+    if (c.score !== null) {
+      bars = `<div class="card-bars">
+        ${brow('D1 Domain',c.d1,40,'bd1')}${brow('D2 QA',c.d2,30,'bd2')}
+        ${brow('D3 Tech',c.d3,20,'bd3')}${brow('D4 Soft',c.d4,10,'bd4')}
+        ${brow('Total',c.score,100,'btotal')}
+      </div>`;
+    }
+    const hl = c.rejectReason
+      ? `<div class="card-rr">${c.rejectReason}</div>`
+      : `<div class="card-hl">${c.hl}</div>`;
+
+    const actionLabel = {interview:'Phỏng vấn →',interview_with_test:'PV + Bài test →',second_look:'Chi tiết →',reject:'Xem lý do →'}[c.action];
+    const actionCls = {interview:'btn-interview',interview_with_test:'btn-test',second_look:'btn-second',reject:'btn-reject'}[c.action];
+
+    const decisionBadgeCls = {proceed:'db-proceed',reject:'db-reject',hold:'db-hold'}[notes.decision]||'';
+
+    const card = document.createElement('div');
+    card.className = `card tier-${c.tier}`;
+    card.onclick = () => openModal(c.id);
+    card.innerHTML = `
+      <div class="card-header">
+        <div><div class="card-name">${c.name}</div><div class="card-role">${c.role}</div></div>
+        <div class="card-badges">
+          <div class="tier-badge ${badgeCls}">${tierLabel}</div>
+          ${hasnotes?`<div class="notes-badge">📝 Notes</div>`:''}
+          ${decisionLabel?`<div class="decision-badge ${decisionBadgeCls}">${decisionLabel}</div>`:''}
+        </div>
+      </div>
+      ${bars}${hl}
+      <div class="card-footer">
+        <div>${c.score!==null?`<span class="score-total">${c.score}</span><span class="score-max">/100</span>`:'<span style="color:#F87171;font-weight:700">REJECT</span>'}</div>
+        <button class="card-btn ${actionCls}" onclick="event.stopPropagation();openModal('${c.id}')">${actionLabel}</button>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+function brow(lbl,val,max,cls) {
+  const pct = val!=null?(val/max*100).toFixed(1):0;
+  return `<div class="bar-row"><span class="bar-lbl">${lbl}</span><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div><span class="bar-val">${val!=null?val:'—'}</span></div>`;
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(id) {
+  currentId = id;
+  const c = CV.find(x=>x.id===id);
+  if (!c) return;
+  document.getElementById('m-name').textContent = c.name;
+  document.getElementById('m-sub').textContent = c.role + (c.score!=null?' · Tier '+c.tier+' · '+c.score+'/100':'· REJECT');
+
+  // Reset tabs
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',i===0));
+  document.querySelectorAll('.tab-content').forEach((t,i) => t.classList.toggle('active',i===0));
+
+  buildScoreTab(c);
+  buildCvTab(c);
+  buildNotesTab(c);
+  refreshDecisionBadge(getNotes(id).decision);
+  document.getElementById('overlay').classList.add('open');
+}
+
+function refreshDecisionBadge(decision) {
+  const badge = document.getElementById('m-decision-badge');
+  const label = {proceed:'✅ Tiến hành tuyển',reject:'❌ Từ chối',hold:'⏸ Xem xét lại'}[decision]||'';
+  const cls = {proceed:'db-proceed',reject:'db-reject',hold:'db-hold'}[decision]||'';
+  badge.innerHTML = label ? `<div class="decision-badge ${cls}" style="font-size:11px;padding:3px 10px">${label}</div>` : '';
+}
+
+// ─── TAB 1: SCORE ─────────────────────────────────────────────────────────────
+function buildScoreTab(c) {
+  const el = document.getElementById('tab-score');
+  if (c.score === null) {
+    el.innerHTML = `<div class="reject-overlay">🔴 <strong>AUTO-REJECT</strong><br><br>${c.rejectReason}<br><br>Gửi rejection email trong 2 ngày làm việc.</div>${pcHtml(c)}`;
+    return;
+  }
+  const grp = IQ[c.iq];
+  const tierText = c.tier==='B'?'🔵 Tier B — Có thể phù hợp':'⚪ Tier C — Chưa phù hợp';
+  const groupText = c.iq ? `Interview Group ${c.iq}: ${c.iq==='B'?'QA tốt, thiếu domain CK':'Domain CK, QA cần train'}` : 'Tier C — Không mời phỏng vấn';
+  const tnCls = 'tn-'+c.tier.toLowerCase();
+
+  el.innerHTML = `
+    <div style="margin-bottom:16px">
+      <div class="sec-title">Score Breakdown</div>
+      <div class="score-detail">
+        ${dimRow('D1 — Domain Expertise',c.d1,40,'bd1',null)}
+        ${dimRow('D2 — QA Skills',c.d2,30,'bd2',c.d2s)}
+        ${dimRow('D3 — Technical Fit',c.d3,20,'bd3',c.d3s)}
+        ${dimRow('D4 — Soft Skills',c.d4,10,'bd4',c.d4s)}
+      </div>
+      <div class="total-display">
+        <div class="total-num ${tnCls}">${c.score}</div>
+        <div class="total-info">
+          <div class="total-tier">${tierText}</div>
+          <div class="total-group">${groupText}</div>
+          <div class="total-group" style="margin-top:3px">HC: ${c.hc?'✓ Pass':'✕ Fail'} · Hard Criteria</div>
+        </div>
+      </div>
+    </div>
+    ${pcHtml(c)}
+    ${c.note?`<div class="note-box">⚠️ ${c.note}</div>`:''}
+    ${grp?`<div style="margin-top:16px"><div class="sec-title">Câu hỏi phỏng vấn</div><div class="q-wrap">
+      <div class="q-hdr">${grp.label}<span class="q-gbadge ${grp.cls}">Group ${c.iq}</span></div>
+      ${grp.qs.map((q,i)=>`<div class="q-item" id="qi-${c.id}-${i}">
+        <div class="q-q" onclick="toggleQ('qi-${c.id}-${i}')">
+          <span><span class="q-num">${q.q.split('.')[0]}.</span> ${q.q.split('. ').slice(1).join('. ')}</span>
+          <span class="q-arrow">›</span>
+        </div>
+        ${(q.intent||q.pass||q.warn)?`<div class="q-detail">
+          ${q.intent?`<div>💡 <em>${q.intent}</em></div>`:''}
+          ${q.pass?`<div class="q-pass" style="margin-top:4px">✓ Pass: ${q.pass}</div>`:''}
+          ${q.warn?`<div class="q-warn" style="margin-top:4px">⚠ Warn: ${q.warn}</div>`:''}
+        </div>`:''}
+      </div>`).join('')}
+    </div></div>`
+    :`<div style="background:var(--surface2);border-radius:9px;padding:12px;font-size:12px;color:var(--muted);text-align:center;margin-top:16px">Ứng viên Tier C — Gửi rejection email trong 2 ngày làm việc</div>`}`;
+}
+
+function pcHtml(c) {
+  return `<div style="margin-bottom:14px;margin-top:14px"><div class="sec-title">Ưu điểm & Nhược điểm</div>
+    <div class="pc-grid">
+      <div class="pc-box pc-pros"><div class="pc-title">Điểm mạnh</div><ul class="pc-list pros">${c.pros.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+      <div class="pc-box pc-cons"><div class="pc-title">Điểm cần lưu ý</div><ul class="pc-list cons">${c.cons.map(p=>`<li>${p}</li>`).join('')}</ul></div>
+    </div></div>`;
+}
+
+function dimRow(lbl,val,max,cls,subs) {
+  const pct = (val/max*100).toFixed(1);
+  const subHtml = subs ? `<div class="sub-grid">${Object.entries(subs).map(([k,[v,m]])=>`<div class="sub-item"><span>${k}</span><span>${v}/${m}</span></div>`).join('')}</div>` : '';
+  return `<div class="dim-row"><div class="dim-hdr"><span class="dim-name">${lbl}</span><span class="dim-val">${val}/${max}</span></div>
+    <div class="dim-bar"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>${subHtml}</div>`;
+}
+
+function toggleQ(id) { document.getElementById(id).classList.toggle('open'); }
+
+// ─── TAB 2: CV ────────────────────────────────────────────────────────────────
+function buildCvTab(c) {
+  const el = document.getElementById('tab-cv');
+  const cvPath = 'CV empoyees/' + c.cvFile;
+  const cvUrl = encodeURI(cvPath);
+  el.innerHTML = `
+    <div class="cv-toolbar">
+      <button class="cv-btn cv-open" onclick="window.open('${cvUrl}','_blank')">↗ Mở CV trong tab mới</button>
+      <a href="${cvUrl}" download="${c.cvFile}" style="text-decoration:none">
+        <button class="cv-btn cv-dl">↓ Tải xuống</button>
+      </a>
+      <span style="font-size:11px;color:var(--muted);margin-left:auto">${c.cvFile}</span>
+    </div>
+    <div class="cv-frame-wrap">
+      <iframe class="cv-frame" src="${cvUrl}" title="CV ${c.name}"></iframe>
+    </div>
+    <div class="cv-note">⚠ Chrome có thể chặn embedded PDF từ file local. Nếu khung trống, dùng nút <strong>"Mở CV trong tab mới"</strong> phía trên. Firefox / Safari hiển thị bình thường.</div>`;
+}
+
+// ─── TAB 3: NOTES ────────────────────────────────────────────────────────────
+function buildNotesTab(c) {
+  const el = document.getElementById('tab-notes');
+  const n = getNotes(c.id);
+  el.innerHTML = `
+    <div class="notes-form">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="sec-title" style="margin:0">Ghi chú Phỏng vấn Trực tiếp</div>
+        <div class="notes-saved" id="n-saved"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ngày phỏng vấn</label>
+          <input id="n-date" type="date" class="form-input" value="${n.date||''}" oninput="autoSave()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Người phỏng vấn</label>
+          <input id="n-interviewer" type="text" class="form-input" placeholder="Tên interviewer..." value="${n.interviewer||''}" oninput="autoSave()">
+        </div>
+      </div>
+      <div>
+        <div class="form-label" style="margin-bottom:8px">Đánh giá thực tế (1–5 ★)</div>
+        <div class="ratings-grid">
+          ${starGroup('domain','Domain Knowledge',n.domainScore||0)}
+          ${starGroup('qa','QA Technical Skills',n.qaScore||0)}
+          ${starGroup('comm','Communication',n.commScore||0)}
+          ${starGroup('culture','Culture Fit',n.cultureScore||0)}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhận xét tổng quan</label>
+        <textarea id="n-notes" class="form-input" rows="4" placeholder="Observations, điểm nổi bật, red flags..." oninput="autoSave()">${n.notes||''}</textarea>
+      </div>
+      <div class="decision-group">
+        <div class="form-label">Quyết định cuối</div>
+        <div class="decision-opts">
+          <label class="decision-opt proceed${n.decision==='proceed'?' selected':''}" onclick="selectDecision(this,'proceed')">
+            <input type="radio" name="n-dec" value="proceed"> ✅ Tiến hành tuyển
+          </label>
+          <label class="decision-opt hold${n.decision==='hold'?' selected':''}" onclick="selectDecision(this,'hold')">
+            <input type="radio" name="n-dec" value="hold"> ⏸ Xem xét lại
+          </label>
+          <label class="decision-opt reject-d${n.decision==='reject'?' selected':''}" onclick="selectDecision(this,'reject')">
+            <input type="radio" name="n-dec" value="reject"> ❌ Từ chối
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Action items / Next steps</label>
+        <textarea id="n-actions" class="form-input" rows="3" placeholder="Gửi bài test, check reference, extend offer..." oninput="autoSave()">${n.actionItems||''}</textarea>
+      </div>
+      <button class="save-btn" onclick="saveNotes()">💾 Lưu ghi chú</button>
+    </div>`;
+  // Re-attach star events
+  document.querySelectorAll('.stars').forEach(sg => {
+    sg.querySelectorAll('.star').forEach(s => {
+      s.addEventListener('click', () => { setStars(sg, +s.dataset.val); autoSave(); });
+      s.addEventListener('mouseenter', () => highlightStars(sg, +s.dataset.val));
+      s.addEventListener('mouseleave', () => setStars(sg, +sg.dataset.current||0));
+    });
+  });
+}
+
+function starGroup(dim, label, current) {
+  return `<div class="rating-group">
+    <div class="rating-label">${label}</div>
+    <div class="stars" data-dim="${dim}" data-current="${current}">
+      ${[1,2,3,4,5].map(v=>`<span class="star${v<=current?' lit':''}" data-val="${v}">★</span>`).join('')}
+    </div>
+  </div>`;
+}
+
+function setStars(sg, val) {
+  sg.dataset.current = val;
+  sg.querySelectorAll('.star').forEach(s => s.classList.toggle('lit', +s.dataset.val <= val));
+}
+function highlightStars(sg, val) {
+  sg.querySelectorAll('.star').forEach(s => s.classList.toggle('lit', +s.dataset.val <= val));
+}
+
+function selectDecision(el, val) {
+  document.querySelectorAll('.decision-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.dataset.val = val;
+  autoSave();
+}
+
+// ─── FILTER / CLOSE ──────────────────────────────────────────────────────────
+function filter(f, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(f);
+}
+
+function switchTab(name, btn) {
+  const tabMap = {score:0, cv:1, notes:2};
+  const idx = tabMap[name];
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab-content').forEach((t,i) => t.classList.toggle('active',i===idx));
+}
+
+function closeOverlay() { document.getElementById('overlay').classList.remove('open'); currentId=null; }
+function closeOnBg(e) { if (e.target===document.getElementById('overlay')) closeOverlay(); }
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+renderCards('all');
+</script>
+</body>
+</html>
