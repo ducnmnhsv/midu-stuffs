@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Device Fingerprinting — API Specification</title>
+  <style>
+    :root {
+      --ivory:    #FAF9F5;
+      --slate:    #141413;
+      --clay:     #D97757;
+      --oat:      #E3DACC;
+      --olive:    #788C5D;
+      --gray-150: #F0EEE6;
+      --gray-300: #D1CFC5;
+      --gray-500: #87867F;
+      --gray-700: #3D3D3A;
+      --white:    #FFFFFF;
+
+      --serif: ui-serif, Georgia, 'Times New Roman', serif;
+      --sans:  system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --mono:  ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+    }
+
+    :root.dark {
+      --ivory:    #1C1B1A;
+      --slate:    #EFECE3;
+      --clay:     #E8927A;
+      --oat:      #3D352F;
+      --olive:    #9CB380;
+      --gray-150: #2A2926;
+      --gray-300: #3D3D3A;
+      --gray-500: #87867F;
+      --gray-700: #C9C5B8;
+      --white:    #22211F;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--ivory);
+      color: var(--gray-700);
+      line-height: 1.55;
+      padding: 56px 32px 120px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1120px; margin: 0 auto; }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px; right: 24px;
+      background: var(--gray-150);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray-500);
+      z-index: 100;
+    }
+    .theme-toggle:hover { border-color: var(--clay); color: var(--clay); }
+
+    /* ---------- header ---------- */
+
+    header.page-head { margin-bottom: 48px; max-width: 820px; }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 38px;
+      line-height: 1.15;
+      color: var(--slate);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--gray-500);
+      max-width: 700px;
+      line-height: 1.5;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .status-tag {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .status-tag.be  { background: #D6E4F0; color: #1A4D8C; }
+    .status-tag.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .status-tag.both { background: #E8DCF5; color: #5B2D8E; }
+
+    /* ---------- section chrome ---------- */
+
+    section { margin-bottom: 64px; }
+
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .sec-head .num {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--oat);
+      color: var(--slate);
+      padding: 3px 9px;
+      border-radius: 8px;
+    }
+    .sec-head h2 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 26px;
+      color: var(--slate);
+      letter-spacing: -0.01em;
+    }
+    .sec-intro {
+      font-size: 14.5px;
+      color: var(--gray-500);
+      max-width: 720px;
+      margin-bottom: 28px;
+    }
+
+    /* ---------- summary strip ---------- */
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+    @media (max-width: 900px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+    .summary .cell {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .summary .k {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    .summary .v {
+      font-size: 17px;
+      color: var(--slate);
+      font-weight: 600;
+    }
+    .summary .v.accent { color: var(--clay); }
+
+    /* ---------- flow overview ---------- */
+
+    .flow-overview { margin-bottom: 48px; }
+    .flow-step-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-bottom: 0;
+    }
+    @media (max-width: 780px) { .flow-step-row { flex-direction: column; } }
+    .flow-card {
+      flex: 1;
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      padding: 20px 22px;
+      position: relative;
+    }
+    .flow-card:first-child { border-radius: 12px 0 0 12px; }
+    .flow-card:last-child  { border-radius: 0 12px 12px 0; }
+    .flow-card + .flow-card { border-left: none; }
+    .flow-card + .flow-card::before {
+      content: '→';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--gray-500);
+      background: var(--ivory);
+      padding: 2px 4px;
+      z-index: 1;
+    }
+    @media (max-width: 780px) {
+      .flow-card { border-radius: 0 !important; border-left: 1.5px solid var(--gray-300) !important; }
+      .flow-card:first-child { border-radius: 12px 12px 0 0 !important; }
+      .flow-card:last-child  { border-radius: 0 0 12px 12px !important; }
+      .flow-card + .flow-card { border-top: none; }
+      .flow-card + .flow-card::before { content: '↓'; left: 50%; top: -10px; transform: translateX(-50%); }
+    }
+    .flow-card .fc-step {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    .flow-card .fc-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--slate);
+      margin-bottom: 4px;
+    }
+    .flow-card .fc-desc {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+    .flow-card .fc-owner {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .fc-owner.be  { background: #D6E4F0; color: #1A4D8C; }
+    .fc-owner.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .fc-owner.both { background: #E8DCF5; color: #5B2D8E; }
+
+    /* ---------- highlight cards ---------- */
+
+    .highlight {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .highlight h3 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 18px;
+      color: var(--slate);
+      margin-bottom: 8px;
+    }
+    .highlight h3 .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .highlight p { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
+    .highlight ul { margin: 10px 0 0 20px; font-size: 14px; color: var(--gray-700); }
+    .highlight ul li { margin-bottom: 4px; }
+
+    /* ---------- diagram ---------- */
+
+    .diagram {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 28px;
+      overflow-x: auto;
+    }
+    .diagram svg { display: block; min-width: 700px; }
+    .diagram text { font-family: var(--mono); }
+    .caption { font-size: 13px; color: var(--gray-500); margin-top: 12px; }
+
+    /* ---------- table ---------- */
+
+    .table-wrap {
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--white);
+    }
+    .table-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .table-wrap th {
+      background: var(--gray-150);
+      font-weight: 600;
+      color: var(--slate);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1.5px solid var(--gray-300);
+    }
+    .table-wrap td {
+      font-size: 13.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-300);
+      color: var(--gray-700);
+    }
+    .table-wrap tr:last-child td { border-bottom: none; }
+    .table-wrap code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--gray-150);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--slate);
+    }
+    .table-wrap .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .badge.get  { background: #D6E4F0; color: #1A4D8C; }
+    .badge.post { background: #D8EAD2; color: #2E5E1E; }
+    .badge.put  { background: #F0E6C8; color: #6B5C1E; }
+    .badge.del  { background: #F3D9CC; color: #8A3B1E; }
+
+    /* ---------- responsibilities ---------- */
+
+    .resp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .resp-grid { grid-template-columns: 1fr; } }
+    .resp-col {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .resp-col .resp-head {
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .resp-col .resp-head.be { background: #D6E4F0; color: #1A4D8C; }
+    .resp-col .resp-head.fe { background: #D8EAD2; color: #2E5E1E; }
+    .resp-col .resp-body { padding: 18px; }
+    .resp-col .resp-body ul { margin: 0 0 12px 18px; font-size: 13.5px; }
+    .resp-col .resp-body ul li { margin-bottom: 4px; }
+
+    /* ---------- UX principles ---------- */
+
+    .ux-principles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 780px) { .ux-principles { grid-template-columns: 1fr; } }
+    .ux-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--olive);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .ux-card .ux-icon { font-size: 24px; margin-bottom: 8px; }
+    .ux-card h4 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+    .ux-card p { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+    /* ---------- timeline ---------- */
+
+    .milestones { display: flex; flex-direction: column; gap: 0; }
+    .milestone {
+      display: grid;
+      grid-template-columns: 120px 28px 1fr;
+      gap: 0 18px;
+      position: relative;
+    }
+    .milestone .when {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray-500);
+      padding-top: 4px;
+    }
+    .milestone .dot-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .milestone .dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--clay);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+    .milestone .dot.active { background: var(--clay); border-color: var(--clay); }
+    .milestone .line {
+      width: 2px;
+      flex: 1;
+      background: var(--gray-300);
+      margin: 4px 0;
+    }
+    .milestone:last-child .line { display: none; }
+    .milestone .body { padding-bottom: 36px; }
+    .milestone .body h3 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 19px;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+    .milestone .body h3 .owner-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .milestone .body p { font-size: 14px; color: var(--gray-500); margin-bottom: 10px; max-width: 620px; }
+    .milestone .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .milestone .tag {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      background: var(--gray-150);
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 3px 8px;
+      color: var(--gray-700);
+    }
+
+    /* ---------- grid 2 col ---------- */
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ---------- risk/severity tags ---------- */
+
+    .sev {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .sev.high { background: #F3D9CC; color: #8A3B1E; }
+    .sev.med  { background: var(--oat); color: var(--slate); }
+    .sev.low  { background: #E4E9DC; color: #4B5C39; }
+
+    /* ---------- risk grid ---------- */
+
+    .risks {
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--white);
+    }
+    .risks .row {
+      display: grid;
+      grid-template-columns: 1.6fr 90px 1.6fr;
+      gap: 0;
+    }
+    @media (max-width: 780px) { .risks .row { grid-template-columns: 1fr; } }
+    .risks .row + .row { border-top: 1.5px solid var(--gray-300); }
+    .risks .cell { padding: 14px 18px; font-size: 13.5px; }
+    .risks .cell + .cell { border-left: 1.5px solid var(--gray-300); }
+    @media (max-width: 780px) { .risks .cell + .cell { border-left: none; border-top: 1px dashed var(--gray-300); } }
+    .risks .head { background: var(--gray-150); font-weight: 600; color: var(--slate); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ---------- open questions ---------- */
+
+    .open-q { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+    .q {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--clay);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .q .qt { font-weight: 600; font-size: 15px; color: var(--slate); margin-bottom: 4px; }
+    .q .qd { font-size: 13.5px; color: var(--gray-500); }
+    .q .owner {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--gray-500);
+      margin-top: 8px;
+    }
+
+    /* ---------- comparison ---------- */
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .compare { grid-template-columns: 1fr; } }
+    .compare .col {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .compare .col-label {
+      padding: 10px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .compare .col-label.green { background: #D8EAD2; color: #2E5E1E; }
+    .compare .col-label.amber { background: #F0E6C8; color: #6B5C1E; }
+    .compare .col-body { padding: 18px; }
+    .compare .col-body p { font-size: 13.5px; margin-bottom: 8px; }
+    .compare .col-body ul { margin: 6px 0 0 18px; font-size: 13px; color: var(--gray-700); }
+    .compare .col-body ul li { margin-bottom: 3px; }
+
+    /* ---------- called-out note ---------- */
+
+    .note {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--olive);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+    .note strong { color: var(--slate); }
+
+    /* ---------- footer ---------- */
+
+    .doc-footer {
+      margin-top: 80px;
+      padding: 24px 0;
+      border-top: 1.5px solid var(--gray-300);
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+    .doc-footer strong { color: var(--slate); }
+  </style>
+</head>
+<body>
+
+<script>
+  (function() {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐ Theme</button>
+
+<div class="page">
+
+  <!-- ========== HEADER ========== -->
+
+  <header class="page-head">
+    <div class="eyebrow">TT134 · UBCK Compliance · P0 Feature</div>
+    <h1>Device Fingerprinting</h1>
+    <p class="subtitle">
+      Định danh thiết bị dựa trên tín hiệu phần cứng &amp; phần mềm, 
+      dùng HMAC-SHA256 để tạo mã định danh an toàn, 
+      hỗ trợ phát hiện bất thường và xác thực giao dịch.
+    </p>
+    <div class="status-bar">
+      <span class="status-tag both">Cả BE + FE</span>
+      <span class="status-tag" style="background:#E4E9DC;color:#4B5C39;">~26.5 ngày</span>
+      <span class="status-tag" style="background:#F3D9CC;color:#8A3B1E;">5 API endpoints</span>
+    </div>
+  </header>
+
+  <!-- ========== SUMMARY ========== -->
+
+  <div class="summary">
+    <div class="cell">
+      <div class="k">Tổng effort</div>
+      <div class="v accent">~26.5 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Backend</div>
+      <div class="v">~17 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Frontend</div>
+      <div class="v">~9.5 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Priority</div>
+      <div class="v">P0 · Điều 7</div>
+    </div>
+  </div>
+
+  <!-- ========== 00: FLOW OVERVIEW ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">00</span><h2>Flow Overview</h2></div>
+    <p class="sec-intro">
+      Device fingerprint chạy <strong>ngầm</strong>, không yêu cầu thao tác nào từ người dùng.
+      Mục tiêu: zero friction, zero interruption.
+    </p>
+
+    <div class="flow-overview">
+      <div class="flow-step-row">
+        <div class="flow-card">
+          <div class="fc-step">Bước 1</div>
+          <div class="fc-title">Thu thập tín hiệu</div>
+          <div class="fc-desc">FE tự động collect signals (screen, canvas, fonts, v.v.) — <strong>hoàn toàn background, không popup</strong></div>
+          <span class="fc-owner fe">FE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 2</div>
+          <div class="fc-title">Gửi lên server</div>
+          <div class="fc-desc">Gọi API <code>POST /deviceFingerprint</code> sau login — <strong>1 lần duy nhất, không retry phiền hà</strong></div>
+          <span class="fc-owner both">BE + FE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 3</div>
+          <div class="fc-title">Tính fingerprint hash</div>
+          <div class="fc-desc">Server dùng HMAC-SHA256 + salt + IP range để tạo hash 64 ký tự — <strong>không thể đảo ngược</strong></div>
+          <span class="fc-owner be">BE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 4</div>
+          <div class="fc-title">Gắn vào session</div>
+          <div class="fc-desc">Fingerprint hash được dùng để detect device lạ, cảnh báo bảo mật — <strong>user không thấy gì cho đến khi cần</strong></div>
+          <span class="fc-owner both">BE + FE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 00b: UX PRINCIPLES ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">00</span><h2>UX Principles</h2></div>
+    <p class="sec-intro">
+      Khách hàng không nên bị làm phiền bởi device fingerprint. Feature này chạy trong nền, 
+      chỉ hiển thị thông tin khi có bất thường.
+    </p>
+
+    <div class="ux-principles">
+      <div class="ux-card">
+        <div class="ux-icon">🤫</div>
+        <h4>Zero user friction</h4>
+        <p>Thu thập signals sau login, chạy background — không popup, không consent screen, không extra step cho user</p>
+      </div>
+      <div class="ux-card">
+        <div class="ux-icon">🔔</div>
+        <h4>Chỉ thông báo khi cần</h4>
+        <p>Không gửi thông báo "fingerprint collected". Chỉ cảnh báo khi phát hiện thiết bị lạ đăng nhập vào tài khoản</p>
+      </div>
+      <div class="ux-card">
+        <div class="ux-icon">🔗</div>
+        <h4>Tích hợp ngầm</h4>
+        <p>Không cần màn hình setting riêng. Thiết bị xuất hiện trong Device List (Session Management) nếu user muốn xem</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 01: BACKGROUND ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">01</span><h2>Background &amp; Current Gaps</h2></div>
+    <p class="sec-intro">TT134 yêu cầu định danh thiết bị để hỗ trợ phát hiện bất thường và xác thực giao dịch.</p>
+
+    <div class="compare">
+      <div class="col">
+        <div class="col-label amber">Current</div>
+        <div class="col-body">
+          <ul>
+            <li>Dùng <code>deviceId</code> từ client — dễ giả mạo</li>
+            <li>Không có chuẩn — mỗi service lưu device riêng</li>
+            <li>WTS (macOS) không có device ID ổn định</li>
+            <li>Không phát hiện device bất thường</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label green">Target</div>
+        <div class="col-body">
+          <ul>
+            <li>Fingerprint hash server-side — không thể spoof</li>
+            <li>1 chuẩn chung, mọi service dùng chung</li>
+            <li>WTS: dùng IP /24 + canvas fingerprint</li>
+            <li>Cảnh báo khi device lạ login</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 02: ARCHITECTURE ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">02</span><h2>System Architecture</h2></div>
+    <p class="sec-intro">Dữ liệu từ client → rest-proxy → AAA Service → MySQL. Fingerprint hash được tính server-side.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--gray-500)"/>
+          </marker>
+        </defs>
+        <rect x="20" y="60" width="160" height="100" rx="12" fill="var(--gray-150)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="100" y="95" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">Client (FE)</text>
+        <text x="100" y="115" text-anchor="middle" fill="var(--gray-500)" font-size="11">Thu thập signals</text>
+        <text x="100" y="132" text-anchor="middle" fill="var(--gray-500)" font-size="11">Screen, Canvas, Fonts</text>
+        <line x1="180" y1="110" x2="230" y2="110" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="240" y="60" width="140" height="100" rx="12" fill="var(--oat)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="310" y="98" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">rest-proxy</text>
+        <text x="310" y="118" text-anchor="middle" fill="var(--gray-500)" font-size="11">POST /api/v1</text>
+        <text x="310" y="135" text-anchor="middle" fill="var(--gray-500)" font-size="11">/deviceFingerprint</text>
+        <line x1="380" y1="110" x2="430" y2="110" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="440" y="40" width="160" height="140" rx="12" fill="var(--white)" stroke="var(--clay)" stroke-width="2"/>
+        <text x="520" y="72" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">AAA Service</text>
+        <text x="520" y="92" text-anchor="middle" fill="var(--gray-500)" font-size="11">FingerprintService</text>
+        <line x1="460" y1="100" x2="580" y2="100" stroke="var(--gray-300)" stroke-width="1"/>
+        <text x="520" y="115" text-anchor="middle" fill="var(--gray-500)" font-size="11">HMAC-SHA256</text>
+        <text x="520" y="132" text-anchor="middle" fill="var(--gray-500)" font-size="11">+ server salt</text>
+        <text x="520" y="149" text-anchor="middle" fill="var(--gray-500)" font-size="11">+ IP /24 range</text>
+        <line x1="600" y1="110" x2="640" y2="110" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="650" y="50" width="95" height="120" rx="12" fill="var(--gray-150)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <ellipse cx="697" cy="75" rx="22" ry="12" fill="var(--white)" stroke="var(--gray-500)" stroke-width="1"/>
+        <text x="697" y="110" text-anchor="middle" fill="var(--slate)" font-size="12" font-weight="600">MySQL</text>
+        <text x="697" y="128" text-anchor="middle" fill="var(--gray-500)" font-size="11">t_device</text>
+        <text x="697" y="145" text-anchor="middle" fill="var(--gray-500)" font-size="11">_fingerprint</text>
+      </svg>
+      <p class="caption">Không lưu signals gốc — chỉ lưu fingerprint hash + encrypted signals</p>
+    </div>
+  </section>
+
+  <!-- ========== 03: BE / FE RESPONSIBILITIES ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">03</span><h2>BE / FE Responsibilities</h2></div>
+    <p class="sec-intro">Phân công clear — BE làm phần server, FE làm phần client. Cả 2 đều có trách nhiệm riêng.</p>
+
+    <div class="resp-grid">
+      <div class="resp-col">
+        <div class="resp-head be">Backend (AAA Service)</div>
+        <div class="resp-body">
+          <ul>
+            <li><strong>FingerprintService</strong> — hash computation engine</li>
+            <li><strong>HMAC-SHA256</strong> — with server salt rotation</li>
+            <li><strong>t_device_fingerprint</strong> — migration &amp; model</li>
+            <li><strong>5 API endpoints</strong> — register, get, list, update, delete</li>
+            <li><strong>IP /24 normalization</strong> — hỗ trợ WTS</li>
+            <li><strong>AES-256-GCM encryption</strong> — signals at rest</li>
+            <li><strong>Rate limiting</strong> — 10 req/min/user</li>
+            <li><strong>JWT integration</strong> — gắn fingerprint_hash vào token</li>
+          </ul>
+        </div>
+      </div>
+      <div class="resp-col">
+        <div class="resp-head fe">Frontend (App + WTS)</div>
+        <div class="resp-body">
+          <ul>
+            <li><strong>Signal collection</strong> — screen, canvas, fonts, timezone, hardware</li>
+            <li><strong>1 API call</strong> — gọi POST /deviceFingerprint sau login thành công</li>
+            <li><strong>Error silent</strong> — nếu API fail, không retry, không block user</li>
+            <li><strong>No UI required</strong> — chạy background, không popup/screen mới</li>
+            <li><strong>WTS support</strong> — fallback nếu canvas bị chặn</li>
+            <li><strong>Platform detection</strong> — iOS native vs Android vs Web</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 04: HASH ALGORITHM ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">04</span><h2>Hash Algorithm</h2></div>
+    <p class="sec-intro">Fingerprint hash là sự kết hợp của client signals + server salt + IP range, băm bằng HMAC-SHA256.</p>
+
+    <div class="grid-2">
+      <div class="highlight">
+        <h3>Input signals <span class="tag fe-owner" style="background:#D8EAD2;color:#2E5E1E;">FE</span></h3>
+        <ul>
+          <li><code>screenResolution</code> — Độ phân giải màn hình</li>
+          <li><code>timezone</code> — Múi giờ (IANA)</li>
+          <li><code>language</code> — Ngôn ngữ trình duyệt</li>
+          <li><code>canvasFingerprint</code> — Canvas hash</li>
+          <li><code>installedFonts</code> — Danh sách fonts (hash)</li>
+          <li><code>platform</code> — OS + version</li>
+          <li><code>hardwareConcurrency</code> — CPU cores</li>
+        </ul>
+      </div>
+      <div class="highlight">
+        <h3>Hash computation <span class="tag be-owner" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+        <div class="code" style="background:var(--slate);border-radius:12px;padding:18px 20px;overflow-x:auto;">
+<pre style="font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#E8E6DE;white-space:pre;">fingerprint = HMAC-SHA256(
+  key     = serverSalt,
+  message = signalsJSON
+           + normalizedIP(/24)
+           + userAgent
+)
+→ 64-char hex string</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 05: API ENDPOINTS ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">05</span><h2>API Endpoints</h2></div>
+    <p class="sec-intro">8 API endpoints — 3 cho FE client, 5 cho Admin backend.</p>
+
+    <div class="note">
+      <strong>👤 Client APIs</strong> — 3 endpoints, dùng JWT token
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Mô tả</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>C1</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/deviceFingerprint</code></td>
+            <td>Register/gửi signals cho device</td>
+            <td><span class="fc-owner both">Both</span></td>
+          </tr>
+          <tr>
+            <td>C2</td>
+            <td><span class="badge get">GET</span></td>
+            <td><code>/api/v1/deviceFingerprint/user/:userId</code></td>
+            <td>List devices của user (cho Setting screen)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td>C3</td>
+            <td><span class="badge get">GET</span></td>
+            <td><code>/api/v1/deviceFingerprint/current</code></td>
+            <td>Lấy thông tin device hiện tại</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>🔧 Admin APIs</strong> — 2 endpoints, yêu cầu admin scope
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Mô tả</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A1</td>
+            <td><span class="badge put">PUT</span></td>
+            <td><code>/api/v1/deviceFingerprint/admin/:hash</code></td>
+            <td>Update trust level (HIGH/MEDIUM/LOW)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td>A2</td>
+            <td><span class="badge del">DELETE</span></td>
+            <td><code>/api/v1/deviceFingerprint/admin/:hash</code></td>
+            <td>Xóa device record (khi fraud)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 06: DATA MODEL ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">06</span><h2>Data Model</h2></div>
+    <p class="sec-intro">Bảng <code>t_device_fingerprint</code> — chỉ BE lo migration và model.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td>BIGINT AUTO_INCREMENT</td>
+            <td>Primary key</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>user_id</code></td>
+            <td>INT NOT NULL</td>
+            <td>FK → t_user</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>fingerprint_hash</code></td>
+            <td>VARCHAR(64) NOT NULL</td>
+            <td>HMAC-SHA256 hex string, index UNIQUE</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>device_signals</code></td>
+            <td>JSON</td>
+            <td>Encrypted signals (AES-256-GCM)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>trust_level</code></td>
+            <td>ENUM('HIGH','MEDIUM','LOW','UNKNOWN')</td>
+            <td>Độ tin cậy</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>first_seen_at</code></td>
+            <td>DATETIME</td>
+            <td>Lần đầu xuất hiện</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>last_seen_at</code></td>
+            <td>DATETIME</td>
+            <td>Lần cuối xuất hiện</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 07: SECURITY ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">07</span><h2>Security Considerations</h2></div>
+    <p class="sec-intro">Rủi ro và biện pháp giảm thiểu — toàn bộ là trách nhiệm BE.</p>
+
+    <div class="risks">
+      <div class="row head">
+        <div class="cell">Rủi ro</div>
+        <div class="cell">Mức độ</div>
+        <div class="cell">Giảm thiểu</div>
+      </div>
+      <div class="row">
+        <div class="cell">Fingerprint spoofing</div>
+        <div class="cell"><span class="sev high">High</span></div>
+        <div class="cell">Server-side verification + IP /24 range</div>
+      </div>
+      <div class="row">
+        <div class="cell">Replay attack</div>
+        <div class="cell"><span class="sev med">Medium</span></div>
+        <div class="cell">Timestamp binding + nonce</div>
+      </div>
+      <div class="row">
+        <div class="cell">Privacy — signals chứa PII</div>
+        <div class="cell"><span class="sev med">Medium</span></div>
+        <div class="cell">Encrypt signals AES-256-GCM khi lưu</div>
+      </div>
+      <div class="row">
+        <div class="cell">WTS không có device ID ổn định</div>
+        <div class="cell"><span class="sev low">Low</span></div>
+        <div class="cell">Dùng IP /24 + canvas fingerprint combined</div>
+      </div>
+      <div class="row">
+        <div class="cell">Brute-force hash</div>
+        <div class="cell"><span class="sev low">Low</span></div>
+        <div class="cell">Rate limit 10 req/min, HMAC key rotation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 08: IMPLEMENTATION PHASES ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">08</span><h2>Implementation Plan</h2></div>
+    <p class="sec-intro">Chia 3 phases — mỗi phase có BE/FE rõ ràng, review độc lập.</p>
+
+    <div class="milestones">
+      <div class="milestone">
+        <div class="when">Phase 1 · ~9.5 ngày</div>
+        <div class="dot-col"><span class="dot active"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>Core fingerprint service <span class="owner-tag" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+          <p>FingerprintService, HMAC hash, <code>t_device_fingerprint</code> migration, 5 API endpoints.</p>
+          <div class="tags"><span class="tag">AAA Service</span><span class="tag">MySQL</span><span class="tag">~6 ngày</span></div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="when">Phase 1 · ~3.5 ngày</div>
+        <div class="dot-col"><span class="dot"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>Signal collection SDK <span class="owner-tag" style="background:#D8EAD2;color:#2E5E1E;">FE</span></h3>
+          <p>SDK collect signals (screen, canvas, fonts), gọi API sau login, retry logic với exponential backoff.</p>
+          <div class="tags"><span class="tag">FE SDK</span><span class="tag">iOS</span><span class="tag">Android</span><span class="tag">WTS</span></div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="when">Phase 2 · ~11 ngày</div>
+        <div class="dot-col"><span class="dot"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>Anomaly detection <span class="owner-tag" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+          <p>Phát hiện fingerprint change đột ngột, trust level scoring, trigger alert khi device lạ login.</p>
+          <div class="tags"><span class="tag">Alert System</span><span class="tag">~8 ngày</span></div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="when">Phase 3 · ~6 ngày</div>
+        <div class="dot-col"><span class="dot"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>Integration &amp; hardening <span class="owner-tag" style="background:#E8DCF5;color:#5B2D8E;">BE+FE</span></h3>
+          <p>Gắn fingerprint vào JWT, refresh token binding, tích hợp với Order 2FA và Biometric System.</p>
+          <div class="tags"><span class="tag">JWT</span><span class="tag">Biometric</span><span class="tag">Order 2FA</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 09: OPEN QUESTIONS ========== -->
+
+  <section>
+    <div class="sec-head"><span class="num">09</span><h2>Open Questions</h2></div>
+    <p class="sec-intro">Các quyết định cần PM/compliance confirm trước khi implement.</p>
+
+    <div class="open-q">
+      <div class="q">
+        <div class="qt">Trust level threshold cho WTS (macOS Safari)?</div>
+        <div class="qd">WTS không có device ID ổn định — trust level có nên mặc định là MEDIUM cho WTS?</div>
+        <div class="owner">Cần: PM + Compliance</div>
+      </div>
+      <div class="q">
+        <div class="qt">Signals encryption key rotation?</div>
+        <div class="qd">Key AES-256-GCM có cần rotate định kỳ không? Nếu có, handle thế nào với signals cũ?</div>
+        <div class="owner">Cần: Security Team</div>
+      </div>
+      <div class="q">
+        <div class="qt">Retention policy?</div>
+        <div class="qd">Device giữ bao lâu? Xóa khi inactive >90 ngày, hay giữ vĩnh viễn?</div>
+        <div class="owner">Cần: Compliance</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+
+  <div class="doc-footer">
+    <strong>Document Status:</strong> ✅ Draft v1.1 &bull;
+    <strong>For:</strong> PM / BE / FE / QA &bull;
+    <strong>Next Steps:</strong> Review spec → Confirm open questions → Phase 1 implementation
+  </div>
+
+</div>
+
+<script>
+  const btn = document.getElementById('themeToggle');
+  btn.addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+</script>
+
+</body>
+</html>
