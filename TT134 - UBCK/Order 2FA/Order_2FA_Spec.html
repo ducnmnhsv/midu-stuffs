@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order 2FA — Integration Specification</title>
+  <style>
+    :root {
+      --ivory:    #FAF9F5;
+      --slate:    #141413;
+      --clay:     #D97757;
+      --oat:      #E3DACC;
+      --olive:    #788C5D;
+      --gray-150: #F0EEE6;
+      --gray-300: #D1CFC5;
+      --gray-500: #87867F;
+      --gray-700: #3D3D3A;
+      --white:    #FFFFFF;
+
+      --serif: ui-serif, Georgia, 'Times New Roman', serif;
+      --sans:  system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --mono:  ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+    }
+
+    :root.dark {
+      --ivory:    #1C1B1A;
+      --slate:    #EFECE3;
+      --clay:     #E8927A;
+      --oat:      #3D352F;
+      --olive:    #9CB380;
+      --gray-150: #2A2926;
+      --gray-300: #3D3D3A;
+      --gray-500: #87867F;
+      --gray-700: #C9C5B8;
+      --white:    #22211F;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--ivory);
+      color: var(--gray-700);
+      line-height: 1.55;
+      padding: 56px 32px 120px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page { max-width: 1120px; margin: 0 auto; }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px; right: 24px;
+      background: var(--gray-150);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray-500);
+      z-index: 100;
+    }
+    .theme-toggle:hover { border-color: var(--clay); color: var(--clay); }
+
+    /* ---------- header ---------- */
+
+    header.page-head { margin-bottom: 48px; max-width: 820px; }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 38px;
+      line-height: 1.15;
+      color: var(--slate);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      color: var(--gray-500);
+      max-width: 700px;
+      line-height: 1.5;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .status-tag {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .status-tag.be  { background: #D6E4F0; color: #1A4D8C; }
+    .status-tag.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .status-tag.both { background: #E8DCF5; color: #5B2D8E; }
+
+    /* ---------- section chrome ---------- */
+
+    section { margin-bottom: 64px; }
+
+    .sec-head {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    .sec-head .num {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--oat);
+      color: var(--slate);
+      padding: 3px 9px;
+      border-radius: 8px;
+    }
+    .sec-head h2 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 26px;
+      color: var(--slate);
+      letter-spacing: -0.01em;
+    }
+    .sec-intro {
+      font-size: 14.5px;
+      color: var(--gray-500);
+      max-width: 720px;
+      margin-bottom: 28px;
+    }
+
+    /* ---------- summary strip ---------- */
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 64px;
+    }
+    @media (max-width: 900px) { .summary { grid-template-columns: repeat(2, 1fr); } }
+    .summary .cell {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .summary .k {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    .summary .v {
+      font-size: 17px;
+      color: var(--slate);
+      font-weight: 600;
+    }
+    .summary .v.accent { color: var(--clay); }
+
+    /* ---------- flow overview ---------- */
+
+    .flow-overview { margin-bottom: 48px; }
+    .flow-step-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-bottom: 0;
+    }
+    @media (max-width: 780px) { .flow-step-row { flex-direction: column; } }
+    .flow-card {
+      flex: 1;
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      padding: 20px 22px;
+      position: relative;
+    }
+    .flow-card:first-child { border-radius: 12px 0 0 12px; }
+    .flow-card:last-child  { border-radius: 0 12px 12px 0; }
+    .flow-card + .flow-card { border-left: none; }
+    .flow-card + .flow-card::before {
+      content: '→';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      color: var(--gray-500);
+      background: var(--ivory);
+      padding: 2px 4px;
+      z-index: 1;
+    }
+    @media (max-width: 780px) {
+      .flow-card { border-radius: 0 !important; border-left: 1.5px solid var(--gray-300) !important; }
+      .flow-card:first-child { border-radius: 12px 12px 0 0 !important; }
+      .flow-card:last-child  { border-radius: 0 0 12px 12px !important; }
+      .flow-card + .flow-card { border-top: none; }
+      .flow-card + .flow-card::before { content: '↓'; left: 50%; top: -10px; transform: translateX(-50%); }
+    }
+    .flow-card .fc-step {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+    }
+    .flow-card .fc-title {
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--slate);
+      margin-bottom: 4px;
+    }
+    .flow-card .fc-desc {
+      font-size: 13px;
+      color: var(--gray-500);
+      line-height: 1.5;
+    }
+    .flow-card .fc-owner {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    .fc-owner.be  { background: #D6E4F0; color: #1A4D8C; }
+    .fc-owner.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .fc-owner.both { background: #E8DCF5; color: #5B2D8E; }
+
+    /* ---------- highlight cards ---------- */
+
+    .highlight {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+    }
+    .highlight h3 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 18px;
+      color: var(--slate);
+      margin-bottom: 8px;
+    }
+    .highlight h3 .tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .highlight p { font-size: 14px; color: var(--gray-700); line-height: 1.6; }
+    .highlight ul { margin: 10px 0 0 20px; font-size: 14px; color: var(--gray-700); }
+    .highlight ul li { margin-bottom: 4px; }
+
+    /* ---------- diagram ---------- */
+
+    .diagram {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      padding: 28px;
+      overflow-x: auto;
+    }
+    .diagram svg { display: block; min-width: 700px; }
+    .diagram text { font-family: var(--mono); }
+    .caption { font-size: 13px; color: var(--gray-500); margin-top: 12px; }
+
+    /* ---------- table ---------- */
+
+    .table-wrap {
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--white);
+    }
+    .table-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .table-wrap th {
+      background: var(--gray-150);
+      font-weight: 600;
+      color: var(--slate);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1.5px solid var(--gray-300);
+    }
+    .table-wrap td {
+      font-size: 13.5px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-300);
+      color: var(--gray-700);
+    }
+    .table-wrap tr:last-child td { border-bottom: none; }
+    .table-wrap code {
+      font-family: var(--mono);
+      font-size: 12px;
+      background: var(--gray-150);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--slate);
+    }
+    .table-wrap .badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .badge.get  { background: #D6E4F0; color: #1A4D8C; }
+    .badge.post { background: #D8EAD2; color: #2E5E1E; }
+    .badge.put  { background: #F0E6C8; color: #6B5C1E; }
+    .badge.del  { background: #F3D9CC; color: #8A3B1E; }
+
+    /* ---------- responsibilities ---------- */
+
+    .resp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .resp-grid { grid-template-columns: 1fr; } }
+    .resp-col {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .resp-col .resp-head {
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .resp-col .resp-head.be { background: #D6E4F0; color: #1A4D8C; }
+    .resp-col .resp-head.fe { background: #D8EAD2; color: #2E5E1E; }
+    .resp-col .resp-body { padding: 18px; }
+    .resp-col .resp-body ul { margin: 0 0 12px 18px; font-size: 13.5px; }
+    .resp-col .resp-body ul li { margin-bottom: 4px; }
+
+    /* ---------- UX principles ---------- */
+
+    .ux-principles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 780px) { .ux-principles { grid-template-columns: 1fr; } }
+    .ux-card {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--olive);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .ux-card .ux-icon { font-size: 24px; margin-bottom: 8px; }
+    .ux-card h4 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+    .ux-card p { font-size: 13px; color: var(--gray-500); line-height: 1.5; }
+
+    /* ---------- timeline ---------- */
+
+    .milestones { display: flex; flex-direction: column; gap: 0; }
+    .milestone {
+      display: grid;
+      grid-template-columns: 120px 28px 1fr;
+      gap: 0 18px;
+      position: relative;
+    }
+    .milestone .when {
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--gray-500);
+      padding-top: 4px;
+    }
+    .milestone .dot-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .milestone .dot {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 3px solid var(--clay);
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    .milestone .dot.done { background: var(--olive); border-color: var(--olive); }
+    .milestone .dot.active { background: var(--clay); border-color: var(--clay); }
+    .milestone .line {
+      width: 2px;
+      flex: 1;
+      background: var(--gray-300);
+      margin: 4px 0;
+    }
+    .milestone:last-child .line { display: none; }
+    .milestone .body { padding-bottom: 36px; }
+    .milestone .body h3 {
+      font-family: var(--serif);
+      font-weight: 500;
+      font-size: 19px;
+      color: var(--slate);
+      margin-bottom: 6px;
+    }
+    .milestone .body h3 .owner-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .milestone .body p { font-size: 14px; color: var(--gray-500); margin-bottom: 10px; max-width: 620px; }
+    .milestone .tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .milestone .tag {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      background: var(--gray-150);
+      border: 1px solid var(--gray-300);
+      border-radius: 6px;
+      padding: 3px 8px;
+      color: var(--gray-700);
+    }
+
+    /* ---------- grid 2 col ---------- */
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    /* ---------- risk/severity tags ---------- */
+
+    .sev {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .sev.high { background: #F3D9CC; color: #8A3B1E; }
+    .sev.med  { background: var(--oat); color: var(--slate); }
+    .sev.low  { background: #E4E9DC; color: #4B5C39; }
+
+    /* ---------- risk grid ---------- */
+
+    .risks {
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--white);
+    }
+    .risks .row {
+      display: grid;
+      grid-template-columns: 1.6fr 90px 1.6fr;
+      gap: 0;
+    }
+    @media (max-width: 780px) { .risks .row { grid-template-columns: 1fr; } }
+    .risks .row + .row { border-top: 1.5px solid var(--gray-300); }
+    .risks .cell { padding: 14px 18px; font-size: 13.5px; }
+    .risks .cell + .cell { border-left: 1.5px solid var(--gray-300); }
+    @media (max-width: 780px) { .risks .cell + .cell { border-left: none; border-top: 1px dashed var(--gray-300); } }
+    .risks .head { background: var(--gray-150); font-weight: 600; color: var(--slate); font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* ---------- open questions ---------- */
+
+    .open-q { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+    .q {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--clay);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .q .qt { font-weight: 600; font-size: 15px; color: var(--slate); margin-bottom: 4px; }
+    .q .qd { font-size: 13.5px; color: var(--gray-500); }
+    .q .owner {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--gray-500);
+      margin-top: 8px;
+    }
+
+    /* ---------- comparison ---------- */
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 780px) { .compare { grid-template-columns: 1fr; } }
+    .compare .col {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .compare .col-label {
+      padding: 10px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+    .compare .col-label.green { background: #D8EAD2; color: #2E5E1E; }
+    .compare .col-label.amber { background: #F0E6C8; color: #6B5C1E; }
+    .compare .col-body { padding: 18px; }
+    .compare .col-body p { font-size: 13.5px; margin-bottom: 8px; }
+    .compare .col-body ul { margin: 6px 0 0 18px; font-size: 13px; color: var(--gray-700); }
+    .compare .col-body ul li { margin-bottom: 3px; }
+
+    /* ---------- note ---------- */
+
+    .note {
+      background: var(--white);
+      border: 1.5px solid var(--gray-300);
+      border-left: 4px solid var(--olive);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+    .note strong { color: var(--slate); }
+
+    /* ---------- footer ---------- */
+
+    .doc-footer {
+      margin-top: 80px;
+      padding: 24px 0;
+      border-top: 1.5px solid var(--gray-300);
+      font-size: 13px;
+      color: var(--gray-500);
+    }
+    .doc-footer strong { color: var(--slate); }
+  </style>
+</head>
+<body>
+
+<script>
+  (function() {
+    const t = localStorage.getItem('theme');
+    if (t === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">◐ Theme</button>
+
+<div class="page">
+
+  <!-- HEADER -->
+
+  <header class="page-head">
+    <div class="eyebrow">TT134 · UBCK Compliance · P0 Feature</div>
+    <h1>Order 2FA</h1>
+    <p class="subtitle">
+      Xác thực giao dịch 2 lớp — Smart-OTP TOTP cho giao dịch ≥ 100tr, 
+      Biometric L2 cho giao dịch 10-100tr, SMS OTP fallback. 
+      Tích hợp vào ConfirmOrdersScreen hiện tại.
+    </p>
+    <div class="status-bar">
+      <span class="status-tag both">Cả BE + FE</span>
+      <span class="status-tag" style="background:#E4E9DC;color:#4B5C39;">~16 ngày</span>
+      <span class="status-tag" style="background:#F3D9CC;color:#8A3B1E;">5 API endpoints</span>
+    </div>
+  </header>
+
+  <!-- SUMMARY -->
+
+  <div class="summary">
+    <div class="cell">
+      <div class="k">Tổng effort</div>
+      <div class="v accent">~16 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Backend</div>
+      <div class="v">~8 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Frontend</div>
+      <div class="v">~5 ngày</div>
+    </div>
+    <div class="cell">
+      <div class="k">Priority</div>
+      <div class="v">P0 · Điều 10</div>
+    </div>
+  </div>
+
+  <!-- 00: FLOW OVERVIEW -->
+
+  <section>
+    <div class="sec-head"><span class="num">00</span><h2>Flow Overview</h2></div>
+    <p class="sec-intro">
+      Order 2FA chạy <strong>theo ngưỡng giá trị giao dịch</strong>. 
+      Giao dịch nhỏ (&lt;10tr) không cần 2FA — không làm phiền user. 
+      Giao dịch lớn tự động chọn phương thức mạnh nhất có sẵn.
+    </p>
+
+    <div class="flow-overview">
+      <div class="flow-step-row">
+        <div class="flow-card">
+          <div class="fc-step">Bước 1</div>
+          <div class="fc-title">Check giá trị</div>
+          <div class="fc-desc">User chọn orders → tap "Confirm" → hệ thống tự động check tổng giá trị — <strong>hoàn toàn tự động, không popup</strong></div>
+          <span class="fc-owner fe">FE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 2</div>
+          <div class="fc-title">Chọn phương thức</div>
+          <div class="fc-desc">
+            &lt;10tr: không cần 2FA (silent)<br>
+            10-100tr: Biometric L2 (Face ID)<br>
+            ≥100tr: Smart-OTP TOTP
+          </div>
+          <span class="fc-owner both">BE + FE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 3</div>
+          <div class="fc-title">Xác thực</div>
+          <div class="fc-desc">User xác thực bằng biometric hoặc nhập OTP — <strong>tối đa 5 lần thử, fallback SMS nếu thiết bị chính không khả dụng</strong></div>
+          <span class="fc-owner fe">FE</span>
+        </div>
+        <div class="flow-card">
+          <div class="fc-step">Bước 4</div>
+          <div class="fc-title">Gửi lệnh + 2FA token</div>
+          <div class="fc-desc">BE verify proof token, kiểm tra transactionHash match — <strong>1-time token, 60s TTL, không replay được</strong></div>
+          <span class="fc-owner be">BE</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 00b: UX PRINCIPLES -->
+
+  <section>
+    <div class="sec-head"><span class="num">00</span><h2>UX Principles</h2></div>
+    <p class="sec-intro">
+      Order 2FA cần <strong>bảo mật</strong> nhưng không làm chậm trải nghiệm giao dịch. 
+      Mục tiêu: chỉ can thiệp khi cần, tối ưu cho giao dịch thường xuyên.
+    </p>
+
+    <div class="ux-principles">
+      <div class="ux-card">
+        <div class="ux-icon">🔄</div>
+        <h4>Tự động chọn method</h4>
+        <p>Không bắt user chọn phương thức 2FA — hệ thống tự động chọn method mạnh nhất có sẵn dựa trên giá trị giao dịch. Giao dịch nhỏ không cần 2FA</p>
+      </div>
+      <div class="ux-card">
+        <div class="ux-icon">⬇️</div>
+        <h4>Fallback mượt mà</h4>
+        <p>Nếu biometric/Smart-OTP không khả dụng, tự động fallback SMS OTP — không block giao dịch, không yêu cầu user cài đặt thêm</p>
+      </div>
+      <div class="ux-card">
+        <div class="ux-icon">🔒</div>
+        <h4>Minh bạch về bảo mật</h4>
+        <p>Hiển thị rõ lý do cần 2FA ("Giao dịch ≥ 100tr cần xác thực OTP"), số tiền, SĐT nhận OTP — user hiểu tại sao và yên tâm</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01: BACKGROUND -->
+
+  <section>
+    <div class="sec-head"><span class="num">01</span><h2>Background &amp; Current Gaps</h2></div>
+    <p class="sec-intro">TT134 Điều 10 yêu cầu xác thực giao dịch 2 lớp. Hiện tại chỉ có access token — chưa đủ.</p>
+
+    <div class="compare">
+      <div class="col">
+        <div class="col-label amber">Current</div>
+        <div class="col-body">
+          <ul>
+            <li>Confirm chỉ dùng access token — không có 2FA</li>
+            <li>Smart-OTP đang implement (chưa xong)</li>
+            <li>Biometric L2 chưa có (chỉ có L1 login)</li>
+            <li>Không phân biệt giao dịch nhỏ/lớn</li>
+            <li>Không có proof token — không chống replay</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="col-label green">Target</div>
+        <div class="col-body">
+          <ul>
+            <li>2FA theo ngưỡng: &lt;10tr không 2FA, 10-100tr Biometric L2, ≥100tr Smart-OTP</li>
+            <li>3 phương thức: Smart-OTP TOTP, Biometric L2, SMS OTP fallback</li>
+            <li>2FA proof token: JWT 60s, single-use, transactionHash-bound</li>
+            <li>Lockout sau 5 lần fail — chống brute force</li>
+            <li>Tích hợp vào ConfirmOrdersScreen hiện tại</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02: ARCHITECTURE -->
+
+  <section>
+    <div class="sec-head"><span class="num">02</span><h2>System Architecture</h2></div>
+    <p class="sec-intro">AAA Service làm trung tâm xử lý 2FA challenge + verify. Smart-OTP và Biometric là các provider.</p>
+
+    <div class="diagram">
+      <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--gray-500)"/>
+          </marker>
+        </defs>
+        <rect x="20" y="80" width="150" height="100" rx="12" fill="var(--gray-150)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="95" y="115" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">Client (FE)</text>
+        <text x="95" y="135" text-anchor="middle" fill="var(--gray-500)" font-size="11">Confirm Orders</text>
+        <text x="95" y="152" text-anchor="middle" fill="var(--gray-500)" font-size="11">Biometric / OTP</text>
+        <line x1="170" y1="130" x2="220" y2="130" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow3)"/>
+        <rect x="230" y="70" width="140" height="120" rx="12" fill="var(--oat)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="300" y="108" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">rest-proxy</text>
+        <text x="300" y="128" text-anchor="middle" fill="var(--gray-500)" font-size="11">API Gateway</text>
+        <text x="300" y="148" text-anchor="middle" fill="var(--gray-500)" font-size="11">X-2FA-Token</text>
+        <text x="300" y="165" text-anchor="middle" fill="var(--gray-500)" font-size="11">middleware</text>
+        <line x1="370" y1="130" x2="420" y2="130" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow3)"/>
+        <rect x="430" y="30" width="180" height="200" rx="12" fill="var(--white)" stroke="var(--clay)" stroke-width="2"/>
+        <text x="520" y="62" text-anchor="middle" fill="var(--slate)" font-size="13" font-weight="600">AAA Service</text>
+        <line x1="450" y1="72" x2="590" y2="72" stroke="var(--gray-300)" stroke-width="1"/>
+        <text x="520" y="90" text-anchor="middle" fill="var(--gray-500)" font-size="11">2FA Challenge System</text>
+        <text x="520" y="107" text-anchor="middle" fill="var(--gray-500)" font-size="11">Challenge → Proof Token</text>
+        <text x="520" y="124" text-anchor="middle" fill="var(--gray-500)" font-size="11">Biometric L2 Verify (RSA)</text>
+        <text x="520" y="141" text-anchor="middle" fill="var(--gray-500)" font-size="11">require2FA middleware</text>
+        <text x="520" y="158" text-anchor="middle" fill="var(--gray-500)" font-size="11">SMS OTP Send/Verify</text>
+        <line x1="460" y1="170" x2="580" y2="170" stroke="var(--gray-300)" stroke-width="1"/>
+        <text x="520" y="190" text-anchor="middle" fill="var(--gray-500)" font-size="11">Smart-OTP Proxy</text>
+        <text x="520" y="207" text-anchor="middle" fill="var(--gray-500)" font-size="11">→ Lotte Core verify</text>
+        <line x1="610" y1="100" x2="650" y2="100" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow3)"/>
+        <rect x="660" y="50" width="105" height="100" rx="12" fill="var(--gray-150)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="712" y="82" text-anchor="middle" fill="var(--slate)" font-size="12" font-weight="600">MySQL</text>
+        <text x="712" y="102" text-anchor="middle" fill="var(--gray-500)" font-size="11">t_2fa_challenge</text>
+        <text x="712" y="119" text-anchor="middle" fill="var(--gray-500)" font-size="11">+ biometric keys</text>
+        <line x1="610" y1="175" x2="660" y2="205" stroke="var(--gray-500)" stroke-width="1.5" marker-end="url(#arrow3)" stroke-dasharray="4"/>
+        <rect x="660" y="172" width="105" height="65" rx="12" fill="var(--oat)" stroke="var(--gray-300)" stroke-width="1.5"/>
+        <text x="712" y="197" text-anchor="middle" fill="var(--slate)" font-size="11" font-weight="600">Lotte Core</text>
+        <text x="712" y="215" text-anchor="middle" fill="var(--gray-500)" font-size="11">Smart-OTP verify</text>
+      </svg>
+      <p class="caption">AAA Service orchestrates 2FA challenge → verify → proof token lifecycle</p>
+    </div>
+  </section>
+
+  <!-- 03: BE / FE RESPONSIBILITIES -->
+
+  <section>
+    <div class="sec-head"><span class="num">03</span><h2>BE / FE Responsibilities</h2></div>
+    <p class="sec-intro">Phân công rõ ràng — BE xử lý challenge/verify/proof token, FE xây dựng UX confirm + OTP/biometric prompt.</p>
+
+    <div class="resp-grid">
+      <div class="resp-col">
+        <div class="resp-head be">Backend (AAA Service)</div>
+        <div class="resp-body">
+          <ul>
+            <li><strong>2FA Challenge System</strong> — t_2fa_challenge table, create/verify</li>
+            <li><strong>POST /transactions/2fa/challenge</strong> — khởi tạo 2FA</li>
+            <li><strong>POST /transactions/2fa/verify</strong> — verify + trả proof token</li>
+            <li><strong>Proof token generation</strong> — JWT 60s, single-use, transactionHash-bound</li>
+            <li><strong>require2FA middleware</strong> — check X-2FA-Token trên endpoints confirm</li>
+            <li><strong>Smart-OTP proxy</strong> — verify TOTP qua Lotte Core</li>
+            <li><strong>Biometric L2 verify</strong> — RSA signature verify</li>
+            <li><strong>SMS OTP send/verify</strong> — rate limit, cooldown, mask phone</li>
+            <li><strong>Lockout logic</strong> — 5 fails → lock 30 phút</li>
+          </ul>
+        </div>
+      </div>
+      <div class="resp-col">
+        <div class="resp-head fe">Frontend (App)</div>
+        <div class="resp-body">
+          <ul>
+            <li><strong>TwoFAChallengeModal</strong> — modal chọn phương thức 2FA</li>
+            <li><strong>SmartOTPInput</strong> — 6-digit OTP input component</li>
+            <li><strong>SMSOTPInput</strong> — OTP input + resend button + countdown</li>
+            <li><strong>BiometricPromptHandler</strong> — Face ID / Touch ID prompt wrapper</li>
+            <li><strong>TwoFAProviderSelector</strong> — chọn method nếu có nhiều option</li>
+            <li><strong>ConfirmOrdersScreen update</strong> — thêm 2FA flow vào saga</li>
+            <li><strong>Cash/Stock/Loan sagas</strong> — thêm 2FA check tương tự</li>
+            <li><strong>Error handling</strong> — retry, fallback SMS, lockout notification</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04: 2FA TIER RULES -->
+
+  <section>
+    <div class="sec-head"><span class="num">04</span><h2>2FA Tier Rules</h2></div>
+    <p class="sec-intro">3-tier system — tự động chọn mức xác thực dựa trên giá trị giao dịch và phương thức có sẵn.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Giá trị giao dịch</th>
+            <th>2FA Required</th>
+            <th>Phương thức ưu tiên</th>
+            <th>Fallback</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>&lt; 10 triệu VND</td>
+            <td>❌ Không</td>
+            <td>— (access token đủ)</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>10 triệu → 100 triệu</td>
+            <td>✅ Có</td>
+            <td>Biometric L2 (Face ID / Touch ID)</td>
+            <td>SMS OTP nếu biometric unavailable</td>
+          </tr>
+          <tr>
+            <td>≥ 100 triệu VND</td>
+            <td>✅ Có</td>
+            <td>Smart-OTP TOTP</td>
+            <td>SMS OTP nếu Smart-OTP chưa active</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note" style="margin-top: 16px;">
+      <strong>📋 Transaction types cần 2FA:</strong> Order (đặt lệnh theo ngưỡng), 
+      Cash transfer (mọi giá trị), Stock transfer (mọi giá trị), 
+      Profile change (SĐT/email/password), Biometric enrollment.
+    </div>
+  </section>
+
+  <!-- 05: API ENDPOINTS -->
+
+  <section>
+    <div class="sec-head"><span class="num">05</span><h2>API Endpoints</h2></div>
+    <p class="sec-intro">5 API endpoints — 3 cho core 2FA flow, 2 cho SMS OTP fallback.</p>
+
+    <div class="note">
+      <strong>🔐 Core 2FA APIs</strong> — 3 endpoints
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Mô tả</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>E1</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/transactions/2fa/challenge</code></td>
+            <td>Khởi tạo 2FA challenge, chọn method</td>
+            <td><span class="fc-owner both">Both</span></td>
+          </tr>
+          <tr>
+            <td>E2</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/transactions/2fa/verify</code></td>
+            <td>Verify OTP/biometric → trả proof token</td>
+            <td><span class="fc-owner both">Both</span></td>
+          </tr>
+          <tr>
+            <td>E3</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/order/confirm</code></td>
+            <td>Confirm order (có X-2FA-Token header)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>📱 SMS OTP Fallback APIs</strong> — 2 endpoints
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Method</th>
+            <th>Endpoint</th>
+            <th>Mô tả</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>E4</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/orderOtp/send</code></td>
+            <td>Gửi SMS OTP đến SĐT đã đăng ký</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td>E5</td>
+            <td><span class="badge post">POST</span></td>
+            <td><code>/api/v1/orderOtp/verify</code></td>
+            <td>Verify SMS OTP cho transaction</td>
+            <td><span class="fc-owner both">Both</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 06: DATA MODEL -->
+
+  <section>
+    <div class="sec-head"><span class="num">06</span><h2>Data Model</h2></div>
+    <p class="sec-intro">Bảng <code>t_2fa_challenge</code> — lưu trạng thái challenge, chỉ BE lo migration.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Column</th>
+            <th>Type</th>
+            <th>Description</th>
+            <th>BE/FE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>id</code></td>
+            <td>VARCHAR(32) PK</td>
+            <td>Challenge ID (ch_xxx)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>user_id</code></td>
+            <td>INT NOT NULL</td>
+            <td>FK → t_user</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>challenge_type</code></td>
+            <td>VARCHAR(32)</td>
+            <td>ORDER_CONFIRM, CASH_TRANSFER, v.v.</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>transaction_hash</code></td>
+            <td>VARCHAR(64)</td>
+            <td>SHA256 hash of transaction data</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>methods</code></td>
+            <td>JSON</td>
+            <td>Available methods with availability status</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>status</code></td>
+            <td>VARCHAR(16)</td>
+            <td>PENDING / VERIFIED / EXPIRED / FAILED</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+          <tr>
+            <td><code>expires_at</code></td>
+            <td>DATETIME</td>
+            <td>Challenge TTL (5 phút)</td>
+            <td><span class="fc-owner be">BE</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 07: SECURITY -->
+
+  <section>
+    <div class="sec-head"><span class="num">07</span><h2>Security Considerations</h2></div>
+    <p class="sec-intro">Rủi ro và biện pháp — 2FA là critical security feature.</p>
+
+    <div class="risks">
+      <div class="row head">
+        <div class="cell">Rủi ro</div>
+        <div class="cell">Mức độ</div>
+        <div class="cell">Giảm thiểu</div>
+      </div>
+      <div class="row">
+        <div class="cell">OTP replay attack</div>
+        <div class="cell"><span class="sev high">High</span></div>
+        <div class="cell">Challenge single-use, proof token 60s TTL, transactionHash binding</div>
+      </div>
+      <div class="row">
+        <div class="cell">OTP brute force</div>
+        <div class="cell"><span class="sev high">High</span></div>
+        <div class="cell">Max 5 attempts/challenge → lock 30 phút</div>
+      </div>
+      <div class="row">
+        <div class="cell">Biometric signature replay</div>
+        <div class="cell"><span class="sev med">Medium</span></div>
+        <div class="cell">Signature chứa challengeId + transactionHash — unique per transaction</div>
+      </div>
+      <div class="row">
+        <div class="cell">Proof token reuse</div>
+        <div class="cell"><span class="sev high">High</span></div>
+        <div class="cell">Revoke ngay sau khi dùng lần đầu + 60s TTL</div>
+      </div>
+      <div class="row">
+        <div class="cell">SMS OTP flooding</div>
+        <div class="cell"><span class="sev med">Medium</span></div>
+        <div class="cell">Rate limit 5 SMS/giờ/user + 30s cooldown</div>
+      </div>
+      <div class="row">
+        <div class="cell">Phishing — OTP steal</div>
+        <div class="cell"><span class="sev med">Medium</span></div>
+        <div class="cell">Hiển thị transaction details trong OTP screen (SĐT, số tiền, mã CK)</div>
+      </div>
+      <div class="row">
+        <div class="cell">Device theft — biometric bypass</div>
+        <div class="cell"><span class="sev high">High</span></div>
+        <div class="cell">Lockout sau N lần fail, SMS fallback cho phép user thu hồi</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08: 2FA PROOF TOKEN -->
+
+  <section>
+    <div class="sec-head"><span class="num">08</span><h2>2FA Proof Token</h2></div>
+    <p class="sec-intro">JWT ngắn hạn, 1-time, bound to transaction — chống replay và transaction mismatch.</p>
+
+    <div class="grid-2">
+      <div class="highlight">
+        <h3>Token payload <span class="tag be-owner" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+        <div class="code" style="background:var(--slate);border-radius:12px;padding:18px 20px;overflow-x:auto;">
+<pre style="font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#E8E6DE;white-space:pre;">{
+  "sub": "2fa_proof",
+  "userId": 12345,
+  "transactionType": "ORDER_CONFIRM",
+  "transactionHash": "sha256(...)",
+  "method": "SMARTOTP",
+  "iat": 1718200000,
+  "exp": 1718200060   // 60s TTL
+}</pre>
+        </div>
+      </div>
+      <div class="highlight">
+        <h3>Verification flow <span class="tag be-owner" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+        <ul>
+          <li><strong>require2FA middleware</strong> — check header X-2FA-Token</li>
+          <li><strong>Verify JWT</strong> — signature, expiry, sub=2fa_proof</li>
+          <li><strong>Transaction match</strong> — SHA256(request body + userId + challengeId)</li>
+          <li><strong>Single-use</strong> — revoke jti ngay sau khi verify</li>
+          <li><strong>60s TTL</strong> — từ lúc verify thành công đến lúc dùng</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09: IMPLEMENTATION PHASES -->
+
+  <section>
+    <div class="sec-head"><span class="num">09</span><h2>Implementation Plan</h2></div>
+    <p class="sec-intro">3 phases — BE core, SMS fallback, FE integration. Phase 1 bị block bởi Smart-OTP activation.</p>
+
+    <div class="milestones">
+      <div class="milestone">
+        <div class="when">Phase 1 · 8 ngày</div>
+        <div class="dot-col"><span class="dot active"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>Backend Core <span class="owner-tag" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+          <p>t_2fa_challenge table, challenge/verify API, proof token JWT, Smart-OTP + Biometric L2 integration, require2FA middleware.</p>
+          <div class="tags"><span class="tag">Blocked</span><span class="tag">Smart-OTP</span><span class="tag">Biometric L2</span><span class="tag">~8 ngày</span></div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="when">Phase 2 · 3 ngày</div>
+        <div class="dot-col"><span class="dot"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>SMS OTP Fallback <span class="owner-tag" style="background:#D6E4F0;color:#1A4D8C;">BE</span></h3>
+          <p>orderOtp send/verify API, rate limiting, cooldown, phone masking, audit logging.</p>
+          <div class="tags"><span class="tag">SMS</span><span class="tag">Rate Limit</span><span class="tag">~3 ngày</span></div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="when">Phase 3 · 5 ngày</div>
+        <div class="dot-col"><span class="dot"></span><span class="line"></span></div>
+        <div class="body">
+          <h3>FE Integration <span class="owner-tag" style="background:#D8EAD2;color:#2E5E1E;">FE</span></h3>
+          <p>TwoFAChallengeModal, SmartOTPInput, SMSOTPInput, BiometricPromptHandler, update sagas cho Order/Cash/Stock/Loan confirm.</p>
+          <div class="tags"><span class="tag">New components</span><span class="tag">Saga updates</span><span class="tag">~5 ngày</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10: DEPENDENCIES -->
+
+  <section>
+    <div class="sec-head"><span class="num">10</span><h2>Dependencies &amp; Blockers</h2></div>
+    <p class="sec-intro">Các dependency cần được giải quyết trước khi implement.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Dependency</th>
+            <th>Blocks</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Smart-OTP activation</strong></td>
+            <td>Phase 1 BE</td>
+            <td>Cần Smart-OTP API (TOTP verify) để verify 2FA</td>
+          </tr>
+          <tr>
+            <td><strong>Biometric enrollment spec</strong></td>
+            <td>Phase 1 BE</td>
+            <td>Cần Biometric L2 spec để implement signature verify</td>
+          </tr>
+          <tr>
+            <td><strong>Device Fingerprinting</strong></td>
+            <td>Phase 3 (optional)</td>
+            <td>Bind 2FA methods với device fingerprint</td>
+          </tr>
+          <tr>
+            <td><strong>Session Management</strong></td>
+            <td>Phase 1 (partial)</td>
+            <td>2FA challenge cần access token valid</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 11: OPEN QUESTIONS -->
+
+  <section>
+    <div class="sec-head"><span class="num">11</span><h2>Open Questions</h2></div>
+    <p class="sec-intro">Các quyết định cần PM/compliance confirm.</p>
+
+    <div class="open-q">
+      <div class="q">
+        <div class="qt">Threshold 10tr / 100tr có phù hợp?</div>
+        <div class="qd">10tr cho Biometric L2, 100tr cho Smart-OTP. Cần compliance confirm các ngưỡng này đúng với TT134.</div>
+        <div class="owner">Cần: Compliance</div>
+      </div>
+      <div class="q">
+        <div class="qt">User chưa enroll Smart-OTP: force enroll hay SMS fallback?</div>
+        <div class="qd">Đề xuất: SMS fallback (Phase 1), sau đó force enroll Smart-OTP (Phase 2 — khi user thấy tiện lợi hơn SMS)</div>
+        <div class="owner">Cần: PM + Product</div>
+      </div>
+      <div class="q">
+        <div class="qt">Admin transactions có cần 2FA không?</div>
+        <div class="qd">Có — nhưng admin có thể bypass (configurable). Một số giao dịch admin nội bộ có thể skip 2FA.</div>
+        <div class="owner">Cần: Compliance</div>
+      </div>
+      <div class="q">
+        <div class="qt">Biometric L2 verify local (AAA) hay qua Lotte Core?</div>
+        <div class="qd">Verify local trên AAA (RSA signature với public key từ enrollment) — không cần gọi Lotte Core cho biometric.</div>
+        <div class="owner">Quyết định: Local verify</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+
+  <div class="doc-footer">
+    <strong>Document Status:</strong> ✅ Draft v1.1 &bull;
+    <strong>For:</strong> PM / BE / FE / QA &bull;
+    <strong>Next Steps:</strong> Review spec → Confirm thresholds → Phase 1 backend (sau Smart-OTP activation)
+  </div>
+
+</div>
+
+<script>
+  const btn = document.getElementById('themeToggle');
+  btn.addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+</script>
+
+</body>
+</html>
