@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NHSV Pro · Biometric Enrollment Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:   #0f2744;
+    --blue:   #1a4a8a;
+    --blue-light: #dbeafe;
+    --teal:   #0e7490;
+    --teal-light: #ccfbf1;
+    --violet: #5b21b6;
+    --violet-light: #ede9fe;
+    --green:  #0f766e;
+    --green-light: #d1fae5;
+    --amber:  #b45309;
+    --amber-light: #fef3c7;
+    --red:    #be123c;
+    --red-light: #ffe4e6;
+    --slate:  #475569;
+    --muted:  #94a3b8;
+    --border: #e2e8f0;
+    --bg:     #f8fafc;
+    --white:  #ffffff;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+    color: white;
+    padding: 38px 48px 32px;
+    border-bottom: 4px solid var(--teal);
+  }
+  .doc-header .eyebrow {
+    font-size: 10px; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: #93c5fd; margin-bottom: 8px;
+  }
+  .doc-header h1 { font-size: 27px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.4px; }
+  .doc-header .subtitle { font-size: 13.5px; color: #cbd5e1; margin-bottom: 20px; max-width: 780px; }
+  .meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { font-size: 11px; color: #94a3b8; }
+  .meta-item strong { color: #e2e8f0; font-weight: 600; }
+
+  /* ── Summary bar ── */
+  .summary-bar {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
+  }
+  .sum-card { background: white; padding: 18px 20px; text-align: center; }
+  .sum-card .num { font-size: 26px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .sum-card .lbl { font-size: 10.5px; color: var(--slate); font-weight: 500; }
+  .blue  { color: var(--blue); }
+  .teal  { color: var(--teal); }
+  .violet{ color: var(--violet); }
+  .green { color: var(--green); }
+  .amber { color: var(--amber); }
+  .red   { color: var(--red); }
+
+  /* ── Content ── */
+  .content { padding: 32px 48px 60px; }
+
+  /* ── Section ── */
+  .section { margin-bottom: 38px; }
+  .section-hdr {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+  }
+  .section-hdr .icon {
+    width: 32px; height: 32px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .section-hdr h2 { font-size: 17px; font-weight: 700; color: var(--navy); }
+  .section-hdr .sub { font-size: 12px; color: var(--muted); margin-left: 6px; font-weight: 400; }
+
+  /* ── Card ── */
+  .card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 22px; margin-bottom: 12px;
+  }
+  .card-title {
+    font-size: 13.5px; font-weight: 600; color: var(--navy);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+  .card-body { font-size: 12.5px; color: #374151; line-height: 1.65; }
+  .card-body p + p { margin-top: 8px; }
+
+  /* ── Callout ── */
+  .callout {
+    border-left: 3px solid var(--blue);
+    background: #f0f9ff;
+    padding: 10px 16px;
+    border-radius: 0 8px 8px 0;
+    font-size: 12.5px;
+    color: #0c4a6e;
+    margin: 10px 0;
+  }
+  .callout.warn { border-color: var(--amber); background: #fffbeb; color: #78350f; }
+  .callout.danger { border-color: var(--red); background: #fff1f2; color: #881337; }
+  .callout.good { border-color: var(--green); background: #f0fdf4; color: #14532d; }
+  .callout strong { font-weight: 600; }
+
+  /* ── Table ── */
+  .data-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+    background: white; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .data-table thead tr { background: var(--navy); color: white; }
+  .data-table th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+  .data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .data-table code {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+    color: var(--violet);
+  }
+  .data-table td.mono {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--blue); font-weight: 500;
+  }
+
+  /* ── Tags ── */
+  .tag {
+    font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    font-weight: 500; display: inline-block;
+    white-space: nowrap;
+  }
+  .tag-blocking { background: var(--red-light); color: var(--red); }
+  .tag-required { background: var(--amber-light); color: var(--amber); }
+  .tag-optional { background: #f1f5f9; color: var(--slate); }
+  .tag-good     { background: var(--green-light); color: var(--green); }
+  .tag-be       { background: var(--blue-light); color: var(--blue); }
+  .tag-mob      { background: var(--teal-light); color: var(--teal); }
+  .tag-pm       { background: var(--violet-light); color: var(--violet); }
+  .tag-legal    { background: #fce7f3; color: #9d174d; }
+  .tag-data     { background: #fff7ed; color: #c2410c; }
+
+  /* ── Two-column ── */
+  .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .col-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── Capability layer ── */
+  .layer-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+  }
+  .layer-hdr {
+    padding: 12px 18px; color: white;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .layer-body { padding: 14px 18px; font-size: 12.5px; color: #374151; line-height: 1.6; }
+  .layer-body .when { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  /* ── Flow ── */
+  .flow-box {
+    background: #fafbfc; border: 1px dashed var(--border);
+    border-radius: 8px; padding: 14px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px; color: #334155;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+
+  /* ── Track header ── */
+  .track-hdr {
+    background: linear-gradient(135deg, var(--blue) 0%, #2563eb 100%);
+    color: white; padding: 14px 20px; border-radius: 10px 10px 0 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .track-hdr.b { background: linear-gradient(135deg, var(--violet) 0%, #7c3aed 100%); }
+  .track-hdr .t-num {
+    width: 32px; height: 32px; background: rgba(255,255,255,0.2);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+  }
+  .track-hdr h3 { font-size: 15px; font-weight: 600; }
+  .track-hdr .t-sub { font-size: 11.5px; opacity: 0.85; margin-top: 2px; }
+  .track-body {
+    background: white; border: 1px solid var(--border);
+    border-top: none; border-radius: 0 0 10px 10px;
+    padding: 18px 22px;
+  }
+
+  /* ── Phase tiles ── */
+  .phase-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    border-radius: 8px; overflow: hidden;
+    margin: 12px 0;
+  }
+  .phase-tile { background: white; padding: 14px 16px; }
+  .phase-tile .p-num {
+    font-size: 10px; font-weight: 600; color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .phase-tile .p-name { font-size: 13px; font-weight: 600; color: var(--navy); margin: 4px 0; }
+  .phase-tile .p-desc { font-size: 11.5px; color: var(--slate); line-height: 1.55; }
+  .phase-tile .p-time { font-size: 10.5px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
+  /* ── Sprint timeline ── */
+  .sprint-grid {
+    display: grid; grid-template-columns: 180px 1fr 1fr;
+    gap: 1px; background: var(--border);
+    border-radius: 8px; overflow: hidden; border: 1px solid var(--border);
+  }
+  .sprint-cell { background: white; padding: 11px 14px; font-size: 12px; }
+  .sprint-cell.h { background: var(--navy); color: white; font-weight: 600; font-size: 11px; letter-spacing: 0.5px; }
+  .sprint-cell.ws { font-weight: 600; color: var(--navy); font-size: 12px; background: #f8fafc; }
+
+  /* ── Architecture diagram ── */
+  .arch {
+    background: white; border: 1px solid var(--border);
+    border-radius: 10px; padding: 22px; margin: 12px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: #334155;
+    overflow-x: auto;
+  }
+  .arch pre { line-height: 1.6; }
+
+  /* ── Open Q ── */
+  .oq-card {
+    background: #fffbeb; border: 1px solid #fde68a;
+    border-radius: 8px; padding: 14px 16px; margin-bottom: 10px;
+    display: flex; gap: 12px;
+  }
+  .oq-num {
+    width: 24px; height: 24px; background: #f59e0b; color: white;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+  }
+  .oq-content .oq-q { font-size: 13px; font-weight: 600; color: #78350f; margin-bottom: 4px; }
+  .oq-content .oq-note { font-size: 11.5px; color: #92400e; line-height: 1.55; }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 48px; padding-top: 18px; border-top: 2px solid var(--border);
+    display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+  }
+
+  /* ── Risk row colors ── */
+  .risk-h { background: #fef2f2 !important; }
+  .risk-m { background: #fffbeb !important; }
+  .risk-l { background: #f0fdf4 !important; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: white; font-size: 11px; }
+    .content { padding: 18px 28px; }
+    .card, .layer-card, .track-body, .arch { page-break-inside: avoid; }
+    .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · Compliance &amp; Security Initiative</div>
+  <h1>Biometric Enrollment — Kế hoạch xây dựng CSDL sinh trắc học</h1>
+  <div class="subtitle">Tuân thủ dự thảo Thông tư của Bộ Tài chính về giao dịch điện tử trên thị trường chứng khoán · Phục vụ cả user mở mới và 12tr+ user hiện tại</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Phiên bản</strong> · v1.0 — Initial planning</div>
+    <div class="meta-item"><strong>Owner</strong> · Midu (PM) · BE Lead · Mobile Lead</div>
+    <div class="meta-item"><strong>Status</strong> · 🔄 Pending vendor confirm + legal scope</div>
+    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+  </div>
+</div>
+
+<!-- SUMMARY BAR -->
+<div class="summary-bar">
+  <div class="sum-card"><div class="num blue">4</div><div class="lbl">Capability layers</div></div>
+  <div class="sum-card"><div class="num teal">2</div><div class="lbl">User tracks (mới + hiện tại)</div></div>
+  <div class="sum-card"><div class="num violet">4</div><div class="lbl">Workstreams song song</div></div>
+  <div class="sum-card"><div class="num green">6</div><div class="lbl">Phase rollout (P0 → P5)</div></div>
+  <div class="sum-card"><div class="num amber">5</div><div class="lbl">Open questions</div></div>
+</div>
+
+<div class="content">
+
+<!-- ===== 1. REGULATORY CONTEXT ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">⚖️</div>
+    <h2>1. Bối cảnh pháp lý — Driver chính</h2>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      Bộ Tài chính đang lấy ý kiến <strong>dự thảo Thông tư thay thế TT 134/2017 + TT 73/2020</strong> về giao dịch điện tử trên TTCK. Đây là driver chính cho dự án — không phải optional. Các CTCK lớn (SSI, VND, TCBS, DSC) đã triển khai trước để chuẩn bị cho ngày Thông tư có hiệu lực. NHSV cần làm sớm để theo kịp thị trường + đảm bảo compliance khi dự thảo được ban hành chính thức.
+    </div>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th style="width:35%">Use case</th><th>Mức yêu cầu xác thực</th><th style="width:20%">Tag</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Mở / đóng tài khoản online</strong></td><td>Bắt buộc sinh trắc học</td><td><span class="tag tag-required">Bắt buộc</span></td></tr>
+      <tr><td>Rút / chuyển tiền &lt; 10tr</td><td>Tối thiểu 1 trong: OTP, sinh trắc, FIDO, 2 kênh, chữ ký số</td><td><span class="tag tag-optional">Linh hoạt</span></td></tr>
+      <tr><td><strong>Rút / chuyển tiền ≥ 10tr</strong></td><td>Bắt buộc khớp đúng sinh trắc học</td><td><span class="tag tag-required">Bắt buộc</span></td></tr>
+      <tr><td>Mua / bán chứng khoán</td><td>Xác thực ít nhất 1 lần ở giao dịch đầu mỗi phiên đăng nhập</td><td><span class="tag tag-required">Bắt buộc</span></td></tr>
+      <tr><td>Fail 10 lần liên tiếp</td><td>Khóa chức năng giao dịch — phải nhận diện lại</td><td><span class="tag tag-blocking">Hard rule</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout" style="margin-top:14px">
+    <strong>3 nguồn dữ liệu sinh trắc học được chấp nhận:</strong> (1) Chip CCCD đọc qua NFC · (2) VNeID qua API định danh điện tử · (3) <strong>CSDL do CTCK tự thu thập &amp; lưu trữ</strong> ← đây là phần NHSV cần xây.
+  </div>
+</div>
+
+
+<!-- ===== 2. 4 CAPABILITY LAYERS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#dbeafe">🧩</div>
+    <h2>2. Phạm vi tổng quan — 4 capability layers</h2>
+    <span class="sub">Không chỉ là "lưu mặt user vào DB" mà là 4 capability riêng biệt</span>
+  </div>
+
+  <div class="col-2">
+    <div class="layer-card">
+      <div class="layer-hdr" style="background: var(--blue)">L1 · Enrollment</div>
+      <div class="layer-body">
+        Thu thập + lưu biometric template lần đầu cho user.
+        <div class="when">Trigger: New eKYC (Track A) · Re-enrollment campaign (Track B)</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-hdr" style="background: var(--teal)">L2 · Verification</div>
+      <div class="layer-body">
+        So sánh face hiện tại với template đã lưu (1:1 match).
+        <div class="when">Trigger: Login · Đặt lệnh đầu phiên · Rút tiền ≥10tr</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-hdr" style="background: var(--violet)">L3 · Liveness</div>
+      <div class="layer-body">
+        Đảm bảo người thật, không phải ảnh / video / mask.
+        <div class="when">Trigger: Mỗi lần L2 chạy (built-in cùng verification)</div>
+      </div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-hdr" style="background: var(--red)">L4 · Lockout &amp; Recovery</div>
+      <div class="layer-body">
+        Khóa khi fail 10 lần + flow nhận diện lại qua tổng đài / quầy.
+        <div class="when">Trigger: consecutive_failures = 10</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn" style="margin-top:14px">
+    Câu hỏi gốc của Midu chủ yếu là <strong>L1</strong>, nhưng thiết kế L1 phải tính trước L2-L4 — vì format template phải tương thích với verification provider, audit log phải cover tất cả layer, và lockout state phải có sẵn trong data model từ đầu.
+  </div>
+</div>
+
+
+<!-- ===== 3. TRACK A — NEW USERS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#dbeafe">📥</div>
+    <h2>3. Track A — Enrollment cho user mới (mở TK online)</h2>
+    <span class="sub">Phần dễ — extend eKYC flow đã có</span>
+  </div>
+
+  <div class="track-hdr">
+    <div class="t-num">A</div>
+    <div>
+      <h3>New users via eKYC flow</h3>
+      <div class="t-sub">Extend luồng VNPT eKYC hiện tại để lưu biometric template, không chỉ verify rồi quên</div>
+    </div>
+  </div>
+  <div class="track-body">
+
+    <div class="col-2" style="margin-bottom:14px">
+      <div>
+        <div style="font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Flow hiện tại</div>
+        <div class="flow-box">User → CCCD upload
+     → VNPT verify
+     → eContract sign
+     → Account created
+
+(face image discarded)</div>
+      </div>
+      <div>
+        <div style="font-size:11px; font-weight:600; color:var(--green); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:6px;">Flow đề xuất</div>
+        <div class="flow-box">User → CCCD scan (NFC chip)
+     → Face capture + liveness
+     → VNPT match (face ↔ chip)
+     → ✅ Extract template
+     → Encrypt + save biometric_db
+     → eContract sign
+     → Account created</div>
+      </div>
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 14px 0 8px;">Data model đề xuất — bảng <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px;">user_biometric</code></div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Field</th><th>Type</th><th>Mô tả</th><th>Ghi chú</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">biometric_id</td><td><code>UUID</code></td><td>Primary key</td><td>Auto-generated</td></tr>
+        <tr><td class="mono">user_id</td><td><code>FK</code></td><td>Link với user</td><td>Unique index</td></tr>
+        <tr><td class="mono">cccd_number</td><td><code>VARCHAR</code></td><td>Số CCCD đã verify</td><td><strong>Encrypted at rest</strong></td></tr>
+        <tr><td class="mono">template_data</td><td><code>BLOB</code></td><td>Vector embedding (face)</td><td><strong>KHÔNG lưu raw image</strong>. Encrypted (AES-256)</td></tr>
+        <tr><td class="mono">template_version</td><td><code>INT</code></td><td>Version của model VNPT</td><td>Cho phép re-enroll khi đổi vendor/model</td></tr>
+        <tr><td class="mono">enrollment_source</td><td><code>ENUM</code></td><td>Nguồn enroll</td><td>ekyc_new · re_enrollment · cccd_chip · vneid</td></tr>
+        <tr><td class="mono">enrollment_timestamp</td><td><code>DATETIME</code></td><td>Thời điểm enroll</td><td>Audit purpose</td></tr>
+        <tr><td class="mono">cccd_chip_verified</td><td><code>BOOL</code></td><td>Verify qua chip NFC không</td><td>Quan trọng cho compliance audit</td></tr>
+        <tr><td class="mono">vneid_linked</td><td><code>BOOL</code></td><td>Đã link VNeID chưa</td><td>Fallback channel</td></tr>
+        <tr><td class="mono">last_verified_at</td><td><code>DATETIME</code></td><td>Verify thành công gần nhất</td><td>Reset consecutive_failures</td></tr>
+        <tr><td class="mono">consecutive_failures</td><td><code>INT</code></td><td>Số lần fail liên tiếp</td><td>Reset = 0 khi pass</td></tr>
+        <tr><td class="mono">locked_until</td><td><code>DATETIME?</code></td><td>Khóa đến khi nào</td><td>NULL nếu chưa khóa</td></tr>
+        <tr><td class="mono">status</td><td><code>ENUM</code></td><td>Trạng thái</td><td>active · pending_reverify · locked · disabled</td></tr>
+      </tbody>
+    </table>
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 16px 0 8px;">Nguyên tắc bảo mật — security baseline</div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:50%">✅ Nên</th><th>❌ Không nên</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Lưu <strong>biometric template</strong> (vector embedding)</td><td>Lưu raw face image trong production DB</td></tr>
+        <tr><td>Encrypt at rest (AES-256-GCM) + encrypted column</td><td>Plain BLOB storage</td></tr>
+        <tr><td>Tách <code>biometric_db</code> riêng, access control riêng</td><td>Lưu cùng schema với account / order</td></tr>
+        <tr><td>Audit log mọi truy vấn template (read + write)</td><td>Free read như user profile bình thường</td></tr>
+        <tr><td>Template <strong>không reversible</strong> về face image</td><td>Lưu format có thể decode về ảnh gốc</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ===== 4. TRACK B — EXISTING USERS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ede9fe">🔄</div>
+    <h2>4. Track B — Re-enrollment cho user hiện tại</h2>
+    <span class="sub">Phần khó — migration challenge cho 12tr+ user</span>
+  </div>
+
+  <div class="track-hdr b">
+    <div class="t-num">B</div>
+    <div>
+      <h3>Existing customers re-enrollment campaign</h3>
+      <div class="t-sub">Không thể bắt user ra quầy → phải làm in-app · Rollout 3 phase với grace period rõ ràng</div>
+    </div>
+  </div>
+  <div class="track-body">
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:8px;">Chiến lược 3 phase rollout</div>
+
+    <div class="phase-row">
+      <div class="phase-tile">
+        <div class="p-num">Phase 1</div>
+        <div class="p-name">🟢 Soft launch</div>
+        <div class="p-desc">Banner optional trên home screen.<br>Skip allowed.<br>Reward: faster auth, tăng bảo mật.</div>
+        <div class="p-time">~3 tháng</div>
+      </div>
+      <div class="phase-tile" style="background:#fffbeb">
+        <div class="p-num">Phase 2</div>
+        <div class="p-name">🟡 Push (required for ≥10tr)</div>
+        <div class="p-desc">Block rút tiền ≥10tr cho đến khi enroll.<br>Allow giao dịch &lt;10tr không cần.<br>Grace period 30 ngày.</div>
+        <div class="p-time">~3 tháng</div>
+      </div>
+      <div class="phase-tile" style="background:#fef2f2">
+        <div class="p-num">Phase 3</div>
+        <div class="p-name">🔴 Hard cutoff</div>
+        <div class="p-desc">Required cho TẤT CẢ giao dịch.<br>Block login cho đến khi enroll<br>(với grace screen rõ ràng).</div>
+        <div class="p-time">Forever</div>
+      </div>
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 18px 0 8px;">In-app re-enrollment flow</div>
+    <div class="flow-box">Login → Home screen
+     ↓
+[Banner: "Cập nhật sinh trắc học để bảo vệ tài khoản"]
+     ↓
+Tap → Re-enrollment screen
+     ↓
+Step 1: Nhập lại CCCD (verify ownership)
+Step 2: Scan chip CCCD qua NFC ← bắt buộc
+Step 3: Face capture + liveness check
+Step 4: Match face vs chip portrait
+     ↓
+✅ Pass → Save template → Toast "Hoàn tất"
+❌ Fail → Retry (max 3) → Suggest ra quầy / tổng đài</div>
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 18px 0 8px;">Trigger event cho Phase 1 — đánh giá trade-off</div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th>Trigger event</th><th>Pro</th><th>Con</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Mỗi lần login</td><td>High coverage, fast</td><td>Annoying — user complaint</td></tr>
+        <tr><td>1 lần / tuần</td><td>Balanced</td><td>Slow coverage</td></tr>
+        <tr><td>Khi user vào màn rút tiền</td><td>Đúng moment cần, motivation cao</td><td>Block flow chính, có thể drop</td></tr>
+        <tr><td>Khi đặt lệnh đầu phiên</td><td>Tự nhiên, đúng yêu cầu Thông tư</td><td>Cản giao dịch</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout good" style="margin-top:12px">
+      <strong>Đề xuất:</strong> Phase 1 dùng <strong>banner không block</strong> trên home + <strong>modal block</strong> ở luồng rút tiền ≥10tr (vì đây sẽ là yêu cầu pháp lý). User được "thử trước" trong flow tự nguyện, hard cutoff dần dần — tránh shock change.
+    </div>
+
+    <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 18px 0 8px;">Edge cases cần xử lý</div>
+
+    <table class="data-table">
+      <thead>
+        <tr><th style="width:40%">Case</th><th>Xử lý đề xuất</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>iPhone 6 trở xuống — không NFC</td><td>Fallback: link VNeID qua app, hoặc đề xuất ra quầy</td></tr>
+        <tr><td>User còn dùng CMND cũ (chưa có CCCD gắn chip)</td><td>Bắt buộc đổi CCCD trước → hướng dẫn ra quầy → lock dần dần</td></tr>
+        <tr><td>User ở nước ngoài, không có VNeID</td><td>Trường hợp đặc biệt — xử lý tay qua tổng đài + video call</td></tr>
+        <tr><td>Khuôn mặt thay đổi (phẫu thuật, già đi, đeo kính)</td><td>Re-enroll voluntary flow + threshold linh hoạt + recovery qua quầy</td></tr>
+        <tr><td>User chết / mất năng lực hành vi</td><td>Flow đóng TK qua thừa kế — KHÔNG trong scope biometric</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- ===== 5. WORKSTREAMS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ccfbf1">🛠️</div>
+    <h2>5. 4 Workstreams song song</h2>
+    <span class="sub">Chạy đồng thời, dependency có hướng dẫn rõ</span>
+  </div>
+
+  <!-- WS1 -->
+  <div class="card" style="border-left:4px solid var(--violet)">
+    <div class="card-title"><span class="tag tag-pm">WS1</span> Đàm phán chi tiết với VNPT <span class="tag tag-legal">Legal + PM + BE Lead</span></div>
+    <div class="card-body">
+      "Cho lưu" mới chỉ là yes/no. Còn 5 điều khoản phải chốt trong contract addendum trước khi BE start code:
+      <table class="data-table" style="margin-top:10px">
+        <thead><tr><th style="width:25%">Item</th><th>Vì sao quan trọng</th><th>Câu hỏi cụ thể gửi VNPT</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Template format &amp; version</strong></td><td>VNPT đổi model → template cũ vô hiệu</td><td>Format gì? Vector dim? Backward compatible? Khi nào deprecate?</td></tr>
+          <tr><td><strong>Re-extract khi đổi model</strong></td><td>Phải re-enroll toàn bộ user nếu đổi model</td><td>VNPT có support migration template không?</td></tr>
+          <tr><td><strong>Match threshold</strong></td><td>Lỏng → false accept; chặt → user complaint</td><td>Default threshold? Tune cho người VN không? Custom được không?</td></tr>
+          <tr><td><strong>Data ownership</strong></td><td>Đổi vendor — template thuộc về ai?</td><td>Clause: NHSV own template, VNPT là processor</td></tr>
+          <tr><td><strong>Rate limit + SLA</strong></td><td>Peak load (9h sáng) VNPT lag → cả app treo</td><td>SLA latency p95? Concurrent limit? Fallback khi VNPT down?</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WS2 -->
+  <div class="card" style="border-left:4px solid var(--blue)">
+    <div class="card-title"><span class="tag tag-be">WS2</span> BE Foundation — <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px;">biometric-svc</code> <span class="tag tag-be">BE Lead + Mr. Hiếu</span></div>
+    <div class="card-body">
+      <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:6px;">Architecture decisions cần chốt</div>
+      <table class="data-table">
+        <thead><tr><th>Decision</th><th>Option A</th><th>Option B</th><th style="width:25%">Recommendation</th></tr></thead>
+        <tbody>
+          <tr><td>Service ownership</td><td>New service <code>biometric-svc</code></td><td>Extend <code>aaa</code></td><td><strong>A</strong> — khác lifecycle, khác compliance scope</td></tr>
+          <tr><td>Storage</td><td>PostgreSQL trong VPC NHSV</td><td>Vault / HSM riêng</td><td><strong>A</strong> cho v1 (cost). B nếu Compliance bắt</td></tr>
+          <tr><td>Encryption</td><td>App-layer (AES-256-GCM + KMS)</td><td>DB-level TDE</td><td><strong>A</strong> — control rõ, key rotation chủ động</td></tr>
+          <tr><td>Sync Core Lotte</td><td>Sync biometric_id qua bridge</td><td>Không sync, NHSV-only</td><td><strong>B</strong> — Lotte không cần biết, giảm attack surface</td></tr>
+          <tr><td>Audit log</td><td>Append-only table cùng DB</td><td>Separate log store (Loki / S3)</td><td><strong>B</strong> — immutable, retention 5 năm rẻ hơn</td></tr>
+        </tbody>
+      </table>
+
+      <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 14px 0 6px;">API contract đề xuất — theo TradeX naming convention (Rule C1)</div>
+      <table class="data-table">
+        <thead><tr><th>Endpoint</th><th>Khi nào dùng</th><th>Caller</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">POST /biometric/enroll</td><td>Lần đầu lưu template</td><td>eKYC flow (Track A) + Re-enrollment (Track B)</td></tr>
+          <tr><td class="mono">POST /biometric/verify</td><td>Match face hiện tại vs template</td><td>Login, đặt lệnh đầu phiên, rút tiền</td></tr>
+          <tr><td class="mono">POST /biometric/re-enroll</td><td>Update template</td><td>User initiated</td></tr>
+          <tr><td class="mono">GET /biometric/status</td><td>Check user đã enroll chưa</td><td>Mobile pre-flight</td></tr>
+          <tr><td class="mono">POST /biometric/unlock</td><td>Reset sau recovery</td><td>Tổng đài + identity recheck</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WS3 -->
+  <div class="card" style="border-left:4px solid var(--teal)">
+    <div class="card-title"><span class="tag tag-mob">WS3</span> Track A Mobile FE — extend eKYC <span class="tag tag-mob">Mr. Bình + Design</span></div>
+    <div class="card-body">
+      Ship được sớm nhất. 3 sub-task chính:
+      <ol style="margin-top:8px; padding-left:20px; line-height:1.8">
+        <li><strong>Upgrade CCCD scan sang NFC chip</strong> — chất lượng cao hơn, anti-spoof tốt hơn, có chữ ký số chứng minh tính xác thực</li>
+        <li><strong>Consent screen mới</strong> — "Khuôn mặt sẽ được lưu để bảo mật giao dịch" — pháp luật bảo vệ dữ liệu cá nhân yêu cầu explicit consent</li>
+        <li><strong>NFC fallback matrix</strong> — handle device không support NFC, suggest VNeID hoặc quầy</li>
+      </ol>
+
+      <div style="font-size:12.5px; font-weight:600; color:var(--navy); margin: 14px 0 6px;">Error handling matrix</div>
+      <table class="data-table">
+        <thead><tr><th style="width:30%">Lỗi</th><th>UX</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>NFC chip không đọc được</td><td>Toast "Đặt CCCD áp sát mặt sau" + retry</td><td>Sau 3 lần fail → suggest fallback</td></tr>
+          <tr><td>Face không match chip portrait</td><td>"Không khớp với CCCD. Thử lại."</td><td>Sau 3 lần → block, suggest tổng đài</td></tr>
+          <tr><td>VNPT API timeout</td><td>"Đang xử lý..." → "Mạng chậm, thử lại"</td><td>Retry với exponential backoff</td></tr>
+          <tr><td>Template extraction fail</td><td>Silent retry 1 lần</td><td>Vẫn fail → <code>status=pending_reverify</code>, bắt enroll lại session sau</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- WS4 -->
+  <div class="card" style="border-left:4px solid var(--amber)">
+    <div class="card-title"><span class="tag tag-pm">WS4</span> Track B Prep — Existing users campaign <span class="tag tag-data">PM + Marketing + CS</span></div>
+    <div class="card-body">
+      Chưa code, nhưng cần chuẩn bị 4 thứ song song với WS2-WS3:
+      <div class="col-2" style="margin-top:12px">
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px;">4.1 · Phân tích base user hiện tại</div>
+          <div style="font-size:11.5px; color:#374151; line-height:1.6;">
+            Submit data request <strong>tuần 1</strong>:
+            <ul style="padding-left:18px; margin-top:4px;">
+              <li>Tổng user active</li>
+              <li>% có CCCD gắn chip vs CMND cũ</li>
+              <li>Phân bố device (iPhone vs Android, NFC support)</li>
+              <li>% đã link VNeID</li>
+              <li>Tần suất login + volume rút ≥10tr</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px;">4.2 · Communication strategy</div>
+          <div style="font-size:11.5px; color:#374151; line-height:1.6;">
+            Loop Marketing <strong>tuần 4-5</strong>:
+            <ul style="padding-left:18px; margin-top:4px;">
+              <li>In-app banner + push notification copy</li>
+              <li>Email guide + deadline</li>
+              <li>Landing page FAQ + video</li>
+              <li>Tổng đài script</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px;">4.3 · Tổng đài / Branch readiness</div>
+          <div style="font-size:11.5px; color:#374151; line-height:1.6;">
+            Loop CS <strong>tuần 8</strong>:
+            <ul style="padding-left:18px; margin-top:4px;">
+              <li>Script tra cứu user status</li>
+              <li>SOP re-enrollment tại quầy</li>
+              <li>Volume forecast 5-10% cần offline support</li>
+            </ul>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:6px;">4.4 · Lockout &amp; Recovery flow</div>
+          <div style="font-size:11.5px; color:#374151; line-height:1.6;">
+            Design <strong>tuần 6</strong> cùng team CS:
+            <ul style="padding-left:18px; margin-top:4px;">
+              <li>Gọi tổng đài → verify identity</li>
+              <li>CS tạo recovery ticket</li>
+              <li>Đến quầy / video call → re-enroll admin tool</li>
+              <li>Unlock + force change password</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== 6. ARCHITECTURE ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🏛️</div>
+    <h2>6. Architecture cao mức</h2>
+    <span class="sub"><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px;">biometric-svc</code> tách riêng — không hỗn hợp với <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:11px;">aaa</code> service</span>
+  </div>
+
+  <div class="arch"><pre>                       ┌─────────────────────┐
+                       │   NHSV Pro Mobile   │
+                       └──────────┬──────────┘
+                                  │ HTTPS + cert pinning
+                                  ↓
+                       ┌─────────────────────┐
+                       │   rest-proxy (GW)   │
+                       └──────────┬──────────┘
+                                  ↓
+                 ┌────────────────┴────────────────┐
+                 ↓                                 ↓
+      ┌──────────────────┐              ┌──────────────────┐
+      │ biometric-svc    │←─ enroll ───→│  VNPT eKYC API   │
+      │ (Node.js)        │←─ verify ────│  (face matching) │
+      └──────┬───────────┘              └──────────────────┘
+             ↓
+      ┌──────────────────┐
+      │ biometric_db     │  ← Encrypted at rest, isolated schema
+      │ (PostgreSQL)     │  ← Access control: ONLY biometric-svc
+      └──────────────────┘
+             ↓
+      ┌──────────────────┐
+      │ audit_log        │  ← Every enroll/verify operation
+      │ (Loki / S3)      │  ← Immutable, retention 5 năm</pre></div>
+
+  <div class="callout">
+    <strong>Vendor lựa chọn:</strong> Default <strong>VNPT eKYC</strong> (đã có hợp đồng, support tiếng Việt) — backup <strong>FPT.AI Face</strong> nếu VNPT không cho lưu template. <strong>Self-built</strong> với open-source model KHÔNG khuyến nghị (risk pháp lý + maintenance).
+  </div>
+</div>
+
+
+<!-- ===== 7. PHASING ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">📅</div>
+    <h2>7. Phasing toàn dự án — P0 → P5</h2>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th style="width:8%">Phase</th><th style="width:18%">Tên</th><th style="width:14%">Timeframe</th><th style="width:35%">Scope</th><th>Deliverable</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>P0</strong></td><td>Pháp lý + Vendor</td><td>Tuần 1-2</td><td>Verify VNPT API, đàm phán scope, confirm với Compliance</td><td>Memo + vendor contract addendum</td></tr>
+      <tr><td><strong>P1</strong></td><td>BE foundation</td><td>Tuần 3-6</td><td>Build <code>biometric-svc</code>, schema, encryption, audit log</td><td>BE service ready, no UI yet</td></tr>
+      <tr><td><strong>P2</strong></td><td>Track A · New users</td><td>Tuần 5-8</td><td>Extend eKYC flow cho user mới → save template</td><td>New users từ ngày X có biometric</td></tr>
+      <tr><td><strong>P3</strong></td><td>Track B · Phase 1</td><td>Tuần 9-12</td><td>Optional in-app re-enrollment, banner home</td><td>Soft launch, đo conversion</td></tr>
+      <tr><td><strong>P4</strong></td><td>Apply biometric</td><td>Tuần 11-14</td><td>Wire vào rút ≥10tr + đặt lệnh đầu phiên</td><td>Real enforcement starts</td></tr>
+      <tr><td><strong>P5</strong></td><td>Track B · Phase 2-3</td><td>Tuần 15+</td><td>Push notifications + hard cutoff theo lịch</td><td>Toàn bộ user enroll xong</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== 8. SPRINT 1-2 ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ede9fe">🚀</div>
+    <h2>8. Sprint 1-2 (tuần 1-4) — Deliverables cụ thể</h2>
+  </div>
+
+  <div class="sprint-grid">
+    <div class="sprint-cell h">Workstream</div>
+    <div class="sprint-cell h">Tuần 1-2</div>
+    <div class="sprint-cell h">Tuần 3-4</div>
+
+    <div class="sprint-cell ws">WS1 · Vendor<br><span style="font-weight:400; color:var(--muted); font-size:10.5px;">PM + BE Lead</span></div>
+    <div class="sprint-cell">Meeting với VNPT, draft contract addendum (5 items)</div>
+    <div class="sprint-cell">Sign addendum, confirm format / threshold / SLA</div>
+
+    <div class="sprint-cell ws">WS2 · BE Foundation<br><span style="font-weight:400; color:var(--muted); font-size:10.5px;">BE Lead + Mr. Hiếu</span></div>
+    <div class="sprint-cell">Architecture doc, schema design, security review</div>
+    <div class="sprint-cell">Start coding <code>biometric-svc</code> — enroll API trước</div>
+
+    <div class="sprint-cell ws">WS3 · Track A Mobile<br><span style="font-weight:400; color:var(--muted); font-size:10.5px;">Mr. Bình + Design</span></div>
+    <div class="sprint-cell">NFC scan UI/UX spec, consent screen design</div>
+    <div class="sprint-cell">Implement NFC + consent screen + error handling</div>
+
+    <div class="sprint-cell ws">WS4 · Track B Prep<br><span style="font-weight:400; color:var(--muted); font-size:10.5px;">PM</span></div>
+    <div class="sprint-cell">Data request, loop Marketing &amp; CS</div>
+    <div class="sprint-cell">Communication plan draft, recovery flow design</div>
+
+    <div class="sprint-cell ws">Compliance<br><span style="font-weight:400; color:var(--muted); font-size:10.5px;">PM + Legal</span></div>
+    <div class="sprint-cell">Confirm scope dự thảo Thông tư với UBCKNN/Compliance</div>
+    <div class="sprint-cell">Final scope memo + sign-off từ Legal</div>
+  </div>
+</div>
+
+
+<!-- ===== 9. RISKS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ffe4e6">⚠️</div>
+    <h2>9. Risks chính cần track</h2>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr><th style="width:38%">Risk</th><th style="width:10%">Prob</th><th style="width:10%">Impact</th><th>Mitigation</th></tr>
+    </thead>
+    <tbody>
+      <tr class="risk-h"><td>Dự thảo Thông tư đổi scope khi ban hành chính thức</td><td>Med</td><td>High</td><td>Theo dõi UBCKNN, design flexible để adjust nhanh</td></tr>
+      <tr class="risk-h"><td>VNPT model upgrade → template cũ invalid</td><td>Med</td><td>High</td><td>Re-enroll campaign có sẵn flow, tái sử dụng được</td></tr>
+      <tr class="risk-m"><td>User adoption thấp ở Phase 1 (voluntary)</td><td>High</td><td>Med</td><td>Phase 2 hard cutoff đủ sớm để cover deadline pháp lý</td></tr>
+      <tr class="risk-m"><td>NFC chip CCCD đọc fail tỷ lệ cao</td><td>Med</td><td>Med</td><td>Fallback VNeID + quầy, đo conversion để tune UX</td></tr>
+      <tr class="risk-l"><td>Privacy backlash từ user / báo chí</td><td>Low</td><td>High</td><td>Communication chuẩn, tham chiếu Thông tư, consent rõ ràng</td></tr>
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ===== 10. OPEN QUESTIONS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">❓</div>
+    <h2>10. Open Questions — cần Midu confirm để unblock</h2>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">1</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Compliance / Legal team đã có stance về dự thảo Thông tư chưa? Đợi ban hành hay làm trước?</div>
+      <div class="oq-note">Quyết định timeline + scope của P0. Nếu làm trước → design flexible. Nếu đợi → có thể chậm so với SSI / VND.</div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">2</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] VNPT eKYC contract hiện tại có cho phép NHSV lưu biometric template không, hay chỉ verify real-time?</div>
+      <div class="oq-note">Block toàn bộ P1. Nếu không cho lưu → phải đàm phán lại (delay 4-8 tuần) hoặc switch vendor (delay 8-12 tuần).</div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">3</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Submit data request cho team analytics — base user breakdown</div>
+      <div class="oq-note">Cần tổng user active, % CCCD chip vs CMND cũ, device distribution, % link VNeID, volume rút ≥10tr/tháng. Query có thể mất 2-3 tuần → submit ngay tuần 1.</div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">4</div>
+    <div class="oq-content">
+      <div class="oq-q">[Non-blocking] Owner Compliance/Legal đã assign chưa?</div>
+      <div class="oq-note">Cần để WS1 không stuck. Nếu chưa có ai own → cần escalate lên leadership.</div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">5</div>
+    <div class="oq-content">
+      <div class="oq-q">[Non-blocking] Trong 4 workstream, muốn dive sâu vào cái nào trước?</div>
+      <div class="oq-note">Đoán: WS2 BE foundation hoặc WS3 Mobile Track A — vì đây là code work cụ thể có thể start ngay sau khi WS1 unblock.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===== 11. NEXT DELIVERABLES ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">📦</div>
+    <h2>11. Next deliverables — sau khi Midu confirm</h2>
+  </div>
+
+  <div class="col-2">
+    <div class="card">
+      <div class="card-title">📐 Architecture detail (Planning/)</div>
+      <div class="card-body">SVG diagram đầy đủ kiến trúc <code>biometric-svc</code> + DB schema + encryption flow. Prose-only, no code.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔌 API Spec (Specifications/)</div>
+      <div class="card-body">Detailed API spec cho 5 endpoints theo TradeX conventions (C1 + C2). Request/response, error codes, mapping table với VNPT.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Issue breakdown (Issues/)</div>
+      <div class="card-body">BE issues · Mobile FE issues · Admin tool issues · QA test cases — ready for Jira (NHMTS project).</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🚀 Go-live Plan HTML</div>
+      <div class="card-body">Standalone HTML kiểu Derivatives — phasing chi tiết, rollback plan, system impact, shareable với leadership.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- FOOTER -->
+<div class="doc-footer">
+  <div>NHSV Pro · Biometric Enrollment Plan · v1.0</div>
+  <div>Document Status: 🔄 In Progress | For: PM + BE Lead + Mobile Lead + Legal | Next Steps: Confirm Q1+Q2 → unblock P0</div>
+</div>
+
+</div><!-- /content -->
+</body>
+</html>
