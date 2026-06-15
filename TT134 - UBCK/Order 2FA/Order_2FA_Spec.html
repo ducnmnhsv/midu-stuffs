@@ -570,6 +570,86 @@
       color: var(--gray-500);
     }
     .doc-footer strong { color: var(--slate); }
+    /* ===== enhanced components ===== */
+
+    /* Callout variants */
+    .note.warn { border-left-color: #D97757; }
+    .note.warn::before { content: "⚠️ "; }
+    .note.danger { border-left-color: #C53030; }
+    .note.danger::before { content: "🚫 "; }
+    .note.good { border-left-color: #788C5D; }
+    .note.good::before { content: "✅ "; }
+
+    :root.dark .note.warn { background: #2D221A; }
+    :root.dark .note.danger { background: #2D1A1A; }
+    :root.dark .note.good { background: #1F2618; }
+
+    /* Risk row severity coloring */
+    .risks .row.risk-high { background: #FFF5F5; }
+    .risks .row.risk-med  { background: #FFFBEB; }
+    .risks .row.risk-low  { background: #F4F8F0; }
+    :root.dark .risks .row.risk-high { background: #2D1A1A; }
+    :root.dark .risks .row.risk-med  { background: #2D261A; }
+    :root.dark .risks .row.risk-low  { background: #1F2618; }
+
+    /* Section icon circle */
+    .sec-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px; font-size: 16px;
+      background: var(--gray-150); flex-shrink: 0;
+    }
+
+    /* Open question card */
+    .oq-list { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+    .oq-card {
+      display: flex; gap: 16px;
+      background: var(--white); border: 1.5px solid var(--gray-300); border-radius: 12px;
+      padding: 18px 22px;
+    }
+    .oq-num {
+      flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+      background: var(--oat); display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--slate);
+    }
+    .oq-body { flex: 1; }
+    .oq-qt { font-weight: 600; font-size: 15px; color: var(--slate); margin-bottom: 4px; }
+    .oq-qd { font-size: 13.5px; color: var(--gray-500); line-height: 1.55; }
+    .oq-owner {
+      font-family: var(--mono); font-size: 11.5px; color: var(--gray-500); margin-top: 8px;
+    }
+
+    /* Meta row for header */
+    .meta-row {
+      display: flex; gap: 24px; flex-wrap: wrap; margin-top: 20px; font-size: 13px;
+      color: var(--gray-500);
+    }
+    .meta-item { display: flex; gap: 6px; align-items: baseline; }
+    .meta-item .meta-k {
+      font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .meta-item .meta-v { color: var(--slate); font-weight: 500; }
+
+    /* Semantic tag badges */
+    .tag-badge {
+      display: inline-block; font-family: var(--mono); font-size: 11px;
+      padding: 2px 8px; border-radius: 6px; font-weight: 600;
+    }
+    .tag-badge.be  { background: #D6E4F0; color: #1A4D8C; }
+    .tag-badge.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .tag-badge.both { background: #E8DCF5; color: #5B2D8E; }
+    .tag-badge.required { background: #F3D9CC; color: #8A3B1E; }
+    .tag-badge.blocking { background: #FFE0D6; color: #B8472E; }
+    .tag-badge.optional { background: #E4E9DC; color: #4B5C39; }
+
+    /* Print styles */
+    @media print {
+      body { padding: 20px; background: white; color: black; }
+      .theme-toggle { display: none; }
+      .page { max-width: none; }
+      .flow-card, .table-wrap, .diagram, section { break-inside: avoid; page-break-inside: avoid; }
+      .doc-footer { margin-top: 40px; }
+    }
   </style>
 </head>
 <body>
@@ -602,6 +682,13 @@
       <span class="status-tag" style="background:#E4E9DC;color:#4B5C39;">~16 ngày</span>
       <span class="status-tag" style="background:#F3D9CC;color:#8A3B1E;">5 API endpoints</span>
     </div>
+    <div class="meta-row">
+      <div class="meta-item"><span class="meta-k">Version</span><span class="meta-v">v1.1</span></div>
+      <div class="meta-item"><span class="meta-k">Owner</span><span class="meta-v">PM / BE / FE</span></div>
+      <div class="meta-item"><span class="meta-k">Status</span><span class="meta-v">✅ Draft</span></div>
+      <div class="meta-item"><span class="meta-k">Updated</span><span class="meta-v">2026-06-13</span></div>
+      <div class="meta-item"><span class="meta-k">Reading</span><span class="meta-v">~10 phút</span></div>
+    </div>
   </header>
 
   <!-- SUMMARY -->
@@ -628,7 +715,7 @@
   <!-- 00: FLOW OVERVIEW -->
 
   <section>
-    <div class="sec-head"><span class="num">00</span><h2>Flow Overview</h2></div>
+    <div class="sec-head"><span class="num">00</span><span class="sec-icon">🔄</span><h2>Flow Overview</h2></div>
     <p class="sec-intro">
       Order 2FA chạy <strong>theo ngưỡng giá trị giao dịch</strong>. 
       Giao dịch nhỏ (&lt;10tr) không cần 2FA — không làm phiền user. 
@@ -672,7 +759,7 @@
   <!-- 00b: UX PRINCIPLES -->
 
   <section>
-    <div class="sec-head"><span class="num">00</span><h2>UX Principles</h2></div>
+    <div class="sec-head"><span class="num">00</span><span class="sec-icon">🎯</span><h2>UX Principles</h2></div>
     <p class="sec-intro">
       Order 2FA cần <strong>bảo mật</strong> nhưng không làm chậm trải nghiệm giao dịch. 
       Mục tiêu: chỉ can thiệp khi cần, tối ưu cho giao dịch thường xuyên.
@@ -700,7 +787,7 @@
   <!-- 01: BACKGROUND -->
 
   <section>
-    <div class="sec-head"><span class="num">01</span><h2>Background &amp; Current Gaps</h2></div>
+    <div class="sec-head"><span class="num">01</span><span class="sec-icon">📋</span><h2>Background &amp; Current Gaps</h2></div>
     <p class="sec-intro">TT134 Điều 10 yêu cầu xác thực giao dịch 2 lớp. Hiện tại chỉ có access token — chưa đủ.</p>
 
     <div class="compare">
@@ -734,7 +821,7 @@
   <!-- 02: ARCHITECTURE -->
 
   <section>
-    <div class="sec-head"><span class="num">02</span><h2>System Architecture</h2></div>
+    <div class="sec-head"><span class="num">02</span><span class="sec-icon">🏗️</span><h2>System Architecture</h2></div>
     <p class="sec-intro">AAA Service làm trung tâm xử lý 2FA challenge + verify. Smart-OTP và Biometric là các provider.</p>
 
     <div class="diagram">
@@ -783,7 +870,7 @@
   <!-- 03: BE / FE RESPONSIBILITIES -->
 
   <section>
-    <div class="sec-head"><span class="num">03</span><h2>BE / FE Responsibilities</h2></div>
+    <div class="sec-head"><span class="num">03</span><span class="sec-icon">👥</span><h2>BE / FE Responsibilities</h2></div>
     <p class="sec-intro">Phân công rõ ràng — BE xử lý challenge/verify/proof token, FE xây dựng UX confirm + OTP/biometric prompt.</p>
 
     <div class="resp-grid">
@@ -824,7 +911,7 @@
   <!-- 04: 2FA TIER RULES -->
 
   <section>
-    <div class="sec-head"><span class="num">04</span><h2>2FA Tier Rules</h2></div>
+    <div class="sec-head"><span class="num">04</span><span class="sec-icon">⚙️</span><h2>2FA Tier Rules</h2></div>
     <p class="sec-intro">3-tier system — tự động chọn mức xác thực dựa trên giá trị giao dịch và phương thức có sẵn.</p>
 
     <div class="table-wrap">
@@ -860,7 +947,7 @@
       </table>
     </div>
 
-    <div class="note" style="margin-top: 16px;">
+    <div class="note good" style="margin-top: 16px;">
       <strong>📋 Transaction types cần 2FA:</strong> Order (đặt lệnh theo ngưỡng), 
       Cash transfer (mọi giá trị), Stock transfer (mọi giá trị), 
       Profile change (SĐT/email/password), Biometric enrollment.
@@ -870,10 +957,10 @@
   <!-- 05: API ENDPOINTS -->
 
   <section>
-    <div class="sec-head"><span class="num">05</span><h2>API Endpoints</h2></div>
+    <div class="sec-head"><span class="num">05</span><span class="sec-icon">📡</span><h2>API Endpoints</h2></div>
     <p class="sec-intro">5 API endpoints — 3 cho core 2FA flow, 2 cho SMS OTP fallback.</p>
 
-    <div class="note">
+    <div class="note good">
       <strong>🔐 Core 2FA APIs</strong> — 3 endpoints
     </div>
 
@@ -914,7 +1001,7 @@
       </table>
     </div>
 
-    <div class="note">
+    <div class="note warn">
       <strong>📱 SMS OTP Fallback APIs</strong> — 2 endpoints
     </div>
 
@@ -952,7 +1039,7 @@
   <!-- 06: DATA MODEL -->
 
   <section>
-    <div class="sec-head"><span class="num">06</span><h2>Data Model</h2></div>
+    <div class="sec-head"><span class="num">06</span><span class="sec-icon">🗄️</span><h2>Data Model</h2></div>
     <p class="sec-intro">Bảng <code>t_2fa_challenge</code> — lưu trạng thái challenge, chỉ BE lo migration.</p>
 
     <div class="table-wrap">
@@ -1016,7 +1103,7 @@
   <!-- 07: SECURITY -->
 
   <section>
-    <div class="sec-head"><span class="num">07</span><h2>Security Considerations</h2></div>
+    <div class="sec-head"><span class="num">07</span><span class="sec-icon">🛡️</span><h2>Security Considerations</h2></div>
     <p class="sec-intro">Rủi ro và biện pháp — 2FA là critical security feature.</p>
 
     <div class="risks">
@@ -1025,37 +1112,37 @@
         <div class="cell">Mức độ</div>
         <div class="cell">Giảm thiểu</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">OTP replay attack</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Challenge single-use, proof token 60s TTL, transactionHash binding</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">OTP brute force</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Max 5 attempts/challenge → lock 30 phút</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">Biometric signature replay</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Signature chứa challengeId + transactionHash — unique per transaction</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">Proof token reuse</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Revoke ngay sau khi dùng lần đầu + 60s TTL</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">SMS OTP flooding</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Rate limit 5 SMS/giờ/user + 30s cooldown</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">Phishing — OTP steal</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Hiển thị transaction details trong OTP screen (SĐT, số tiền, mã CK)</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">Device theft — biometric bypass</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Lockout sau N lần fail, SMS fallback cho phép user thu hồi</div>
@@ -1066,7 +1153,7 @@
   <!-- 08: 2FA PROOF TOKEN -->
 
   <section>
-    <div class="sec-head"><span class="num">08</span><h2>2FA Proof Token</h2></div>
+    <div class="sec-head"><span class="num">08</span><span class="sec-icon">🔑</span><h2>2FA Proof Token</h2></div>
     <p class="sec-intro">JWT ngắn hạn, 1-time, bound to transaction — chống replay và transaction mismatch.</p>
 
     <div class="grid-2">
@@ -1100,7 +1187,7 @@
   <!-- 09: IMPLEMENTATION PHASES -->
 
   <section>
-    <div class="sec-head"><span class="num">09</span><h2>Implementation Plan</h2></div>
+    <div class="sec-head"><span class="num">09</span><span class="sec-icon">📅</span><h2>Implementation Plan</h2></div>
     <p class="sec-intro">3 phases — BE core, SMS fallback, FE integration. Phase 1 bị block bởi Smart-OTP activation.</p>
 
     <div class="milestones">
@@ -1137,7 +1224,7 @@
   <!-- 10: DEPENDENCIES -->
 
   <section>
-    <div class="sec-head"><span class="num">10</span><h2>Dependencies &amp; Blockers</h2></div>
+    <div class="sec-head"><span class="num">10</span><span class="sec-icon">🔗</span><h2>Dependencies &amp; Blockers</h2></div>
     <p class="sec-intro">Các dependency cần được giải quyết trước khi implement.</p>
 
     <div class="table-wrap">
@@ -1178,29 +1265,41 @@
   <!-- 11: OPEN QUESTIONS -->
 
   <section>
-    <div class="sec-head"><span class="num">11</span><h2>Open Questions</h2></div>
+    <div class="sec-head"><span class="num">11</span><span class="sec-icon">❓</span><h2>Open Questions</h2></div>
     <p class="sec-intro">Các quyết định cần PM/compliance confirm.</p>
 
-    <div class="open-q">
-      <div class="q">
-        <div class="qt">Threshold 10tr / 100tr có phù hợp?</div>
-        <div class="qd">10tr cho Biometric L2, 100tr cho Smart-OTP. Cần compliance confirm các ngưỡng này đúng với TT134.</div>
-        <div class="owner">Cần: Compliance</div>
+    <div class="oq-list">
+      <div class="oq-card">
+        <div class="oq-num">1</div>
+        <div class="oq-body">
+          <div class="oq-qt">Threshold 10tr / 100tr có phù hợp?</div>
+          <div class="oq-qd">10tr cho Biometric L2, 100tr cho Smart-OTP. Cần compliance confirm các ngưỡng này đúng với TT134.</div>
+          <div class="oq-owner">Cần: Compliance</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">User chưa enroll Smart-OTP: force enroll hay SMS fallback?</div>
-        <div class="qd">Đề xuất: SMS fallback (Phase 1), sau đó force enroll Smart-OTP (Phase 2 — khi user thấy tiện lợi hơn SMS)</div>
-        <div class="owner">Cần: PM + Product</div>
+      <div class="oq-card">
+        <div class="oq-num">2</div>
+        <div class="oq-body">
+          <div class="oq-qt">User chưa enroll Smart-OTP: force enroll hay SMS fallback?</div>
+          <div class="oq-qd">Đề xuất: SMS fallback (Phase 1), sau đó force enroll Smart-OTP (Phase 2 — khi user thấy tiện lợi hơn SMS)</div>
+          <div class="oq-owner">Cần: PM + Product</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">Admin transactions có cần 2FA không?</div>
-        <div class="qd">Có — nhưng admin có thể bypass (configurable). Một số giao dịch admin nội bộ có thể skip 2FA.</div>
-        <div class="owner">Cần: Compliance</div>
+      <div class="oq-card">
+        <div class="oq-num">3</div>
+        <div class="oq-body">
+          <div class="oq-qt">Admin transactions có cần 2FA không?</div>
+          <div class="oq-qd">Có — nhưng admin có thể bypass (configurable). Một số giao dịch admin nội bộ có thể skip 2FA.</div>
+          <div class="oq-owner">Cần: Compliance</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">Biometric L2 verify local (AAA) hay qua Lotte Core?</div>
-        <div class="qd">Verify local trên AAA (RSA signature với public key từ enrollment) — không cần gọi Lotte Core cho biometric.</div>
-        <div class="owner">Quyết định: Local verify</div>
+      <div class="oq-card">
+        <div class="oq-num">4</div>
+        <div class="oq-body">
+          <div class="oq-qt">Biometric L2 verify local (AAA) hay qua Lotte Core?</div>
+          <div class="oq-qd">Verify local trên AAA (RSA signature với public key từ enrollment) — không cần gọi Lotte Core cho biometric.</div>
+          <div class="oq-owner">Quyết định: Local verify</div>
+        </div>
       </div>
     </div>
   </section>

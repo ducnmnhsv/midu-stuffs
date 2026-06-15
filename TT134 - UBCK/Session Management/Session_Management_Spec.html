@@ -570,6 +570,86 @@
       color: var(--gray-500);
     }
     .doc-footer strong { color: var(--slate); }
+    /* ===== enhanced components ===== */
+
+    /* Callout variants */
+    .note.warn { border-left-color: #D97757; }
+    .note.warn::before { content: "⚠️ "; }
+    .note.danger { border-left-color: #C53030; }
+    .note.danger::before { content: "🚫 "; }
+    .note.good { border-left-color: #788C5D; }
+    .note.good::before { content: "✅ "; }
+
+    :root.dark .note.warn { background: #2D221A; }
+    :root.dark .note.danger { background: #2D1A1A; }
+    :root.dark .note.good { background: #1F2618; }
+
+    /* Risk row severity coloring */
+    .risks .row.risk-high { background: #FFF5F5; }
+    .risks .row.risk-med  { background: #FFFBEB; }
+    .risks .row.risk-low  { background: #F4F8F0; }
+    :root.dark .risks .row.risk-high { background: #2D1A1A; }
+    :root.dark .risks .row.risk-med  { background: #2D261A; }
+    :root.dark .risks .row.risk-low  { background: #1F2618; }
+
+    /* Section icon circle */
+    .sec-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px; font-size: 16px;
+      background: var(--gray-150); flex-shrink: 0;
+    }
+
+    /* Open question card */
+    .oq-list { display: flex; flex-direction: column; gap: 14px; max-width: 820px; }
+    .oq-card {
+      display: flex; gap: 16px;
+      background: var(--white); border: 1.5px solid var(--gray-300); border-radius: 12px;
+      padding: 18px 22px;
+    }
+    .oq-num {
+      flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%;
+      background: var(--oat); display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--slate);
+    }
+    .oq-body { flex: 1; }
+    .oq-qt { font-weight: 600; font-size: 15px; color: var(--slate); margin-bottom: 4px; }
+    .oq-qd { font-size: 13.5px; color: var(--gray-500); line-height: 1.55; }
+    .oq-owner {
+      font-family: var(--mono); font-size: 11.5px; color: var(--gray-500); margin-top: 8px;
+    }
+
+    /* Meta row for header */
+    .meta-row {
+      display: flex; gap: 24px; flex-wrap: wrap; margin-top: 20px; font-size: 13px;
+      color: var(--gray-500);
+    }
+    .meta-item { display: flex; gap: 6px; align-items: baseline; }
+    .meta-item .meta-k {
+      font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .meta-item .meta-v { color: var(--slate); font-weight: 500; }
+
+    /* Semantic tag badges */
+    .tag-badge {
+      display: inline-block; font-family: var(--mono); font-size: 11px;
+      padding: 2px 8px; border-radius: 6px; font-weight: 600;
+    }
+    .tag-badge.be  { background: #D6E4F0; color: #1A4D8C; }
+    .tag-badge.fe  { background: #D8EAD2; color: #2E5E1E; }
+    .tag-badge.both { background: #E8DCF5; color: #5B2D8E; }
+    .tag-badge.required { background: #F3D9CC; color: #8A3B1E; }
+    .tag-badge.blocking { background: #FFE0D6; color: #B8472E; }
+    .tag-badge.optional { background: #E4E9DC; color: #4B5C39; }
+
+    /* Print styles */
+    @media print {
+      body { padding: 20px; background: white; color: black; }
+      .theme-toggle { display: none; }
+      .page { max-width: none; }
+      .flow-card, .table-wrap, .diagram, section { break-inside: avoid; page-break-inside: avoid; }
+      .doc-footer { margin-top: 40px; }
+    }
   </style>
 </head>
 <body>
@@ -602,6 +682,13 @@
       <span class="status-tag" style="background:#E4E9DC;color:#4B5C39;">~13 ngày</span>
       <span class="status-tag" style="background:#F3D9CC;color:#8A3B1E;">5 API endpoints</span>
     </div>
+    <div class="meta-row">
+      <div class="meta-item"><span class="meta-k">Version</span><span class="meta-v">v1.1</span></div>
+      <div class="meta-item"><span class="meta-k">Owner</span><span class="meta-v">PM / BE / FE</span></div>
+      <div class="meta-item"><span class="meta-k">Status</span><span class="meta-v">✅ Draft</span></div>
+      <div class="meta-item"><span class="meta-k">Updated</span><span class="meta-v">2026-06-13</span></div>
+      <div class="meta-item"><span class="meta-k">Reading</span><span class="meta-v">~10 phút</span></div>
+    </div>
   </header>
 
   <!-- ========== SUMMARY ========== -->
@@ -628,7 +715,7 @@
   <!-- ========== 00: FLOW OVERVIEW ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">00</span><h2>Flow Overview</h2></div>
+    <div class="sec-head"><span class="num">00</span><span class="sec-icon">🔄</span><h2>Flow Overview</h2></div>
     <p class="sec-intro">
       Session management hoạt động <strong>xuyên suốt</strong> từ login đến logout. 
       User chỉ tương tác khi cần — xem danh sách thiết bị hoặc revoke session.
@@ -667,7 +754,7 @@
   <!-- ========== 00b: UX PRINCIPLES ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">00</span><h2>UX Principles</h2></div>
+    <div class="sec-head"><span class="num">00</span><span class="sec-icon">🎯</span><h2>UX Principles</h2></div>
     <p class="sec-intro">
       Session management cần <strong>minh bạch</strong> nhưng <strong>không gây phiền hà</strong>. 
       User được thông báo đầy đủ nhưng không bị làm phiền bởi các cảnh báo không cần thiết.
@@ -695,7 +782,7 @@
   <!-- ========== 01: BACKGROUND ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">01</span><h2>Background &amp; Current Gaps</h2></div>
+    <div class="sec-head"><span class="num">01</span><span class="sec-icon">📋</span><h2>Background &amp; Current Gaps</h2></div>
     <p class="sec-intro">TT134 yêu cầu kiểm soát truy cập (Điều 6.1), giới hạn thiết bị (Điều 5.2), và khả năng giám sát/khoá từ xa (Điều 13).</p>
 
     <div class="compare">
@@ -729,7 +816,7 @@
   <!-- ========== 02: ARCHITECTURE ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">02</span><h2>System Architecture</h2></div>
+    <div class="sec-head"><span class="num">02</span><span class="sec-icon">🏗️</span><h2>System Architecture</h2></div>
     <p class="sec-intro">AAA Service quản lý session lifecycle. TokenService là enforcement point chính cho concurrent session limit.</p>
 
     <div class="diagram">
@@ -773,7 +860,7 @@
   <!-- ========== 03: BE / FE RESPONSIBILITIES ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">03</span><h2>BE / FE Responsibilities</h2></div>
+    <div class="sec-head"><span class="num">03</span><span class="sec-icon">👥</span><h2>BE / FE Responsibilities</h2></div>
     <p class="sec-intro">Phân công rõ ràng — BE quản lý dữ liệu và enforcement, FE xây dựng UX và device list screen.</p>
 
     <div class="resp-grid">
@@ -813,7 +900,7 @@
   <!-- ========== 04: ENFORCEMENT LOGIC ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">04</span><h2>Concurrent Session Enforcement</h2></div>
+    <div class="sec-head"><span class="num">04</span><span class="sec-icon">⚙️</span><h2>Concurrent Session Enforcement</h2></div>
     <p class="sec-intro">Chính sách REJECT — user chủ động revoke thiết bị cũ trước khi login thiết bị mới.</p>
 
     <div class="grid-2">
@@ -837,7 +924,7 @@ session.deviceHistoryDays: 90</pre>
       </div>
     </div>
 
-    <div class="note">
+      <div class="note warn">
       <strong>🔑 Edge cases:</strong> Refresh token refresh → KHÔNG đếm là session mới. 
       Biometric re-login cùng device → KHÔNG đếm là session mới. 
       Admin accounts → không bị giới hạn session limit.
@@ -847,10 +934,10 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 05: API ENDPOINTS ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">05</span><h2>API Endpoints</h2></div>
+    <div class="sec-head"><span class="num">05</span><span class="sec-icon">📡</span><h2>API Endpoints</h2></div>
     <p class="sec-intro">5 API endpoints — 4 cho user, 1 cho admin.</p>
 
-    <div class="note">
+    <div class="note good">
       <strong>👤 User APIs</strong> — 4 endpoints, dùng JWT token
     </div>
 
@@ -898,7 +985,7 @@ session.deviceHistoryDays: 90</pre>
       </table>
     </div>
 
-    <div class="note">
+    <div class="note warn">
       <strong>🔧 Admin API</strong> — 1 endpoint, yêu cầu admin scope
     </div>
 
@@ -929,7 +1016,7 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 06: DATA MODEL ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">06</span><h2>Data Model Extensions</h2></div>
+    <div class="sec-head"><span class="num">06</span><span class="sec-icon">🗄️</span><h2>Data Model Extensions</h2></div>
     <p class="sec-intro">Mở rộng bảng <code>t_refresh_token</code> hiện tại — thêm 3 cột, không tạo bảng mới.</p>
 
     <div class="table-wrap">
@@ -973,7 +1060,7 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 07: SECURITY ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">07</span><h2>Security Considerations</h2></div>
+    <div class="sec-head"><span class="num">07</span><span class="sec-icon">🛡️</span><h2>Security Considerations</h2></div>
     <p class="sec-intro">Rủi ro và biện pháp — toàn bộ là trách nhiệm BE.</p>
 
     <div class="risks">
@@ -982,37 +1069,37 @@ session.deviceHistoryDays: 90</pre>
         <div class="cell">Mức độ</div>
         <div class="cell">Giảm thiểu</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">Session ID enumeration (auto-increment)</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Check ownership bằng userId từ access token</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">Revoke session của user khác</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Mỗi API check userId từ JWT — chỉ admin có thể revoke cross-user</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">Accidental revoke all</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Yêu cầu confirm: true trong body</div>
       </div>
-      <div class="row">
+      <div class="row risk-med">
         <div class="cell">Token leaking qua session list</div>
         <div class="cell"><span class="sev med">Medium</span></div>
         <div class="cell">Session list KHÔNG trả về token string — chỉ sessionId</div>
       </div>
-      <div class="row">
+      <div class="row risk-high">
         <div class="cell">Unlimited session creation (bypass limit)</div>
         <div class="cell"><span class="sev high">High</span></div>
         <div class="cell">Enforce maxSessions trong generateToken() — không thể bypass</div>
       </div>
-      <div class="row">
+      <div class="row risk-low">
         <div class="cell">Brute-force session ID</div>
         <div class="cell"><span class="sev low">Low</span></div>
         <div class="cell">Rate limit: 10 requests/phút cho DELETE /sessions/:id</div>
       </div>
-      <div class="row">
+      <div class="row risk-low">
         <div class="cell">Admin abuse</div>
         <div class="cell"><span class="sev low">Low</span></div>
         <div class="cell">Audit log cho mọi admin session revoke</div>
@@ -1023,7 +1110,7 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 08: TIMEOUT UX ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">08</span><h2>Session Timeout UX</h2></div>
+    <div class="sec-head"><span class="num">08</span><span class="sec-icon">⏰</span><h2>Session Timeout UX</h2></div>
     <p class="sec-intro">Không để user bị "bất ngờ" mất phiên — có cảnh báo trước và tùy chọn kéo dài session.</p>
 
     <div class="grid-2">
@@ -1050,7 +1137,7 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 09: IMPLEMENTATION PHASES ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">09</span><h2>Implementation Plan</h2></div>
+    <div class="sec-head"><span class="num">09</span><span class="sec-icon">📅</span><h2>Implementation Plan</h2></div>
     <p class="sec-intro">Chia 3 phases — Phase 1 là core, Phase 2 thêm notifications, Phase 3 thêm lịch sử.</p>
 
     <div class="milestones">
@@ -1087,29 +1174,41 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 10: OPEN QUESTIONS ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">10</span><h2>Open Questions</h2></div>
+    <div class="sec-head"><span class="num">10</span><span class="sec-icon">❓</span><h2>Open Questions</h2></div>
     <p class="sec-intro">Các quyết định cần PM/compliance confirm trước khi implement.</p>
 
-    <div class="open-q">
-      <div class="q">
-        <div class="qt">maxSessions mặc định: 3 hay 5?</div>
-        <div class="qd">Mặc định là 3 cho user thường. VIP user có thể được set 5. Admin không bị giới hạn. Con số này có thể điều chỉnh sau Phase 1.</div>
-        <div class="owner">Cần: PM + Compliance</div>
+    <div class="oq-list">
+      <div class="oq-card">
+        <div class="oq-num">1</div>
+        <div class="oq-body">
+          <div class="oq-qt">maxSessions mặc định: 3 hay 5?</div>
+          <div class="oq-qd">Mặc định là 3 cho user thường. VIP user có thể được set 5. Admin không bị giới hạn. Con số này có thể điều chỉnh sau Phase 1.</div>
+          <div class="oq-owner">Cần: PM + Compliance</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">Policy khi đạt limit: REJECT hay FIFO?</div>
-        <div class="qd">REJECT (Phase 1) — user chủ động revoke. FIFO auto-revoke session cũ nhất có thể gây confusion ("tại sao tôi bị logout?"). Nên giữ REJECT.</div>
-        <div class="owner">Quyết định: REJECT</div>
+      <div class="oq-card">
+        <div class="oq-num">2</div>
+        <div class="oq-body">
+          <div class="oq-qt">Policy khi đạt limit: REJECT hay FIFO?</div>
+          <div class="oq-qd">REJECT (Phase 1) — user chủ động revoke. FIFO auto-revoke session cũ nhất có thể gây confusion ("tại sao tôi bị logout?"). Nên giữ REJECT.</div>
+          <div class="oq-owner">Quyết định: REJECT</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">Admin có bypass session limit không?</div>
-        <div class="qd">Có — admin operations không nên bị chặn bởi session limit. Admin có maxSessions riêng (10).</div>
-        <div class="owner">Quyết định: Admin không bị limit</div>
+      <div class="oq-card">
+        <div class="oq-num">3</div>
+        <div class="oq-body">
+          <div class="oq-qt">Admin có bypass session limit không?</div>
+          <div class="oq-qd">Có — admin operations không nên bị chặn bởi session limit. Admin có maxSessions riêng (10).</div>
+          <div class="oq-owner">Quyết định: Admin không bị limit</div>
+        </div>
       </div>
-      <div class="q">
-        <div class="qt">Tính session limit gộp chung hay riêng theo login method?</div>
-        <div class="qd">Gộp chung — mọi login method (password, biometric, OTP) đều tính là 1 session. Tránh trường hợp user login N lần với N method khác nhau.</div>
-        <div class="owner">Quyết định: Gộp chung</div>
+      <div class="oq-card">
+        <div class="oq-num">4</div>
+        <div class="oq-body">
+          <div class="oq-qt">Tính session limit gộp chung hay riêng theo login method?</div>
+          <div class="oq-qd">Gộp chung — mọi login method (password, biometric, OTP) đều tính là 1 session. Tránh trường hợp user login N lần với N method khác nhau.</div>
+          <div class="oq-owner">Quyết định: Gộp chung</div>
+        </div>
       </div>
     </div>
   </section>
@@ -1117,7 +1216,7 @@ session.deviceHistoryDays: 90</pre>
   <!-- ========== 11: INTEGRATION ========== -->
 
   <section>
-    <div class="sec-head"><span class="num">11</span><h2>Integration Points</h2></div>
+    <div class="sec-head"><span class="num">11</span><span class="sec-icon">🔗</span><h2>Integration Points</h2></div>
     <p class="sec-intro">Session management liên quan đến nhiều component khác — mapping rõ ràng.</p>
 
     <div class="table-wrap">
