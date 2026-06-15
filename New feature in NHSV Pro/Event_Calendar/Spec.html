@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-02 · Lịch sự kiện — Feature Spec</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#0f2744; --blue:#1a4a8a; --blue-light:#dbeafe;
+    --teal:#0e7490; --teal-light:#ccfbf1;
+    --violet:#5b21b6; --violet-light:#ede9fe;
+    --green:#0f766e; --green-light:#d1fae5;
+    --amber:#b45309; --amber-light:#fef3c7;
+    --red:#be123c; --red-light:#ffe4e6;
+    --slate:#475569; --muted:#94a3b8; --border:#e2e8f0; --bg:#f8fafc; --white:#fff;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:#1e293b; font-size:13px; line-height:1.65; }
+
+  .doc-header { background:linear-gradient(135deg,var(--navy) 0%,#1e3a6e 100%); color:white; padding:36px 48px 30px; border-bottom:4px solid var(--teal); }
+  .doc-header .eyebrow { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#93c5fd; margin-bottom:8px; }
+  .doc-header h1 { font-size:26px; font-weight:700; margin-bottom:4px; letter-spacing:-0.4px; }
+  .doc-header .subtitle { font-size:13px; color:#cbd5e1; margin-bottom:20px; }
+  .meta-row { display:flex; gap:28px; flex-wrap:wrap; }
+  .meta-item { font-size:11px; color:#94a3b8; }
+  .meta-item strong { color:#e2e8f0; font-weight:600; }
+
+  .summary-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
+  .sum-card { background:white; padding:16px 20px; text-align:center; }
+  .sum-card .num { font-size:24px; font-weight:700; line-height:1; margin-bottom:3px; }
+  .sum-card .lbl { font-size:10px; color:var(--slate); font-weight:500; }
+  .blue{color:var(--blue);} .teal{color:var(--teal);} .green{color:var(--green);} .amber{color:var(--amber);}
+
+  .content { padding:32px 48px 60px; }
+  .section { margin-bottom:36px; }
+  .section-hdr { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid var(--border); }
+  .section-hdr .icon { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+  .section-hdr h2 { font-size:16px; font-weight:700; color:var(--navy); }
+  .section-hdr .sub { font-size:12px; color:var(--muted); margin-left:4px; font-weight:400; }
+
+  .card { background:white; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .card-title { font-size:13px; font-weight:600; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .card-body { font-size:12.5px; color:#374151; line-height:1.65; }
+
+  /* ── Logic box ── */
+  .logic-box { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+  .logic-hdr { background:var(--navy); color:white; padding:10px 16px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .logic-row { display:flex; align-items:flex-start; gap:14px; padding:10px 16px; border-bottom:1px solid var(--border); }
+  .logic-row:last-child { border-bottom:none; }
+  .logic-cond { font-family:'JetBrains Mono',monospace; font-size:11px; background:#f1f5f9; color:var(--blue); padding:3px 8px; border-radius:4px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+  .logic-result { font-size:12px; color:#374151; }
+  .badge-today { font-size:10px; background:#dc2626; color:white; padding:2px 7px; border-radius:20px; font-weight:700; margin-left:6px; }
+  .badge-show  { font-size:10px; background:var(--green-light); color:var(--green); padding:2px 7px; border-radius:20px; font-weight:600; margin-left:6px; }
+  .badge-hide  { font-size:10px; background:#f1f5f9; color:var(--muted); padding:2px 7px; border-radius:20px; font-weight:600; margin-left:6px; }
+
+  /* ── Screen spec ── */
+  .screen-spec { display:grid; grid-template-columns:220px 1fr; gap:18px; background:white; border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:14px; }
+  .phone-mockup { background:#1e293b; border-radius:16px; padding:10px; min-height:300px; }
+  .phone-screen { background:white; border-radius:10px; padding:10px; min-height:300px; }
+  .phone-bar { background:var(--navy); color:white; padding:6px 10px; font-size:9px; font-weight:600; border-radius:6px 6px 0 0; margin:-10px -10px 8px -10px; letter-spacing:0.5px; }
+
+  .ac-list { list-style:none; }
+  .ac-item { padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:12px; color:#374151; display:flex; gap:8px; }
+  .ac-item:last-child { border-bottom:none; }
+  .ac-item::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; width:16px; }
+
+  /* ── Data table ── */
+  .data-table { width:100%; border-collapse:collapse; font-size:12px; background:white; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .data-table thead tr { background:var(--navy); color:white; }
+  .data-table th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; letter-spacing:0.5px; }
+  .data-table td { padding:9px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .data-table tbody tr:last-child td { border-bottom:none; }
+  .data-table tbody tr:nth-child(even) { background:#f8fafc; }
+  .data-table td:first-child { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); font-weight:500; }
+  .data-table .type { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); }
+  .req { font-size:10px; padding:2px 7px; border-radius:20px; font-weight:500; }
+  .req-y { background:var(--red-light); color:var(--red); }
+  .req-n { background:#f1f5f9; color:var(--slate); }
+
+  /* ── Mapping table ── */
+  .map-table { width:100%; border-collapse:collapse; font-size:12px; background:white; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .map-table thead tr { background:#0e7490; color:white; }
+  .map-table th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; }
+  .map-table td { padding:8px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .map-table tbody tr:last-child td { border-bottom:none; }
+  .map-table tbody tr:nth-child(even) { background:#f8fafc; }
+  .map-table td:first-child { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--teal); font-weight:500; }
+
+  /* ── API block ── */
+  .api-block { background:white; border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
+  .api-hdr { padding:12px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); background:#fafbfc; }
+  .method { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; padding:3px 9px; border-radius:5px; flex-shrink:0; }
+  .GET  { background:#d1fae5; color:#065f46; }
+  .POST { background:#dbeafe; color:#1e40af; }
+  .api-path { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--navy); font-weight:500; }
+  .api-desc { font-size:12px; color:var(--slate); margin-left:auto; }
+  .api-body { padding:14px 18px; }
+  .param-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .param-block .pb-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px; }
+  .param-row { display:flex; gap:8px; margin-bottom:5px; align-items:flex-start; }
+  .pname { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); min-width:140px; }
+  .ptype { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); min-width:70px; }
+  .pdesc { font-size:11px; color:var(--slate); }
+
+  /* ── Sync flow ── */
+  .flow-box { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+  .flow-step-row { display:flex; align-items:flex-start; gap:14px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .flow-step-row:last-child { border-bottom:none; }
+  .step-num { width:24px; height:24px; border-radius:50%; background:var(--teal); color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+  .step-body .step-title { font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:3px; }
+  .step-body .step-detail { font-size:11.5px; color:var(--slate); line-height:1.6; }
+  .step-body code { font-family:'JetBrains Mono',monospace; font-size:11px; background:#f1f5f9; color:var(--blue); padding:1px 5px; border-radius:3px; }
+
+  /* ── Layer cards ── */
+  .layer-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .layer-card { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .layer-hdr { padding:10px 16px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .task-list { list-style:none; }
+  .task-item { padding:9px 16px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:10px; }
+  .task-item:last-child { border-bottom:none; }
+  .task-id { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; padding:2px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+  .task-content .t-name { font-size:12.5px; font-weight:500; color:#1e293b; }
+  .task-content .t-note { font-size:11px; color:var(--slate); margin-top:2px; }
+
+  /* ── Open Q ── */
+  .oq-card { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px 16px; margin-bottom:10px; display:flex; gap:10px; }
+  .oq-num { width:22px; height:22px; background:#f59e0b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+  .oq-content .oq-q { font-size:12.5px; font-weight:600; color:#78350f; margin-bottom:3px; }
+  .oq-content .oq-note { font-size:11.5px; color:#92400e; }
+  .oq-tags { display:flex; gap:5px; margin-top:5px; }
+  .tag { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; display:inline-block; }
+  .tag-open  { background:var(--amber-light); color:var(--amber); }
+  .tag-block { background:var(--red-light); color:var(--red); }
+
+  /* ── Warning / Note ── */
+  .note-info { padding:10px 14px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:7px; font-size:12px; color:#0c4a6e; margin-top:10px; }
+  .note-warn { padding:10px 14px; background:var(--amber-light); border:1px solid #fcd34d; border-radius:7px; font-size:12px; color:#78350f; margin-top:10px; }
+  .note-info strong, .note-warn strong { font-weight:600; }
+
+  hr { border:none; border-top:1px solid var(--border); margin:28px 0; }
+
+  .doc-footer { margin-top:48px; padding-top:16px; border-top:2px solid var(--border); display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+
+  @media print {
+    body { background:white; font-size:11px; }
+    .content { padding:16px 28px; }
+    .card, .api-block, .layer-card, .screen-spec, .logic-box { page-break-inside:avoid; }
+    .doc-header { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · Feature Spec · A-02</div>
+  <h1>Lịch sự kiện — Event Calendar</h1>
+  <div class="subtitle">Mục mới trên Trang chủ · Dữ liệu cổ tức từ Vietstock API · Hiển thị 2 tuần tới</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Module</strong> · A-02 (Home Screen)</div>
+    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.1</div>
+    <div class="meta-item"><strong>Nguồn dữ liệu</strong> · Vietstock API → NHSV DB</div>
+    <div class="meta-item"><strong>Cửa sổ hiển thị</strong> · Hôm nay → +14 ngày</div>
+    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+  </div>
+</div>
+
+<!-- SUMMARY BAR -->
+<div class="summary-bar">
+  <div class="sum-card"><div class="num blue">14</div><div class="lbl">Ngày cửa sổ hiển thị</div></div>
+  <div class="sum-card"><div class="num teal">8</div><div class="lbl">BE tasks</div></div>
+  <div class="sum-card"><div class="num green">9</div><div class="lbl">Mobile FE tasks</div></div>
+  <div class="sum-card"><div class="num amber">5</div><div class="lbl">Open questions</div></div>
+</div>
+
+<div class="content">
+
+<!-- ===== 1. OVERVIEW ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#dbeafe">📋</div>
+    <h2>1. Overview & Scope</h2>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      Mục <strong>Lịch sự kiện</strong> hiển thị danh sách các mã chứng khoán <em>sắp có quyền hoặc đang thực hiện quyền</em> trong vòng 2 tuần kể từ hôm nay. Dữ liệu được BE tự động đồng bộ định kỳ từ <strong>Vietstock API</strong> (<code>stockevents</code>) và lưu vào NHSV DB nội bộ. Mobile app đọc dữ liệu từ NHSV DB qua API nội bộ — không gọi Vietstock trực tiếp từ app.
+    </div>
+  </div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:4px;">
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">✅ Trong scope (v1)</div>
+      <div class="card-body">
+        <ul style="list-style:none; line-height:2">
+          <li>• Hiển thị sự kiện cổ tức tiền mặt (cash dividend)</li>
+          <li>• Hiển thị sự kiện cổ phiếu thưởng / cổ tức bằng CP</li>
+          <li>• Cửa sổ: hôm nay đến hôm nay + 14 ngày</li>
+          <li>• Sự kiện hôm nay được đánh dấu "HÔM NAY"</li>
+          <li>• Sort theo ngày GDKHQ tăng dần (gần → xa)</li>
+          <li>• Nhóm theo ngày (date grouping)</li>
+          <li>• BE sync job định kỳ từ Vietstock</li>
+          <li>• Tự động ẩn sự kiện đã qua ngày GDKHQ</li>
+          <li>• <strong>Filter theo sàn:</strong> Tất cả / HOSE / HNX / Upcom</li>
+          <li>• <strong>Màn hình detail</strong> khi tap vào từng sự kiện</li>
+          <li>• <strong>Push notification</strong> qua OneSignal (D-1 trước GDKHQ)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">❌ Ngoài scope (v1)</div>
+      <div class="card-body">
+        <ul style="list-style:none; line-height:2">
+          <li>• Tìm kiếm mã CK trong lịch sự kiện</li>
+          <li>• Lịch sử sự kiện đã qua</li>
+          <li>• Các loại sự kiện khác (AGM, kết quả kinh doanh…)</li>
+          <li>• Manual override dữ liệu từ admin</li>
+          <li>• User tự cấu hình opt-in/out từng mã nhận notification</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. DISPLAY LOGIC ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">⚙️</div>
+    <h2>2. Display Logic — Quy tắc hiển thị</h2>
+    <span class="sub">Đây là phần quan trọng nhất của feature — BE và Mobile FE đều cần nắm rõ</span>
+  </div>
+
+  <div class="logic-box">
+    <div class="logic-hdr">📅 Điều kiện hiển thị theo ngày GDKHQ</div>
+    <div class="logic-row">
+      <div class="logic-cond">gdkhq_date = TODAY</div>
+      <div class="logic-result"><span class="badge-today">HÔM NAY</span><span class="badge-show">Hiển thị</span> — Sự kiện đang thực hiện quyền hôm nay. Đánh dấu badge đỏ "HÔM NAY" nổi bật.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">TODAY &lt; gdkhq_date ≤ TODAY+14</div>
+      <div class="logic-result"><span class="badge-show">Hiển thị</span> — Sự kiện trong 2 tuần tới. Hiển thị bình thường, kèm số ngày còn lại.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">gdkhq_date &gt; TODAY+14</div>
+      <div class="logic-result"><span class="badge-hide">Ẩn</span> — Ngoài cửa sổ 2 tuần. Không fetch về app, không hiển thị.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">gdkhq_date &lt; TODAY</div>
+      <div class="logic-result"><span class="badge-hide">Ẩn</span> — Đã qua ngày thực hiện quyền. Lọc ra khỏi response API, không bao giờ hiển thị lại.</div>
+    </div>
+  </div>
+
+  <div class="logic-box" style="margin-top:12px;">
+    <div class="logic-hdr">🔢 Sắp xếp & nhóm dữ liệu</div>
+    <div class="logic-row">
+      <div class="logic-cond">Sort chính</div>
+      <div class="logic-result"><code>gdkhq_date ASC</code> — gần nhất lên đầu. Hôm nay luôn ở section đầu tiên.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">Sort phụ</div>
+      <div class="logic-result"><code>stock_code ASC</code> — trong cùng ngày, mã CK sắp xếp A→Z.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">Nhóm theo ngày</div>
+      <div class="logic-result">Header date hiển thị theo từng nhóm ngày: "Hôm nay · 11/06", "Ngày mai · 12/06", "T5, 14/06", v.v.</div>
+    </div>
+    <div class="logic-row">
+      <div class="logic-cond">Loại sự kiện</div>
+      <div class="logic-result">Chỉ lấy Vietstock <code>EventTypeID = 1</code>, <code>ChannelID</code> trong [13, 14, 15]. Xem mapping đầy đủ tại mục 6.</div>
+    </div>
+  </div>
+
+  <div class="note-info" style="margin-top:12px;">
+    <strong>TODAY là múi giờ server (ICT +7).</strong> Mọi so sánh ngày phải dùng date trên server, không dùng timestamp UTC thô — tránh lỗi cut-off lúc nửa đêm. BE nên normalize <code>gdkhq_date</code> về <code>DATE</code> (không giờ phút giây) ngay khi nhận từ Vietstock.
+  </div>
+</div>
+
+<!-- ===== 3. SCREEN SPEC ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ccfbf1">📱</div>
+    <h2>3. Screen Spec — Mobile App</h2>
+  </div>
+
+  <div class="screen-spec">
+    <div>
+      <div style="font-size:11px; font-weight:600; color:var(--muted); margin-bottom:8px; letter-spacing:1px; text-transform:uppercase">Screen 3.1</div>
+      <div style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:12px">Event Calendar (inline Home)</div>
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-bar">← Trang chủ</div>
+
+          <!-- Section header -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <div style="font-size:9px; font-weight:700; color:#0f2744;">📅 Lịch sự kiện</div>
+          </div>
+
+          <!-- Exchange filter bar -->
+          <div style="display:flex; gap:4px; margin-bottom:8px; overflow-x:auto;">
+            <div style="background:#0f2744; color:white; font-size:7px; padding:2px 7px; border-radius:20px; font-weight:600; white-space:nowrap;">Tất cả</div>
+            <div style="background:#f1f5f9; color:#475569; font-size:7px; padding:2px 7px; border-radius:20px; white-space:nowrap;">HOSE</div>
+            <div style="background:#f1f5f9; color:#475569; font-size:7px; padding:2px 7px; border-radius:20px; white-space:nowrap;">HNX</div>
+            <div style="background:#f1f5f9; color:#475569; font-size:7px; padding:2px 7px; border-radius:20px; white-space:nowrap;">Upcom</div>
+          </div>
+
+          <!-- Date group: Hôm nay -->
+          <div style="font-size:7px; font-weight:700; color:#0e7490; background:#ccfbf1; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:5px;">HÔM NAY · 11/06</div>
+
+          <!-- Event card 1 - cash dividend today -->
+          <div style="border:1px solid #e2e8f0; border-radius:7px; padding:6px 8px; margin-bottom:5px; display:flex; align-items:center; gap:7px;">
+            <div style="background:#0f2744; color:white; border-radius:5px; padding:4px 6px; text-align:center; min-width:32px;">
+              <div style="font-size:8px; font-weight:700;">NFC</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:7.5px; font-weight:600; color:#0f2744;">Cổ tức tiền mặt</div>
+              <div style="font-size:7px; color:#475569;">GDKHQ: 11/06/2026</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:8px; font-weight:700; color:#0f766e;">10%</div>
+              <div style="font-size:6px; background:#dc2626; color:white; padding:1px 4px; border-radius:10px; margin-top:1px;">HÔM NAY</div>
+            </div>
+          </div>
+
+          <!-- Event card 2 - stock dividend today -->
+          <div style="border:1px solid #e2e8f0; border-radius:7px; padding:6px 8px; margin-bottom:8px; display:flex; align-items:center; gap:7px;">
+            <div style="background:#0f2744; color:white; border-radius:5px; padding:4px 6px; text-align:center; min-width:32px;">
+              <div style="font-size:8px; font-weight:700;">DWC</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:7.5px; font-weight:600; color:#0f2744;">Cổ phiếu thưởng</div>
+              <div style="font-size:7px; color:#475569;">GDKHQ: 11/06/2026</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:8px; font-weight:700; color:#0f766e;">5%</div>
+              <div style="font-size:6px; background:#dc2626; color:white; padding:1px 4px; border-radius:10px; margin-top:1px;">HÔM NAY</div>
+            </div>
+          </div>
+
+          <!-- Date group: T6 13/06 -->
+          <div style="font-size:7px; font-weight:700; color:#475569; background:#f1f5f9; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:5px;">T6 · 13/06 · 2 ngày nữa</div>
+
+          <!-- Event card 3 -->
+          <div style="border:1px solid #e2e8f0; border-radius:7px; padding:6px 8px; margin-bottom:5px; display:flex; align-items:center; gap:7px;">
+            <div style="background:#1a4a8a; color:white; border-radius:5px; padding:4px 6px; text-align:center; min-width:32px;">
+              <div style="font-size:8px; font-weight:700;">TTC</div>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:7.5px; font-weight:600; color:#0f2744;">Cổ tức tiền mặt</div>
+              <div style="font-size:7px; color:#475569;">GDKHQ: 13/06/2026</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:8px; font-weight:700; color:#0f766e;">8%</div>
+            </div>
+          </div>
+
+          <div style="font-size:7px; color:#94a3b8; text-align:center; margin-top:6px;">Hiển thị tới 25/06/2026 ↓</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">Section header "📅 Lịch sự kiện" trên Home screen (vị trí thứ 3, sau Hoạt động tích cực)</li>
+        <li class="ac-item"><strong>Filter bar sàn</strong>: 4 pill buttons — Tất cả (default active, navy), HOSE, HNX, Upcom. Khi chọn sàn: chỉ hiển thị sự kiện của mã thuộc sàn đó. Tất cả = không filter.</li>
+        <li class="ac-item">Khi switch sàn: re-filter client-side (không gọi API lại nếu data đã load đủ) hoặc gọi API với param exchange. IT tự quyết theo approach tối ưu hơn.</li>
+        <li class="ac-item">Nhóm sự kiện theo ngày GDKHQ. Date header: "HÔM NAY · DD/MM" (teal), "Ngày mai · DD/MM", "Tx · DD/MM · N ngày nữa" (grey)</li>
+        <li class="ac-item">Mỗi event card: ô mã CK (navy), tên loại sự kiện, ngày GDKHQ, tỷ lệ (green). Badge "HÔM NAY" đỏ nếu = today</li>
+        <li class="ac-item"><strong>Tap vào card → push navigation đến màn hình Detail (Screen 3.2)</strong></li>
+        <li class="ac-item">Empty state khi không có sự kiện (toàn bộ hoặc sau filter): "Không có sự kiện cổ tức trong 14 ngày tới."</li>
+        <li class="ac-item">Loading skeleton khi fetch API. Không có pagination.</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Screen 3.2 — Detail -->
+  <div class="screen-spec" style="margin-top:14px;">
+    <div>
+      <div style="font-size:11px; font-weight:600; color:var(--muted); margin-bottom:8px; letter-spacing:1px; text-transform:uppercase">Screen 3.2</div>
+      <div style="font-size:14px; font-weight:700; color:var(--navy); margin-bottom:12px">Event Detail</div>
+      <div class="phone-mockup">
+        <div class="phone-screen" style="padding:0; overflow:hidden;">
+          <!-- Nav bar -->
+          <div style="background:white; padding:8px 10px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px;">
+            <div style="color:#0e7490; font-size:10px;">←</div>
+            <div style="font-size:9px; font-weight:700; color:#0f2744; flex:1; text-align:center;">Chi tiết sự kiện</div>
+            <div style="width:14px;"></div>
+          </div>
+
+          <div style="padding:10px; overflow-y:auto;">
+            <!-- Hero card -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px;">
+              <div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;">
+                <div style="background:#0f2744; color:white; border-radius:7px; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; flex-shrink:0;">VCB</div>
+                <div>
+                  <div style="font-size:9px; font-weight:700; color:#0f2744; line-height:1.3;">Ngân hàng TMCP<br>Ngoại thương VN</div>
+                  <div style="display:inline-block; background:#dbeafe; color:#1a4a8a; font-size:7px; font-weight:600; padding:1px 6px; border-radius:10px; margin-top:3px;">HOSE</div>
+                </div>
+              </div>
+              <div style="border-top:1px solid #f1f5f9; padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:#ccfbf1; color:#0e7490; font-size:7px; font-weight:600; padding:2px 8px; border-radius:10px;">Cổ tức tiền mặt</div>
+                <div style="font-size:18px; font-weight:700; color:#0f766e;">15%</div>
+              </div>
+            </div>
+
+            <!-- Key dates card -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:8px;">
+              <div style="font-size:7px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:#94a3b8; margin-bottom:7px;">Thông tin thực hiện quyền</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div style="font-size:8px; color:#475569;">📅 Ngày GDKHQ</div>
+                <div style="display:flex; align-items:center; gap:4px;">
+                  <div style="font-size:8px; font-weight:600; color:#0f2744;">11/06/2026</div>
+                  <div style="background:#dc2626; color:white; font-size:6px; padding:1px 4px; border-radius:8px;">HÔM NAY</div>
+                </div>
+              </div>
+              <div style="border-top:1px solid #f1f5f9; padding-top:6px; display:flex; justify-content:space-between;">
+                <div style="font-size:8px; color:#475569;">🗓 Ngày ĐKCC</div>
+                <div style="font-size:8px; font-weight:600; color:#0f2744;">06/06/2026</div>
+              </div>
+            </div>
+
+            <!-- Info card -->
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:10px; margin-bottom:10px;">
+              <div style="font-size:7px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:#94a3b8; margin-bottom:7px;">Thông tin cổ tức</div>
+              <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><div style="font-size:8px; color:#475569;">Loại cổ tức</div><div style="font-size:8px; color:#0f2744; font-weight:500;">Tiền mặt</div></div>
+              <div style="border-top:1px solid #f1f5f9; padding-top:5px; display:flex; justify-content:space-between; margin-bottom:5px;"><div style="font-size:8px; color:#475569;">Tỷ lệ thực hiện</div><div style="font-size:8px; color:#0f766e; font-weight:700;">15% mệnh giá</div></div>
+              <div style="border-top:1px solid #f1f5f9; padding-top:5px; display:flex; justify-content:space-between;"><div style="font-size:8px; color:#475569;">Sàn giao dịch</div><div style="font-size:8px; color:#0f2744; font-weight:500;">HOSE</div></div>
+            </div>
+
+            <!-- CTA -->
+            <div style="background:#0f2744; color:white; text-align:center; padding:8px; border-radius:7px; font-size:8px; font-weight:600;">Xem cổ phiếu VCB →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">Navigation header: nút back (←) + title "Chi tiết sự kiện" căn giữa</li>
+        <li class="ac-item"><strong>Hero card:</strong> ô mã CK (36×36, navy, rounded) + tên công ty + exchange badge (HOSE/HNX/Upcom). Dưới divider: event type label pill + tỷ lệ nổi bật (font lớn, green)</li>
+        <li class="ac-item"><strong>Thông tin thực hiện quyền:</strong> Ngày GDKHQ (kèm badge "HÔM NAY" nếu hôm nay) + Ngày ĐKCC</li>
+        <li class="ac-item"><strong>Thông tin cổ tức:</strong> Loại cổ tức · Tỷ lệ thực hiện · Sàn giao dịch</li>
+        <li class="ac-item">Variant STOCK_DIVIDEND: event type pill màu violet (#ede9fe / #5b21b6), label "Cổ phiếu thưởng" hoặc "Cổ tức bằng cổ phiếu", field label đổi thành "Tỷ lệ phát hành"</li>
+        <li class="ac-item">CTA button cuối màn hình: "Xem cổ phiếu {stockCode} →" — navy, full-width. Tap → navigate đến màn hình giao dịch của mã đó</li>
+        <li class="ac-item">Disclaimer text nhỏ phía trên CTA: "Dữ liệu từ Vietstock. Vui lòng xác nhận tại nguồn chính thức."</li>
+        <li class="ac-item">Push navigation từ list (không modal). Nút back về list giữ nguyên filter state đang chọn.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. DATA MODEL ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">🗄️</div>
+    <h2>4. Data Model — NHSV DB</h2>
+    <span class="sub">Bảng lưu dữ liệu đã sync từ Vietstock</span>
+  </div>
+
+  <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:10px;">Bảng <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:11px;">event_calendar</code></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th><th>Ghi chú</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>event_id</td>
+        <td class="type">BIGINT</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Primary key nội bộ</td>
+        <td>Auto-increment</td>
+      </tr>
+      <tr>
+        <td>vietstock_event_id</td>
+        <td class="type">INT</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>EventID từ Vietstock</td>
+        <td>UNIQUE. Dùng để dedup khi sync lại</td>
+      </tr>
+      <tr>
+        <td>stock_code</td>
+        <td class="type">VARCHAR(10)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Mã chứng khoán</td>
+        <td>VD: "NFC", "VCB", "ACB"</td>
+      </tr>
+      <tr>
+        <td>company_name</td>
+        <td class="type">VARCHAR(300)</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Tên công ty</td>
+        <td>Lấy từ Vietstock nếu API trả về, hoặc join với bảng danh mục mã CK</td>
+      </tr>
+      <tr>
+        <td>exchange</td>
+        <td class="type">ENUM</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Sàn giao dịch</td>
+        <td>'HOSE' | 'HNX' | 'UPCOM'</td>
+      </tr>
+      <tr>
+        <td>channel_id</td>
+        <td class="type">INT</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Loại sự kiện (raw từ Vietstock)</td>
+        <td>13 = tiền mặt · 14 = cổ phiếu thưởng · 15 = cổ tức bằng CP</td>
+      </tr>
+      <tr>
+        <td>event_type</td>
+        <td class="type">ENUM</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Loại sự kiện (đã normalize)</td>
+        <td>'CASH_DIVIDEND' | 'STOCK_DIVIDEND'. Derive từ channel_id</td>
+      </tr>
+      <tr>
+        <td>event_type_label</td>
+        <td class="type">VARCHAR(100)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Tên hiển thị trên app</td>
+        <td>"Cổ tức tiền mặt" / "Cổ phiếu thưởng" / "Cổ tức bằng cổ phiếu"</td>
+      </tr>
+      <tr>
+        <td>gdkhq_date</td>
+        <td class="type">DATE</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Ngày GDKHQ — KEY FIELD</td>
+        <td>Index này. Dùng để filter cửa sổ 14 ngày và sort. Kiểu DATE (không giờ phút giây).</td>
+      </tr>
+      <tr>
+        <td>ndkcc_date</td>
+        <td class="type">DATE</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Ngày ĐKCC (đăng ký cuối cùng)</td>
+        <td>Lưu để tham khảo, không hiển thị trên app v1</td>
+      </tr>
+      <tr>
+        <td>main_rate</td>
+        <td class="type">DECIMAL(10,4)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Tỷ lệ thực (raw từ Vietstock)</td>
+        <td>VD: 10.0 = 10%. Xem Open Q #2 về đơn vị chính xác</td>
+      </tr>
+      <tr>
+        <td>rate_display</td>
+        <td class="type">VARCHAR(50)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Tỷ lệ đã format hiển thị trên app</td>
+        <td>VD: "10%" hoặc "1,500 VNĐ/CP". Tính sẵn khi sync, không tính lại trên mobile.</td>
+      </tr>
+      <tr>
+        <td>event_name</td>
+        <td class="type">VARCHAR(500)</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Tên sự kiện gốc từ Vietstock</td>
+        <td>Field <code>Name</code> từ API. Lưu để debug/reference.</td>
+      </tr>
+      <tr>
+        <td>synced_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm sync gần nhất</td>
+        <td>Dùng để monitor sync job</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm tạo record</td>
+        <td>Auto-generated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-info" style="margin-top:14px;">
+    <strong>Indexes cần thiết:</strong> <code>gdkhq_date</code> (primary filter), <code>UNIQUE(vietstock_event_id)</code> (dedup), <code>(gdkhq_date, exchange)</code> composite (filter + sort). Bảng này có thể có vài nghìn records, query rất nhanh nếu index đúng.
+  </div>
+
+  <!-- stock_sync_tracker table -->
+  <div style="font-size:12px; font-weight:600; color:var(--navy); margin-top:20px; margin-bottom:10px;">
+    Bảng <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:11px;">stock_sync_tracker</code>
+    <span style="font-size:11px; font-weight:400; color:var(--slate); margin-left:8px;">Theo dõi lịch sử call Vietstock theo từng mã — tránh gọi lại trong 6 tháng</span>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Field</th><th>Type</th><th>Required</th><th>Mô tả</th><th>Ghi chú</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>stock_code</td>
+        <td class="type">VARCHAR(10)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Mã CK — Primary Key</td>
+        <td>1 record/mã. PK đảm bảo không duplicate.</td>
+      </tr>
+      <tr>
+        <td>last_called_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm gần nhất đã gọi Vietstock cho mã này</td>
+        <td>Cập nhật mỗi khi sync job call thành công (bất kể có events hay không)</td>
+      </tr>
+      <tr>
+        <td>next_eligible_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm sớm nhất được phép gọi lại</td>
+        <td><code>= last_called_at + 6 MONTH</code>. Sync job skip nếu <code>NOW() &lt; next_eligible_at</code>.</td>
+      </tr>
+      <tr>
+        <td>events_found</td>
+        <td class="type">INT</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Số events tìm được ở lần call gần nhất</td>
+        <td>Dùng để debug / phân tích. 0 = gọi nhưng không có sự kiện nào.</td>
+      </tr>
+      <tr>
+        <td>updated_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm cập nhật record</td>
+        <td>Auto-updated</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note-warn" style="margin-top:10px;">
+    <strong>⚠️ Tradeoff cần lưu ý:</strong> Nếu một doanh nghiệp công bố cổ tức bất thường với thời gian ngắn (ví dụ chỉ 2–3 tuần trước GDKHQ) và mã đó vừa được sync trong 6 tháng gần đây, sự kiện này sẽ <strong>không</strong> được phát hiện cho đến khi hết thời hạn 6 tháng. Đây là đánh đổi có chủ ý để giảm API call. Nếu muốn bắt được trường hợp này, cần thêm cơ chế manual trigger hoặc rút ngắn chu kỳ xuống (ví dụ 3 tháng).
+  </div>
+</div>
+
+<!-- ===== 5. VIETSTOCK API MAPPING ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ccfbf1">🔗</div>
+    <h2>5. Vietstock API — Mapping & Sử dụng</h2>
+    <span class="sub">stockevents endpoint · EventTypeID=1 · ChannelID 13/14/15</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">📡 Endpoint Vietstock sử dụng</div>
+      <div class="card-body">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:11px; background:#f8fafc; border:1px solid var(--border); border-radius:6px; padding:10px 12px; line-height:2;">
+          GET https://api.vietstock.vn/demo/stockevents<br>
+          &nbsp;&nbsp;?Code=<strong>{mã_CK}</strong><br>
+          &nbsp;&nbsp;&amp;EventTypeID=<strong>1</strong><br>
+          &nbsp;&nbsp;&amp;FromDate=<strong>{today}</strong><br>
+          &nbsp;&nbsp;&amp;ToDate=<strong>{today+21}</strong><br>
+          &nbsp;&nbsp;&amp;LanguageID=1
+        </div>
+        <div style="margin-top:8px; font-size:11.5px; color:var(--slate);">
+          <strong>EventTypeID=1:</strong> "Dividend, bonus and additional issue" — bao gồm đủ 3 loại sự kiện cần hiển thị.<br>
+          <strong>ToDate = today+21:</strong> lấy buffer thêm 7 ngày so với cửa sổ hiển thị (14 ngày) để tránh missing data khi sync chậm.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏷️ ChannelID → Loại sự kiện</div>
+      <div class="card-body">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr style="background:#f1f5f9;">
+              <th style="padding:6px 10px; text-align:left; font-size:11px; color:var(--navy);">ChannelID</th>
+              <th style="padding:6px 10px; text-align:left; font-size:11px; color:var(--navy);">Mô tả Vietstock</th>
+              <th style="padding:6px 10px; text-align:left; font-size:11px; color:var(--navy);">Hiển thị trên app</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:7px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); font-weight:600;">13</td>
+              <td style="padding:7px 10px; font-size:12px;">Dividend payment in cash</td>
+              <td style="padding:7px 10px; font-size:12px; font-weight:500;">Cổ tức tiền mặt</td>
+            </tr>
+            <tr style="background:#f8fafc; border-top:1px solid var(--border);">
+              <td style="padding:7px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); font-weight:600;">14</td>
+              <td style="padding:7px 10px; font-size:12px;">Bonus share issue</td>
+              <td style="padding:7px 10px; font-size:12px; font-weight:500;">Cổ phiếu thưởng</td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);">
+              <td style="padding:7px 10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); font-weight:600;">15</td>
+              <td style="padding:7px 10px; font-size:12px;">Dividend payment by share</td>
+              <td style="padding:7px 10px; font-size:12px; font-weight:500;">Cổ tức bằng cổ phiếu</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:10px;">Field mapping Vietstock → NHSV DB</div>
+  <table class="map-table">
+    <thead>
+      <tr><th>Vietstock field</th><th>NHSV DB field</th><th>Ghi chú xử lý</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>EventID</td>
+        <td>vietstock_event_id</td>
+        <td>Dùng để UPSERT (ON CONFLICT vietstock_event_id → UPDATE)</td>
+      </tr>
+      <tr>
+        <td>Code</td>
+        <td>stock_code</td>
+        <td>Chính là input param khi gọi API, copy sang</td>
+      </tr>
+      <tr>
+        <td>ChannelID</td>
+        <td>channel_id + event_type + event_type_label</td>
+        <td>Mapping theo bảng ChannelID ở trên. Chỉ giữ ChannelID 13/14/15, bỏ các loại khác.</td>
+      </tr>
+      <tr>
+        <td>GDKHQDate</td>
+        <td>gdkhq_date</td>
+        <td>Parse thành DATE (bỏ time component). Đây là field quan trọng nhất.</td>
+      </tr>
+      <tr>
+        <td>NDKCCDate</td>
+        <td>ndkcc_date</td>
+        <td>Lưu tùy chọn, nullable</td>
+      </tr>
+      <tr>
+        <td>MainRate</td>
+        <td>main_rate + rate_display</td>
+        <td>Lưu giá trị raw vào main_rate. Format thành chuỗi hiển thị lưu vào rate_display (xem Open Q #2 về format)</td>
+      </tr>
+      <tr>
+        <td>Name</td>
+        <td>event_name</td>
+        <td>Lưu nguyên văn để tham khảo/debug</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note-warn" style="margin-top:12px;">
+    <strong>⚠️ Hạn chế của Vietstock API:</strong> <code>stockevents</code> yêu cầu <code>Code</code> (mã CK cụ thể) — không có endpoint trả toàn thị trường theo khoảng ngày. BE cần gọi tuần tự hoặc song song cho từng mã (~1,700+ mã nếu lấy đủ HOSE/HNX/Upcom). Xem Open Q #1 để thảo luận giải pháp tối ưu.
+  </div>
+</div>
+
+<!-- ===== 6. SYNC JOB ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🔄</div>
+    <h2>6. BE Sync Job — Luồng đồng bộ dữ liệu</h2>
+    <span class="sub">Scheduled job · Chạy hàng ngày · Không cần trigger thủ công</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+    <div class="card">
+      <div class="card-title">⏰ Lịch chạy</div>
+      <div class="card-body">
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+          <div><strong>Tần suất:</strong> 1 lần/ngày</div>
+          <div><strong>Giờ chạy:</strong> 06:00 AM ICT (trước giờ mở cửa thị trường 9:00)</div>
+          <div><strong>Trigger:</strong> Cron job hoặc scheduler nội bộ</div>
+          <div><strong>Retry:</strong> Tự retry 3 lần nếu lỗi, cách nhau 10 phút</div>
+          <div><strong>Alert:</strong> Gửi thông báo nội bộ nếu sync thất bại hoàn toàn</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Phạm vi dữ liệu & Tối ưu API call</div>
+      <div class="card-body">
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:12px;">
+          <div><strong>Date range:</strong> FROM = today, TO = today + 21 ngày</div>
+          <div><strong>EventTypeID:</strong> 1 (dividends only)</div>
+          <div><strong>ChannelID filter:</strong> 13, 14, 15</div>
+          <div><strong>Cleanup:</strong> Sau mỗi sync, xóa records có <code>gdkhq_date &lt; today</code></div>
+          <div style="margin-top:4px; padding:8px; background:#f0fdf4; border-radius:6px; border:1px solid #bbf7d0;">
+            <strong style="color:#0f766e;">6-month skip:</strong> <span style="color:#374151;">Mã đã được gọi Vietstock trong vòng 6 tháng → <strong>bỏ qua hoàn toàn</strong>, không call API. Tracking qua bảng <code>stock_sync_tracker</code>.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-box">
+    <div class="logic-hdr" style="background:var(--teal)">🔄 Luồng xử lý Sync Job từng bước</div>
+
+    <div class="flow-step-row">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Lấy danh sách mã CK cần sync — có áp dụng 6-month skip</div>
+        <div class="step-detail">
+          Đọc từ bảng danh mục mã CK nội bộ. <strong>LEFT JOIN với <code>stock_sync_tracker</code></strong> và lọc chỉ lấy mã thỏa điều kiện:<br>
+          <code>WHERE sst.stock_code IS NULL OR sst.next_eligible_at &lt;= NOW()</code><br>
+          Nghĩa là: mã <em>chưa từng được gọi</em> (<code>IS NULL</code>) hoặc mã <em>đã hết hạn 6 tháng</em>. Mã đang trong cửa sổ 6 tháng → loại bỏ khỏi batch, không call Vietstock.
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step-row">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Gọi Vietstock stockevents cho từng mã đủ điều kiện</div>
+        <div class="step-detail">Loop qua danh sách mã <em>đã lọc ở bước 1</em>, gọi <code>GET /stockevents?Code={code}&EventTypeID=1&FromDate=today&ToDate=today+21</code>. Concurrent calls với giới hạn (max 10 concurrent) để tránh rate limit. Log lỗi từng mã không dừng toàn bộ job.</div>
+      </div>
+    </div>
+
+    <div class="flow-step-row">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Filter & transform dữ liệu</div>
+        <div class="step-detail">Từ response Vietstock, chỉ giữ records có <code>ChannelID IN (13, 14, 15)</code>. Parse <code>GDKHQDate</code> thành <code>DATE</code>. Format <code>rate_display</code> từ <code>MainRate</code>. Bỏ qua record có <code>GDKHQDate</code> null hoặc không parse được.</div>
+      </div>
+    </div>
+
+    <div class="flow-step-row">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">UPSERT vào event_calendar</div>
+        <div class="step-detail"><code>INSERT INTO event_calendar ... ON CONFLICT (vietstock_event_id) DO UPDATE SET ...</code>. Idempotent — chạy lại nhiều lần không duplicate. Cập nhật <code>synced_at = NOW()</code> mỗi lần upsert.</div>
+      </div>
+    </div>
+
+    <div class="flow-step-row" style="background:#f0fdf4;">
+      <div class="step-num" style="background:var(--green);">5</div>
+      <div class="step-body">
+        <div class="step-title" style="color:var(--green);">Cập nhật stock_sync_tracker — đánh dấu đã gọi, set next_eligible_at</div>
+        <div class="step-detail">
+          Sau khi call Vietstock thành công (dù có hay không có events), <strong>INSERT hoặc UPDATE</strong> bảng <code>stock_sync_tracker</code>:<br>
+          <code>INSERT INTO stock_sync_tracker (stock_code, last_called_at, next_eligible_at, events_found)</code><br>
+          <code>VALUES (?, NOW(), DATE_ADD(NOW(), INTERVAL 6 MONTH), ?)</code><br>
+          <code>ON CONFLICT (stock_code) DO UPDATE SET last_called_at=NOW(), next_eligible_at=DATE_ADD(NOW(), INTERVAL 6 MONTH), events_found=?</code><br>
+          <strong>Quan trọng:</strong> Chỉ update tracker khi call Vietstock <em>thành công</em> (HTTP 200). Nếu call lỗi → không update tracker → mã sẽ được thử lại ở lần sync tiếp theo.
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-step-row">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <div class="step-title">Cleanup records cũ trong event_calendar</div>
+        <div class="step-detail"><code>DELETE FROM event_calendar WHERE gdkhq_date &lt; CURDATE()</code>. Chạy sau khi upsert xong. <em>Không</em> xóa <code>stock_sync_tracker</code> — bảng này cần giữ lại để skip logic hoạt động đúng.</div>
+      </div>
+    </div>
+
+    <div class="flow-step-row">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <div class="step-title">Ghi log & kiểm tra kết quả</div>
+        <div class="step-detail">Log: tổng mã trong danh mục, tổng mã bị skip (6-month), tổng mã được call, tổng events upserted, tổng lỗi, thời gian chạy. Alert nếu tỷ lệ lỗi > 20% tổng mã được call. Expose metric qua <code>/admin/sync/eventCalendar/status</code>.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 7. NHSV INTERNAL API ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🔌</div>
+    <h2>7. API Specification — Mobile App</h2>
+    <span class="sub">Base URL: /api/v1 · Auth: Bearer token · Đọc từ NHSV DB (không gọi Vietstock)</span>
+  </div>
+
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/eventCalendar/upcoming</span>
+      <span class="api-desc">Lấy danh sách sự kiện cổ tức trong 14 ngày tới</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Query Parameters</div>
+          <div class="param-row"><span class="pname">exchange</span><span class="ptype">string?</span><span class="pdesc">Filter theo sàn. Values: <code>HOSE</code> | <code>HNX</code> | <code>UPCOM</code>. Nếu null hoặc không truyền → trả tất cả sàn (Tất cả).</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response Body (200)</div>
+          <div class="param-row"><span class="pname">asOfDate</span><span class="ptype">date</span><span class="pdesc">Ngày hôm nay trên server. Mobile dùng để tính "N ngày nữa" và badge "HÔM NAY".</span></div>
+          <div class="param-row"><span class="pname">events</span><span class="ptype">Event[]</span><span class="pdesc">Danh sách sự kiện, sorted gdkhqDate ASC → stockCode ASC</span></div>
+          <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Tổng số sự kiện trong cửa sổ (theo filter hiện tại)</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <div class="pb-title" style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">Event object</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+          <div>
+            <div class="param-row"><span class="pname">eventId</span><span class="ptype">string</span><span class="pdesc">ID nội bộ. Dùng để gọi detail API.</span></div>
+            <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK, VD: "NFC"</span></div>
+            <div class="param-row"><span class="pname">companyName</span><span class="ptype">string?</span><span class="pdesc">Tên công ty (nullable)</span></div>
+            <div class="param-row"><span class="pname">exchange</span><span class="ptype">string</span><span class="pdesc">"HOSE" | "HNX" | "UPCOM"</span></div>
+          </div>
+          <div>
+            <div class="param-row"><span class="pname">eventType</span><span class="ptype">string</span><span class="pdesc">"CASH_DIVIDEND" | "STOCK_DIVIDEND"</span></div>
+            <div class="param-row"><span class="pname">eventTypeLabel</span><span class="ptype">string</span><span class="pdesc">Label hiển thị: "Cổ tức tiền mặt"…</span></div>
+            <div class="param-row"><span class="pname">gdkhqDate</span><span class="ptype">date</span><span class="pdesc">ISO date "YYYY-MM-DD"</span></div>
+            <div class="param-row"><span class="pname">rateDisplay</span><span class="ptype">string</span><span class="pdesc">Tỷ lệ đã format: "10%" hoặc "1,500 VNĐ/CP"</span></div>
+            <div class="param-row"><span class="pname">isToday</span><span class="ptype">bool</span><span class="pdesc">true nếu gdkhqDate = asOfDate → Mobile show badge "HÔM NAY"</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px; padding:8px 12px; background:#f8fafc; border-radius:6px; font-size:11.5px; color:var(--slate);">
+        <strong>BE filter:</strong> <code>WHERE gdkhq_date &gt;= CURDATE() AND gdkhq_date &lt;= DATE_ADD(CURDATE(), INTERVAL 14 DAY)</code><br>
+        <strong>Empty response:</strong> Trả <code>{"asOfDate":"...","events":[],"totalCount":0}</code> — không trả 404. Mobile hiển thị empty state.<br>
+        <strong>Cache:</strong> Response có thể cache 30 phút (TTL) vì dữ liệu chỉ thay đổi sau sync job buổi sáng.
+      </div>
+      <div style="margin-top:10px; padding:8px 12px; background:#fff1f2; border:1px solid #fecdd3; border-radius:6px; font-size:11.5px; color:#9f1239;">
+        <strong>Error responses:</strong><br>
+        <code>401 UNAUTHORIZED</code> — Token hết hạn hoặc không có. Response: <code>{"code":"UNAUTHORIZED"}</code><br>
+        <code>403 FORBIDDEN</code> — Không có quyền truy cập endpoint.<br>
+        <code>500 INTERNAL_SERVER_ERROR</code> — Lỗi server / DB. Response: <code>{"code":"INTERNAL_SERVER_ERROR"}</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail API -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/eventCalendar/{eventId}</span>
+      <span class="api-desc">Lấy chi tiết 1 sự kiện — dùng cho màn hình detail</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Path Parameter</div>
+          <div class="param-row"><span class="pname">eventId</span><span class="ptype">string</span><span class="pdesc">ID nội bộ của sự kiện (lấy từ list response)</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response Body (200)</div>
+          <div class="param-row"><span class="pname">eventId</span><span class="ptype">string</span><span class="pdesc">ID sự kiện</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK</span></div>
+          <div class="param-row"><span class="pname">companyName</span><span class="ptype">string?</span><span class="pdesc">Tên đầy đủ công ty</span></div>
+          <div class="param-row"><span class="pname">exchange</span><span class="ptype">string</span><span class="pdesc">"HOSE" | "HNX" | "UPCOM"</span></div>
+          <div class="param-row"><span class="pname">eventType</span><span class="ptype">string</span><span class="pdesc">"CASH_DIVIDEND" | "STOCK_DIVIDEND"</span></div>
+          <div class="param-row"><span class="pname">eventTypeLabel</span><span class="ptype">string</span><span class="pdesc">Label tiếng Việt</span></div>
+          <div class="param-row"><span class="pname">gdkhqDate</span><span class="ptype">date</span><span class="pdesc">Ngày GDKHQ — ISO date</span></div>
+          <div class="param-row"><span class="pname">ndkccDate</span><span class="ptype">date?</span><span class="pdesc">Ngày ĐKCC (nullable)</span></div>
+          <div class="param-row"><span class="pname">rateDisplay</span><span class="ptype">string</span><span class="pdesc">Tỷ lệ đã format để hiển thị</span></div>
+          <div class="param-row"><span class="pname">isToday</span><span class="ptype">bool</span><span class="pdesc">true nếu gdkhqDate = today</span></div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding:8px 12px; background:#f8fafc; border-radius:6px; font-size:11.5px; color:var(--slate);">
+        <strong>Error 404:</strong> <code>{"code":"OBJECT_NOT_FOUND"}</code> nếu eventId không tồn tại hoặc đã cleanup (gdkhqDate đã qua).<br>
+        <strong>Deep link:</strong> Endpoint này cũng được gọi khi user tap push notification → app mở thẳng màn hình detail.
+      </div>
+    </div>
+  </div>
+
+  <!-- Push Notification Spec -->
+  <div class="card" style="margin-top:14px; border-left:3px solid var(--teal);">
+    <div class="card-title">🔔 Push Notification — Spec tích hợp OneSignal</div>
+    <div class="card-body">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:8px;">
+        <div>
+          <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">Trigger & Lịch gửi</div>
+          <div style="font-size:12px; color:#374151; line-height:1.8;">
+            <div>• <strong>Thời điểm gửi:</strong> D-1 (ngày hôm trước GDKHQ), lúc 08:00 ICT</div>
+            <div>• <strong>Job:</strong> Chạy hàng ngày lúc 07:50 ICT, query sự kiện có <code>gdkhq_date = CURDATE() + 1</code></div>
+            <div>• <strong>Platform:</strong> OneSignal (đã tích hợp sẵn trong NHSV Pro)</div>
+            <div>• <strong>Segment:</strong> Toàn bộ user có app → xem Open Q #5</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">Nội dung notification</div>
+          <div style="background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:10px; font-size:12px;">
+            <div style="font-weight:600; color:#0f2744; margin-bottom:4px;">📅 Sự kiện ngày mai — {stockCode}</div>
+            <div style="color:#374151; font-size:11.5px;">{companyName} thực hiện {eventTypeLabel} với tỷ lệ {rateDisplay}. GDKHQ: {gdkhqDate}.</div>
+            <div style="margin-top:6px; font-size:10px; color:var(--muted);">VD: "VCB thực hiện Cổ tức tiền mặt với tỷ lệ 15%. GDKHQ: 12/06/2026."</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:10px; padding:8px 12px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:11.5px; color:#14532d;">
+        <strong>Deep link:</strong> Tap notification → mở app → navigate thẳng đến <code>GET /eventCalendar/{eventId}</code> (màn hình detail của sự kiện đó). BE cần đính kèm <code>eventId</code> vào OneSignal notification data payload.
+      </div>
+    </div>
+  </div>
+
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/admin/sync/eventCalendar/status</span>
+      <span class="api-desc">Kiểm tra trạng thái sync job (nội bộ / IT monitoring)</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Response</div>
+          <div class="param-row"><span class="pname">lastSyncAt</span><span class="ptype">datetime</span><span class="pdesc">Lần sync thành công gần nhất</span></div>
+          <div class="param-row"><span class="pname">totalEvents</span><span class="ptype">int</span><span class="pdesc">Số records hiện tại trong event_calendar</span></div>
+          <div class="param-row"><span class="pname">totalTracked</span><span class="ptype">int</span><span class="pdesc">Tổng số mã đã được call Vietstock (trong tracker)</span></div>
+          <div class="param-row"><span class="pname">totalSkipped</span><span class="ptype">int</span><span class="pdesc">Số mã bị skip do 6-month window (next_eligible_at > NOW())</span></div>
+          <div class="param-row"><span class="pname">nextSyncAt</span><span class="ptype">datetime</span><span class="pdesc">Lần sync tiếp theo theo lịch</span></div>
+          <div class="param-row"><span class="pname">lastError</span><span class="ptype">string?</span><span class="pdesc">Lỗi gần nhất nếu có</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Mục đích</div>
+          <div class="param-row"><span class="pname" style="min-width:0">—</span><span class="ptype"></span><span class="pdesc">Endpoint nội bộ cho IT monitor. Không expose ra mobile app. Dùng để debug khi dữ liệu calendar bị stale.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 8. WORK BREAKDOWN ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🏗️</div>
+    <h2>8. Work Breakdown — Subtasks</h2>
+    <span class="sub">3 layers: BE · Mobile FE · QA (không có Admin FE — dữ liệu sync tự động)</span>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+
+    <!-- BE -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--blue); color:white;">⚙️ Backend (BE)</div>
+      <ul class="task-list">
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-01</span>
+          <div class="task-content">
+            <div class="t-name">DB: Tạo bảng event_calendar + stock_sync_tracker + migration</div>
+            <div class="t-note">2 bảng theo mục 4. Index gdkhq_date, UNIQUE vietstock_event_id, PK stock_code trên tracker.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-02</span>
+          <div class="task-content">
+            <div class="t-name">Vietstock sync job (có 6-month skip)</div>
+            <div class="t-note">Cron 06:00 ICT. Bước 1: LEFT JOIN tracker, chỉ lấy mã IS NULL hoặc next_eligible_at ≤ NOW(). Bước 5: UPSERT tracker sau mỗi call thành công. Concurrent + retry. Log bao gồm số mã bị skip.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-03</span>
+          <div class="task-content">
+            <div class="t-name">Cleanup job: xóa records đã qua ngày</div>
+            <div class="t-note">DELETE WHERE gdkhq_date &lt; CURDATE(). Chạy sau sync hoặc cron riêng.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-04</span>
+          <div class="task-content">
+            <div class="t-name">API: GET /eventCalendar/upcoming</div>
+            <div class="t-note">Filter 14 ngày tới, exchange filter, sort ASC, trả isToday flag. Cache 30 phút.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-05</span>
+          <div class="task-content">
+            <div class="t-name">Monitor endpoint: GET /admin/sync/eventCalendar/status</div>
+            <div class="t-note">Trả lastSyncAt, totalEvents, nextSyncAt, lastError. Auth: admin only.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-06</span>
+          <div class="task-content">
+            <div class="t-name">API: GET /eventCalendar/{eventId} (detail)</div>
+            <div class="t-note">Trả đủ fields kể cả ndkccDate. 404 nếu đã cleanup. Dùng cho detail screen và push notification deep link.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-07</span>
+          <div class="task-content">
+            <div class="t-name">Push notification job (OneSignal)</div>
+            <div class="t-note">Cron 07:50 ICT hàng ngày. Query gdkhq_date = CURDATE()+1, gửi notification kèm eventId cho deep link. Xem segment ở Open Q #5.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-08</span>
+          <div class="task-content">
+            <div class="t-name">Exchange filter support</div>
+            <div class="t-note">WHERE exchange = ? khi param không null. Đảm bảo index (gdkhq_date, exchange) để query nhanh.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Mobile FE -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--teal); color:white;">📱 Mobile FE</div>
+      <ul class="task-list">
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-01</span>
+          <div class="task-content">
+            <div class="t-name">Event calendar section trên Home screen</div>
+            <div class="t-note">Vị trí thứ 3 (sau Hoạt động tích cực). Section header "📅 Lịch sự kiện".</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-02</span>
+          <div class="task-content">
+            <div class="t-name">Date group header component</div>
+            <div class="t-note">"HÔM NAY · DD/MM" (teal), "Ngày mai · DD/MM", "Tx · DD/MM · N ngày nữa". Logic từ asOfDate.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-03</span>
+          <div class="task-content">
+            <div class="t-name">Event card component (tappable)</div>
+            <div class="t-note">Ô mã CK, eventTypeLabel, gdkhqDate, rateDisplay (green). Badge "HÔM NAY" nếu isToday. Tap → navigate detail.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-04</span>
+          <div class="task-content">
+            <div class="t-name">Empty state + Loading skeleton</div>
+            <div class="t-note">Empty state áp dụng cả khi filter sàn không có sự kiện. Skeleton 3–4 card khi loading.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-05</span>
+          <div class="task-content">
+            <div class="t-name">Error state + refresh</div>
+            <div class="t-note">Khi API lỗi: "Không thể tải dữ liệu" + nút thử lại. Không crash section Home khác.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-06</span>
+          <div class="task-content">
+            <div class="t-name">Exchange filter bar</div>
+            <div class="t-note">4 pills: Tất cả (default, navy) | HOSE | HNX | Upcom. Khi đổi: gọi lại API với param exchange hoặc re-filter client-side.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-07</span>
+          <div class="task-content">
+            <div class="t-name">Event detail screen</div>
+            <div class="t-note">Hero card (mã + tên + exchange) + dates card (GDKHQ + ĐKCC) + info card + disclaimer + CTA "Xem cổ phiếu →". Variant CASH vs STOCK_DIVIDEND.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-08</span>
+          <div class="task-content">
+            <div class="t-name">Push notification deep link handler</div>
+            <div class="t-note">Khi user tap notification: parse eventId từ OneSignal payload → gọi GET /eventCalendar/{eventId} → mở detail screen. Handle trường hợp app closed vs background.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-09</span>
+          <div class="task-content">
+            <div class="t-name">Filter state persistence khi back từ detail</div>
+            <div class="t-note">Khi user back từ detail screen về list, filter sàn đang chọn phải được giữ nguyên (không reset về Tất cả).</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- QA -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--green); color:white;">🧪 QA</div>
+      <ul class="task-list">
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-01</span>
+          <div class="task-content">
+            <div class="t-name">Test: window 14 ngày đúng</div>
+            <div class="t-note">Boundary: today+14 hiện, today+15 không. Kiểm tra cả khi filter sàn.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-02</span>
+          <div class="task-content">
+            <div class="t-name">Test: isToday flag và badge "HÔM NAY"</div>
+            <div class="t-note">Badge đỏ xuất hiện đúng. Section header "HÔM NAY" ở đầu. Sort hôm nay trước ngày mai.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-03</span>
+          <div class="task-content">
+            <div class="t-name">Test: sự kiện quá hạn không hiển thị</div>
+            <div class="t-note">Hôm qua không xuất hiện. Kiểm tra API level và UI level.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-04</span>
+          <div class="task-content">
+            <div class="t-name">Test: sync job + data accuracy</div>
+            <div class="t-note">Data khớp Vietstock. Không duplicate. Cleanup đúng. lastSyncAt cập nhật.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-05</span>
+          <div class="task-content">
+            <div class="t-name">Test: exchange filter</div>
+            <div class="t-note">Chọn HOSE → chỉ hiện mã HOSE. Chọn Tất cả → hiện lại đủ. Empty state khi sàn không có sự kiện trong 14 ngày.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-06</span>
+          <div class="task-content">
+            <div class="t-name">Test: detail screen</div>
+            <div class="t-note">Đủ fields. Variant CASH vs STOCK: màu pill và label đúng. ndkccDate null → ẩn row. CTA navigate đúng.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-07</span>
+          <div class="task-content">
+            <div class="t-name">Test: push notification + deep link</div>
+            <div class="t-note">Notification gửi đúng D-1. Tap → mở detail đúng sự kiện. Handle app closed: mở detail thay vì Home. eventId trong payload hợp lệ.</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-08</span>
+          <div class="task-content">
+            <div class="t-name">Test: filter state persistence</div>
+            <div class="t-note">Chọn HNX → tap vào card → back → filter vẫn là HNX. Không reset về Tất cả.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 9. OPEN QUESTIONS ===== -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">⚠️</div>
+    <h2>9. Open Questions</h2>
+    <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev</span>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">1</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Vietstock API rate limit & giải pháp bulk call</div>
+      <div class="oq-note">
+        Vietstock <code>stockevents</code> yêu cầu từng mã CK — không có bulk endpoint. Với ~1,700+ mã niêm yết, sync job sẽ cần ~1,700 API calls/ngày. Cần xác nhận với Vietstock: (a) Rate limit per minute/hour là bao nhiêu? (b) Có endpoint nào trả events cho <em>toàn thị trường</em> theo khoảng ngày không? Nếu không có và rate limit thấp → có thể giới hạn sync chỉ với subset mã (ví dụ chỉ HOSE ~400 mã, hoặc danh sách mã NHSV đang cover).
+      </div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: BE Lead + IT</span><span class="tag tag-block">Blocking BE-02</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">2</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Format của MainRate từ Vietstock</div>
+      <div class="oq-note">
+        Cần xác nhận: <code>MainRate = 10</code> nghĩa là 10%/VĐL hay 0.1 (=10%)? Với cash dividend (ChannelID=13): MainRate có thể là số tiền VNĐ/CP (VD: 1500) hay tỷ lệ %? Cách format <code>rate_display</code> hoàn toàn phụ thuộc vào câu trả lời này. Đề xuất: test với 2–3 mã cụ thể đã biết cổ tức (VD: VCB, REE) trên Vietstock demo env để verify.
+      </div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: BE Lead</span><span class="tag tag-block">Blocking rate_display logic</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">3</div>
+    <div class="oq-content">
+      <div class="oq-q">[Non-blocking] Danh sách mã CK để sync</div>
+      <div class="oq-note">
+        Sync toàn bộ HOSE+HNX+Upcom (~1,700 mã) hay chỉ một subset? Options: (a) Toàn bộ thị trường — đầy đủ nhất; (b) Chỉ HOSE (~400 mã) — đơn giản hơn, cover ~80% vốn hóa; (c) Danh sách mã NHSV đang có giao dịch active — bám sát nhu cầu khách hàng thực tế. Quyết định này ảnh hưởng đến thời gian chạy sync job và số API calls Vietstock.
+      </div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM + IT</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">5</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Push notification: gửi cho toàn bộ user hay chỉ user đang hold mã đó?</div>
+      <div class="oq-note">
+        Hiện tại spec đề xuất gửi cho toàn bộ user (segment = all). Điều này đơn giản về mặt kỹ thuật nhưng có thể gây spam nếu user không có mã đó trong danh mục. Options: (a) <strong>Toàn bộ user</strong> — dễ implement, phù hợp vì Event Calendar là tính năng public; (b) <strong>Chỉ user đang hold mã</strong> — cần join với bảng portfolio, phức tạp hơn nhưng UX tốt hơn; (c) <strong>User tự chọn opt-in</strong> — ngoài scope v1 nhưng là hướng tốt nhất dài hạn. Cần PM quyết định trước khi BE-07 estimate.
+      </div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM</span><span class="tag tag-block">Blocking BE-07</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="doc-footer">
+  <div>NHSV Pro · A-02 Event Calendar Feature Spec · v1.1</div>
+  <div>17 tasks (8 BE · 9 Mobile FE) · 8 QA tasks · 5 open questions</div>
+</div>
+
+</div>
+</body>
+</html>

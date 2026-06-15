@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-05 · Khuyến nghị — Feature Spec</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:#0f2744; --blue:#1a4a8a; --blue-light:#dbeafe;
+    --teal:#0e7490; --teal-light:#ccfbf1;
+    --violet:#5b21b6; --violet-light:#ede9fe;
+    --green:#0f766e; --green-light:#d1fae5;
+    --amber:#b45309; --amber-light:#fef3c7;
+    --red:#be123c; --red-light:#ffe4e6;
+    --gold:#d97706; --gold-light:#fef3c7;
+    --slate:#475569; --muted:#94a3b8; --border:#e2e8f0; --bg:#f8fafc;
+  }
+  body { font-family:'Inter',sans-serif; background:var(--bg); color:#1e293b; font-size:13px; line-height:1.65; }
+
+  /* Header */
+  .doc-header { background:linear-gradient(135deg,var(--navy) 0%,#1e3a6e 100%); color:white; padding:36px 48px 30px; border-bottom:4px solid var(--teal); }
+  .eyebrow { font-size:10px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#93c5fd; margin-bottom:8px; }
+  .doc-header h1 { font-size:26px; font-weight:700; margin-bottom:4px; }
+  .subtitle { font-size:13px; color:#cbd5e1; margin-bottom:20px; }
+  .meta-row { display:flex; gap:28px; flex-wrap:wrap; }
+  .meta-item { font-size:11px; color:#94a3b8; }
+  .meta-item strong { color:#e2e8f0; font-weight:600; }
+
+  /* Summary */
+  .summary-bar { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
+  .sum-card { background:white; padding:16px 20px; text-align:center; }
+  .sum-card .num { font-size:24px; font-weight:700; line-height:1; margin-bottom:3px; }
+  .sum-card .lbl { font-size:10px; color:var(--slate); font-weight:500; }
+  .c-blue{color:var(--blue);} .c-teal{color:var(--teal);} .c-violet{color:var(--violet);} .c-green{color:var(--green);} .c-amber{color:var(--amber);}
+
+  /* Layout */
+  .content { padding:32px 48px 60px; }
+  .section { margin-bottom:36px; }
+  .section-hdr { display:flex; align-items:center; gap:10px; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid var(--border); }
+  .section-hdr .icon { width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+  .section-hdr h2 { font-size:16px; font-weight:700; color:var(--navy); }
+  .section-hdr .sub { font-size:12px; color:var(--muted); margin-left:4px; }
+
+  /* Cards */
+  .card { background:white; border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .card-title { font-size:13px; font-weight:600; color:var(--navy); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .card-body { font-size:12.5px; color:#374151; line-height:1.65; }
+
+  /* Sub-tab overview */
+  .subtab-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:16px; }
+  .subtab-card { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .subtab-hdr { padding:12px 16px; font-size:13px; font-weight:700; color:white; }
+  .subtab-body { padding:14px 16px; font-size:12px; color:#374151; line-height:1.7; }
+  .subtab-body .row { display:flex; gap:6px; margin-bottom:4px; }
+  .subtab-body .lbl { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.7px; color:var(--muted); min-width:80px; margin-top:1px; }
+
+  /* Benchmark table */
+  .bm-table { width:100%; border-collapse:collapse; font-size:12px; background:white; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+  .bm-table thead tr { background:var(--navy); color:white; }
+  .bm-table th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; }
+  .bm-table td { padding:9px 14px; border-bottom:1px solid var(--border); vertical-align:top; font-size:12px; }
+  .bm-table tbody tr:last-child td { border-bottom:none; }
+  .bm-table tbody tr:nth-child(even) { background:#f8fafc; }
+
+  /* Rating badge */
+  .rating { display:inline-block; width:22px; height:22px; border-radius:4px; text-align:center; line-height:22px; font-size:11px; font-weight:700; }
+  .r-S { background:#fef3c7; color:#92400e; }
+  .r-A { background:var(--green-light); color:var(--green); }
+  .r-B { background:var(--blue-light); color:var(--blue); }
+  .r-C { background:var(--amber-light); color:var(--amber); }
+  .r-D { background:var(--red-light); color:var(--red); }
+
+  /* Screen spec */
+  .screen-spec { display:grid; grid-template-columns:220px 1fr; gap:18px; background:white; border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:14px; }
+  .phone-mockup { background:#1e293b; border-radius:16px; padding:10px; min-height:280px; }
+  .phone-screen { background:white; border-radius:10px; padding:10px; min-height:280px; }
+  .phone-bar { background:var(--navy); color:white; padding:6px 10px; font-size:9px; font-weight:600; border-radius:6px 6px 0 0; margin:-10px -10px 8px -10px; }
+
+  /* AC list */
+  .ac-list { list-style:none; }
+  .ac-item { padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:12px; color:#374151; display:flex; gap:8px; }
+  .ac-item:last-child { border-bottom:none; }
+  .ac-item::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; width:16px; }
+
+  /* Data table */
+  .data-table { width:100%; border-collapse:collapse; font-size:12px; background:white; border-radius:8px; overflow:hidden; border:1px solid var(--border); margin-bottom:14px; }
+  .data-table thead tr { background:var(--navy); color:white; }
+  .data-table th { padding:9px 14px; text-align:left; font-size:11px; font-weight:600; }
+  .data-table td { padding:9px 14px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .data-table tbody tr:last-child td { border-bottom:none; }
+  .data-table tbody tr:nth-child(even) { background:#f8fafc; }
+  .data-table td:first-child { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); font-weight:500; }
+  .data-table .type { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); }
+  .req-y { font-size:10px; padding:2px 7px; border-radius:20px; font-weight:500; background:var(--red-light); color:var(--red); }
+  .req-n { font-size:10px; padding:2px 7px; border-radius:20px; font-weight:500; background:#f1f5f9; color:var(--slate); }
+
+  /* API */
+  .api-block { background:white; border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
+  .api-hdr { padding:12px 18px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); background:#fafbfc; }
+  .method { font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:600; padding:3px 9px; border-radius:5px; flex-shrink:0; }
+  .GET { background:#d1fae5; color:#065f46; }
+  .POST { background:#dbeafe; color:#1e40af; }
+  .PUT { background:#fef3c7; color:#92400e; }
+  .DEL { background:#fee2e2; color:#991b1b; }
+  .api-path { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--navy); font-weight:500; }
+  .api-desc { font-size:12px; color:var(--slate); margin-left:auto; }
+  .api-body { padding:14px 18px; }
+  .param-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .pb-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px; }
+  .param-row { display:flex; gap:8px; margin-bottom:5px; align-items:flex-start; }
+  .pname { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--blue); min-width:150px; }
+  .ptype { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); min-width:80px; }
+  .pdesc { font-size:11px; color:var(--slate); }
+
+  /* Work breakdown */
+  .layer-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .layer-card { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .layer-hdr { padding:10px 16px; font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+  .task-list { list-style:none; }
+  .task-item { padding:9px 16px; border-bottom:1px solid var(--border); display:flex; align-items:flex-start; gap:10px; }
+  .task-item:last-child { border-bottom:none; }
+  .task-id { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:500; padding:2px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0; margin-top:1px; }
+  .t-name { font-size:12.5px; font-weight:500; color:#1e293b; }
+  .t-note { font-size:11px; color:var(--slate); margin-top:2px; }
+
+  /* Open Q */
+  .oq-card { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:12px 16px; margin-bottom:10px; display:flex; gap:10px; }
+  .oq-num { width:22px; height:22px; background:#f59e0b; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+  .oq-q { font-size:12.5px; font-weight:600; color:#78350f; margin-bottom:3px; }
+  .oq-note { font-size:11.5px; color:#92400e; }
+  .oq-tags { display:flex; gap:5px; margin-top:5px; }
+  .tag { font-size:10px; padding:2px 8px; border-radius:20px; font-weight:500; display:inline-block; }
+  .tag-open { background:var(--amber-light); color:var(--amber); }
+  .tag-block { background:var(--red-light); color:var(--red); }
+
+  /* Notes */
+  .note-info { padding:10px 14px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:7px; font-size:12px; color:#0c4a6e; margin-top:10px; }
+  .note-warn { padding:10px 14px; background:var(--amber-light); border:1px solid #fcd34d; border-radius:7px; font-size:12px; color:#78350f; margin-top:10px; }
+  .note-disclaimer { padding:10px 14px; background:#fafafa; border:1px solid var(--border); border-radius:7px; font-size:11px; color:var(--slate); margin-top:10px; font-style:italic; }
+
+  /* Excel upload flow */
+  .flow-box { background:white; border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:12px; }
+  .flow-row { display:flex; align-items:flex-start; gap:14px; padding:11px 16px; border-bottom:1px solid var(--border); }
+  .flow-row:last-child { border-bottom:none; }
+  .step-num { width:24px; height:24px; border-radius:50%; color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+  .step-title { font-size:12.5px; font-weight:600; color:var(--navy); margin-bottom:3px; }
+  .step-detail { font-size:11.5px; color:var(--slate); line-height:1.6; }
+  .step-detail code { font-family:'JetBrains Mono',monospace; font-size:11px; background:#f1f5f9; color:var(--blue); padding:1px 5px; border-radius:3px; }
+
+  hr { border:none; border-top:1px solid var(--border); margin:28px 0; }
+  .doc-footer { margin-top:48px; padding-top:16px; border-top:2px solid var(--border); display:flex; justify-content:space-between; font-size:11px; color:var(--muted); }
+
+  @media print {
+    body { background:white; font-size:11px; }
+    .content { padding:16px 28px; }
+    .doc-header { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · Feature Spec · A-05</div>
+  <h1>Khuyến nghị — Recommendation Tab</h1>
+  <div class="subtitle">3 sub-tabs · Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày · Nhiều nguồn dữ liệu</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Module</strong> · A-05 (Home Screen)</div>
+    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.0</div>
+    <div class="meta-item"><strong>Admin URL</strong> · tnhsvpro.nhsv.vn/nhsv-admin</div>
+    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+  </div>
+</div>
+
+<!-- SUMMARY BAR -->
+<div class="summary-bar">
+  <div class="sum-card"><div class="num c-blue">3</div><div class="lbl">Sub-tabs</div></div>
+  <div class="sum-card"><div class="num c-teal">10</div><div class="lbl">BE tasks</div></div>
+  <div class="sum-card"><div class="num c-teal">8</div><div class="lbl">Mobile FE tasks</div></div>
+  <div class="sum-card"><div class="num c-violet">6</div><div class="lbl">Admin FE tasks</div></div>
+  <div class="sum-card"><div class="num c-amber">3</div><div class="lbl">Open questions</div></div>
+</div>
+
+<div class="content">
+
+<!-- 1. OVERVIEW -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#dbeafe">📋</div>
+    <h2>1. Overview — 3 Sub-tabs & Nguồn dữ liệu</h2>
+  </div>
+  <div class="subtab-grid">
+    <div class="subtab-card">
+      <div class="subtab-hdr" style="background:var(--blue);">① Danh mục cơ bản</div>
+      <div class="subtab-body">
+        <div class="row"><span class="lbl">Nội dung</span>Danh sách cổ phiếu được khuyến nghị: giá kỳ vọng, % tiềm năng, ngày khuyến nghị, báo cáo PDF</div>
+        <div class="row"><span class="lbl">Nguồn</span>Phòng Phân tích (giá kỳ vọng, %) + market feed (giá hiện tại realtime)</div>
+        <div class="row"><span class="lbl">Upload</span>Admin nhập tay từng mã qua nhsv-admin</div>
+        <div class="row"><span class="lbl">Tần suất</span>Khi Phòng PT có khuyến nghị mới (không cố định)</div>
+        <div class="row"><span class="lbl">Filter</span>Bluechip / Midcap / Tất cả + Search theo mã</div>
+      </div>
+    </div>
+    <div class="subtab-card">
+      <div class="subtab-hdr" style="background:var(--violet);">② NHSV Rating</div>
+      <div class="subtab-body">
+        <div class="row"><span class="lbl">Nội dung</span>Bảng đánh giá cổ phiếu theo thang S→A→B→C→D (Cơ bản + Thị trường)</div>
+        <div class="row"><span class="lbl">Nguồn</span>Phòng QTRR gửi file Excel danh mục ký quỹ</div>
+        <div class="row"><span class="lbl">Upload</span>Admin upload file Excel → hệ thống parse + replace toàn bộ batch</div>
+        <div class="row"><span class="lbl">Tần suất</span>~1 lần/tháng</div>
+        <div class="row"><span class="lbl">Filter</span>Search theo mã (bắt buộc)</div>
+      </div>
+    </div>
+    <div class="subtab-card">
+      <div class="subtab-hdr" style="background:var(--teal);">③ Kỹ thuật hằng ngày</div>
+      <div class="subtab-body">
+        <div class="row"><span class="lbl">Nội dung</span>Khuyến nghị kỹ thuật ngắn hạn: vùng mua, giá kỳ vọng, cắt lỗ, upsize</div>
+        <div class="row"><span class="lbl">Nguồn</span>Vietstock → Phòng Phân tích xử lý thủ công → upload qua admin tool</div>
+        <div class="row"><span class="lbl">Upload</span>Admin nhập tay hàng ngày (mỗi mã 1 entry) — automation-ready</div>
+        <div class="row"><span class="lbl">Tần suất</span>Mỗi phiên giao dịch (~daily)</div>
+        <div class="row"><span class="lbl">Filter</span>Ngày giao dịch (default hôm nay) + Search theo mã</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="card">
+      <div class="card-title" style="color:var(--green)">✅ Trong scope (v1)</div>
+      <div class="card-body">
+        <ul style="list-style:none; line-height:2">
+          <li>• Danh mục cơ bản: list + detail screen + PDF download</li>
+          <li>• NHSV Rating: bảng đánh giá + search theo mã</li>
+          <li>• Kỹ thuật hằng ngày: list hôm nay + detail</li>
+          <li>• Search theo mã CK cho cả 3 sub-tabs</li>
+          <li>• Admin: CRUD Danh mục + Excel upload Rating + CRUD Daily</li>
+          <li>• Automation-ready field <code>dataSource</code> cho Kỹ thuật hằng ngày</li>
+          <li>• Disclaimer footer trên mọi màn hình khuyến nghị</li>
+          <li>• Tap mã CK → navigate stock detail screen</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="color:var(--red)">❌ Ngoài scope (v1)</div>
+      <div class="card-body">
+        <ul style="list-style:none; line-height:2">
+          <li>• Auto pipeline từ Vietstock (để v2)</li>
+          <li>• Track record / accuracy rate của từng khuyến nghị</li>
+          <li>• Alert khi đạt target price hoặc stop loss</li>
+          <li>• Lịch sử khuyến nghị đã kết thúc</li>
+          <li>• So sánh nhiều mã cùng lúc</li>
+          <li>• Portfolio P&L từ khuyến nghị</li>
+          <li>• Approval workflow nhiều bước</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. BENCHMARK -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">🏆</div>
+    <h2>2. Competitive Benchmark</h2>
+    <span class="sub">Các CTCK hàng đầu Việt Nam — best practices tham khảo</span>
+  </div>
+  <table class="bm-table">
+    <thead>
+      <tr><th>CTCK</th><th>Danh mục cơ bản</th><th>Rating system</th><th>Kỹ thuật hằng ngày</th><th>Điểm đáng học</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>SSI iBoard</strong></td>
+        <td>Nhận định cổ phiếu, target price rõ, % upside nổi bật. Filter Bluechip/Midcap.</td>
+        <td>Không có rating chữ cái riêng — dùng "BUY/ADD/HOLD/REDUCE/SELL"</td>
+        <td><strong>"Mua gì hôm nay?"</strong> — format card gọn: Vùng mua + Mục tiêu + % lãi + Cắt lỗ. Ngày stamp rõ ràng.</td>
+        <td>Date stamp nổi bật; layout card simple + scannable; disclaimer luôn có</td>
+      </tr>
+      <tr>
+        <td><strong>KBSV</strong></td>
+        <td>KBSV Research: filter Bluechip/Midcap, card 2 cột. Giá hiện tại + Giá mục tiêu song song.</td>
+        <td><strong>KB Rating</strong> (S/A/B/C/D) — Cơ bản + Kỹ thuật + Tổng. Bảng có thể sort.</td>
+        <td>Khuyến nghị kỹ thuật ngắn hạn — layout tương tự SSI nhưng thêm "Upsize" level</td>
+        <td>Rating bảng là UX tham chiếu trực tiếp; dual-column card cho Danh mục</td>
+      </tr>
+      <tr>
+        <td><strong>VNDIRECT</strong></td>
+        <td>DSMART: stock filter mạnh, show % upside + ngày khuyến nghị + analyst name</td>
+        <td>Rating theo target price band, không dùng chữ cái</td>
+        <td>Daily calls kèm technical chart thumbnail</td>
+        <td>Analyst name → tăng trust; search bar luôn visible trên đầu danh sách</td>
+      </tr>
+      <tr>
+        <td><strong>TCBS</strong></td>
+        <td>Tích hợp với TCwealth robo-advisor — phân loại theo risk profile</td>
+        <td>Rating theo sector — không per-stock</td>
+        <td>Ít push daily technical; focus dài hạn hơn</td>
+        <td>Risk-based segmentation; màu sắc phân tier rõ (green=mua, amber=giữ, red=bán)</td>
+      </tr>
+      <tr>
+        <td><strong>MBS Mobile</strong></td>
+        <td>Nhận định với báo cáo PDF đính kèm trực tiếp trên card</td>
+        <td>Không prominent</td>
+        <td>Technical signals (RSI, MACD) tự động từ session — không manual picks</td>
+        <td>PDF link trực tiếp trên list card (không cần vào detail để tải)</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note-info" style="margin-top:12px;">
+    <strong>Điểm chung của tất cả các CTCK:</strong> (1) Disclaimer luôn xuất hiện ở cuối màn hình khuyến nghị — đây là yêu cầu pháp lý; (2) Search theo mã là standard; (3) % upside/downside phải nổi bật với màu xanh/đỏ; (4) Ngày khuyến nghị phải hiện rõ; (5) Link PDF report trực tiếp từ card.
+  </div>
+</div>
+
+<!-- 3. SCREEN SPECS -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ccfbf1">📱</div>
+    <h2>3. Screen Specs — Mobile App</h2>
+  </div>
+
+  <!-- Screen 3.1: Danh mục cơ bản -->
+  <div class="screen-spec">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Screen 3.1</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">Danh mục cơ bản</div>
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-bar">← Khuyến nghị</div>
+          <!-- Sub-tab buttons -->
+          <div style="display:flex;gap:3px;margin-bottom:7px;">
+            <div style="background:#0f2744;color:white;font-size:7px;padding:2px 6px;border-radius:20px;font-weight:600;">Danh mục</div>
+            <div style="background:#f1f5f9;color:#475569;font-size:7px;padding:2px 6px;border-radius:20px;">Rating</div>
+            <div style="background:#f1f5f9;color:#475569;font-size:7px;padding:2px 6px;border-radius:20px;">Kỹ thuật</div>
+          </div>
+          <!-- Filter + search -->
+          <div style="display:flex;gap:4px;margin-bottom:7px;">
+            <div style="background:#0f2744;color:white;font-size:7px;padding:2px 7px;border-radius:20px;font-weight:600;">Tất cả</div>
+            <div style="background:#f1f5f9;color:#475569;font-size:7px;padding:2px 7px;border-radius:20px;">Bluechip</div>
+            <div style="background:#f1f5f9;color:#475569;font-size:7px;padding:2px 7px;border-radius:20px;">Midcap</div>
+            <div style="margin-left:auto;background:#f1f5f9;color:#94a3b8;font-size:7px;padding:2px 7px;border-radius:20px;">🔍 Mã CK</div>
+          </div>
+          <!-- Card 1 -->
+          <div style="border:1px solid #e2e8f0;border-radius:7px;padding:7px;margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#0f2744;">VCB</div>
+                <div style="font-size:7px;color:#475569;">Vietcombank · HOSE</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:9px;font-weight:700;color:#0f766e;">+25.44%</div>
+                <div style="font-size:7px;color:#475569;">tiềm năng</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-bottom:5px;">
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">Giá HT</div>
+                <div style="font-size:8px;font-weight:600;color:#0f2744;">31,800</div>
+              </div>
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">Kỳ vọng</div>
+                <div style="font-size:8px;font-weight:600;color:#0e7490;">40,000</div>
+              </div>
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">KN</div>
+                <div style="font-size:7px;font-weight:600;color:#0f2744;">04/06/26</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="background:#dbeafe;color:#1a4a8a;font-size:6px;font-weight:600;padding:1px 6px;border-radius:10px;">BLUECHIP</div>
+              <div style="background:#0f2744;color:white;font-size:7px;padding:2px 8px;border-radius:5px;">📄 Báo cáo</div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div style="border:1px solid #e2e8f0;border-radius:7px;padding:7px;margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+              <div>
+                <div style="font-size:9px;font-weight:700;color:#0f2744;">TV1</div>
+                <div style="font-size:7px;color:#475569;">Tư vấn Đầu tư · HNX</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:9px;font-weight:700;color:#0f766e;">+68.20%</div>
+                <div style="font-size:7px;color:#475569;">tiềm năng</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;">
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">Giá HT</div>
+                <div style="font-size:8px;font-weight:600;color:#0f2744;">26,100</div>
+              </div>
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">Kỳ vọng</div>
+                <div style="font-size:8px;font-weight:600;color:#0e7490;">43,900</div>
+              </div>
+              <div style="background:#f8fafc;padding:3px 5px;border-radius:4px;text-align:center;">
+                <div style="font-size:6px;color:#94a3b8;">KN</div>
+                <div style="font-size:7px;font-weight:600;color:#0f2744;">17/04/26</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:7px;color:#94a3b8;text-align:center;margin-top:4px;font-style:italic;">Khuyến nghị chỉ mang tính tham khảo ↓</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">3 pills: Tất cả (default) / Bluechip / Midcap. Search box theo mã CK ở góc phải.</li>
+        <li class="ac-item">Mỗi card: Mã CK (bold) + tên công ty + sàn · % tiềm năng (nổi bật, xanh/đỏ) · Giá hiện tại (realtime) / Giá kỳ vọng / Ngày khuyến nghị · Badge Bluechip/Midcap · Nút "📄 Báo cáo" (nếu có PDF)</li>
+        <li class="ac-item"><strong>Giá hiện tại</strong>: fetch từ market data service — không cần realtime tick, snapshot phiên là đủ. Nếu ngoài giờ giao dịch: hiển thị giá đóng cửa phiên gần nhất.</li>
+        <li class="ac-item">% tiềm năng = (Giá kỳ vọng / Giá hiện tại - 1) × 100 — tính trên app, màu xanh nếu dương, đỏ nếu âm</li>
+        <li class="ac-item">Nút "📄 Báo cáo": mở PDF trong in-app viewer (tái sử dụng component từ NH Research). Ẩn nếu không có PDF.</li>
+        <li class="ac-item">Sort mặc định: ngày khuyến nghị mới nhất lên đầu</li>
+        <li class="ac-item">Disclaimer footer: "Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư."</li>
+        <li class="ac-item">Tap card → push navigation đến màn hình Detail (Screen 3.2)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Screen 3.2: Danh mục cơ bản Detail -->
+  <div class="screen-spec" style="margin-top:14px;">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Screen 3.2</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">Chi tiết Khuyến nghị</div>
+      <div class="phone-mockup">
+        <div class="phone-screen" style="padding:0;overflow:hidden;">
+          <div style="background:white;padding:8px 10px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;">
+            <div style="color:#0e7490;font-size:10px;">←</div>
+            <div style="font-size:9px;font-weight:700;color:#0f2744;flex:1;text-align:center;">Chi tiết Khuyến nghị</div>
+          </div>
+          <div style="padding:10px;">
+            <!-- Hero -->
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin-bottom:8px;">
+              <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;">
+                <div style="background:#0f2744;color:white;border-radius:7px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;">VCB</div>
+                <div>
+                  <div style="font-size:9px;font-weight:700;color:#0f2744;">Ngân hàng TMCP Ngoại thương VN</div>
+                  <div style="display:flex;gap:4px;margin-top:3px;">
+                    <div style="background:#dbeafe;color:#1a4a8a;font-size:7px;font-weight:600;padding:1px 6px;border-radius:10px;">HOSE</div>
+                    <div style="background:#d1fae5;color:#065f46;font-size:7px;font-weight:600;padding:1px 6px;border-radius:10px;">BLUECHIP</div>
+                  </div>
+                </div>
+              </div>
+              <div style="border-top:1px solid #f1f5f9;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                <div style="text-align:center;">
+                  <div style="font-size:7px;color:#94a3b8;margin-bottom:2px;">Giá hiện tại</div>
+                  <div style="font-size:12px;font-weight:700;color:#0f2744;">31,800</div>
+                </div>
+                <div style="text-align:center;">
+                  <div style="font-size:7px;color:#94a3b8;margin-bottom:2px;">Giá kỳ vọng</div>
+                  <div style="font-size:12px;font-weight:700;color:#0e7490;">40,000</div>
+                </div>
+              </div>
+              <div style="margin-top:6px;background:#f0fdf4;border-radius:6px;padding:5px;text-align:center;">
+                <div style="font-size:8px;color:#94a3b8;">Tiềm năng tăng</div>
+                <div style="font-size:16px;font-weight:700;color:#0f766e;">+25.44%</div>
+              </div>
+            </div>
+            <!-- Dates -->
+            <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:8px;">
+              <div style="font-size:7px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#94a3b8;margin-bottom:6px;">Thông tin khuyến nghị</div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:5px;"><div style="font-size:8px;color:#475569;">Ngày KN</div><div style="font-size:8px;font-weight:600;color:#0f2744;">04/06/2026</div></div>
+              <div style="border-top:1px solid #f1f5f9;padding-top:5px;display:flex;justify-content:space-between;"><div style="font-size:8px;color:#475569;">Giá tại ngày KN</div><div style="font-size:8px;font-weight:600;color:#0f2744;">31,800</div></div>
+            </div>
+            <div style="background:#0f2744;color:white;text-align:center;padding:7px;border-radius:7px;font-size:8px;font-weight:600;margin-bottom:6px;">Xem cổ phiếu VCB →</div>
+            <div style="font-size:7px;color:#94a3b8;text-align:center;font-style:italic;">Khuyến nghị chỉ mang tính tham khảo...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">Hero card: mã + tên + exchange badge + segment badge. Giá hiện tại / giá kỳ vọng song song. % tiềm năng nổi bật (block màu xanh/đỏ)</li>
+        <li class="ac-item">Info card: Ngày khuyến nghị + Giá tại ngày khuyến nghị (giá gốc lúc Phòng PT đưa ra)</li>
+        <li class="ac-item">Short description (nếu có): text tóm tắt luận điểm khuyến nghị từ admin</li>
+        <li class="ac-item">PDF section (nếu có): tái sử dụng component PDF viewer từ NH Research</li>
+        <li class="ac-item">CTA: "Xem cổ phiếu {stockCode} →" → navigate stock detail screen</li>
+        <li class="ac-item">Disclaimer footer cố định ở cuối màn hình</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Screen 3.3: NHSV Rating -->
+  <div class="screen-spec" style="margin-top:14px;">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Screen 3.3</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">NHSV Rating</div>
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-bar">← Khuyến nghị · NHSV Rating</div>
+          <div style="background:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:7px;color:#94a3b8;margin-bottom:7px;display:flex;align-items:center;gap:4px;">🔍 Tìm mã CK...</div>
+          <!-- Rating table header -->
+          <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:2px;margin-bottom:4px;">
+            <div style="font-size:7px;font-weight:600;color:#94a3b8;">Mã CK</div>
+            <div style="font-size:7px;font-weight:600;color:#94a3b8;text-align:center;">Cơ bản</div>
+            <div style="font-size:7px;font-weight:600;color:#94a3b8;text-align:center;">TT</div>
+            <div style="font-size:7px;font-weight:600;color:#94a3b8;text-align:center;">Rating</div>
+          </div>
+          <div style="border:1px solid #e2e8f0;border-radius:6px;overflow:hidden;">
+            <!-- Row 1 -->
+            <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:2px;padding:6px 8px;border-bottom:1px solid #f1f5f9;align-items:center;">
+              <div><div style="font-size:8px;font-weight:700;color:#0f2744;">ACB</div><div style="font-size:6px;color:#94a3b8;">HOSE</div></div>
+              <div style="text-align:center;"><span class="rating r-S">S</span></div>
+              <div style="text-align:center;"><span class="rating r-S">S</span></div>
+              <div style="text-align:center;"><span class="rating r-S">S</span></div>
+            </div>
+            <!-- Row 2 -->
+            <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:2px;padding:6px 8px;border-bottom:1px solid #f1f5f9;align-items:center;background:#f8fafc;">
+              <div><div style="font-size:8px;font-weight:700;color:#0f2744;">AAA</div><div style="font-size:6px;color:#94a3b8;">HOSE</div></div>
+              <div style="text-align:center;"><span class="rating r-S">S</span></div>
+              <div style="text-align:center;"><span class="rating r-B">B</span></div>
+              <div style="text-align:center;"><span class="rating r-A">A</span></div>
+            </div>
+            <!-- Row 3 -->
+            <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:2px;padding:6px 8px;border-bottom:1px solid #f1f5f9;align-items:center;">
+              <div><div style="font-size:8px;font-weight:700;color:#0f2744;">AGG</div><div style="font-size:6px;color:#94a3b8;">HOSE</div></div>
+              <div style="text-align:center;"><span class="rating r-B">B</span></div>
+              <div style="text-align:center;"><span class="rating r-C">C</span></div>
+              <div style="text-align:center;"><span class="rating r-C">C</span></div>
+            </div>
+            <!-- Row 4 -->
+            <div style="display:grid;grid-template-columns:1fr 60px 60px 60px;gap:2px;padding:6px 8px;align-items:center;background:#f8fafc;">
+              <div><div style="font-size:8px;font-weight:700;color:#0f2744;">AGR</div><div style="font-size:6px;color:#94a3b8;">HOSE</div></div>
+              <div style="text-align:center;"><span class="rating r-B">B</span></div>
+              <div style="text-align:center;"><span class="rating r-B">B</span></div>
+              <div style="text-align:center;"><span class="rating r-B">B</span></div>
+            </div>
+          </div>
+          <!-- Legend -->
+          <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;">
+            <span class="rating r-S" style="font-size:8px;padding:0 4px;">S</span><span style="font-size:7px;color:#475569;">Xuất sắc</span>
+            <span class="rating r-A" style="font-size:8px;padding:0 4px;">A</span><span style="font-size:7px;color:#475569;">Tốt</span>
+            <span class="rating r-B" style="font-size:8px;padding:0 4px;">B</span><span style="font-size:7px;color:#475569;">Trung bình</span>
+            <span class="rating r-C" style="font-size:8px;padding:0 4px;">C</span><span style="font-size:7px;color:#475569;">Kém</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">Search box theo mã CK luôn visible trên đầu (filter client-side)</li>
+        <li class="ac-item">Table 4 cột: Mã CK + tên / Cơ bản / Thị trường / NHSV Rating tổng. Sort mặc định: Rating tổng cao → thấp</li>
+        <li class="ac-item">Badge rating màu sắc: <span class="rating r-S">S</span> vàng · <span class="rating r-A">A</span> xanh lá · <span class="rating r-B">B</span> xanh dương · <span class="rating r-C">C</span> vàng đỏ · <span class="rating r-D">D</span> đỏ</li>
+        <li class="ac-item">Tap vào row → navigate thẳng đến stock detail screen (không có detail screen riêng cho rating)</li>
+        <li class="ac-item">Legend ở cuối: giải thích ý nghĩa từng rating level</li>
+        <li class="ac-item">Badge "Cập nhật: MM/YYYY" hiển thị ngày batch hiện tại (từ <code>uploadedAt</code> của batch đang active)</li>
+        <li class="ac-item">Có thể sort theo từng cột khi tap header</li>
+        <li class="ac-item">Disclaimer footer tối giản: "Rating do Phòng QTRR cung cấp, cập nhật định kỳ hàng tháng."</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Screen 3.4: Kỹ thuật hằng ngày -->
+  <div class="screen-spec" style="margin-top:14px;">
+    <div>
+      <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:1px;text-transform:uppercase">Screen 3.4</div>
+      <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px">Kỹ thuật hằng ngày</div>
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-bar">← Khuyến nghị</div>
+          <!-- Date + search bar -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">
+            <div style="background:#ccfbf1;color:#0e7490;font-size:7px;font-weight:700;padding:2px 8px;border-radius:20px;">📅 Hôm nay · 11/06</div>
+            <div style="background:#f1f5f9;color:#94a3b8;font-size:7px;padding:2px 7px;border-radius:20px;">🔍 Mã CK</div>
+          </div>
+          <!-- Card 1 - SSI style -->
+          <div style="border:1px solid #e2e8f0;border-radius:7px;padding:7px;margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <div><div style="font-size:9px;font-weight:700;color:#0f2744;">GMD</div><div style="font-size:7px;color:#475569;">Gemadept · HOSE</div></div>
+              <div style="background:#0f766e;color:white;font-size:8px;font-weight:700;padding:3px 8px;border-radius:5px;">MUA +19.2%</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">
+              <div style="background:#f0fdf4;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Vùng mua</div>
+                <div style="font-size:8px;font-weight:600;color:#0f2744;">75.50 – 76.50</div>
+              </div>
+              <div style="background:#f0fdf4;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Mục tiêu</div>
+                <div style="font-size:8px;font-weight:600;color:#0e7490;">90.00</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+              <div style="background:#fff1f2;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Cắt lỗ</div>
+                <div style="font-size:8px;font-weight:600;color:#be123c;">73.00</div>
+              </div>
+              <div style="background:#f8fafc;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Upsize</div>
+                <div style="font-size:8px;font-weight:600;color:#0f2744;">92.00</div>
+              </div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div style="border:1px solid #e2e8f0;border-radius:7px;padding:7px;margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <div><div style="font-size:9px;font-weight:700;color:#0f2744;">MBB</div><div style="font-size:7px;color:#475569;">MB Bank · HOSE</div></div>
+              <div style="background:#0f766e;color:white;font-size:8px;font-weight:700;padding:3px 8px;border-radius:5px;">MUA +14.5%</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+              <div style="background:#f0fdf4;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Vùng mua</div>
+                <div style="font-size:8px;font-weight:600;color:#0f2744;">23.00 – 23.80</div>
+              </div>
+              <div style="background:#f0fdf4;border-radius:5px;padding:4px 6px;">
+                <div style="font-size:6px;color:#94a3b8;">Mục tiêu</div>
+                <div style="font-size:8px;font-weight:600;color:#0e7490;">27.20</div>
+              </div>
+            </div>
+          </div>
+          <div style="font-size:7px;color:#94a3b8;text-align:center;font-style:italic;margin-top:4px;">Khuyến nghị chỉ mang tính tham khảo</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:10px;">Yêu cầu hiển thị</div>
+      <ul class="ac-list">
+        <li class="ac-item">Date pill "📅 Hôm nay · DD/MM" (teal) + Search box mã CK cùng hàng</li>
+        <li class="ac-item">Mỗi card: Mã CK + tên + sàn · Badge "MUA +X%" nổi bật (xanh) · Grid 4 ô: Vùng mua / Mục tiêu / Cắt lỗ / Upsize. Màu: vùng mua + mục tiêu = xanh nhạt; Cắt lỗ = đỏ nhạt</li>
+        <li class="ac-item"><strong>Vùng mua</strong>: hiển thị dạng range "XX – YY" nếu có 2 giá, hoặc "≥ XX" nếu chỉ có 1</li>
+        <li class="ac-item"><strong>Upsize</strong>: ẩn ô này nếu null (không hiển thị placeholder)</li>
+        <li class="ac-item">Default load: phiên hôm nay. Nếu hôm nay chưa có data (trước khi Phòng PT upload): empty state "Dữ liệu kỹ thuật hôm nay chưa có. Vui lòng quay lại sau."</li>
+        <li class="ac-item">Tap card → detail screen với thêm thông tin (short desc + PDF nếu có)</li>
+        <li class="ac-item">Disclaimer footer</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 4. DATA MODELS -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">🗄️</div>
+    <h2>4. Data Models</h2>
+    <span class="sub">3 tables chính + 1 batch tracker cho NHSV Rating</span>
+  </div>
+
+  <!-- Table 1: recommendations -->
+  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">① <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">portfolio_recommendations</code> — Danh mục cơ bản</div>
+  <table class="data-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Req</th><th>Mô tả</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td>recommendation_id</td><td class="type">BIGINT</td><td><span class="req-y">Y</span></td><td>PK</td><td>Auto-increment</td></tr>
+      <tr><td>stock_code</td><td class="type">VARCHAR(10)</td><td><span class="req-y">Y</span></td><td>Mã CK</td><td>Index</td></tr>
+      <tr><td>segment</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Phân khúc</td><td>'BLUECHIP' | 'MIDCAP'</td></tr>
+      <tr><td>target_price</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá kỳ vọng</td><td>VNĐ</td></tr>
+      <tr><td>recommended_price</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá tại thời điểm khuyến nghị</td><td>Admin nhập, dùng để tính % tiềm năng gốc</td></tr>
+      <tr><td>recommendation_date</td><td class="type">DATE</td><td><span class="req-y">Y</span></td><td>Ngày khuyến nghị</td><td>Sort DESC, Index</td></tr>
+      <tr><td>short_desc</td><td class="type">TEXT</td><td><span class="req-n">N</span></td><td>Luận điểm ngắn</td><td>Optional, hiển thị trên detail screen</td></tr>
+      <tr><td>pdf_url</td><td class="type">VARCHAR(1000)</td><td><span class="req-n">N</span></td><td>URL báo cáo PDF</td><td>NHSV server, public URL</td></tr>
+      <tr><td>pdf_filename</td><td class="type">VARCHAR(255)</td><td><span class="req-n">N</span></td><td>Tên file</td><td></td></tr>
+      <tr><td>pdf_size_bytes</td><td class="type">BIGINT</td><td><span class="req-n">N</span></td><td>Dung lượng</td><td></td></tr>
+      <tr><td>status</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Trạng thái</td><td>'ACTIVE' | 'ARCHIVED'. Default: ACTIVE</td></tr>
+      <tr><td>created_by</td><td class="type">VARCHAR(100)</td><td><span class="req-y">Y</span></td><td>Admin tạo</td><td></td></tr>
+      <tr><td>created_at / updated_at</td><td class="type">DATETIME</td><td><span class="req-y">Y</span></td><td>Timestamps</td><td>Auto</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Table 2: nhsv_rating_batches -->
+  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;margin-top:16px;">② <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">nhsv_rating_batches</code> + <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">nhsv_ratings</code> — NHSV Rating</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <table class="data-table">
+      <thead><tr><th>rating_batches — field</th><th>Type / Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>batch_id</td><td>BIGINT PK Auto</td></tr>
+        <tr><td>source_filename</td><td>VARCHAR(255) — tên file Excel gốc</td></tr>
+        <tr><td>is_active</td><td>BOOL — chỉ 1 batch ACTIVE tại 1 thời điểm</td></tr>
+        <tr><td>uploaded_by</td><td>VARCHAR(100)</td></tr>
+        <tr><td>uploaded_at</td><td>DATETIME — hiển thị "Cập nhật: MM/YYYY"</td></tr>
+        <tr><td>total_records</td><td>INT — số mã trong batch</td></tr>
+      </tbody>
+    </table>
+    <table class="data-table">
+      <thead><tr><th>nhsv_ratings — field</th><th>Type / Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td>rating_id</td><td>BIGINT PK Auto</td></tr>
+        <tr><td>batch_id</td><td>FK → rating_batches</td></tr>
+        <tr><td>stock_code</td><td>VARCHAR(10) Index</td></tr>
+        <tr><td>fundamental_rating</td><td>ENUM: 'S'|'A'|'B'|'C'|'D'</td></tr>
+        <tr><td>market_rating</td><td>ENUM: 'S'|'A'|'B'|'C'|'D'</td></tr>
+        <tr><td>overall_rating</td><td>ENUM: 'S'|'A'|'B'|'C'|'D'</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-info" style="margin-top:8px;">Khi admin upload batch mới: INSERT tất cả records với batch_id mới → SET is_active=true → SET is_active=false cho batch cũ. Không xóa dữ liệu cũ — để audit trail. App chỉ đọc ratings có <code>batch.is_active = true</code>.</div>
+
+  <!-- Table 3: daily_technicals -->
+  <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;margin-top:16px;">③ <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">daily_technicals</code> — Kỹ thuật hằng ngày</div>
+  <table class="data-table">
+    <thead><tr><th>Field</th><th>Type</th><th>Req</th><th>Mô tả</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td>technical_id</td><td class="type">BIGINT</td><td><span class="req-y">Y</span></td><td>PK</td><td>Auto</td></tr>
+      <tr><td>stock_code</td><td class="type">VARCHAR(10)</td><td><span class="req-y">Y</span></td><td>Mã CK</td><td>Index</td></tr>
+      <tr><td>trade_date</td><td class="type">DATE</td><td><span class="req-y">Y</span></td><td>Ngày giao dịch khuyến nghị</td><td>Index. App default query: trade_date = CURDATE()</td></tr>
+      <tr><td>buy_price_from</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá mua dưới (lower bound)</td><td></td></tr>
+      <tr><td>buy_price_to</td><td class="type">DECIMAL(15,2)</td><td><span class="req-n">N</span></td><td>Giá mua trên (upper bound)</td><td>Null = chỉ 1 giá mua (hiển thị ≥ buy_price_from)</td></tr>
+      <tr><td>target_price</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá mục tiêu</td><td></td></tr>
+      <tr><td>stop_loss</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá cắt lỗ</td><td></td></tr>
+      <tr><td>upsize</td><td class="type">DECIMAL(15,2)</td><td><span class="req-n">N</span></td><td>Giá upsize</td><td>Null → ẩn ô trên app</td></tr>
+      <tr><td>short_desc</td><td class="type">TEXT</td><td><span class="req-n">N</span></td><td>Ghi chú phân tích</td><td>Hiển thị trên detail screen</td></tr>
+      <tr><td>pdf_url / pdf_filename / pdf_size_bytes</td><td class="type">VARCHAR / BIGINT</td><td><span class="req-n">N</span></td><td>Báo cáo kèm theo</td><td>Optional, NHSV server</td></tr>
+      <tr><td>data_source</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Nguồn dữ liệu</td><td>'MANUAL' | 'VIETSTOCK_AUTO'. Default: 'MANUAL'. Automation-ready field.</td></tr>
+      <tr><td>created_by</td><td class="type">VARCHAR(100)</td><td><span class="req-y">Y</span></td><td>Admin tạo</td><td>Null nếu data_source = VIETSTOCK_AUTO</td></tr>
+      <tr><td>created_at</td><td class="type">DATETIME</td><td><span class="req-y">Y</span></td><td>Timestamp</td><td>Auto</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- 5. API MOBILE -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🔌</div>
+    <h2>5. API Specification — Mobile App</h2>
+    <span class="sub">Base URL: /api/v1 · Auth: Bearer token</span>
+  </div>
+
+  <!-- API 1: Danh mục cơ bản -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/recommendations/portfolio</span>
+      <span class="api-desc">Danh mục cơ bản — list với giá realtime enriched</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Query Parameters</div>
+          <div class="param-row"><span class="pname">segment</span><span class="ptype">string?</span><span class="pdesc"><code>BLUECHIP</code> | <code>MIDCAP</code>. Null → tất cả</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã CK (LIKE)</span></div>
+          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1</span></div>
+          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Default: 20</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (200) — Recommendation item</div>
+          <div class="param-row"><span class="pname">recommendationId</span><span class="ptype">string</span><span class="pdesc">ID khuyến nghị</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK</span></div>
+          <div class="param-row"><span class="pname">segment</span><span class="ptype">string</span><span class="pdesc">"BLUECHIP" | "MIDCAP"</span></div>
+          <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Giá kỳ vọng (VNĐ)</span></div>
+          <div class="param-row"><span class="pname">currentPrice</span><span class="ptype">number?</span><span class="pdesc">Giá hiện tại — từ market data service. Null nếu không fetch được.</span></div>
+          <div class="param-row"><span class="pname">expectedReturnPercent</span><span class="ptype">number?</span><span class="pdesc">% tiềm năng = (targetPrice/currentPrice-1)×100. Null nếu currentPrice null.</span></div>
+          <div class="param-row"><span class="pname">recommendationDate</span><span class="ptype">date</span><span class="pdesc">ISO date</span></div>
+          <div class="param-row"><span class="pname">hasPdf</span><span class="ptype">bool</span><span class="pdesc">Có báo cáo PDF không</span></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
+        <strong>Price enrichment:</strong> BE join với market data service khi serve API. Nếu market data không available (ngoài giờ giao dịch): dùng closing price phiên gần nhất.<br>
+        <strong>Pagination:</strong> Trả thêm <code>totalCount</code>, <code>page</code>, <code>pageSize</code>.<br>
+        <strong>Filter status:</strong> Chỉ trả records có status = 'ACTIVE'.
+      </div>
+    </div>
+  </div>
+
+  <!-- API 2: Portfolio detail -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/recommendations/portfolio/{recommendationId}</span>
+      <span class="api-desc">Chi tiết 1 khuyến nghị</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Path Param</div>
+          <div class="param-row"><span class="pname">recommendationId</span><span class="ptype">string</span><span class="pdesc">ID khuyến nghị</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response — thêm so với list</div>
+          <div class="param-row"><span class="pname">recommendedPrice</span><span class="ptype">number</span><span class="pdesc">Giá tại ngày khuyến nghị (giá gốc admin nhập)</span></div>
+          <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Luận điểm ngắn</span></div>
+          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Public URL PDF</span></div>
+          <div class="param-row"><span class="pname">pdfFilename</span><span class="ptype">string?</span><span class="pdesc">Tên file</span></div>
+          <div class="param-row"><span class="pname">pdfSizeBytes</span><span class="ptype">int?</span><span class="pdesc">Dung lượng</span></div>
+        </div>
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
+        <strong>Error 404:</strong> <code>{"code":"OBJECT_NOT_FOUND"}</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- API 3: NHSV Rating -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/recommendations/rating</span>
+      <span class="api-desc">NHSV Rating — bảng rating active batch</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Query Parameters</div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã (client-side hoặc server-side). LIKE.</span></div>
+          <div class="param-row"><span class="pname">sortBy</span><span class="ptype">string?</span><span class="pdesc"><code>OVERALL</code> | <code>FUNDAMENTAL</code> | <code>MARKET</code>. Default: OVERALL DESC</span></div>
+          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1</span></div>
+          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Default: 50 (vì bảng rating cần load nhiều)</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">batchUpdatedAt</span><span class="ptype">datetime</span><span class="pdesc">Ngày upload batch đang active — hiển thị "Cập nhật: MM/YYYY"</span></div>
+          <div class="param-row"><span class="pname">ratings</span><span class="ptype">Rating[]</span><span class="pdesc">stockCode · fundamentalRating · marketRating · overallRating (S/A/B/C/D)</span></div>
+          <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Tổng số mã</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API 4: Daily Technical -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method GET">GET</span>
+      <span class="api-path">/recommendations/dailyTechnical</span>
+      <span class="api-desc">Kỹ thuật hằng ngày — default hôm nay</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Query Parameters</div>
+          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date?</span><span class="pdesc">ISO date. Default: CURDATE() trên server. Mobile có thể pass để xem ngày khác.</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (200) — Technical item</div>
+          <div class="param-row"><span class="pname">technicalId</span><span class="ptype">string</span><span class="pdesc">ID</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK</span></div>
+          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Ngày khuyến nghị</span></div>
+          <div class="param-row"><span class="pname">buyPriceFrom</span><span class="ptype">number</span><span class="pdesc">Giá mua dưới</span></div>
+          <div class="param-row"><span class="pname">buyPriceTo</span><span class="ptype">number?</span><span class="pdesc">Giá mua trên. Null = chỉ 1 mức giá</span></div>
+          <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Giá mục tiêu</span></div>
+          <div class="param-row"><span class="pname">stopLoss</span><span class="ptype">number</span><span class="pdesc">Cắt lỗ</span></div>
+          <div class="param-row"><span class="pname">upsize</span><span class="ptype">number?</span><span class="pdesc">Upsize. Null → ẩn ô</span></div>
+          <div class="param-row"><span class="pname">hasPdf</span><span class="ptype">bool</span><span class="pdesc">Có PDF không</span></div>
+        </div>
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
+        <strong>Empty response:</strong> <code>{"tradeDate":"...","technicals":[],"totalCount":0}</code> — không trả 404 khi không có data hôm nay. Mobile hiển thị empty state.<br>
+        <strong>dataSource filter:</strong> Trả cả MANUAL và VIETSTOCK_AUTO — app không phân biệt.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. API ADMIN -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ede9fe">⚙️</div>
+    <h2>6. API Specification — Admin</h2>
+    <span class="sub">Base URL: /admin/api · Auth: Admin session</span>
+  </div>
+
+  <!-- NHSV Rating Excel Upload - most unique flow -->
+  <div class="card" style="border-left:3px solid var(--violet);margin-bottom:14px;">
+    <div class="card-title">📊 NHSV Rating — Excel Upload Flow</div>
+    <div class="card-body">
+      <div class="flow-box" style="margin-top:8px;">
+        <div class="flow-row">
+          <div class="step-num" style="background:var(--violet);">1</div>
+          <div><div class="step-title">Admin nhận file Excel từ Phòng QTRR</div><div class="step-detail">File Excel có ít nhất 4 cột bắt buộc: <code>Mã</code>, <code>Cơ bản</code>, <code>Thị trường</code>, <code>NHSV Rating</code>. Giá trị hợp lệ: S, A, B, C, D (case-insensitive).</div></div>
+        </div>
+        <div class="flow-row">
+          <div class="step-num" style="background:var(--violet);">2</div>
+          <div><div class="step-title">Admin upload lên nhsv-admin</div><div class="step-detail">Gọi <code>POST /admin/recommendations/ratingUpload</code> với file Excel (multipart). BE parse → validate → return preview (số records hợp lệ, lỗi nếu có).</div></div>
+        </div>
+        <div class="flow-row">
+          <div class="step-num" style="background:var(--violet);">3</div>
+          <div><div class="step-title">Admin xem preview và confirm</div><div class="step-detail">Admin FE hiển thị preview table (10 rows đầu + tổng số records). Nếu OK → Admin bấm "Xác nhận publish". Nếu có lỗi → hiển thị danh sách mã lỗi → Admin fix file và upload lại.</div></div>
+        </div>
+        <div class="flow-row">
+          <div class="step-num" style="background:var(--violet);">4</div>
+          <div><div class="step-title">BE tạo batch mới và activate</div><div class="step-detail">Gọi <code>POST /admin/recommendations/ratingPublish</code> với <code>batchId</code> từ bước 2. BE: INSERT tất cả records vào nhsv_ratings với batch_id mới → SET batch.is_active = true → SET cũ is_active = false. Nguyên tử (transaction).</div></div>
+        </div>
+        <div class="flow-row">
+          <div class="step-num" style="background:var(--violet);">5</div>
+          <div><div class="step-title">App đọc batch mới ngay lập tức</div><div class="step-detail">Không cần cache clear vì API luôn query <code>is_active = true</code> trong real-time.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <!-- Upload API -->
+    <div class="api-block">
+      <div class="api-hdr">
+        <span class="method POST">POST</span>
+        <span class="api-path">/recommendations/ratingUpload</span>
+      </div>
+      <div class="api-body">
+        <div class="pb-title" style="margin-bottom:8px;">Request (multipart/form-data)</div>
+        <div class="param-row"><span class="pname">file</span><span class="ptype">File</span><span class="pdesc">Required. .xlsx hoặc .xls</span></div>
+        <div class="pb-title" style="margin-top:10px;margin-bottom:8px;">Response (200) — Preview</div>
+        <div class="param-row"><span class="pname">batchId</span><span class="ptype">string</span><span class="pdesc">Temp ID để confirm</span></div>
+        <div class="param-row"><span class="pname">totalRecords</span><span class="ptype">int</span><span class="pdesc">Số records parse được</span></div>
+        <div class="param-row"><span class="pname">validRecords</span><span class="ptype">int</span><span class="pdesc">Số records hợp lệ</span></div>
+        <div class="param-row"><span class="pname">errors</span><span class="ptype">Error[]?</span><span class="pdesc">Danh sách lỗi (mã không hợp lệ, rating không đúng format…)</span></div>
+        <div class="param-row"><span class="pname">previewRows</span><span class="ptype">Row[10]</span><span class="pdesc">10 rows đầu để admin review</span></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Error 400:</strong> <code>{"code":"INVALID_PARAMETER"}</code> nếu không phải Excel hoặc thiếu cột bắt buộc.</div>
+      </div>
+    </div>
+    <!-- Publish API -->
+    <div class="api-block">
+      <div class="api-hdr">
+        <span class="method POST">POST</span>
+        <span class="api-path">/recommendations/ratingPublish</span>
+      </div>
+      <div class="api-body">
+        <div class="pb-title" style="margin-bottom:8px;">Request Body (JSON)</div>
+        <div class="param-row"><span class="pname">batchId</span><span class="ptype">string</span><span class="pdesc">Required. ID từ bước upload</span></div>
+        <div class="pb-title" style="margin-top:10px;margin-bottom:8px;">Response (200)</div>
+        <div class="param-row"><span class="pname">batchId</span><span class="ptype">string</span><span class="pdesc">Batch đã publish</span></div>
+        <div class="param-row"><span class="pname">publishedAt</span><span class="ptype">datetime</span><span class="pdesc">Thời điểm kích hoạt</span></div>
+        <div class="param-row"><span class="pname">totalRecords</span><span class="ptype">int</span><span class="pdesc">Số records đã publish</span></div>
+        <div style="margin-top:8px;padding:7px;background:var(--amber-light);border-radius:5px;font-size:11px;color:var(--amber);">⚠️ Idempotent: gọi 2 lần với cùng batchId → không tạo duplicate. Kiểm tra batchId đã published chưa trước khi process.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Portfolio CRUD -->
+  <div class="api-block" style="margin-top:14px;">
+    <div class="api-hdr">
+      <span class="method POST">POST</span>
+      <span class="api-path">/recommendations/portfolio</span>
+      <span class="api-desc">Tạo khuyến nghị mới — Danh mục cơ bản</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Request Body</div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">segment</span><span class="ptype">string</span><span class="pdesc">Required. <code>BLUECHIP</code> | <code>MIDCAP</code></span></div>
+          <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Required. Giá kỳ vọng</span></div>
+          <div class="param-row"><span class="pname">recommendedPrice</span><span class="ptype">number</span><span class="pdesc">Required. Giá tại ngày KN</span></div>
+          <div class="param-row"><span class="pname">recommendationDate</span><span class="ptype">date</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">pdfUrl / pdfFilename / pdfSizeBytes</span><span class="ptype">varies?</span><span class="pdesc">Optional. Public URL từ /upload/pdf</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (201)</div>
+          <div class="param-row"><span class="pname">recommendationId</span><span class="ptype">string</span><span class="pdesc">ID vừa tạo</span></div>
+          <div class="param-row"><span class="pname">status</span><span class="ptype">string</span><span class="pdesc">"ACTIVE"</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Technical CRUD -->
+  <div class="api-block">
+    <div class="api-hdr">
+      <span class="method POST">POST</span>
+      <span class="api-path">/recommendations/dailyTechnical</span>
+      <span class="api-desc">Tạo khuyến nghị kỹ thuật — admin manual</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Request Body</div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Required. Ngày áp dụng khuyến nghị</span></div>
+          <div class="param-row"><span class="pname">buyPriceFrom</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">buyPriceTo</span><span class="ptype">number?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">stopLoss</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">upsize</span><span class="ptype">number?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">pdfUrl / pdfFilename / pdfSizeBytes</span><span class="ptype">varies?</span><span class="pdesc">Optional</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (201)</div>
+          <div class="param-row"><span class="pname">technicalId</span><span class="ptype">string</span><span class="pdesc">ID vừa tạo</span></div>
+          <div class="param-row"><span class="pname">dataSource</span><span class="ptype">string</span><span class="pdesc">"MANUAL"</span></div>
+          <div style="margin-top:12px;padding:8px;background:#f0fdf4;border-radius:6px;font-size:11px;color:#166534;">
+            <strong>Future automation note:</strong> Khi pipeline Vietstock được build, BE sẽ POST vào đây với <code>dataSource: "VIETSTOCK_AUTO"</code> và <code>createdBy: null</code>. Endpoint và DB schema đã sẵn sàng, không cần migration.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE endpoints note -->
+  <div class="note-info" style="margin-top:4px;">
+    <strong>DELETE endpoints:</strong> <code>DELETE /recommendations/portfolio/{recommendationId}</code> → soft delete (status → 'ARCHIVED'). <code>DELETE /recommendations/dailyTechnical/{technicalId}</code> → hard delete (dữ liệu kỹ thuật ngắn hạn, không cần giữ lâu). Response: <code>{"deleted": true}</code>
+  </div>
+</div>
+
+<!-- 7. ADMIN SCREEN SPECS -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#ede9fe">🖥️</div>
+    <h2>7. Admin Screen Specs <span class="sub">tại tnhsvpro.nhsv.vn/nhsv-admin</span></h2>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <div class="card">
+      <div class="card-title">📋 Admin Screen 1 — Danh mục cơ bản Management</div>
+      <div class="card-body">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/portfolio</div>
+        <ul class="ac-list">
+          <li class="ac-item">Table: Mã CK | Segment | Giá KN | Giá Kỳ vọng | Ngày KN | PDF | Trạng thái | Thao tác</li>
+          <li class="ac-item">Filter: Bluechip/Midcap dropdown + ô search theo mã + status filter (Active/Archived)</li>
+          <li class="ac-item">Nút "+ Thêm khuyến nghị" → form tạo mới</li>
+          <li class="ac-item">Thao tác: Sửa | Archive (không xóa cứng)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">✏️ Admin Screen 2 — Form Tạo/Sửa Danh mục</div>
+      <div class="card-body">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/portfolio/new</div>
+        <ul class="ac-list">
+          <li class="ac-item"><strong>Mã CK</strong>: input với autocomplete từ danh mục (required)</li>
+          <li class="ac-item"><strong>Segment</strong>: Bluechip / Midcap dropdown (required)</li>
+          <li class="ac-item"><strong>Giá tại ngày KN</strong>: số (required)</li>
+          <li class="ac-item"><strong>Giá kỳ vọng</strong>: số, auto tính % tiềm năng hiển thị live khi nhập (required)</li>
+          <li class="ac-item"><strong>Ngày khuyến nghị</strong>: date picker (required)</li>
+          <li class="ac-item"><strong>Luận điểm</strong>: textarea (optional)</li>
+          <li class="ac-item"><strong>Upload PDF</strong>: drag-drop, .pdf only (optional)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Admin Screen 3 — NHSV Rating Upload</div>
+      <div class="card-body">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/rating</div>
+        <ul class="ac-list">
+          <li class="ac-item">Header: "NHSV Rating" + badge "Batch hiện tại: MM/YYYY · N mã"</li>
+          <li class="ac-item">Upload area: drag-drop file .xlsx / .xls. Required columns tooltip: "Mã, Cơ bản, Thị trường, NHSV Rating"</li>
+          <li class="ac-item">Sau upload: preview table 10 rows + tổng records + error list (nếu có)</li>
+          <li class="ac-item">Nút "Xác nhận publish": active nếu không có errors. Sau confirm → toast "Đã cập nhật N mã rating"</li>
+          <li class="ac-item">Lịch sử: bảng các batch cũ (ngày upload, số mã, người upload)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📅 Admin Screen 4 — Kỹ thuật hằng ngày</div>
+      <div class="card-body">
+        <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/daily-technical</div>
+        <ul class="ac-list">
+          <li class="ac-item">Date picker để chọn ngày (default: hôm nay). Hiển thị danh sách entries theo ngày đã chọn.</li>
+          <li class="ac-item">Table: Mã CK | Vùng mua | Mục tiêu | Cắt lỗ | Upsize | PDF | Nguồn | Thao tác</li>
+          <li class="ac-item">Badge "MANUAL" / "AUTO" trên cột Nguồn — phân biệt entry thủ công vs tương lai tự động</li>
+          <li class="ac-item">Nút "+ Thêm entry": form gồm Mã CK, Ngày, Vùng mua (from/to), Mục tiêu, Cắt lỗ, Upsize (optional), PDF (optional)</li>
+          <li class="ac-item">Delete: hard delete (không soft delete — dữ liệu kỹ thuật ngắn hạn)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 8. WORK BREAKDOWN -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#d1fae5">🏗️</div>
+    <h2>8. Work Breakdown</h2>
+    <span class="sub">4 layers · Ready for Jira</span>
+  </div>
+  <div class="layer-grid">
+    <!-- BE -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--blue);color:white;">⚙️ Backend (BE)</div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-01</span><div><div class="t-name">DB: Tạo 4 bảng + migration</div><div class="t-note">portfolio_recommendations, nhsv_rating_batches, nhsv_ratings, daily_technicals. Indexes theo mục 4.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-02</span><div><div class="t-name">API: GET /recommendations/portfolio (list)</div><div class="t-note">Filter segment/stockCode, paginate, enrich currentPrice từ market data service</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-03</span><div><div class="t-name">API: GET /recommendations/portfolio/{id} (detail)</div><div class="t-note">Trả thêm recommendedPrice, shortDesc, pdfUrl. 404 nếu không tồn tại.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-04</span><div><div class="t-name">API: GET /recommendations/rating</div><div class="t-note">Join nhsv_ratings với batch is_active=true. sortBy param. Trả batchUpdatedAt.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-05</span><div><div class="t-name">API: GET /recommendations/dailyTechnical</div><div class="t-note">Default tradeDate = CURDATE(). Empty array nếu chưa có data hôm nay.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-06</span><div><div class="t-name">Admin API: CRUD /recommendations/portfolio</div><div class="t-note">POST create, PUT update, DELETE soft-archive. Tái sử dụng /upload/pdf từ A-04.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-07</span><div><div class="t-name">Admin API: Excel upload + parse NHSV Rating</div><div class="t-note">POST /ratingUpload: parse .xlsx, validate columns + values, trả preview + batchId. POST /ratingPublish: activate batch trong transaction.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-08</span><div><div class="t-name">Admin API: CRUD /recommendations/dailyTechnical</div><div class="t-note">POST create (dataSource=MANUAL), DELETE hard delete. Accept dataSource field cho future automation.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-09</span><div><div class="t-name">Price enrichment: currentPrice từ market data service</div><div class="t-note">Fetch batch prices cho danh sách mã trong portfolio list. Fallback: closing price phiên gần nhất nếu ngoài giờ GD.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-10</span><div><div class="t-name">API: GET /recommendations/dailyTechnical/{id} (detail)</div><div class="t-note">Trả thêm shortDesc, pdfUrl. 404 nếu không tồn tại.</div></div></li>
+      </ul>
+    </div>
+    <!-- Mobile FE -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--teal);color:white;">📱 Mobile FE</div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-01</span><div><div class="t-name">Khuyến nghị tab + 3 sub-tab navigation</div><div class="t-note">Tab pill buttons: Danh mục / Rating / Kỹ thuật. Active state.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-02</span><div><div class="t-name">Danh mục cơ bản list screen</div><div class="t-note">Filter Bluechip/Midcap + search. Card component (mã, giá, % upside, ngày). Pagination. Tap → detail.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-03</span><div><div class="t-name">Danh mục cơ bản detail screen</div><div class="t-note">Hero card + info card + PDF viewer (tái dùng từ A-04) + CTA "Xem cổ phiếu"</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-04</span><div><div class="t-name">NHSV Rating table screen</div><div class="t-note">Search bar + sortable table + rating badge component (S/A/B/C/D màu sắc) + tap row → stock detail</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-05</span><div><div class="t-name">Kỹ thuật hằng ngày list screen</div><div class="t-note">Date pill "Hôm nay" + search. Card: vùng mua / mục tiêu / cắt lỗ / upsize grid. Empty state nếu chưa có data.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-06</span><div><div class="t-name">Kỹ thuật hằng ngày detail screen</div><div class="t-note">Đầy đủ fields + shortDesc + PDF (tái dùng viewer) + CTA</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-07</span><div><div class="t-name">Disclaimer footer component (reusable)</div><div class="t-note">Dùng chung cho tất cả 3 sub-tabs. Nội dung khác nhau cho từng tab (xem spec màn hình).</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-08</span><div><div class="t-name">Error & empty states</div><div class="t-note">API lỗi → error state + retry. Empty danh mục. Empty kỹ thuật hôm nay. NHSV Rating chưa có data.</div></div></li>
+      </ul>
+    </div>
+    <!-- Admin FE -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--violet);color:white;">🖥️ Admin FE</div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-01</span><div><div class="t-name">Menu: thêm "Khuyến nghị" vào sidebar</div><div class="t-note">3 sub-menu: Danh mục cơ bản / NHSV Rating / Kỹ thuật hằng ngày</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-02</span><div><div class="t-name">Danh mục cơ bản: list + CRUD form</div><div class="t-note">Table với filter/search + form tạo/sửa (auto-calculate % tiềm năng live)</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-03</span><div><div class="t-name">NHSV Rating: Excel upload page</div><div class="t-note">Upload component + preview table + error list + confirm button + lịch sử batches</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-04</span><div><div class="t-name">Kỹ thuật hằng ngày: list + CRUD form</div><div class="t-note">Date picker để chọn ngày + table + form nhập (vùng mua range, mục tiêu, cắt lỗ, upsize)</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-05</span><div><div class="t-name">PDF upload component (reuse from A-04)</div><div class="t-note">Tái sử dụng component từ NH Research. Áp dụng cho Danh mục cơ bản + Kỹ thuật hằng ngày.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-06</span><div><div class="t-name">Excel parsing validation UI</div><div class="t-note">Hiển thị error list từ ratingUpload API: mã không hợp lệ, rating value sai, row number. Giúp admin fix file.</div></div></li>
+      </ul>
+    </div>
+    <!-- QA -->
+    <div class="layer-card">
+      <div class="layer-hdr" style="background:var(--green);color:white;">🧪 QA</div>
+      <ul class="task-list">
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-01</span><div><div class="t-name">Test: Danh mục cơ bản — filter, price, %</div><div class="t-note">Bluechip/Midcap filter. % tiềm năng tính đúng (dương/âm, màu sắc). currentPrice = closing price ngoài giờ GD.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-02</span><div><div class="t-name">Test: NHSV Rating — Excel upload flow</div><div class="t-note">File hợp lệ → preview đúng → confirm → app show batch mới. File thiếu cột → error. File có giá trị rating sai (E, F) → error list đúng.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-03</span><div><div class="t-name">Test: NHSV Rating — batch replacement</div><div class="t-note">Sau upload batch mới: app hiện data mới. Batch cũ is_active=false. Search đúng mã trong batch mới.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-04</span><div><div class="t-name">Test: Kỹ thuật hằng ngày</div><div class="t-note">Hôm nay có data → hiển thị. Hôm nay chưa có → empty state đúng. Upsize=null → ẩn ô. vùng mua 1 giá vs range.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-05</span><div><div class="t-name">Test: Search mã CK — tất cả 3 sub-tabs</div><div class="t-note">Search "VCB" → lọc đúng. Search mã không tồn tại → empty state. Clear search → full list.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-06</span><div><div class="t-name">Test: Disclaimer + navigate stock detail</div><div class="t-note">Disclaimer hiển thị đúng trên cả 3 tabs. Tap card/row → navigate đúng stock detail screen với stockCode đúng.</div></div></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- 9. OPEN QUESTIONS -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#fef3c7">⚠️</div>
+    <h2>9. Open Questions</h2>
+    <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev</span>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">1</div>
+    <div class="oq-content">
+      <div class="oq-q">[BLOCKING] Danh mục cơ bản: khuyến nghị có expire hay tự quản lý?</div>
+      <div class="oq-note">Sau khi đạt target price hoặc qua N tháng, khuyến nghị có tự động archive không? Hay admin phải tự tay archive từng mã? Nếu tự động: cần thêm <code>expiry_date</code> hoặc rule theo target price. Nếu không: spec hiện tại (admin tự archive) là đủ.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM + Phòng Phân tích</span><span class="tag tag-block">Blocking data model</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">2</div>
+    <div class="oq-content">
+      <div class="oq-q">[Non-blocking] Kỹ thuật hằng ngày: có cần xem lại các ngày trước không?</div>
+      <div class="oq-note">Spec hiện tại: default load hôm nay, app có thể pass <code>tradeDate</code> để xem ngày khác. Nhưng UI hiện chỉ có "Hôm nay" badge, không có date picker. Cần quyết định: (a) Chỉ hiện hôm nay (đơn giản nhất); (b) Cho phép xem lại lịch sử qua date picker. Nếu (b) → cần thêm date picker UI trên mobile.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">3</div>
+    <div class="oq-content">
+      <div class="oq-q">[Non-blocking] Automation pipeline Vietstock → Kỹ thuật hằng ngày: timeline?</div>
+      <div class="oq-note">Spec đã để sẵn <code>dataSource: 'VIETSTOCK_AUTO'</code> field và endpoint đã accept automation. Nhưng cần xác định: Vietstock gửi data theo channel nào (email, SFTP, API)? Ai xử lý file raw → format đúng schema? Khi nào bắt đầu build pipeline? Hiện tại là v1 manual — automation là v2.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: IT + Phòng Phân tích</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="doc-footer">
+  <div>NHSV Pro · A-05 Khuyến nghị Feature Spec · v1.0</div>
+  <div>30 tasks (10 BE · 8 Mobile · 6 Admin) · 6 QA tasks · 3 open questions</div>
+</div>
+
+</div>
+</body>
+</html>

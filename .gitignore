@@ -2,6 +2,7 @@
 TradeX MCP/Knowledge based/configuration/
 TradeX MCP/Knowledge based/ekyc-admin/
 .gstack/
+.superpowers/
 
 # Claude sessions — sync thủ công qua scripts/claude-save.sh & claude-restore.sh
 # .claude-sessions/ KHÔNG bị ignore để có thể commit lên GitHub

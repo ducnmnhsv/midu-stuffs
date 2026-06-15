@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NHSV Pro – Feature Breakdown | Đề xuất Phòng Research & CLKD</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy:    #0f2744;
+    --blue:    #1a4a8a;
+    --teal:    #0e7490;
+    --sky:     #e0f2fe;
+    --green:   #0f766e;
+    --mint:    #d1fae5;
+    --amber:   #b45309;
+    --cream:   #fef9f0;
+    --red:     #be123c;
+    --rose:    #ffe4e6;
+    --slate:   #475569;
+    --muted:   #94a3b8;
+    --border:  #e2e8f0;
+    --white:   #ffffff;
+    --bg:      #f8fafc;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* ── Header ── */
+  .doc-header {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    color: white;
+    padding: 36px 48px 32px;
+    border-bottom: 4px solid var(--teal);
+  }
+  .doc-header .eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #93c5fd;
+    margin-bottom: 8px;
+  }
+  .doc-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .doc-header .subtitle {
+    font-size: 13px;
+    color: #cbd5e1;
+    margin-bottom: 18px;
+  }
+  .meta-row {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .meta-item strong {
+    color: #e2e8f0;
+    font-weight: 600;
+  }
+
+  /* ── Summary cards ── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-card {
+    background: white;
+    padding: 18px 22px;
+    text-align: center;
+  }
+  .summary-card .num {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .summary-card .label {
+    font-size: 11px;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .num.blue  { color: var(--blue); }
+  .num.teal  { color: var(--teal); }
+  .num.green { color: var(--green); }
+  .num.amber { color: var(--amber); }
+
+  /* ── Content wrapper ── */
+  .content { padding: 32px 48px 60px; max-width: 1100px; }
+
+  /* ── Section header ── */
+  .module-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 36px 0 16px;
+  }
+  .module-badge {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .mod-a  { background: var(--blue); }
+  .mod-b  { background: var(--teal); }
+  .mod-x  { background: #6d28d9; }
+
+  .module-header h2 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .module-header .module-desc {
+    font-size: 12px;
+    color: var(--slate);
+    margin-top: 1px;
+  }
+  .module-header .feature-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  /* ── Feature card ── */
+  .feature-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .feature-card.open-q {
+    border-left: 3px solid #f59e0b;
+  }
+
+  .feature-top {
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: default;
+  }
+  .feature-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .id-a  { background: #dbeafe; color: var(--blue); }
+  .id-b  { background: #ccfbf1; color: var(--teal); }
+  .id-x  { background: #ede9fe; color: #6d28d9; }
+
+  .feature-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--navy);
+    flex: 1;
+  }
+  .feature-title .en {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+
+  .tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .tag-realtime  { background: #d1fae5; color: #065f46; }
+  .tag-manual    { background: #fef3c7; color: #92400e; }
+  .tag-tool      { background: #e0f2fe; color: #0369a1; }
+  .tag-public    { background: #f1f5f9; color: #475569; }
+  .tag-internal  { background: #fce7f3; color: #9d174d; }
+  .tag-new       { background: #ede9fe; color: #5b21b6; }
+  .tag-change    { background: #fff7ed; color: #c2410c; }
+
+  .feature-body {
+    border-top: 1px solid var(--border);
+    padding: 14px 18px;
+    background: #fafbfc;
+  }
+
+  .feature-desc {
+    font-size: 12.5px;
+    color: #374151;
+    margin-bottom: 12px;
+    line-height: 1.65;
+  }
+
+  /* ── Detail grid ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .detail-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+  }
+  .detail-box .box-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .detail-box .box-val {
+    font-size: 12px;
+    color: #1e293b;
+    line-height: 1.5;
+  }
+
+  /* ── Sub-feature list ── */
+  .sub-list {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .sub-item {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    background: white;
+  }
+  .sub-item:last-child { border-bottom: none; }
+  .sub-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 22px;
+    margin-top: 1px;
+  }
+  .sub-content .sub-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 2px;
+  }
+  .sub-content .sub-desc {
+    font-size: 11.5px;
+    color: var(--slate);
+    line-height: 1.55;
+  }
+
+  /* ── Open question callout ── */
+  .open-q-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #78350f;
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .open-q-box::before {
+    content: '?';
+    display: inline-flex;
+    width: 18px; height: 18px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── Note box ── */
+  .note-box {
+    background: var(--sky);
+    border: 1px solid #bae6fd;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #0c4a6e;
+    margin-top: 10px;
+  }
+  .note-box strong { font-weight: 600; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0 0;
+  }
+
+  /* ── Screen label ── */
+  .screen-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .screen-home { background: #dbeafe; color: var(--blue); }
+  .screen-mkt  { background: #ccfbf1; color: var(--teal); }
+  .screen-sys  { background: #ede9fe; color: #5b21b6; }
+
+  /* ── Summary table ── */
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 16px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .summary-table thead tr {
+    background: var(--navy);
+    color: white;
+  }
+  .summary-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .summary-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .summary-table tbody tr:last-child td { border-bottom: none; }
+  .summary-table tbody tr:nth-child(even) { background: #f8fafc; }
+  .summary-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--blue);
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    margin-top: 48px;
+    padding-top: 18px;
+    border-top: 2px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ── Print ── */
+  @media print {
+    body { background: white; }
+    .doc-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .feature-card { page-break-inside: avoid; }
+    .content { padding: 20px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · Feature Planning</div>
+  <h1>Phân Loại Tính Năng & Đầu Mục Công Việc</h1>
+  <div class="subtitle">Đề xuất thay đổi & bổ sung tính năng — Phòng Phân tích & Phòng CLKD</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Nguồn</strong> · Tài liệu đề xuất Phòng Research</div>
+    <div class="meta-item"><strong>Phiên bản</strong> · v1.0</div>
+    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+    <div class="meta-item"><strong>Phạm vi</strong> · NHSV Pro Mobile App</div>
+  </div>
+</div>
+
+<!-- SUMMARY STATS -->
+<div class="summary-grid">
+  <div class="summary-card"><div class="num blue">2</div><div class="label">Màn hình ảnh hưởng</div></div>
+  <div class="summary-card"><div class="num teal">12</div><div class="label">Tính năng / Work items</div></div>
+  <div class="summary-card"><div class="num green">3</div><div class="label">Nguồn dữ liệu nội bộ</div></div>
+  <div class="summary-card"><div class="num amber">3</div><div class="label">Open questions</div></div>
+</div>
+
+<div class="content">
+
+  <!-- ===== MODULE A: TRANG CHỦ ===== -->
+  <div class="module-header">
+    <div class="module-badge mod-a">A</div>
+    <div>
+      <h2>Màn hình Trang chủ (Home Screen)</h2>
+      <div class="module-desc">Tái cấu trúc layout + thêm 2 mục nội dung mới trong Kênh tin tức NHSV</div>
+    </div>
+    <div class="feature-count">6 work items</div>
+  </div>
+
+  <!-- A1 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-01</span>
+      <div>
+        <div class="feature-title">Tái cấu trúc thứ tự hiển thị màn hình Trang chủ <span class="en">Home Screen Layout Restructure</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-change">Thay đổi</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Sắp xếp lại thứ tự các mục trên màn hình Trang chủ từ cấu trúc hiện tại sang cấu trúc mới theo đề xuất.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Hiện trạng</div>
+          <div class="box-val">① Biểu đồ<br>② Hoạt động tích cực<br>③ Tin mới nhất<br>④ Kênh tin tức NHSV</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Cấu trúc mới</div>
+          <div class="box-val">① Biểu đồ<br>② Hoạt động tích cực<br>③ Lịch sự kiện <em>(mới)</em><br>④ Kênh tin tức NHSV<br>⑤ Tin mới nhất</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Loại công việc</div>
+          <div class="box-val">Front-end: reorder components<br>Không thay đổi logic dữ liệu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A2 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-02</span>
+      <div>
+        <div class="feature-title">Mục Lịch sự kiện (Event Calendar) <span class="en">Dividend Event Calendar</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-realtime">Realtime</span>
+        <span class="tag tag-public">Nguồn công khai</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Thêm mục mới hiển thị các sự kiện cổ tức tiền mặt và cổ phiếu sắp tới, sắp xếp từ ngày gần đến xa. Vị trí: sau mục Hoạt động tích cực.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Nội dung hiển thị</div>
+          <div class="box-val">
+            • <strong>Cash dividend:</strong> thông tin cổ tức tiền, ngày GDKHQ<br>
+            • <strong>Stock dividend:</strong> thông tin cổ phiếu thưởng, ngày GDKHQ
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Nguồn & Upload</div>
+          <div class="box-val">
+            Nguồn: các nguồn công khai<br>
+            Upload: <strong>Tự động realtime</strong>
+          </div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Sắp xếp & Tham khảo</div>
+          <div class="box-val">
+            Thứ tự: theo ngày phát sinh (gần → xa)<br>
+            UI tham khảo: <strong>KIS app</strong>
+          </div>
+        </div>
+      </div>
+      <div class="note-box">
+        <strong>API cần làm rõ:</strong> nguồn dữ liệu công khai cụ thể (SSC, HOSE data feed, hay Vietstock?) và cơ chế sync realtime cần được xác nhận với IT trước khi estimate.
+      </div>
+    </div>
+  </div>
+
+  <!-- A3 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-03</span>
+      <div>
+        <div class="feature-title">Sắp xếp lại thứ tự tab trong Kênh tin tức NHSV <span class="en">News Channel Tab Reorder</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-change">Thay đổi</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Thêm 2 tab mới và reorder toàn bộ tab trong mục Kênh tin tức NHSV.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Hiện tại</div>
+          <div class="box-val">Videos · Shorts · Tin tức</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Thứ tự mới</div>
+          <div class="box-val">① NH Research <em>(mới)</em><br>② Khuyến nghị <em>(mới)</em><br>③ Short<br>④ Videos<br>⑤ Tin tức</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Loại công việc</div>
+          <div class="box-val">Front-end: tab navigation<br>+ thêm 2 tab mới (A-04, A-05)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A4 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-04</span>
+      <div>
+        <div class="feature-title">Tab NH Research (3 sub-tabs) <span class="en">NH Research Content Tab</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-tool">Upload Tool</span>
+        <span class="tag tag-internal">Phòng Phân tích</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Tạo tab NH Research trong Kênh tin tức NHSV, bao gồm 3 nút phân loại nội dung văn bản do Phòng Phân tích upload. Mỗi mục hiển thị danh sách bài viết dạng card với tiêu đề, ngày, và nút xem/download báo cáo.</div>
+      <div class="sub-list">
+        <div class="sub-item">
+          <div class="sub-num">1</div>
+          <div class="sub-content">
+            <div class="sub-title">Thị trường</div>
+            <div class="sub-desc">Danh sách bài phân tích thị trường theo ngày. Layout: card dọc với thumbnail, tiêu đề, ngày, preview text. Tham khảo: màn hình minh họa trong tài liệu đề xuất.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">2</div>
+          <div class="sub-content">
+            <div class="sub-title">Doanh nghiệp</div>
+            <div class="sub-desc">Danh sách báo cáo phân tích doanh nghiệp. Layout tương tự Thị trường, có nút "Xem chi tiết" = download báo cáo PDF.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">3</div>
+          <div class="sub-content">
+            <div class="sub-title">Vĩ mô</div>
+            <div class="sub-desc">Layout tương tự Doanh nghiệp nhưng card cần phần text/description rộng hơn vì báo cáo vĩ mô thường dài hơn.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+        <div class="detail-box">
+          <div class="box-label">Nguồn dữ liệu</div>
+          <div class="box-val">Phòng Phân tích</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Phương thức upload</div>
+          <div class="box-val">Tool nhập nội dung: hỗ trợ cả <strong>text</strong> và <strong>đính kèm file PDF</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A5 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-05</span>
+      <div>
+        <div class="feature-title">Tab Khuyến nghị (3 sub-tabs) <span class="en">Recommendation Tab</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-realtime">Realtime (một phần)</span>
+        <span class="tag tag-internal">Multi-source</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Tạo tab Khuyến nghị với 3 nút phân loại, mỗi nút có nguồn dữ liệu và cách hiển thị riêng biệt. <strong>Tất cả các mục đều phải có chức năng tìm kiếm theo mã chứng khoán.</strong></div>
+
+      <div class="sub-list">
+        <!-- A5.1 -->
+        <div class="sub-item">
+          <div class="sub-num">5.1</div>
+          <div class="sub-content" style="width:100%">
+            <div class="sub-title">Danh mục cơ bản</div>
+            <div class="sub-desc" style="margin-bottom:8px">Hiển thị danh sách cổ phiếu được khuyến nghị với giá và mức độ tiềm năng. Có filter Bluechip / Midcap.</div>
+            <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
+              <div class="detail-box">
+                <div class="box-label">Thông tin hiển thị</div>
+                <div class="box-val">Giá hiện tại, Giá kỳ vọng, % Lãi/lỗ tiềm năng, Ngày khuyến nghị, Nút download báo cáo</div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Nguồn dữ liệu</div>
+                <div class="box-val">Giá hiện tại: <strong>Realtime</strong> (market feed)<br>Giá kỳ vọng + %: <strong>Phòng Phân tích</strong></div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Upload</div>
+                <div class="box-val">Tool nhập liệu + đính kèm PDF báo cáo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- A5.2 -->
+        <div class="sub-item">
+          <div class="sub-num">5.2</div>
+          <div class="sub-content" style="width:100%">
+            <div class="sub-title">NHSV Rating</div>
+            <div class="sub-desc" style="margin-bottom:8px">Bảng rating cổ phiếu theo thang điểm chữ cái S → A → B → C → D, hiển thị 2 cột đánh giá riêng biệt. <strong>Bắt buộc có chức năng tìm kiếm theo mã.</strong></div>
+            <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
+              <div class="detail-box">
+                <div class="box-label">Thông tin hiển thị</div>
+                <div class="box-val">Mã CK · Cơ bản (S/A/B/C/D) · Thị trường (S/A/B/C/D) · NHSV Rating tổng</div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Nguồn dữ liệu</div>
+                <div class="box-val">Phòng QTRR (danh mục margin)<br>Cập nhật: <strong>theo quý</strong></div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Tham khảo UI</div>
+                <div class="box-val">KBSV – màn hình KB Rating (xem minh họa trong tài liệu)</div>
+              </div>
+            </div>
+            <div class="open-q-box" style="margin-top:8px">
+              Cần xác nhận từ Phòng QTRR: format dữ liệu gửi IT (Excel/file), tần suất cập nhật chính xác, và quy trình gửi dữ liệu mới hàng quý.
+            </div>
+          </div>
+        </div>
+
+        <!-- A5.3 -->
+        <div class="sub-item">
+          <div class="sub-num">5.3</div>
+          <div class="sub-content" style="width:100%">
+            <div class="sub-title">Kỹ thuật hằng ngày</div>
+            <div class="sub-desc" style="margin-bottom:8px">Khuyến nghị kỹ thuật theo ngày cho từng mã cổ phiếu. Tham khảo SSI "Mua gì hôm nay?".</div>
+            <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
+              <div class="detail-box">
+                <div class="box-label">Thông tin hiển thị</div>
+                <div class="box-val">Giá mua (range)<br>Giá kỳ vọng<br>Cắt lỗ<br>Upsize</div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Nguồn dữ liệu</div>
+                <div class="box-val">Vietstock → Phòng Phân tích → App<br>(Vietstock gửi hằng ngày)</div>
+              </div>
+              <div class="detail-box">
+                <div class="box-label">Upload</div>
+                <div class="box-val">Tool nhập liệu hằng ngày + đính kèm PDF</div>
+              </div>
+            </div>
+            <div class="open-q-box" style="margin-top:8px">
+              Cần làm rõ: quy trình nhận dữ liệu từ Vietstock (email, API, file thủ công?). Hiện tại có thể tự động hóa pipeline này không, hay vẫn cần Phòng Phân tích xử lý thủ công trước khi upload?
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- A6 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-a">A-06</span>
+      <div>
+        <div class="feature-title">Chức năng tìm kiếm theo mã — toàn bộ tab Kênh tin tức <span class="en">Global Stock Code Search</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Bắt buộc</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Tất cả các mục trong Kênh tin tức NHSV (NH Research, Khuyến nghị và 3 sub-tabs) đều phải có chức năng tìm kiếm/ lọc theo mã chứng khoán. Đây là yêu cầu bắt buộc, gạch chân trong tài liệu gốc.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Phạm vi áp dụng</div>
+          <div class="box-val">NH Research (3 tabs) · Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Loại công việc</div>
+          <div class="box-val">Front-end: search/filter component tái sử dụng</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Ghi chú</div>
+          <div class="box-val">Có thể build 1 component dùng chung cho tất cả các màn hình yêu cầu search</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== MODULE B: THỊ TRƯỜNG ===== -->
+  <div class="divider"></div>
+  <div class="module-header">
+    <div class="module-badge mod-b">B</div>
+    <div>
+      <h2>Màn hình Thị trường (Market Screen)</h2>
+      <div class="module-desc">Thêm mục Market Watch với 4 sub-tab dữ liệu thị trường realtime</div>
+    </div>
+    <div class="feature-count">4 work items</div>
+  </div>
+
+  <!-- B1 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-b">B-01</span>
+      <div>
+        <div class="feature-title">Container Market Watch <span class="en">Market Watch Tab Container</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-realtime">Realtime</span>
+        <span class="tag tag-public">Nguồn công khai</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Tạo tab Market Watch trên màn hình Thị trường, nằm cạnh tab Bảng giá hiện tại. Đây là container chứa 4 sub-tab (B-02 → B-05). Toàn bộ dữ liệu từ nguồn công khai, cập nhật tự động realtime.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Vị trí</div>
+          <div class="box-val">Tab nằm bên cạnh <strong>Bảng giá</strong> trên màn hình Thị trường</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Sub-tabs bên trong</div>
+          <div class="box-val">① Giá trị GD · ② Nhóm dẫn dắt · ③ Giao dịch khối ngoại · ④ Biến động ngành</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Loại công việc</div>
+          <div class="box-val">FE: tab container + data pipeline realtime từ các nguồn công khai</div>
+        </div>
+      </div>
+      <div class="note-box">
+        <strong>Cần làm rõ với IT:</strong> nguồn dữ liệu công khai cụ thể (HOSE/HNX data feed, Vietstock API, hay nhà cung cấp dữ liệu bên thứ ba?) cần được xác nhận trước khi estimate BE.
+      </div>
+    </div>
+  </div>
+
+  <!-- B2 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-b">B-02</span>
+      <div>
+        <div class="feature-title">Sub-tab: Giá trị giao dịch <span class="en">Trading Value Chart</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-realtime">Realtime</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Biểu đồ so sánh giá trị giao dịch phiên trước và hôm nay theo từng khung giờ trong ngày.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Dạng biểu đồ</div>
+          <div class="box-val">Area/Line chart — trục dọc: thời gian (giờ trong ngày), trục ngang: giá trị GD. Layout chiều dọc cho vừa màn hình mobile.</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Series dữ liệu</div>
+          <div class="box-val">Series 1: GTGD phiên trước (màu khác)<br>Series 2: GTGD hôm nay</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Tham khảo</div>
+          <div class="box-val">Màn hình minh họa đính kèm trong tài liệu (biểu đồ area tối màu)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B3 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-b">B-03</span>
+      <div>
+        <div class="feature-title">Sub-tab: Nhóm dẫn dắt <span class="en">Market Leaders Bar Chart</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-realtime">Realtime</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Biểu đồ cột ngang hiển thị các mã cổ phiếu có mức độ đóng góp lớn nhất vào thị trường, kèm bộ lọc theo sàn.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Dạng biểu đồ</div>
+          <div class="box-val">Horizontal bar chart — trục dọc: mã CK, trục ngang: mức đóng góp vào thị trường (theo điểm)</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Filter</div>
+          <div class="box-val">Lọc theo sàn: <strong>HOSE · HNX · Upcom</strong></div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Màu sắc</div>
+          <div class="box-val">Màu xanh/đỏ theo hướng đóng góp (dương/âm)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B4 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-b">B-04</span>
+      <div>
+        <div class="feature-title">Sub-tab: Giao dịch khối ngoại <span class="en">Foreign Investor Trading</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-realtime">Realtime</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Biểu đồ cột hiển thị giá trị mua ròng / bán ròng của khối ngoại theo từng mã chứng khoán.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Dạng biểu đồ</div>
+          <div class="box-val">Bar chart — hiển thị KL/GT mua ròng và bán ròng. Dương = mua ròng (xanh), Âm = bán ròng (đỏ).</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Filter</div>
+          <div class="box-val">Lọc theo sàn: <strong>HOSE · HNX · Upcom</strong><br>Toggle: KL Mua/Bán ròng ↔ GT Mua/Bán ròng</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Tham khảo</div>
+          <div class="box-val">Màn hình "Giao dịch ngoại khối" trong tài liệu (side-by-side buy/sell columns)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B5 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-b">B-05</span>
+      <div>
+        <div class="feature-title">Sub-tab: Biến động ngành <span class="en">Sector Performance Chart</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-realtime">Realtime</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Biểu đồ hiển thị mức tăng trưởng / sụt giảm (%) của các ngành trong phiên giao dịch.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Dạng biểu đồ</div>
+          <div class="box-val">Bar chart (hoặc treemap) theo ngành. Trực quan màu xanh/đỏ. Nhìn rõ giá trị % từng ngành.</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Phân loại ngành</div>
+          <div class="box-val">Theo phân loại ngành chuẩn của sàn (HOSE/HNX sector classification)</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Ghi chú</div>
+          <div class="box-val">Hình minh họa trong tài liệu chỉ để tham khảo, không bắt buộc theo 100%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== MODULE X: CROSS-CUTTING ===== -->
+  <div class="divider"></div>
+  <div class="module-header">
+    <div class="module-badge mod-x">X</div>
+    <div>
+      <h2>Cross-cutting / Hạ tầng dùng chung</h2>
+      <div class="module-desc">Các component / hệ thống phục vụ nhiều tính năng cùng lúc</div>
+    </div>
+    <div class="feature-count">2 work items</div>
+  </div>
+
+  <!-- X1 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-x">X-01</span>
+      <div>
+        <div class="feature-title">Admin Tool — Nhập liệu cho NH Research & Khuyến nghị <span class="en">Content Upload Admin Tool</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-tool">Admin / BE</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Xây dựng tool nội bộ cho Phòng Phân tích và Phòng QTRR upload nội dung lên app. Tool phải hỗ trợ cả nhập text trực tiếp lẫn đính kèm file PDF.</div>
+      <div class="sub-list">
+        <div class="sub-item">
+          <div class="sub-num">1</div>
+          <div class="sub-content">
+            <div class="sub-title">Nhập nội dung NH Research (Thị trường / Doanh nghiệp / Vĩ mô)</div>
+            <div class="sub-desc">Form nhập: tiêu đề, phân loại (Thị trường/DN/Vĩ mô), nội dung text, đính kèm PDF, ngày đăng. Người dùng: Phòng Phân tích.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">2</div>
+          <div class="sub-content">
+            <div class="sub-title">Nhập Danh mục cơ bản (Khuyến nghị)</div>
+            <div class="sub-desc">Form nhập: mã CK, giá kỳ vọng, % tiềm năng, ngày khuyến nghị, đính kèm PDF báo cáo. Giá hiện tại lấy tự động realtime.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">3</div>
+          <div class="sub-content">
+            <div class="sub-title">Nhập NHSV Rating</div>
+            <div class="sub-desc">Form nhập/import bảng rating (Mã, Cơ bản, Thị trường). Hỗ trợ import file Excel/CSV từ Phòng QTRR. Cập nhật theo quý.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">4</div>
+          <div class="sub-content">
+            <div class="sub-title">Nhập Kỹ thuật hằng ngày</div>
+            <div class="sub-desc">Form nhập hằng ngày: mã CK, giá mua (range), giá kỳ vọng, cắt lỗ, upsize. Nguồn từ Vietstock gửi qua Phòng Phân tích.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- X2 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-x">X-02</span>
+      <div>
+        <div class="feature-title">Realtime Data Pipeline (Market Watch) <span class="en">Market Data Integration</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-realtime">Realtime</span>
+        <span class="tag tag-public">Nguồn công khai</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Backend data pipeline cấp dữ liệu realtime cho toàn bộ Market Watch (B-02 đến B-05) và Event Calendar (A-02). Cần xác định nhà cung cấp dữ liệu và cơ chế kết nối.</div>
+      <div class="detail-grid">
+        <div class="detail-box">
+          <div class="box-label">Phục vụ tính năng</div>
+          <div class="box-val">A-02 (Lịch sự kiện) · B-02 · B-03 · B-04 · B-05 (toàn bộ Market Watch)</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Yêu cầu kỹ thuật</div>
+          <div class="box-val">Realtime hoặc near-realtime (polling/WebSocket). Cần làm rõ SLA về độ trễ dữ liệu.</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Open question</div>
+          <div class="box-val">Nhà cung cấp dữ liệu (FiinGroup, Vietstock API, HOSE/HNX direct feed?) cần IT xác nhận.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ===== SUMMARY TABLE ===== -->
+  <div class="divider"></div>
+  <div class="module-header" style="margin-top:28px;">
+    <div style="flex:1">
+      <h2 style="font-size:16px; color: var(--navy);">Bảng tổng hợp Work Items</h2>
+    </div>
+  </div>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Tính năng</th>
+        <th>Layer</th>
+        <th>Nguồn dữ liệu</th>
+        <th>Upload method</th>
+        <th>Phụ thuộc</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>A-01</td>
+        <td>Tái cấu trúc layout Trang chủ</td>
+        <td>Mobile FE</td>
+        <td>—</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td>A-02</td>
+        <td>Lịch sự kiện (Event Calendar)</td>
+        <td>BE + Mobile FE</td>
+        <td>Nguồn công khai</td>
+        <td>Auto realtime</td>
+        <td>X-02</td>
+      </tr>
+      <tr>
+        <td>A-03</td>
+        <td>Reorder tabs Kênh tin tức NHSV</td>
+        <td>Mobile FE</td>
+        <td>—</td>
+        <td>—</td>
+        <td>A-04, A-05</td>
+      </tr>
+      <tr>
+        <td>A-04</td>
+        <td>Tab NH Research (3 sub-tabs)</td>
+        <td>BE + Mobile FE + Admin</td>
+        <td>Phòng Phân tích</td>
+        <td>Tool (text + PDF)</td>
+        <td>X-01, A-06</td>
+      </tr>
+      <tr>
+        <td>A-05</td>
+        <td>Tab Khuyến nghị (3 sub-tabs)</td>
+        <td>BE + Mobile FE + Admin</td>
+        <td>Phòng PT, Phòng QTRR, Vietstock</td>
+        <td>Tool (text + PDF + import)</td>
+        <td>X-01, X-02, A-06</td>
+      </tr>
+      <tr>
+        <td>A-06</td>
+        <td>Search theo mã CK (toàn bộ Kênh tin tức)</td>
+        <td>Mobile FE</td>
+        <td>—</td>
+        <td>—</td>
+        <td>A-04, A-05</td>
+      </tr>
+      <tr>
+        <td>B-01</td>
+        <td>Container Market Watch tab</td>
+        <td>Mobile FE</td>
+        <td>—</td>
+        <td>—</td>
+        <td>B-02→B-05, X-02</td>
+      </tr>
+      <tr>
+        <td>B-02</td>
+        <td>Giá trị giao dịch (Area chart)</td>
+        <td>BE + Mobile FE</td>
+        <td>Nguồn công khai</td>
+        <td>Auto realtime</td>
+        <td>X-02, B-01</td>
+      </tr>
+      <tr>
+        <td>B-03</td>
+        <td>Nhóm dẫn dắt (Horizontal bar)</td>
+        <td>BE + Mobile FE</td>
+        <td>Nguồn công khai</td>
+        <td>Auto realtime</td>
+        <td>X-02, B-01</td>
+      </tr>
+      <tr>
+        <td>B-04</td>
+        <td>Giao dịch khối ngoại (Bar chart)</td>
+        <td>BE + Mobile FE</td>
+        <td>Nguồn công khai</td>
+        <td>Auto realtime</td>
+        <td>X-02, B-01</td>
+      </tr>
+      <tr>
+        <td>B-05</td>
+        <td>Biến động ngành (Bar/Treemap)</td>
+        <td>BE + Mobile FE</td>
+        <td>Nguồn công khai</td>
+        <td>Auto realtime</td>
+        <td>X-02, B-01</td>
+      </tr>
+      <tr>
+        <td>X-01</td>
+        <td>Admin Upload Tool (NH Research + Khuyến nghị)</td>
+        <td>BE + Admin Web</td>
+        <td>Nội bộ (multi-dept)</td>
+        <td>Text + PDF + Import Excel</td>
+        <td>Blocked by: A-04, A-05</td>
+      </tr>
+      <tr>
+        <td>X-02</td>
+        <td>Realtime Market Data Pipeline</td>
+        <td>BE / Infra</td>
+        <td>TBD (FiinGroup/Vietstock/...)</td>
+        <td>Auto (API/WebSocket)</td>
+        <td>Blocker cho A-02, B-02→B-05</td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <!-- ===== OPEN QUESTIONS ===== -->
+  <div class="divider"></div>
+  <div class="module-header" style="margin-top:28px;">
+    <div>
+      <h2 style="font-size:16px; color:#92400e;">⚠ Open Questions cần làm rõ trước khi estimate</h2>
+    </div>
+  </div>
+
+  <div style="display:grid; gap:10px;">
+    <div class="open-q-box" style="font-size:13px; padding:14px 16px;">
+      <div>
+        <strong>[Q1 – X-02]</strong> Nhà cung cấp dữ liệu realtime cho Market Watch và Event Calendar là ai? (FiinGroup, Vietstock API, HOSE/HNX data feed trực tiếp?) → Ảnh hưởng trực tiếp đến estimate BE và cost license data.
+      </div>
+    </div>
+    <div class="open-q-box" style="font-size:13px; padding:14px 16px;">
+      <div>
+        <strong>[Q2 – A-05.2]</strong> Phòng QTRR gửi dữ liệu NHSV Rating cho IT theo format nào và qua kênh nào? (Email Excel, share folder, Google Sheet?) → Ảnh hưởng đến thiết kế Admin Tool X-01.
+      </div>
+    </div>
+    <div class="open-q-box" style="font-size:13px; padding:14px 16px;">
+      <div>
+        <strong>[Q3 – A-05.3]</strong> Vietstock hiện gửi dữ liệu Kỹ thuật hằng ngày cho Phòng Phân tích qua kênh nào? Có khả năng tự động hóa pipeline này (API từ Vietstock?) hay cần Phòng Phân tích xử lý thủ công rồi mới upload qua tool?
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="doc-footer">
+    <div>NHSV Pro · Feature Breakdown · Phòng Research &amp; CLKD</div>
+    <div>Tổng: 13 work items · 2 modules · 3 open questions</div>
+  </div>
+
+</div>
+</body>
+</html>
