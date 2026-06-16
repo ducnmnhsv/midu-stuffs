@@ -17,92 +17,82 @@ Primary user: Mix Long-term investor + Day trader.
 
 ---
 
-## Folder Structure (đã thống nhất)
+## Folder Structure (cập nhật 2026-06-16)
 
-Tổ chức theo **feature area** (không theo screen name — khó maintain):
+Push Notification tách riêng theo domain để làm độc lập. Admin_Tool nằm trong NHSV_Channel.
 
 ```
 New feature in NHSV Pro/
 ├── README.md
-├── List of issues.html          ← PM reference, 14 work items (cập nhật 2026-06-16)
+├── List of issues.html          ← PM reference, 14 work items
 ├── Planning/
-│   └── Feature_Improvements_2026Q2.md  ← prose-only, C3 compliant
-├── Push_Notification/
-│   └── Specifications/
-│       └── X03_Push_Notification_Infrastructure.md
+│   └── Feature_Improvements_2026Q2.md
 ├── _Demo/
 │   └── index.html               ← demo prototype, NHSV DS aligned
 ├── Event_Calendar/
+│   ├── Spec.html
+│   └── Push_Notification/
+│       └── Push_Notification_Spec.md   ← GDKHQ reminder only
 ├── NHSV_Channel/
 │   ├── NH_Research/
+│   │   ├── Spec.html
+│   │   ├── admin-demo.html      ← detailed NH Research admin demo
+│   │   └── jira-issues.md
 │   ├── Khuyen_Nghi/
-│   ├── Layout_Restructure/
-│   ├── Tab_Reorder/
-│   └── Search/
+│   │   └── Spec.html
+│   ├── Admin_Tool/              ← unified admin: NH Research + Khuyen Nghi + Push Notif
+│   │   └── admin-demo.html
+│   └── Push_Notification/
+│       └── Push_Notification_Spec.md   ← NH Research + Khuyen Nghi publish notifications
 ├── Market_Watch/
-│   ├── GTGD_Chart/
+│   ├── GTGD_Chart/ (PRD.md + BE_Issue.md)
 │   ├── Market_Leaders/
 │   ├── Foreign_Trading/
 │   └── Sector_Performance/
-├── Admin_Tool/
 └── Realtime_Pipeline/
 ```
 
+**Quyết định folder structure:**
+- Admin_Tool trong NHSV_Channel — chỉ serve NHSV Channel features
+- Push Notification tách Event_Calendar vs NHSV_Channel để làm song song độc lập
+- Layout_Restructure, Search, Tab_Reorder đã xóa (đã integrate vào NHSV_Channel)
+
 ---
 
-## Sprint Scope — Items được confirm thêm vào (cập nhật 2026-06-16)
+## Sprint Scope
 
 Từ competitive review (2026-06-15), tất cả đã được update vào `List of issues.html`:
 
-### Event_Calendar (A-02)
-- Push notification T-3 ngày trước ngày GDKHQ
-
-### NHSV_Channel / NH_Research (A-04) + Khuyen_Nghi (A-05)
-- P&L since recommendation date trên Danh mục cơ bản
-- Sort/filter by rating level (S/A/B/C/D) trên NHSV Rating
-- Status indicator (Còn hiệu lực / Đạt target / Đã cắt lỗ) trên Kỹ thuật hằng ngày
-- Push notification khi có bài mới (A-04 + A-05)
-
-### X-03 Push Notification Infrastructure
-Cross-cutting, phục vụ cả Event_Calendar lẫn NH_Research + Khuyen_Nghi:
-- BE: notification service — trigger: TRIGGER_GDKHQ_REMINDER, TRIGGER_NH_RESEARCH_PUBLISH, TRIGGER_KHUYEN_NGHI_PUBLISH
-- FE: deeplink handler (`nhsvpro://event-calendar`, `nhsvpro://channel/nh-research`, `nhsvpro://channel/khuyen-nghi`)
-- Admin Tool (X-01): nút "Publish & Notify" khi upload bài
+- **A-02** Event Calendar: push notification T-3 ngày trước GDKHQ
+- **A-04/A-05** NHSV Channel: P&L since KN date · Sort/filter by rating S/A/B/C/D · Status indicator (Còn hiệu lực / Đạt target / Đã cắt lỗ) · Push notification khi publish bài mới
+- **X-03** (was cross-cutting, now split): notification service BE + FE deeplink handler
 
 ---
 
 ## Demo Prototype — `_Demo/index.html`
 
-Đã align với NHSV Pro Design System (session 2026-06-16):
-- Font: Lato (thay Inter)
-- Primary: `#028D96` teal (thay navy)
-- Header gradient: `linear-gradient(90deg,#00A9B4 0%,#01B483 100%)`
-- Market colors: green `#07A461` (up), red `#DA1004` (down)
-- Tất cả emoji icon → Lucide inline SVG
-- 3 improvements đã có trong mockup: P&L row, sort/filter pills, status badges
+Đã align với NHSV Pro Design System:
+- Font: Lato · Primary: `#028D96` · Header gradient teal
+- Tất cả emoji → Lucide inline SVG
+- 3 improvements trong mockup: P&L row, sort/filter pills, status badges
 
 ---
 
-## Backlog (chưa làm — xem lại sau)
+## Backlog (xem lại Q3)
 
-Market Watch improvements (từ competitive review):
-- GTGD Chart: so sánh đa phiên T-1/T-5/T-20; surge indicator
-- Market Leaders: tách view Contributors + Gainers/Losers
-- Foreign Trading: rolling 5-phiên trend; header summary
-- Sector Performance: dùng Treemap thay bar; drill down by sector
-
-User Flow & Cross-cutting UX:
-- Discoverability: "NEW" badge trên tab mới
-- Search: global search ở header NHSV Channel
-- Portfolio overlay trên Market Watch
-- Share khuyến nghị card
+- GTGD Chart: đa phiên T-1/T-5/T-20; surge indicator
+- Market Leaders: tách Contributors + Gainers/Losers
+- Foreign Trading: rolling 5-phiên trend
+- Sector Performance: Treemap + drill down
+- UX: "NEW" badge, global search, portfolio overlay, share card
 
 ---
 
 ## Việc còn dang dở
 
-Không còn việc tồn đọng từ sessions trước. Tất cả 3 tasks ban đầu đã complete:
-1. ✅ `List of issues.html` — 14 work items, X-03 added
-2. ✅ `Planning/Feature_Improvements_2026Q2.md` — prose-only planning doc
-3. ✅ `Push_Notification/Specifications/X03_Push_Notification_Infrastructure.md`
-4. ✅ `_Demo/index.html` — NHSV DS aligned, emoji removed, 3 improvements in mockups
+Không còn tồn đọng. Tất cả tasks hoàn thành:
+1. `List of issues.html` — 14 work items, X-03 added
+2. `Planning/Feature_Improvements_2026Q2.md`
+3. `_Demo/index.html` — NHSV DS aligned, 3 improvements in mockups
+4. `NHSV_Channel/Admin_Tool/admin-demo.html` — unified admin demo
+5. Folder structure restructured (2026-06-16)
