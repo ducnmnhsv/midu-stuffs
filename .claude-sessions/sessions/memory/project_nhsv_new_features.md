@@ -24,7 +24,14 @@ Tổ chức theo **feature area** (không theo screen name — khó maintain):
 ```
 New feature in NHSV Pro/
 ├── README.md
-├── List of issues.html          ← PM reference, giữ lại
+├── List of issues.html          ← PM reference, 14 work items (cập nhật 2026-06-16)
+├── Planning/
+│   └── Feature_Improvements_2026Q2.md  ← prose-only, C3 compliant
+├── Push_Notification/
+│   └── Specifications/
+│       └── X03_Push_Notification_Infrastructure.md
+├── _Demo/
+│   └── index.html               ← demo prototype, NHSV DS aligned
 ├── Event_Calendar/
 ├── NHSV_Channel/
 │   ├── NH_Research/
@@ -33,7 +40,7 @@ New feature in NHSV Pro/
 │   ├── Tab_Reorder/
 │   └── Search/
 ├── Market_Watch/
-│   ├── GTGD_Chart/              ← có PRD.md + BE_Issue.md
+│   ├── GTGD_Chart/
 │   ├── Market_Leaders/
 │   ├── Foreign_Trading/
 │   └── Sector_Performance/
@@ -43,26 +50,36 @@ New feature in NHSV Pro/
 
 ---
 
-## Sprint Scope — Items được confirm thêm vào
+## Sprint Scope — Items được confirm thêm vào (cập nhật 2026-06-16)
 
-Từ competitive review (2026-06-15), các improvements sau được PM approve thêm vào sprint:
+Từ competitive review (2026-06-15), tất cả đã được update vào `List of issues.html`:
 
 ### Event_Calendar (A-02)
-- **ADD:** Push notification T-3 ngày trước ngày GDKHQ
+- Push notification T-3 ngày trước ngày GDKHQ
 
 ### NHSV_Channel / NH_Research (A-04) + Khuyen_Nghi (A-05)
-- **ADD:** P&L since recommendation date trên Danh mục cơ bản
-- **ADD:** Sort/filter by rating level trên NHSV Rating
-- **ADD:** Status indicator (Còn hiệu lực / Đạt target / Đã cắt lỗ) trên Kỹ thuật hằng ngày
-- **ADD:** Push notification khi có bài mới — FE cần implement deeplink để navigate vào đúng màn hình
+- P&L since recommendation date trên Danh mục cơ bản
+- Sort/filter by rating level (S/A/B/C/D) trên NHSV Rating
+- Status indicator (Còn hiệu lực / Đạt target / Đã cắt lỗ) trên Kỹ thuật hằng ngày
+- Push notification khi có bài mới (A-04 + A-05)
 
-### X-03 Push Notification Infrastructure ← NEW work item
+### X-03 Push Notification Infrastructure
 Cross-cutting, phục vụ cả Event_Calendar lẫn NH_Research + Khuyen_Nghi:
-- BE: notification service — trigger mới (T-3 GDKHQ + publish content)
-- FE: deeplink handler (`nhsvpro://channel/nh-research`, `nhsvpro://channel/khuyen-nghi`, v.v.)
+- BE: notification service — trigger: TRIGGER_GDKHQ_REMINDER, TRIGGER_NH_RESEARCH_PUBLISH, TRIGGER_KHUYEN_NGHI_PUBLISH
+- FE: deeplink handler (`nhsvpro://event-calendar`, `nhsvpro://channel/nh-research`, `nhsvpro://channel/khuyen-nghi`)
 - Admin Tool (X-01): nút "Publish & Notify" khi upload bài
 
-**How to apply:** Khi tiếp tục session, bước tiếp theo là cập nhật `List of issues.html` và tạo design doc cho X-03.
+---
+
+## Demo Prototype — `_Demo/index.html`
+
+Đã align với NHSV Pro Design System (session 2026-06-16):
+- Font: Lato (thay Inter)
+- Primary: `#028D96` teal (thay navy)
+- Header gradient: `linear-gradient(90deg,#00A9B4 0%,#01B483 100%)`
+- Market colors: green `#07A461` (up), red `#DA1004` (down)
+- Tất cả emoji icon → Lucide inline SVG
+- 3 improvements đã có trong mockup: P&L row, sort/filter pills, status badges
 
 ---
 
@@ -82,8 +99,10 @@ User Flow & Cross-cutting UX:
 
 ---
 
-## Việc còn dang dở (cần làm khi quay lại)
+## Việc còn dang dở
 
-1. Cập nhật `List of issues.html` — thêm improvements đã confirm + X-03 + backlog section
-2. Tạo design doc tại `docs/superpowers/specs/2026-06-15-nhsv-feature-improvements.md`
-3. Tạo spec file cho X-03 Push Notification Infrastructure
+Không còn việc tồn đọng từ sessions trước. Tất cả 3 tasks ban đầu đã complete:
+1. ✅ `List of issues.html` — 14 work items, X-03 added
+2. ✅ `Planning/Feature_Improvements_2026Q2.md` — prose-only planning doc
+3. ✅ `Push_Notification/Specifications/X03_Push_Notification_Infrastructure.md`
+4. ✅ `_Demo/index.html` — NHSV DS aligned, emoji removed, 3 improvements in mockups
