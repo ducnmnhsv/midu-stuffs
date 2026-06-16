@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NHSV Pro – DR (Phái sinh) Go-Live Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f4f6f9; color: #1a1a2e; font-size: 13px; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #0d47a1, #1565c0); color: #fff; padding: 24px 32px; }
+  .header h1 { font-size: 22px; font-weight: 700; }
+  .header .sub { font-size: 13px; opacity: .8; margin-top: 6px; }
+  .header .meta { display: flex; gap: 24px; margin-top: 14px; flex-wrap: wrap; }
+  .header .meta-item { background: rgba(255,255,255,.15); border-radius: 6px; padding: 6px 14px; font-size: 12px; }
+  .header .meta-item strong { display: block; font-size: 11px; opacity: .75; text-transform: uppercase; letter-spacing: .5px; }
+
+  /* Summary cards */
+  .summary { display: flex; gap: 12px; padding: 16px 32px; flex-wrap: wrap; }
+  .card { background: #fff; border-radius: 10px; padding: 14px 20px; flex: 1; min-width: 130px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid #e0e0e0; }
+  .card.total { border-color: #1565c0; }
+  .card.done  { border-color: #2e7d32; }
+  .card.prog  { border-color: #f57c00; }
+  .card.todo  { border-color: #9e9e9e; }
+  .card .num  { font-size: 28px; font-weight: 700; }
+  .card .lbl  { font-size: 11px; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: .4px; }
+  .card.total .num { color: #1565c0; }
+  .card.done  .num { color: #2e7d32; }
+  .card.prog  .num { color: #f57c00; }
+
+  /* Controls */
+  .controls { padding: 0 32px 12px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .controls input { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; width: 220px; }
+  .controls select { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; background: #fff; cursor: pointer; }
+  .controls label { font-size: 12px; color: #555; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+
+  /* Legend */
+  .legend { padding: 0 32px 8px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #555; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Table */
+  .table-wrap { padding: 0 32px 40px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+  thead th { background: #1e3a5f; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 10px 12px; text-align: left; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid #f0f0f0; transition: background .15s; }
+  tbody tr:hover { background: #f7f9fc; }
+  tbody tr.phase-header td { background: #e8edf4; font-weight: 700; font-size: 12px; color: #1e3a5f; padding: 8px 12px; letter-spacing: .3px; }
+  tbody tr.hidden { display: none; }
+  td { padding: 9px 12px; vertical-align: top; }
+  td.no { width: 50px; color: #999; font-size: 11px; }
+  td.phase-tag { width: 120px; }
+  td.task { font-weight: 600; font-size: 12px; }
+  td.desc { color: #444; line-height: 1.5; }
+  td.desc ul { margin: 4px 0 0 16px; }
+  td.desc li { margin-bottom: 2px; }
+  td.desc code { background: #f0f4ff; border-radius: 3px; padding: 1px 5px; font-size: 11px; font-family: 'Courier New', monospace; color: #1a237e; }
+  td.status-cell { width: 120px; }
+  td.owner { width: 90px; font-size: 11px; color: #666; }
+  td.jira { width: 110px; font-size: 11px; }
+  td.notes { width: 150px; color: #777; font-size: 11px; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+  .badge-done { background: #e8f5e9; color: #2e7d32; }
+  .badge-prog { background: #fff3e0; color: #e65100; }
+  .badge-uat  { background: #e3f2fd; color: #0d47a1; }
+  .badge-todo { background: #f5f5f5; color: #757575; }
+  .badge-ready{ background: #f3e5f5; color: #6a1b9a; }
+  .badge-block{ background: #fce4ec; color: #b71c1c; }
+
+  /* Phase color dots */
+  .phase-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; }
+  .p0 { background: #546e7a; } /* Pre-deploy */
+  .p1 { background: #1565c0; } /* Infrastructure */
+  .p2 { background: #0288d1; } /* market-collector-lotte */
+  .p3 { background: #00796b; } /* realtime-v2 + ws-v2 */
+  .p4 { background: #558b2f; } /* market-query-v2 */
+  .p5 { background: #f57f17; } /* tradex-api / DR APIs */
+  .p6 { background: #6a1b9a; } /* Open sub-account */
+  .p7 { background: #c62828; } /* Notifications */
+  .p8 { background: #37474f; } /* Smoke testing */
+  .p9 { background: #880e4f; } /* App release */
+  .p10{ background: #1b5e20; } /* Post-launch */
+
+  /* Jira links */
+  a.jira-link { color: #1565c0; text-decoration: none; font-size: 11px; }
+  a.jira-link:hover { text-decoration: underline; }
+
+  /* Checkbox custom */
+  .chk { width: 15px; height: 15px; cursor: pointer; }
+
+  /* Progress bar */
+  .progress-wrap { padding: 0 32px 4px; }
+  .progress-bar { height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #2e7d32, #66bb6a); border-radius: 3px; transition: width .4s; }
+  .progress-label { font-size: 11px; color: #555; margin-bottom: 4px; }
+
+  /* ─── Tabs ─── */
+  .tabs-nav { display: flex; padding: 0 32px; gap: 4px; background: #0d3b7a; }
+  .tab-btn { padding: 10px 20px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.65); background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; transition: all .2s; white-space: nowrap; }
+  .tab-btn:hover { color: #fff; }
+  .tab-btn.active { color: #fff; border-bottom-color: #64b5f6; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ─── Team strip ─── */
+  .team-strip { display: flex; gap: 10px; padding: 12px 32px 0; flex-wrap: wrap; }
+  .team-card { background: #fff; border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.07); min-width: 180px; }
+  .team-avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #fff; flex-shrink: 0; }
+  .team-name { font-weight: 600; font-size: 12px; }
+  .team-role { font-size: 11px; color: #888; }
+
+  /* ─── Rollback & System Impact tables ─── */
+  .section-wrap { padding: 16px 32px 40px; }
+  .section-title { font-size: 15px; font-weight: 700; color: #1e3a5f; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title span { font-size: 18px; }
+  .ri-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.07); margin-bottom: 28px; }
+  .ri-table thead th { background: #1e3a5f; color: #fff; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; padding: 10px 14px; text-align: left; }
+  .ri-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+  .ri-table tbody tr:hover { background: #f7f9fc; }
+  .ri-table td { padding: 10px 14px; vertical-align: top; font-size: 12px; line-height: 1.55; }
+  .ri-table td.label { font-weight: 600; width: 200px; color: #1e3a5f; }
+  .ri-table td ul { margin: 4px 0 0 16px; }
+  .ri-table td li { margin-bottom: 3px; }
+  .ri-table td code { background: #f0f4ff; border-radius: 3px; padding: 1px 5px; font-size: 11px; font-family: 'Courier New', monospace; color: #1a237e; }
+  .ri-table tbody tr.subheader td { background: #f0f4fa; font-weight: 700; font-size: 11px; color: #37474f; text-transform: uppercase; letter-spacing: .4px; padding: 7px 14px; }
+  .risk-high { color: #b71c1c; font-weight: 700; }
+  .risk-med  { color: #e65100; font-weight: 600; }
+  .risk-low  { color: #2e7d32; font-weight: 600; }
+
+  @media print {
+    body { background: #fff; }
+    .controls, .legend, .tabs-nav, .team-strip { display: none; }
+    .table-wrap { padding: 0; }
+    .header { background: #1565c0 !important; -webkit-print-color-adjust: exact; }
+    .tab-panel { display: block !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 NHSV Pro – Derivatives (Phái Sinh) Go-Live Plan</h1>
+  <div class="sub">TradeX Backend → Deploy BE trước · Release App sau</div>
+  <div class="meta">
+    <div class="meta-item"><strong>Project</strong>NHSV Pro / TradeX DR</div>
+    <div class="meta-item"><strong>Jira</strong>NHMTS (Phái sinh issues)</div>
+    <div class="meta-item"><strong>Confluence</strong><a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/folder/187826200" style="color:#90caf9" target="_blank">NHSV Pro BE Specs</a></div>
+    <div class="meta-item"><strong>Staging test</strong><a href="https://claude.ai/share/99fa4023-cf9d-44af-befd-65a208dc23f8" style="color:#90caf9" target="_blank">View session</a></div>
+    <div class="meta-item"><strong>Updated</strong>2026-06-11</div>
+  </div>
+</div>
+
+<!-- Tabs nav -->
+<div class="tabs-nav">
+  <button class="tab-btn active" onclick="switchTab('golive')">📋 Go-Live Plan</button>
+  <button class="tab-btn" onclick="switchTab('rollback')">↩️ Rollback Plan</button>
+  <button class="tab-btn" onclick="switchTab('impact')">🔍 System Impact</button>
+</div>
+
+<!-- Team strip (always visible) -->
+<div class="team-strip">
+  <div class="team-card"><div class="team-avatar" style="background:#0288d1">H</div><div><div class="team-name">Mr Hiếu</div><div class="team-role">Main PIC – Backend Dev</div></div></div>
+  <div class="team-card"><div class="team-avatar" style="background:#558b2f">B</div><div><div class="team-name">Mr Bình</div><div class="team-role">Frontend Dev</div></div></div>
+  <div class="team-card"><div class="team-avatar" style="background:#6a1b9a">T</div><div><div class="team-name">Mr Tuấn</div><div class="team-role">2nd Backend Dev</div></div></div>
+  <div class="team-card"><div class="team-avatar" style="background:#c62828">Đ</div><div><div class="team-name">Mr Đức</div><div class="team-role">PM</div></div></div>
+</div>
+
+<!-- ══════════════ TAB 1: GO-LIVE PLAN ══════════════ -->
+<div id="tab-golive" class="tab-panel active">
+
+<div class="summary">
+  <div class="card total"><div class="num" id="cnt-total">0</div><div class="lbl">Total tasks</div></div>
+  <div class="card done"><div class="num" id="cnt-done">0</div><div class="lbl">Done / Ready</div></div>
+  <div class="card prog"><div class="num" id="cnt-prog">0</div><div class="lbl">In Progress / UAT</div></div>
+  <div class="card todo"><div class="num" id="cnt-todo">0</div><div class="lbl">To Do</div></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label" id="progress-label">Progress: 0%</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="🔍 Search tasks...">
+  <select id="filter-phase">
+    <option value="">All phases</option>
+    <option value="P0">P0 – Pre-deployment</option>
+    <option value="P1">P1 – Infrastructure</option>
+    <option value="P2">P2 – market-collector-lotte</option>
+    <option value="P3">P3 – realtime-v2 + ws-v2</option>
+    <option value="P4">P4 – market-query-v2</option>
+    <option value="P5">P5 – tradex-api (DR APIs)</option>
+    <option value="P6">P6 – Open sub-account</option>
+    <option value="P7">P7 – Notifications</option>
+    <option value="P8">P8 – BE Smoke Test</option>
+    <option value="P9">P9 – App Release</option>
+    <option value="P10">P10 – Post-launch</option>
+  </select>
+  <select id="filter-status">
+    <option value="">All statuses</option>
+    <option value="done">Done</option>
+    <option value="prog">In Progress / UAT</option>
+    <option value="todo">To Do</option>
+  </select>
+  <label><input type="checkbox" id="show-be-only"> BE tasks only</label>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="dot" style="background:#546e7a"></span>P0 Pre-deploy</div>
+  <div class="legend-item"><span class="dot" style="background:#1565c0"></span>P1 Infrastructure</div>
+  <div class="legend-item"><span class="dot" style="background:#0288d1"></span>P2 market-collector</div>
+  <div class="legend-item"><span class="dot" style="background:#00796b"></span>P3 realtime+ws</div>
+  <div class="legend-item"><span class="dot" style="background:#558b2f"></span>P4 market-query</div>
+  <div class="legend-item"><span class="dot" style="background:#f57f17"></span>P5 tradex-api</div>
+  <div class="legend-item"><span class="dot" style="background:#6a1b9a"></span>P6 Sub-account</div>
+  <div class="legend-item"><span class="dot" style="background:#c62828"></span>P7 Notifications</div>
+  <div class="legend-item"><span class="dot" style="background:#37474f"></span>P8 Smoke Test</div>
+  <div class="legend-item"><span class="dot" style="background:#880e4f"></span>P9 App Release</div>
+  <div class="legend-item"><span class="dot" style="background:#1b5e20"></span>P10 Post-launch</div>
+</div>
+
+<div class="table-wrap">
+<table id="main-table">
+<thead>
+  <tr>
+    <th>#</th>
+    <th>Phase</th>
+    <th>Task</th>
+    <th>Description / Checklist</th>
+    <th>Type</th>
+    <th>Status</th>
+    <th>Owner</th>
+    <th>Jira</th>
+    <th>Notes</th>
+  </tr>
+</thead>
+<tbody id="tbody">
+
+<!-- ─────────────── PHASE 0+1: PRE-DEPLOYMENT & INFRASTRUCTURE ─────────────── -->
+<tr class="phase-header"><td colspan="9">⚙️ PHASE 0 – PRE-DEPLOYMENT PREPARATION & INFRASTRUCTURE</td></tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">0.1</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Kiểm tra kết nối Lotte PROD</td>
+  <td class="desc">
+    Verify connectivity tới Lotte PROD API & WebSocket:<br>
+    <ul>
+      <li>Ping/test REST endpoint <code>/tuxsvc/market/dr/stock-board</code> (DRMKT-001)</li>
+      <li>Verify OAuth2 token + API KEY hoạt động</li>
+      <li>Test WS connect <code>auto.dr.qt</code>, <code>auto.dr.bo</code></li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">Block nếu không kết nối được</td>
+</tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">0.2</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Backup production configs</td>
+  <td class="desc">
+    <ul>
+      <li>Backup current <code>symbol_static.json</code> trên MinIO/S3</li>
+      <li>Export Redis SYMBOL_INFO snapshot</li>
+      <li>Document rollback procedure</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">Rollback: xóa DR symbols khỏi json</td>
+</tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">0.3</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Review DR architecture & isolation</td>
+  <td class="desc">
+    Confirm isolation: nếu DR fail → equity không bị ảnh hưởng.<br>
+    <ul>
+      <li>Kiểm tra circuit breaker cho DR init job</li>
+      <li>Kiểm tra separate Kafka topics (<code>quoteUpdateDR</code>, <code>bidOfferUpdateDR</code>)</li>
+      <li>Review <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/196575252/BE+Integration+plan" target="_blank" class="jira-link">BE Integration Plan</a></li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Lead</td>
+  <td class="jira">–</td>
+  <td class="notes">Confluence: BE Integration Plan</td>
+</tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">1.1</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Tạo Kafka topics cho DR</td>
+  <td class="desc">
+    Tạo các Kafka topics mới:<br>
+    <ul>
+      <li><code>quoteUpdateDR</code> – DR quote messages từ Lotte WS</li>
+      <li><code>bidOfferUpdateDR</code> – DR bid/offer messages từ Lotte WS</li>
+    </ul>
+    Config: retention 1 day, partitions 3+, replication factor 2+
+  </td>
+  <td><span class="badge badge-todo">Infra</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">DevOps</td>
+  <td class="jira">–</td>
+  <td class="notes">Verify với <code>kafka-topics --list</code></td>
+</tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">1.2</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Verify Redis capacity</td>
+  <td class="desc">
+    DR symbols (~4-8 mã) sẽ được lưu vào Redis key <code>SYMBOL_INFO</code> với <code>m=INDEX|BOND</code>.<br>
+    <ul>
+      <li>Check available memory trên Redis cluster</li>
+      <li>Verify key naming convention: không conflict với equity</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">Infra</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">DevOps</td>
+  <td class="jira">–</td>
+  <td class="notes">Tổng ~4-8 DR symbols ban đầu</td>
+</tr>
+
+<tr data-phase="P0" data-status="todo" data-type="be">
+  <td class="no">1.3</td>
+  <td class="phase-tag"><span class="phase-dot p0"></span>P0</td>
+  <td class="task">Verify MongoDB storage cho DR market data</td>
+  <td class="desc">
+    <ul>
+      <li>Verify collection lưu OHLCV daily data cho DR symbols</li>
+      <li>Tạo indexes nếu cần (symbol + date)</li>
+      <li>Chuẩn bị cho backfill job (NHMTS-868)</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">Infra</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-868" target="_blank" class="jira-link">NHMTS-868</a></td>
+  <td class="notes">Cần trước khi backfill historical data</td>
+</tr>
+
+<!-- ─────────────── PHASE 2: market-collector-lotte ─────────────── -->
+<!-- (P1 merged vào P0) -->
+<tr class="phase-header"><td colspan="9">📡 PHASE 2 – DEPLOY: market-collector-lotte (Lotte WS → Kafka)</td></tr>
+
+<tr data-phase="P2" data-status="todo" data-type="be">
+  <td class="no">2.1</td>
+  <td class="phase-tag"><span class="phase-dot p2"></span>P2</td>
+  <td class="task">Deploy service market-collector-lotte</td>
+  <td class="desc">
+    Deploy version mới chứa DR WebSocket handlers:<br>
+    <ul>
+      <li><code>DerivativeQuoteHandler</code> – xử lý <code>auto.dr.qt.{code}</code> (RMK-011)</li>
+      <li><code>DerivativeBidOfferHandler</code> – xử lý <code>auto.dr.bo.{code}</code> (RMK-012)</li>
+    </ul>
+    Service subscribe tất cả DR symbols sau khi init job chạy.
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/196509700" target="_blank" class="jira-link">Market data spec</a></td>
+  <td class="notes">Isolated khỏi equity handlers</td>
+</tr>
+
+<tr data-phase="P2" data-status="todo" data-type="be">
+  <td class="no">2.2</td>
+  <td class="phase-dot"></span>P2</td>
+  <td class="task">Verify Kafka messages flowing</td>
+  <td class="desc">
+    Sau khi deploy, verify messages vào Kafka:<br>
+    <ul>
+      <li>Topic <code>quoteUpdateDR</code>: nhận messages từ <code>auto.dr.qt.*</code></li>
+      <li>Topic <code>bidOfferUpdateDR</code>: nhận messages từ <code>auto.dr.bo.*</code></li>
+      <li>Parse pipe-separated format đúng (index [0]-[33] cho qt, [0]-[74] cho bo)</li>
+      <li>Transform sang TradeX DTO: fields <code>s, t, c, ch, ra, vo, va, oi, bc...</code></li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-943" target="_blank" class="jira-link">NHMTS-943</a></td>
+  <td class="notes">Check Kafka consumer lag</td>
+</tr>
+
+<!-- ─────────────── PHASE 3: realtime-v2 + ws-v2 ─────────────── -->
+<tr class="phase-header"><td colspan="9">⚡ PHASE 3 – DEPLOY: realtime-v2 (Kafka → Redis) + ws-v2 (Redis → Client)</td></tr>
+
+<tr data-phase="P3" data-status="todo" data-type="be">
+  <td class="no">3.1</td>
+  <td class="phase-tag"><span class="phase-dot p3"></span>P3</td>
+  <td class="task">Deploy realtime-v2 với DR consumers</td>
+  <td class="desc">
+    Deploy Java service <code>realtime-v2</code> với DR Kafka consumers:<br>
+    <ul>
+      <li><code>DerivativeQuoteService</code> – consume <code>quoteUpdateDR</code></li>
+      <li><code>DerivativeBOService</code> – consume <code>bidOfferUpdateDR</code></li>
+      <li>Update Redis: <code>marketRedisDao.setSymbolInfo()</code> với <code>type=FUTURES, m=INDEX|BOND</code></li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/196575252" target="_blank" class="jira-link">BE Integration Plan §3.2</a></td>
+  <td class="notes">Không thay đổi equity consumers</td>
+</tr>
+
+<tr data-phase="P3" data-status="todo" data-type="be">
+  <td class="no">3.2</td>
+  <td class="phase-tag"><span class="phase-dot p3"></span>P3</td>
+  <td class="task">Verify Redis SYMBOL_INFO cho DR</td>
+  <td class="desc">
+    Sau khi init job chạy (P4) và realtime-v2 consume được:<br>
+    <ul>
+      <li>Redis key <code>VN30F*</code> / <code>41I*</code> / <code>41B*</code> tồn tại</li>
+      <li>Field <code>m</code> = <code>"INDEX"</code> hoặc <code>"BOND"</code></li>
+      <li>Fields đặc thù DR: <code>oi, bc, ftd, md, rd, tp, bs</code></li>
+      <li>Data update real-time khi thị trường mở</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">redis-cli HGETALL "VN30F*"</td>
+</tr>
+
+<tr data-phase="P3" data-status="todo" data-type="be">
+  <td class="no">3.3</td>
+  <td class="phase-tag"><span class="phase-dot p3"></span>P3</td>
+  <td class="task">Verify ws-v2 DR channels</td>
+  <td class="desc">
+    WebSocket server <code>ws-v2</code> (Node.js) serve DR channels:<br>
+    <ul>
+      <li>Channel <code>market.quote.dr.{code}</code> – DR quote data</li>
+      <li>Channel <code>market.bidoffer.dr.{code}</code> – DR bid/offer sổ lệnh 10 bước</li>
+      <li>Test subscribe thực tế và nhận được data</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-807" target="_blank" class="jira-link">NHMTS-807</a></td>
+  <td class="notes">Test bằng wscat hoặc browser console</td>
+</tr>
+
+<tr data-phase="P3" data-status="todo" data-type="be">
+  <td class="no">3.4</td>
+  <td class="phase-tag"><span class="phase-dot p3"></span>P3</td>
+  <td class="task">Deploy Order status WebSocket</td>
+  <td class="desc">
+    WebSocket gửi trạng thái lệnh phái sinh về app real-time:<br>
+    <ul>
+      <li>Nhận Lotte WS event code <code>F15303</code> (order status)</li>
+      <li>Parse và forward qua Onesignal / ws-v2 tới user device</li>
+      <li>Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/288325634" target="_blank" class="jira-link">Order status websocket</a></li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-807" target="_blank" class="jira-link">NHMTS-807</a></td>
+  <td class="notes">Status: Testing (UAT)</td>
+</tr>
+
+<!-- ─────────────── PHASE 4: market-query-v2 (Init Job) ─────────────── -->
+<tr class="phase-header"><td colspan="9">📊 PHASE 4 – DEPLOY: market-query-v2 (Init Job + SymbolInfo API)</td></tr>
+
+<tr data-phase="P4" data-status="todo" data-type="be">
+  <td class="no">4.1</td>
+  <td class="phase-tag"><span class="phase-dot p4"></span>P4</td>
+  <td class="task">Deploy market-query-v2 với DR Init Job</td>
+  <td class="desc">
+    Enhanced Init Job (chạy daily đầu ngày):<br>
+    <ul>
+      <li>Gọi DRMKT-001 <code>/tuxsvc/market/dr/stock-board</code> – lấy danh sách mã DR</li>
+      <li>Gọi DRMKT-002 <code>/tuxsvc/market/dr/stock-price</code> – lấy chi tiết từng mã</li>
+      <li>Phân loại: ký tự thứ 3 là <code>I</code> → <code>m="INDEX"</code>; <code>B</code> → <code>m="BOND"</code></li>
+      <li>Merge vào <code>symbol_static.json</code> (không xóa equity symbols)</li>
+      <li>Nếu DR API fail → log warning, equity vẫn chạy bình thường</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-722" target="_blank" class="jira-link">NHMTS-722</a></td>
+  <td class="notes">FR-INIT-001 đến FR-INIT-004</td>
+</tr>
+
+
+<!-- ─────────────── PHASE 5: tradex-api (DR REST APIs) ─────────────── -->
+<tr class="phase-header"><td colspan="9">🔌 PHASE 5 – DEPLOY: tradex-api – DR REST APIs</td></tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.1</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Normal Orders APIs</td>
+  <td class="desc">
+    <ul>
+      <li><code>POST /api/v1/derivatives/order</code> – Place order (LO, ATO, ATC, MOK, MAK)</li>
+      <li><code>PUT /api/v1/derivatives/order/modify</code> – Modify order</li>
+      <li><code>PUT /api/v1/derivatives/order/cancel</code> – Cancel order</li>
+      <li><code>GET /api/v1/derivatives/order/todayUnmatch</code> – Lệnh chờ khớp hôm nay</li>
+      <li><code>GET /api/v1/derivatives/order/history</code> – Lịch sử lệnh</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/200376437" target="_blank" class="jira-link">Normal orders</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-717" target="_blank" class="jira-link">NHMTS-717</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-718" target="_blank" class="jira-link">NHMTS-718</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-719" target="_blank" class="jira-link">NHMTS-719</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-720" target="_blank" class="jira-link">NHMTS-720</a>
+  </td>
+  <td class="notes">Lotte APIs: DRORD-001~026</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.2</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Stop Orders APIs</td>
+  <td class="desc">
+    <ul>
+      <li><code>POST /api/v1/derivatives/stopOrder</code> – Place stop order (trigger-based)</li>
+      <li><code>PUT /api/v1/derivatives/stopOrder/modify</code> – Modify stop order</li>
+      <li><code>PUT /api/v1/derivatives/stopOrder/cancel</code> – Cancel stop order</li>
+    </ul>
+    Routing logic: sell/buy type → DRORD-005, 006, 023, 024, 025, 026<br>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/207978640" target="_blank" class="jira-link">Stop orders</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-723" target="_blank" class="jira-link">NHMTS-723</a></td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.3</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Advance Orders API</td>
+  <td class="desc">
+    <ul>
+      <li><code>POST /api/v1/derivatives/advanceOrder</code> – Đặt lệnh trước (DRORD-034, 035)</li>
+      <li><code>PUT /api/v1/derivatives/advanceOrder/cancel</code> – Hủy lệnh trước</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/247660853" target="_blank" class="jira-link">Advance orders</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.4</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Order Availability Check API</td>
+  <td class="desc">
+    <ul>
+      <li><code>GET /api/v1/derivatives/order/checkAvailability</code></li>
+      <li>Trả về: margin khả dụng, max volume, position limits</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/205586435" target="_blank" class="jira-link">Order availability check</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.5</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Open Positions API</td>
+  <td class="desc">
+    <ul>
+      <li><code>GET /api/v1/derivatives/account/openPosition</code></li>
+      <li>Trả về danh sách vị thế mở (DRACC-003)</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/207978795" target="_blank" class="jira-link">Open positions</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.6</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Asset APIs</td>
+  <td class="desc">
+    <ul>
+      <li><code>GET /api/v1/derivatives/asset/info</code> – Thông tin tài sản, margin, NAV (DRACC-031)</li>
+      <li><code>GET /api/v1/derivatives/asset/dailyPnl</code> – Daily P&L (DRACC-031)</li>
+      <li><code>GET /api/v1/derivatives/asset/muBreachAccount</code> – MU breach status</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/208077108" target="_blank" class="jira-link">Asset info</a>, <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/227246193" target="_blank" class="jira-link">MU Breach</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.7</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy Cash Transaction APIs</td>
+  <td class="desc">
+    <ul>
+      <li><code>GET /api/v1/derivatives/cash/statement</code> – Cash statement (DRACC-035)</li>
+      <li><code>GET /api/v1/derivatives/account/availableBalance</code> – Số dư khả dụng</li>
+      <li><code>POST /api/v1/derivatives/transfer/cash</code> – Internal transfer (DRACC-019)</li>
+      <li><code>GET /api/v1/derivatives/transfer/cash/history</code> – Lịch sử chuyển tiền</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/204210182" target="_blank" class="jira-link">Internal transfer</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-745" target="_blank" class="jira-link">NHMTS-745</a></td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P5" data-status="todo" data-type="be">
+  <td class="no">5.8</td>
+  <td class="phase-tag"><span class="phase-dot p5"></span>P5</td>
+  <td class="task">Deploy VSDC Transaction APIs</td>
+  <td class="desc">
+    Nộp/rút tiền ký quỹ từ/về VSD:<br>
+    <ul>
+      <li><code>GET /api/v1/derivatives/transfer/vsd/balance</code> – Số dư VSD</li>
+      <li><code>GET /api/v1/derivatives/transfer/vsd/banks</code> – Danh sách ngân hàng</li>
+      <li><code>POST /api/v1/derivatives/transfer/vsd/deposit/fee</code> – Tính phí nộp (C05)</li>
+      <li><code>POST /api/v1/derivatives/transfer/vsd/withdraw</code> – Rút tiền (C10)</li>
+      <li><code>GET /api/v1/derivatives/transfer/vsd/history</code> – Lịch sử VSD</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/204210309" target="_blank" class="jira-link">VSDC transaction</a>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-749" target="_blank" class="jira-link">NHMTS-749</a></td>
+  <td class="notes">–</td>
+</tr>
+
+<!-- ─────────────── PHASE 6: OPEN SUB-ACCOUNT ─────────────── -->
+<tr class="phase-header"><td colspan="9">🏦 PHASE 6 – DEPLOY: Open DR Sub-Account Service</td></tr>
+
+<tr data-phase="P6" data-status="ready" data-type="be">
+  <td class="no">6.1</td>
+  <td class="phase-tag"><span class="phase-dot p6"></span>P6</td>
+  <td class="task">Deploy Open DR Sub-account APIs</td>
+  <td class="desc">
+    FPT eContract integration cho mở tiểu khoản phái sinh (Sub 80):<br>
+    <ul>
+      <li><code>POST /api/v1/derivatives/subAccount/register</code> – Gửi yêu cầu mở tiểu khoản</li>
+      <li><code>GET /api/v1/derivatives/subAccount/signingLink</code> – Lấy link ký hợp đồng</li>
+      <li><code>GET /api/v1/derivatives/subAccount/signingStatus</code> – Kiểm tra trạng thái ký</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/274071625" target="_blank" class="jira-link">Open DR sub-account</a>
+  </td>
+  <td><span class="badge badge-ready">BE</span></td>
+  <td class="status-cell"><span class="badge badge-ready">Ready for Prod</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-792" target="_blank" class="jira-link">NHMTS-792</a></td>
+  <td class="notes">Status: READY FOR PROD</td>
+</tr>
+
+<tr data-phase="P6" data-status="todo" data-type="be">
+  <td class="no">6.2</td>
+  <td class="phase-tag"><span class="phase-dot p6"></span>P6</td>
+  <td class="task">Deploy job tự động mở tiểu khoản sau khi ký</td>
+  <td class="desc">
+    Background job sau khi user ký hợp đồng FPT eContract:<br>
+    <ul>
+      <li>Poll signing status từ FPT</li>
+      <li>Khi signed → tự động gọi Lotte API tạo sub 80</li>
+      <li>Gửi notification cho user về kết quả</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-850" target="_blank" class="jira-link">NHMTS-850</a></td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P6" data-status="done" data-type="be">
+  <td class="no">6.3</td>
+  <td class="phase-tag"><span class="phase-dot p6"></span>P6</td>
+  <td class="task">eKYC: block DR sub-account khi mở mới</td>
+  <td class="desc">
+    Không cho mở DR sub-account trong flow eKYC account mới khi Lotte go-live:<br>
+    <ul>
+      <li>Update contract template trên eContract</li>
+      <li>Update API EKY-004 cho account opening Lotte</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-done">BE</span></td>
+  <td class="status-cell"><span class="badge badge-done">Done</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-860" target="_blank" class="jira-link">NHMTS-860</a></td>
+  <td class="notes">✅ Đã done</td>
+</tr>
+
+<!-- ─────────────── PHASE 7: NOTIFICATIONS ─────────────── -->
+<tr class="phase-header"><td colspan="9">🔔 PHASE 7 – DEPLOY: DR Push Notifications</td></tr>
+
+<tr data-phase="P7" data-status="uat" data-type="be">
+  <td class="no">7.1</td>
+  <td class="phase-tag"><span class="phase-dot p7"></span>P7</td>
+  <td class="task">Deploy DR notification handler (BE)</td>
+  <td class="desc">
+    Nhận order/account notification từ Lotte WS và gửi qua Onesignal:<br>
+    <ul>
+      <li>Subscribe Lotte WS order events (code <code>F15303</code> và account events)</li>
+      <li>Parse event → map sang notification template (VN + EN)</li>
+      <li>Gửi push notification tới user device qua Onesignal</li>
+    </ul>
+    Spec: <a href="https://nhsv-vn.atlassian.net/wiki/spaces/NHSVPRO/pages/238780486" target="_blank" class="jira-link">Websocket spec</a>
+  </td>
+  <td><span class="badge badge-uat">BE</span></td>
+  <td class="status-cell"><span class="badge badge-uat">Testing (UAT)</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-808" target="_blank" class="jira-link">NHMTS-808</a></td>
+  <td class="notes">Đang UAT</td>
+</tr>
+
+<tr data-phase="P7" data-status="todo" data-type="be">
+  <td class="no">7.2</td>
+  <td class="phase-tag"><span class="phase-dot p7"></span>P7</td>
+  <td class="task">Verify Onesignal push notification delivery</td>
+  <td class="desc">
+    <ul>
+      <li>Test push notification khi đặt lệnh thành công</li>
+      <li>Test push khi lệnh bị hủy / khớp</li>
+      <li>Test notification ngôn ngữ VN và EN</li>
+      <li>Verify Onesignal dashboard nhận được events</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">QA / BE</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-807" target="_blank" class="jira-link">NHMTS-807</a></td>
+  <td class="notes">–</td>
+</tr>
+
+<!-- ─────────────── PHASE 8A: VERIFY NGAY SAU DEPLOY (Cuối tuần) ─────────────── -->
+<tr class="phase-header"><td colspan="9">🧪 PHASE 8A – VERIFY NGAY SAU DEPLOY (Cuối tuần – không cần phiên GD)</td></tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8A.1</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8A</td>
+  <td class="task">Verify TradeX → Lotte API connectivity</td>
+  <td class="desc">
+    Gọi thử các Lotte REST APIs (không cần thị trường mở):<br>
+    <ul>
+      <li>✅ <code>GET /api/v1/derivatives/asset/info</code> → 200 (có thể trả empty nếu ngoài giờ GD)</li>
+      <li>✅ <code>GET /api/v1/derivatives/account/availableBalance</code> → không lỗi 5xx</li>
+      <li>✅ <code>GET /api/v1/derivatives/transfer/vsd/balance</code> → không lỗi auth</li>
+      <li>✅ <code>GET /api/v1/derivatives/order/history</code> → trả về (có thể empty)</li>
+      <li>✅ <code>GET /api/v1/derivatives/cash/statement</code> → không lỗi 5xx</li>
+    </ul>
+    Mục tiêu: xác nhận network, auth, routing đúng — không cần data live.
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">–</td>
+  <td class="notes">✔ Verify được cuối tuần</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8A.2</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8A</td>
+  <td class="task">Verify Open DR Sub-account flow</td>
+  <td class="desc">
+    Flow mở tiểu khoản hoàn toàn verify được ngoài giờ GD:<br>
+    <ul>
+      <li>✅ <code>POST /api/v1/derivatives/subAccount/register</code> → nhận request thành công</li>
+      <li>✅ <code>GET /api/v1/derivatives/subAccount/signingLink</code> → trả về URL FPT eContract</li>
+      <li>✅ <code>GET /api/v1/derivatives/subAccount/signingStatus</code> → trả về trạng thái</li>
+      <li>✅ Webview mở được URL ký hợp đồng</li>
+      <li>✅ Background job xử lý sau khi ký → log output đúng</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE / QA</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-792" target="_blank" class="jira-link">NHMTS-792</a></td>
+  <td class="notes">✔ Verify được cuối tuần</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8A.3</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8A</td>
+  <td class="task">Verify service health & logs</td>
+  <td class="desc">
+    Kiểm tra tất cả services đã deploy running bình thường:<br>
+    <ul>
+      <li>✅ market-collector-lotte: process running, không có error log</li>
+      <li>✅ realtime-v2: running, DR consumers đã register với Kafka</li>
+      <li>✅ market-query-v2: running, init job scheduled đúng</li>
+      <li>✅ tradex-api: health endpoint <code>/actuator/health</code> → UP</li>
+      <li>✅ ws-v2: running, port listening</li>
+      <li>✅ Kafka topics <code>quoteUpdateDR</code>, <code>bidOfferUpdateDR</code> tồn tại</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE / DevOps</td>
+  <td class="jira">–</td>
+  <td class="notes">✔ Verify được cuối tuần</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8A.4</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8A</td>
+  <td class="task">Verify equity không bị ảnh hưởng</td>
+  <td class="desc">
+    Regression check equity (không cần thị trường mở):<br>
+    <ul>
+      <li>✅ <code>symbol_static.json</code> download được, vẫn có equity symbols</li>
+      <li>✅ Equity API endpoints (<code>/api/v2/market/symbolInfo</code>) trả về đúng</li>
+      <li>✅ Equity service logs không có error mới</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE / QA</td>
+  <td class="jira">–</td>
+  <td class="notes">✔ Verify được cuối tuần</td>
+</tr>
+
+<!-- ─────────────── PHASE 8B: VERIFY THỨ 2 (Phiên GD đầu tiên) ─────────────── -->
+<tr class="phase-header"><td colspan="9">📈 PHASE 8B – VERIFY PHIÊN GD ĐẦU TIÊN (Sáng Thứ 2 – cần thị trường mở)</td></tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.1</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify Init Job chạy đầu ngày</td>
+  <td class="desc">
+    Init job chạy tự động khi thị trường mở phiên đầu tiên (8:30 sáng T2):<br>
+    <ul>
+      <li>✅ Log init job: gọi DRMKT-001 thành công, lấy được danh sách mã DR</li>
+      <li>✅ Log init job: gọi DRMKT-002 cho từng mã, không có lỗi</li>
+      <li>✅ <code>symbol_static.json</code> được upload lên MinIO/S3 với DR symbols</li>
+      <li>✅ Kiểm tra file: có VN30F*, trường <code>m=INDEX</code>, <code>t=FUTURES</code>, <code>bc, ftd, md, rd</code></li>
+      <li>✅ Nếu DR init fail: log warning, equity symbols vẫn có mặt trong file</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-722" target="_blank" class="jira-link">NHMTS-722</a></td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.2</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify WebSocket DR từ Lotte core</td>
+  <td class="desc">
+    Khi thị trường mở (~8:45-9:00 sáng T2):<br>
+    <ul>
+      <li>✅ market-collector-lotte nhận messages từ <code>auto.dr.qt.*</code></li>
+      <li>✅ market-collector-lotte nhận messages từ <code>auto.dr.bo.*</code></li>
+      <li>✅ Messages được publish vào Kafka topic <code>quoteUpdateDR</code>, <code>bidOfferUpdateDR</code></li>
+      <li>✅ realtime-v2 consume được, update Redis SYMBOL_INFO</li>
+      <li>✅ ws-v2 channel <code>market.quote.dr.{code}</code> gửi data tới client</li>
+      <li>✅ ws-v2 channel <code>market.bidoffer.dr.{code}</code> có 10 bước giá</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-943" target="_blank" class="jira-link">NHMTS-943</a></td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.3</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify symbolInfo API với live data</td>
+  <td class="desc">
+    Sau khi init job chạy xong sáng T2:<br>
+    <ul>
+      <li>✅ <code>GET /api/v2/market/symbolInfo?symbolList=[VN30F2506]</code> trả về giá live</li>
+      <li>✅ Fields DR: <code>oi, bc, ftd, md, rd, tp, bs</code> có giá trị đúng</li>
+      <li>✅ Field <code>m</code> = <code>"INDEX"</code></li>
+      <li>✅ Giá <code>c, h, l, vo</code> khớp với dữ liệu trên Lotte</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE / QA</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-796" target="_blank" class="jira-link">NHMTS-796</a></td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.4</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify asv/asb fields trong quote + symbolInfo</td>
+  <td class="desc">
+    Sau khi WS từ Lotte đang chạy:<br>
+    <ul>
+      <li>✅ Fields <code>asv</code>, <code>asb</code> có trong response <code>/symbol/{symbol}/quote</code></li>
+      <li>✅ Fields xuất hiện trong <code>market.quote.dr.*</code> WebSocket channel</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE / QA</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-952" target="_blank" class="jira-link">NHMTS-952</a></td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.5</td>
+  <td class="phase-tag"><span class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify Order flow với live market (test account)</td>
+  <td class="desc">
+    Dùng test account có sub 80 trong phiên GD:<br>
+    <ul>
+      <li>✅ Đặt normal order LO → xuất hiện trong <code>todayUnmatch</code></li>
+      <li>✅ Modify order → phản ánh đúng</li>
+      <li>✅ Cancel order → không còn trong todayUnmatch</li>
+      <li>✅ <code>order/history</code> có lệnh đã hủy</li>
+      <li>✅ Đặt stop order → thành công</li>
+      <li>✅ Push notification nhận được khi order thay đổi trạng thái</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">QA</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">QA / BE</td>
+  <td class="jira">–</td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<tr data-phase="P8" data-status="todo" data-type="be">
+  <td class="no">8B.6</td>
+  <td class="phase-dot p8"></span>P8B</td>
+  <td class="task">Verify Asset & Cash APIs với live data</td>
+  <td class="desc">
+    <ul>
+      <li>✅ <code>GET /asset/info</code> trả về margin, NAV live</li>
+      <li>✅ <code>GET /account/openPosition</code> phản ánh vị thế sau khi đặt lệnh</li>
+      <li>✅ <code>GET /asset/dailyPnl</code> có dữ liệu ngày T2</li>
+      <li>✅ <code>GET /transfer/vsd/balance</code> trả về số dư VSD thực</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">QA</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">QA / BE</td>
+  <td class="jira">–</td>
+  <td class="notes">⏳ Chờ phiên GD T2</td>
+</tr>
+
+<!-- ─────────────── PHASE 9: APP RELEASE ─────────────── -->
+<tr class="phase-header"><td colspan="9">📱 PHASE 9 – APP RELEASE (Sau khi BE verified – ngày TBD)</td></tr>
+
+<tr data-phase="P9" data-status="prog" data-type="fe">
+  <td class="no">9.1</td>
+  <td class="phase-tag"><span class="phase-dot p9"></span>P9</td>
+  <td class="task">Internal QA sign-off (IT team)</td>
+  <td class="desc">
+    <ul>
+      <li>Complete QA round on staging: <a href="https://claude.ai/share/99fa4023-cf9d-44af-befd-65a208dc23f8" target="_blank" class="jira-link">Staging test session</a></li>
+      <li>All critical bugs in NHMTS-840~845, 874~878, 882~885, 889 resolved</li>
+      <li>Sign-off từ IT team</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-prog">FE/QA</span></td>
+  <td class="status-cell"><span class="badge badge-prog">In Progress</span></td>
+  <td class="owner">QA</td>
+  <td class="jira">
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-879" target="_blank" class="jira-link">NHMTS-879</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-880" target="_blank" class="jira-link">NHMTS-880</a>
+  </td>
+  <td class="notes">Đang In Progress</td>
+</tr>
+
+<tr data-phase="P9" data-status="todo" data-type="fe">
+  <td class="no">9.2</td>
+  <td class="phase-tag"><span class="phase-dot p9"></span>P9</td>
+  <td class="task">Handle DR changes trong app (BE-breaking)</td>
+  <td class="desc">
+    App cần xử lý các thay đổi từ BE khi deploy DR:<br>
+    <ul>
+      <li>Handle <code>symbol_static.json</code> format mới (có DR symbols, <code>m=INDEX|BOND</code>)</li>
+      <li>Handle <code>t=FUTURES</code> type symbols</li>
+      <li>Remove /1000 scaling cho DR price fields</li>
+      <li>Display 1 decimal place cho DR prices</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">FE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">Mobile Team</td>
+  <td class="jira">
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-790" target="_blank" class="jira-link">NHMTS-790</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-798" target="_blank" class="jira-link">NHMTS-798</a>
+  </td>
+  <td class="notes">Critical: deploy cùng lúc BE go-live</td>
+</tr>
+
+<tr data-phase="P9" data-status="todo" data-type="fe">
+  <td class="no">9.3</td>
+  <td class="phase-tag"><span class="phase-dot p9"></span>P9</td>
+  <td class="task">Implement Open DR Sub-account (FE)</td>
+  <td class="desc">
+    <ul>
+      <li>UI flow mở tiểu khoản phái sinh (NHMTS-865, 911, 924)</li>
+      <li>Webview hiển thị hợp đồng FPT eContract</li>
+      <li>Handle signing status callback</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">FE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">Mobile Team</td>
+  <td class="jira">
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-865" target="_blank" class="jira-link">NHMTS-865</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-911" target="_blank" class="jira-link">NHMTS-911</a>
+  </td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P9" data-status="done" data-type="fe">
+  <td class="no">9.4</td>
+  <td class="phase-tag"><span class="phase-dot p9"></span>P9</td>
+  <td class="task">Sub 80 validation trong Trade screen</td>
+  <td class="desc">
+    <ul>
+      <li>Check sub 80 trước khi đặt lệnh DR</li>
+      <li>Hiển thị warning modal nếu chưa có sub 80</li>
+      <li>Auto switch sang sub 80 khi chọn DR symbol</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-done">FE</span></td>
+  <td class="status-cell"><span class="badge badge-done">Done</span></td>
+  <td class="owner">Mobile Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-809" target="_blank" class="jira-link">NHMTS-809</a></td>
+  <td class="notes">✅ Đã done</td>
+</tr>
+
+<tr data-phase="P9" data-status="todo" data-type="fe">
+  <td class="no">9.5</td>
+  <td class="phase-tag"><span class="phase-dot p9"></span>P9</td>
+  <td class="task">Submit app lên App Store & Play Store</td>
+  <td class="desc">
+    <ul>
+      <li>Build production release (iOS + Android)</li>
+      <li>Submit for review (App Store: ~24h, Play Store: ~4h)</li>
+      <li>Staged rollout: 10% → 50% → 100%</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">FE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">Mobile Team</td>
+  <td class="jira">–</td>
+  <td class="notes">Ngày TBD</td>
+</tr>
+
+<!-- ─────────────── PHASE 10: POST-LAUNCH ─────────────── -->
+<tr class="phase-header"><td colspan="9">🔍 PHASE 10 – POST-LAUNCH MONITORING</td></tr>
+
+<tr data-phase="P10" data-status="todo" data-type="be">
+  <td class="no">10.1</td>
+  <td class="phase-tag"><span class="phase-dot p10"></span>P10</td>
+  <td class="task">Monitor Kafka lag cho DR topics</td>
+  <td class="desc">
+    <ul>
+      <li>Monitor consumer lag <code>quoteUpdateDR</code>, <code>bidOfferUpdateDR</code></li>
+      <li>Alert nếu lag > 1000 messages</li>
+      <li>Kiểm tra throughput trong giờ GD cao điểm</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE/Ops</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">DevOps</td>
+  <td class="jira">–</td>
+  <td class="notes">Grafana / Datadog dashboard</td>
+</tr>
+
+<tr data-phase="P10" data-status="todo" data-type="be">
+  <td class="no">10.2</td>
+  <td class="phase-tag"><span class="phase-dot p10"></span>P10</td>
+  <td class="task">Monitor API error rates & latency</td>
+  <td class="desc">
+    <ul>
+      <li>Monitor DR API endpoints error rate (&lt;1% target)</li>
+      <li>Latency p99 &lt; 500ms cho order APIs</li>
+      <li>Latency p99 &lt; 200ms cho market data APIs</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE/Ops</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">DevOps</td>
+  <td class="jira">–</td>
+  <td class="notes">–</td>
+</tr>
+
+<tr data-phase="P10" data-status="todo" data-type="be">
+  <td class="no">10.3</td>
+  <td class="phase-tag"><span class="phase-dot p10"></span>P10</td>
+  <td class="task">Backfill historical data cho DR symbols</td>
+  <td class="desc">
+    Job backfill dữ liệu lịch sử OHLCV cho các DR symbols vào MongoDB:<br>
+    <ul>
+      <li>Gọi Lotte DRMKT-004 <code>/tuxsvc/market/dr/daily-derivatives</code></li>
+      <li>Paginate với <code>has_next</code>/<code>next_key</code> đến hết dữ liệu</li>
+      <li>Upsert vào MongoDB (idempotent)</li>
+      <li>Verify API <code>/market/symbol/{code}/period/DAILY</code> trả về &gt;20 ngày</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira"><a href="https://nhsv-vn.atlassian.net/browse/NHMTS-868" target="_blank" class="jira-link">NHMTS-868</a></td>
+  <td class="notes">Có thể chạy sau go-live</td>
+</tr>
+
+<tr data-phase="P10" data-status="todo" data-type="be">
+  <td class="no">10.4</td>
+  <td class="phase-tag"><span class="phase-dot p10"></span>P10</td>
+  <td class="task">Hotfix bugs từ staging round (bug tickets)</td>
+  <td class="desc">
+    Resolve các bugs còn open từ QA rounds:<br>
+    <ul>
+      <li>NHMTS-882: Trade screen bugs round 2</li>
+      <li>NHMTS-883: Market screen bugs round 2</li>
+      <li>NHMTS-901, 913: Trade screen bugs round 3, 4</li>
+      <li>NHMTS-905: VSDC bugs round 3</li>
+      <li>NHMTS-910: Position bugs</li>
+      <li>NHMTS-912: Asset bugs round 2</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">FE/BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">Dev Team</td>
+  <td class="jira">Multiple</td>
+  <td class="notes">P1 bugs phải fix trước release</td>
+</tr>
+
+<tr data-phase="P10" data-status="todo" data-type="be">
+  <td class="no">10.5</td>
+  <td class="phase-tag"><span class="phase-dot p10"></span>P10</td>
+  <td class="task">Deploy MU breach alert (NHMTS-950, 952)</td>
+  <td class="desc">
+    <ul>
+      <li>BE calculate MU breach threshold fields (NHMTS-950)</li>
+      <li>Implement <code>asv/asb</code> fields trong quote (NHMTS-952)</li>
+      <li>Push notification khi tài khoản vi phạm MU</li>
+    </ul>
+  </td>
+  <td><span class="badge badge-todo">BE</span></td>
+  <td class="status-cell"><span class="badge badge-todo">To Do</span></td>
+  <td class="owner">BE Team</td>
+  <td class="jira">
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-950" target="_blank" class="jira-link">NHMTS-950</a>
+    <a href="https://nhsv-vn.atlassian.net/browse/NHMTS-952" target="_blank" class="jira-link">NHMTS-952</a>
+  </td>
+  <td class="notes">–</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+</div><!-- end tab-golive -->
+
+<!-- ══════════════ TAB 2: ROLLBACK PLAN ══════════════ -->
+<div id="tab-rollback" class="tab-panel">
+<div class="section-wrap">
+
+  <div class="section-title"><span>↩️</span> Rollback Plan</div>
+  <p style="font-size:12px;color:#555;margin-bottom:16px;">
+    Điều kiện trigger rollback: deploy xong nhưng smoke test 8A thất bại, hoặc equity bị ảnh hưởng.
+    Decision maker: <strong>Mr Đức (PM)</strong> + <strong>Mr Hiếu (BE Lead)</strong>.<br>
+    Nguyên tắc: mỗi service DR được isolated — rollback từng service độc lập, không cần rollback toàn bộ.
+  </p>
+
+  <table class="ri-table">
+    <thead>
+      <tr><th style="width:200px">Service / Component</th><th>Trigger rollback khi</th><th>Bước rollback</th><th style="width:110px">Owner</th><th style="width:80px">Est. time</th></tr>
+    </thead>
+    <tbody>
+
+      <tr class="subheader"><td colspan="5">🔧 Infrastructure</td></tr>
+
+      <tr>
+        <td class="label">Kafka topics<br><code>quoteUpdateDR</code><br><code>bidOfferUpdateDR</code></td>
+        <td>Không cần xóa — topics rỗng không ảnh hưởng hệ thống</td>
+        <td><ul><li>Giữ nguyên topics (chỉ có consumers mới mới đọc)</li><li>Xóa nếu cần cleanup sau: <code>kafka-topics --delete --topic quoteUpdateDR</code></li></ul></td>
+        <td>DevOps</td>
+        <td>5 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">📡 market-collector-lotte</td></tr>
+
+      <tr>
+        <td class="label">DR WebSocket handlers<br>(DerivativeQuoteHandler,<br>DerivativeBidOfferHandler)</td>
+        <td>Service crash liên tục / equity WS bị ảnh hưởng</td>
+        <td>
+          <ul>
+            <li>Rollback về version trước: <code>kubectl rollout undo deployment/market-collector-lotte</code></li>
+            <li>Verify equity WS channels (<code>auto.qt</code>, <code>auto.bo</code>) vẫn nhận data</li>
+            <li>DR channels không hoạt động — chấp nhận được</li>
+          </ul>
+        </td>
+        <td>Mr Hiếu / DevOps</td>
+        <td>10 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">⚡ realtime-v2</td></tr>
+
+      <tr>
+        <td class="label">DR Kafka consumers<br>(DerivativeQuoteService,<br>DerivativeBOService)</td>
+        <td>Service crash / equity SymbolInfo trong Redis bị lỗi</td>
+        <td>
+          <ul>
+            <li>Rollback: <code>kubectl rollout undo deployment/realtime-v2</code></li>
+            <li>DR consumers dừng lại, equity consumers tiếp tục bình thường</li>
+            <li>Redis SYMBOL_INFO cho equity không bị xóa</li>
+          </ul>
+        </td>
+        <td>Mr Hiếu / DevOps</td>
+        <td>10 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">📊 market-query-v2 (Init Job)</td></tr>
+
+      <tr>
+        <td class="label">DR Init Job<br>(DRMKT-001, DRMKT-002)</td>
+        <td>Init job crash khiến equity symbols không được load</td>
+        <td>
+          <ul>
+            <li>Rollback: <code>kubectl rollout undo deployment/market-query-v2</code></li>
+            <li><strong>Lưu ý:</strong> Init job đã có circuit breaker — nếu chỉ DR fail, equity vẫn chạy bình thường. Chỉ rollback nếu equity bị ảnh hưởng.</li>
+            <li>Verify <code>symbol_static.json</code> vẫn có equity symbols</li>
+          </ul>
+        </td>
+        <td>Mr Hiếu</td>
+        <td>10 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">🔌 tradex-api (DR REST APIs)</td></tr>
+
+      <tr>
+        <td class="label">DR endpoints<br><code>/api/v1/derivatives/*</code></td>
+        <td>DR endpoints trả về 5xx liên tục / equity APIs bị ảnh hưởng</td>
+        <td>
+          <ul>
+            <li>Rollback: <code>kubectl rollout undo deployment/tradex-api</code></li>
+            <li>Equity endpoints (<code>/api/v1/order/*</code>) không bị ảnh hưởng vì route tách biệt</li>
+            <li>DR APIs sẽ trả về 404 sau rollback — app cần handle gracefully</li>
+          </ul>
+        </td>
+        <td>Mr Hiếu / Mr Tuấn</td>
+        <td>10 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">🏦 Open Sub-account Service</td></tr>
+
+      <tr>
+        <td class="label">Sub-account APIs<br>+ Background job</td>
+        <td>FPT eContract integration lỗi / không tạo được sub 80</td>
+        <td>
+          <ul>
+            <li>Rollback service: <code>kubectl rollout undo deployment/subaccount-service</code></li>
+            <li>Không ảnh hưởng trading — user vẫn dùng sub 80 đã tạo từ trước</li>
+            <li>Thông báo team ops tạm dừng nhận yêu cầu mở tiểu khoản mới</li>
+          </ul>
+        </td>
+        <td>Mr Tuấn</td>
+        <td>5 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">🔔 Notification Service</td></tr>
+
+      <tr>
+        <td class="label">DR push notifications<br>(Onesignal)</td>
+        <td>Notification service spam lỗi / ảnh hưởng equity notifications</td>
+        <td>
+          <ul>
+            <li>Disable DR notification consumer trong config (feature flag nếu có)</li>
+            <li>Hoặc rollback: <code>kubectl rollout undo deployment/notification-service</code></li>
+            <li>DR users không nhận push — chấp nhận được tạm thời</li>
+          </ul>
+        </td>
+        <td>Mr Hiếu</td>
+        <td>5 phút</td>
+      </tr>
+
+      <tr class="subheader"><td colspan="5">📱 App Release (nếu đã phát hành)</td></tr>
+
+      <tr>
+        <td class="label">Mobile App</td>
+        <td>Crash rate &gt;2% / DR features gây lỗi cho equity users</td>
+        <td>
+          <ul>
+            <li>Tắt DR feature flag trên server (nếu có remote config)</li>
+            <li>Hoặc phát hành hotfix app với DR features bị ẩn</li>
+            <li>Staged rollout: dừng rollout nếu &lt;100% deployed</li>
+            <li>App Store: không thể "unpublish" — phải submit version mới</li>
+          </ul>
+        </td>
+        <td>Mr Bình / Mr Đức</td>
+        <td>30–60 phút</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <div class="section-title" style="margin-top:8px"><span>⚠️</span> Rollback Decision Matrix</div>
+  <table class="ri-table">
+    <thead>
+      <tr><th>Scenario</th><th>Mức độ</th><th>Action</th><th>Decision maker</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>DR service crash nhưng equity vẫn OK</td>
+        <td><span class="risk-low">LOW</span></td>
+        <td>Rollback DR service đó thôi. Equity không cần rollback.</td>
+        <td>Mr Hiếu</td>
+      </tr>
+      <tr>
+        <td>symbol_static.json thiếu equity symbols sau init job</td>
+        <td><span class="risk-high">HIGH</span></td>
+        <td>Rollback market-query-v2 ngay. Restore backup symbol_static.json từ MinIO.</td>
+        <td>Mr Hiếu + Mr Đức</td>
+      </tr>
+      <tr>
+        <td>Equity WebSocket / order APIs bị ảnh hưởng</td>
+        <td><span class="risk-high">HIGH</span></td>
+        <td>Rollback toàn bộ services đã deploy. Notify users về sự cố.</td>
+        <td>Mr Đức (PM) quyết định</td>
+      </tr>
+      <tr>
+        <td>DR APIs trả về lỗi 5xx nhưng equity OK</td>
+        <td><span class="risk-med">MEDIUM</span></td>
+        <td>Rollback tradex-api. DR users không dùng được tạm thời.</td>
+        <td>Mr Hiếu</td>
+      </tr>
+      <tr>
+        <td>App crash rate tăng đột biến sau release</td>
+        <td><span class="risk-high">HIGH</span></td>
+        <td>Dừng staged rollout. Submit hotfix. Alert Mr Đức ngay.</td>
+        <td>Mr Bình + Mr Đức</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+</div><!-- end tab-rollback -->
+
+<!-- ══════════════ TAB 3: SYSTEM IMPACT ══════════════ -->
+<div id="tab-impact" class="tab-panel">
+<div class="section-wrap">
+
+  <div class="section-title"><span>🔍</span> System Impact Assessment</div>
+  <p style="font-size:12px;color:#555;margin-bottom:16px;">
+    Phân tích tác động của việc deploy DR lên các hệ thống hiện tại.<br>
+    Nguyên tắc thiết kế: <strong>ISOLATION</strong> — DR và Equity chạy hoàn toàn độc lập.
+  </p>
+
+  <div class="section-title" style="font-size:13px"><span>🏗️</span> Infrastructure Impact</div>
+  <table class="ri-table">
+    <thead>
+      <tr><th style="width:180px">Component</th><th>Thay đổi</th><th>Tác động lên hệ thống hiện tại</th><th style="width:90px">Risk</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">Kafka</td>
+        <td>Thêm 2 topics mới: <code>quoteUpdateDR</code>, <code>bidOfferUpdateDR</code></td>
+        <td>Không ảnh hưởng equity topics. Chỉ tăng nhẹ disk usage.</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">Redis</td>
+        <td>Thêm ~4–8 DR keys vào <code>SYMBOL_INFO</code></td>
+        <td>Không ảnh hưởng equity keys. Key naming tách biệt (DR symbols khác mã hẳn).</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">MongoDB</td>
+        <td>Thêm documents OHLCV cho DR symbols (backfill)</td>
+        <td>Không ảnh hưởng equity collections. Index riêng.</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">MinIO / S3</td>
+        <td><code>symbol_static.json</code> sẽ chứa thêm DR symbols</td>
+        <td><span class="risk-med">MEDIUM</span> — File size tăng nhẹ. App parse file cần handle type=FUTURES, m=INDEX|BOND. Nếu app cũ không handle → không crash, chỉ không hiển thị DR symbols.</td>
+        <td><span class="risk-med">MED</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title" style="font-size:13px; margin-top:16px"><span>⚙️</span> Service Impact</div>
+  <table class="ri-table">
+    <thead>
+      <tr><th style="width:200px">Service</th><th>Thay đổi được deploy</th><th>Tác động lên chức năng hiện tại</th><th style="width:90px">Risk</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">market-collector-lotte</td>
+        <td>Thêm DR WS handlers (additive)</td>
+        <td>
+          <ul>
+            <li>Equity handlers (<code>EquityQuoteHandler</code>, <code>EquityBidOfferHandler</code>) không thay đổi</li>
+            <li>DR handlers chạy song song, isolated hoàn toàn</li>
+            <li>Nếu DR WS fail → chỉ DR không có data, equity không bị ảnh hưởng</li>
+          </ul>
+        </td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">realtime-v2</td>
+        <td>Thêm DR Kafka consumers (additive)</td>
+        <td>
+          <ul>
+            <li>Equity consumers không thay đổi</li>
+            <li>DR consumers dùng separate Kafka topics</li>
+            <li>Ghi vào cùng Redis SYMBOL_INFO nhưng với keys DR riêng</li>
+          </ul>
+        </td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">market-query-v2<br>(Init Job)</td>
+        <td>Enhanced init job — thêm DR fetch, merge vào json</td>
+        <td>
+          <ul>
+            <li>Equity init flow <strong>giữ nguyên</strong> (additive only)</li>
+            <li>Nếu DR API fail → <code>try/catch</code>, equity tiếp tục</li>
+            <li><span class="risk-med">Rủi ro nhỏ</span>: nếu merge logic có bug → equity symbols trong json có thể bị ảnh hưởng. Cần test kỹ trước deploy.</li>
+          </ul>
+        </td>
+        <td><span class="risk-med">MED</span></td>
+      </tr>
+      <tr>
+        <td class="label">market-query-v2<br>(SymbolInfo API)</td>
+        <td>API đọc từ Redis như bình thường — <strong>không thay đổi</strong></td>
+        <td>Không tác động. DR symbols tự nhiên xuất hiện khi Redis có data.</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">ws-v2 (Node.js)</td>
+        <td>Thêm DR channel patterns <code>market.quote.dr.*</code></td>
+        <td>
+          <ul>
+            <li>Equity channels (<code>market.quote.*</code>, <code>market.bidoffer.*</code>) không thay đổi</li>
+            <li>DR channels additive — không subscribe thì không nhận data</li>
+          </ul>
+        </td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">tradex-api<br>(DR REST APIs)</td>
+        <td>Thêm <code>/api/v1/derivatives/*</code> endpoints mới</td>
+        <td>
+          <ul>
+            <li>Equity endpoints (<code>/api/v1/order/*</code>, <code>/api/v1/account/*</code>) không thay đổi</li>
+            <li>DR endpoints route tới Lotte DR service riêng</li>
+          </ul>
+        </td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">Notification service</td>
+        <td>Thêm DR order event handler</td>
+        <td>
+          <ul>
+            <li>Equity notifications không thay đổi</li>
+            <li>DR notifications dùng event codes riêng từ Lotte</li>
+          </ul>
+        </td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title" style="font-size:13px; margin-top:16px"><span>📱</span> App (FE) Impact</div>
+  <table class="ri-table">
+    <thead>
+      <tr><th style="width:200px">Tính năng / Screen</th><th>Thay đổi từ BE</th><th>Tác động lên app hiện tại</th><th style="width:90px">Risk</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">symbol_static.json parse</td>
+        <td>File chứa thêm symbols với <code>t=FUTURES</code>, <code>m=INDEX|BOND</code></td>
+        <td>App cũ: ignore unknown types → không crash, không hiển thị DR. App mới cần handle type=FUTURES.</td>
+        <td><span class="risk-med">MED</span></td>
+      </tr>
+      <tr>
+        <td class="label">Market / Trade screen</td>
+        <td>DR symbols xuất hiện trong search results</td>
+        <td>App cũ sẽ không biết render DR symbols → có thể hiển thị sai hoặc bị lỗi UI. <strong>→ Cần deploy app mới cùng thời điểm BE go-live.</strong></td>
+        <td><span class="risk-high">HIGH</span></td>
+      </tr>
+      <tr>
+        <td class="label">Price display</td>
+        <td>DR prices không chia /1000 (đơn vị: điểm, không phải VND)</td>
+        <td>App cũ sẽ hiển thị sai giá DR (nhân 1000). Cần NHMTS-798 trước release.</td>
+        <td><span class="risk-high">HIGH</span></td>
+      </tr>
+      <tr>
+        <td class="label">Equity screens</td>
+        <td>Không thay đổi logic</td>
+        <td>Không tác động. Equity symbols vẫn hiển thị bình thường.</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+      <tr>
+        <td class="label">Push notifications</td>
+        <td>DR order notifications được thêm</td>
+        <td>App chưa có template mới sẽ hiển thị notification dạng generic. Chấp nhận được.</td>
+        <td><span class="risk-low">LOW</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title" style="font-size:13px; margin-top:16px"><span>👥</span> User Impact</div>
+  <table class="ri-table">
+    <thead>
+      <tr><th style="width:200px">User group</th><th>Tác động</th><th>Mitigation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">Equity users (hiện tại)</td>
+        <td>Không tác động nếu deployment thành công. Downtime 0.</td>
+        <td>Isolation architecture đảm bảo equity không bị ảnh hưởng.</td>
+      </tr>
+      <tr>
+        <td class="label">DR users (có sub 80)</td>
+        <td>Có thể dùng DR features sau khi app mới được release.</td>
+        <td>BE deploy trước → app release sau. DR users cần update app mới.</td>
+      </tr>
+      <tr>
+        <td class="label">Users chưa có sub 80</td>
+        <td>Thấy DR symbols nhưng không trade được. Có thể mở sub 80 qua flow mới.</td>
+        <td>Warning modal khi chọn DR symbol mà chưa có sub 80 (NHMTS-809 ✅ Done).</td>
+      </tr>
+      <tr>
+        <td class="label">App cũ (chưa update)</td>
+        <td>DR symbols không hiển thị đúng / có thể lỗi UI.</td>
+        <td>Deploy app mới song song hoặc ngay sau BE. Staged rollout để kiểm soát.</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+</div><!-- end tab-impact -->
+
+<script>
+// ─── Tab switching ───
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ─── Count tasks ───
+function countTasks() {
+  const rows = Array.from(document.querySelectorAll('#tbody tr[data-phase]'));
+  let total = 0, done = 0, prog = 0, todo = 0;
+  rows.forEach(r => {
+    if (r.classList.contains('hidden')) return;
+    const s = r.dataset.status;
+    total++;
+    if (s === 'done') done++;
+    else if (s === 'prog' || s === 'uat' || s === 'ready') prog++;
+    else todo++;
+  });
+  document.getElementById('cnt-total').textContent = total;
+  document.getElementById('cnt-done').textContent  = done;
+  document.getElementById('cnt-prog').textContent  = prog;
+  document.getElementById('cnt-todo').textContent  = todo;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `Progress: ${pct}% (${done}/${total} tasks done)`;
+}
+
+// ─── Filter & Search ───
+function applyFilters() {
+  const q       = document.getElementById('search').value.toLowerCase();
+  const phase   = document.getElementById('filter-phase').value;
+  const status  = document.getElementById('filter-status').value;
+  const beOnly  = document.getElementById('show-be-only').checked;
+
+  document.querySelectorAll('#tbody tr[data-phase]').forEach(row => {
+    const text   = row.textContent.toLowerCase();
+    const rPhase = row.dataset.phase || '';
+    const rStat  = row.dataset.status || '';
+    const rType  = row.dataset.type || '';
+
+    const matchQ     = !q || text.includes(q);
+    const matchPhase = !phase || rPhase === phase;
+    const matchStat  = !status ||
+      (status === 'done' && rStat === 'done') ||
+      (status === 'prog' && ['prog','uat','ready'].includes(rStat)) ||
+      (status === 'todo' && rStat === 'todo');
+    const matchBE    = !beOnly || rType === 'be';
+
+    row.classList.toggle('hidden', !(matchQ && matchPhase && matchStat && matchBE));
+  });
+
+  // Hide phase headers if all their rows are hidden
+  let lastHeader = null;
+  let hasVisible = false;
+  document.querySelectorAll('#tbody tr').forEach(row => {
+    if (row.classList.contains('phase-header')) {
+      if (lastHeader) lastHeader.classList.toggle('hidden', !hasVisible);
+      lastHeader = row;
+      hasVisible = false;
+    } else if (!row.classList.contains('hidden')) {
+      hasVisible = true;
+    }
+  });
+  if (lastHeader) lastHeader.classList.toggle('hidden', !hasVisible);
+
+  countTasks();
+}
+
+document.getElementById('search').addEventListener('input', applyFilters);
+document.getElementById('filter-phase').addEventListener('change', applyFilters);
+document.getElementById('filter-status').addEventListener('change', applyFilters);
+document.getElementById('show-be-only').addEventListener('change', applyFilters);
+
+// ─── Init ───
+countTasks();
+</script>
+</body>
+</html>
