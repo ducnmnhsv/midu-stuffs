@@ -95,7 +95,8 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 | Smart OTP | Any | `Smart-OTP/{Issues\|Planning\|Specifications}/` |
 | TradeX monitoring / infra | Any | `TradeX-Monitor/` |
 | System knowledge / API standards | Reference | `Knowledge/TradeX/` |
-| Market analysis / research | Reference | `Analytics/NH-Research/` |
+| Firebase / GA4 analytics reports | Reference | `Analytics/NHSV-Pro/` |
+| NHSV Pro new features (specs, issues, PRDs) | Any | `New feature in NHSV Pro/{FeatureArea}/` |
 
 **Derivatives category mapping:**
 
