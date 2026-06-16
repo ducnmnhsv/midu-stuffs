@@ -76,8 +76,8 @@ Auth: Bearer token
 | Param | Type | Required | Description |
 |---|---|---|---|
 | `category` | string | No | Filter: `MARKET` \| `COMPANY` \| `MACRO`. Omit → return all |
-| `page` | int | No | Default: 1 |
-| `pageSize` | int | No | Default: 20, max: 50 |
+| `page` | int | No | Default: 1 (offset-based, TradeX-native) |
+| `fetchCount` | int | No | Số bài mỗi trang. Default: 20, max: 50 |
 
 **Response (200)**
 
@@ -93,9 +93,7 @@ Auth: Bearer token
       "publishedAt": "2026-06-10T09:15:00Z"
     }
   ],
-  "totalCount": 12,
-  "page": 1,
-  "pageSize": 20
+  "totalCount": 12
 }
 ```
 
@@ -182,8 +180,8 @@ Auth: Admin session
 | `category` | string | No | `MARKET` \| `COMPANY` \| `MACRO` |
 | `status` | string | No | `published` \| `disabled`. Omit → return all (excl. `deleted`) |
 | `search` | string | No | LIKE search on `title` |
-| `page` | int | No | Default: 1 |
-| `pageSize` | int | No | Default: 20 |
+| `page` | int | No | Default: 1 (offset-based, TradeX-native) |
+| `fetchCount` | int | No | Số bài mỗi trang. Default: 20 |
 
 **Response (200)**
 
@@ -201,9 +199,7 @@ Auth: Admin session
       "createdBy": "duc.nguyen"
     }
   ],
-  "totalCount": 12,
-  "page": 1,
-  "pageSize": 20
+  "totalCount": 12
 }
 ```
 
@@ -249,7 +245,7 @@ Content-Type: application/json
 | `pdfFilename` | string | No | Original filename |
 | `pdfSizeBytes` | number | No | File size in bytes |
 
-**Response (201)**
+**Response (200)**
 
 ```json
 { "id": 42 }
@@ -262,7 +258,7 @@ Content-Type: application/json
 - [ ] Sets `status = 'published'`, `publishedAt = createdAt = now()` automatically
 - [ ] Sets `createdBy` from admin session JWT
 - [ ] Returns `{"id": <articleId>}` — no extra fields
-- [ ] Returns HTTP 201 on success
+- [ ] Returns HTTP 200 on success
 
 ---
 
@@ -385,8 +381,8 @@ Content-Type: multipart/form-data
 **Acceptance Criteria**
 
 - [ ] Calls file service (BE-07) to validate and store the file
-- [ ] Returns HTTP 400 + `INVALID_PARAMETER` if file is not PDF
-- [ ] Returns HTTP 400 + `FILE_TOO_LARGE` if file exceeds size limit
+- [ ] Returns HTTP 400 + `INVALID_PARAMETER` (sub-code: `INVALID_FILE_TYPE`) if file is not PDF
+- [ ] Returns HTTP 400 + `INVALID_PARAMETER` (sub-code: `FILE_TOO_LARGE`) if file exceeds size limit
 - [ ] Returns `pdfUrl`, `pdfFilename`, `pdfSizeBytes` on success
 - [ ] Admin FE uses returned `pdfUrl` when calling POST/PUT article API
 
@@ -472,7 +468,7 @@ Reusable card component for displaying article previews in the list. Shows categ
 
 The main list screen inside the NH Research tab. Renders article cards from API, handles pagination, and shows empty state when no articles exist for a category.
 
-**API:** `GET /api/v1/nh-research/articles?category={MARKET|COMPANY|MACRO}&page=1&pageSize=20`
+**API:** `GET /api/v1/nh-research/articles?category=MARKET&fetchCount=20`
 
 **Acceptance Criteria**
 

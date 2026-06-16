@@ -6,26 +6,50 @@
 <title>NHSV Pro · Tính năng mới · Demo cho phòng ban</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#1e3a6e; --navy-deep:#0f2744; --navy-light:#1a4a8a;
-  --teal:#0e7490; --teal-light:#ccfbf1;
+  /* ── NHSV Pro Design System tokens ── */
+  --nhsv-main:#028D96;        /* primary teal */
+  --nhsv-grad:linear-gradient(90deg,#00A9B4 0%,#01B483 100%);
+  --nhsv-mint:#45DAA4;        /* mint accent */
+
+  /* Legacy palette kept for presentation wrapper */
+  --navy:#0f2744; --navy-light:#028D96;
   --violet:#5b21b6; --violet-light:#ede9fe;
-  --green:#0f766e; --green-light:#d1fae5;
-  --red:#be123c; --red-light:#ffe4e6;
   --amber:#b45309; --amber-light:#fef3c7;
+
+  /* Surfaces */
+  --bg:#EBECF0; --bg-soft:#F2F6FB;
+  --card:#ffffff; --border:#EEF1F4; --border-soft:#EEF1F4;
+  --separator:#EEF1F4; --stroke:#E9EDF7;
+
+  /* Text */
+  --text:#333333; --fg-title:#2F4A4B;
+  --text-muted:#8691B3; --text-soft:#8691B3;
+  --fg-disabled:#808A9D;
+
+  /* Market — Vietnam standard (green=up, red=down) */
+  --green:#07A461;  --green-light:#E6F6EF;
+  --red:#DA1004;    --red-light:#FFEBE6;
+  --market-yellow:#FCAF17;
+  --market-purple:#B413EC;
+  --market-teal:#00B4D8;
   --blue-light:#dbeafe;
-  --bg:#f1f5f9; --bg-soft:#f8fafc;
-  --card:#ffffff; --border:#e2e8f0; --border-soft:#f1f5f9;
-  --text:#0f172a; --text-muted:#64748b; --text-soft:#94a3b8;
+
+  /* Teal-light for pills/chips */
+  --teal-light:#ccfbf1; --teal:#028D96;
+
+  /* Functional */
+  --func-info:#1890FF;
+  --not-active-btn:#EEF1F5;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55}
+html,body{font-family:'Lato',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55}
 body{min-height:100vh}
 
 /* ===== Top Header ===== */
-.top-header{background:linear-gradient(135deg,var(--navy-deep) 0%,var(--navy) 100%);color:#fff;padding:24px 36px}
+.top-header{background:var(--nhsv-grad);color:#fff;padding:24px 36px}
 .top-header h1{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.3px}
 .top-header .subtitle{font-size:13px;color:#cbd5e1;margin-bottom:14px}
 .top-header .badges{display:flex;flex-wrap:wrap;gap:8px}
@@ -38,12 +62,12 @@ body{min-height:100vh}
 .sidebar h3{font-size:10px;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;padding:0 20px;margin:18px 0 8px}
 .sidebar h3:first-child{margin-top:0}
 .sidebar a{display:flex;align-items:center;gap:10px;padding:9px 20px;color:var(--text);text-decoration:none;font-size:13px;font-weight:500;border-left:3px solid transparent;transition:all .15s}
-.sidebar a:hover{background:var(--bg-soft);color:var(--navy)}
-.sidebar a.active{background:#eff6ff;color:var(--navy);border-left-color:var(--navy);font-weight:600}
-.sidebar a .icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;font-size:11px;flex-shrink:0}
-.sidebar a.active .icon{background:var(--navy);color:#fff}
+.sidebar a:hover{background:var(--bg-soft);color:var(--nhsv-main)}
+.sidebar a.active{background:#E6F6EF;color:var(--nhsv-main);border-left-color:var(--nhsv-main);font-weight:700}
+.sidebar a .icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;background:var(--bg);border-radius:6px;flex-shrink:0;color:var(--text-muted)}
+.sidebar a.active .icon{background:var(--nhsv-main);color:#fff}
 .sidebar .status{font-size:9px;font-weight:600;color:var(--text-soft);background:var(--bg);padding:2px 6px;border-radius:4px;margin-left:auto}
-.sidebar a.active .status{background:rgba(30,58,110,.1);color:var(--navy)}
+.sidebar a.active .status{background:rgba(2,141,150,.12);color:var(--nhsv-main)}
 
 /* ===== Content ===== */
 .content{padding:40px 48px;max-width:1180px}
@@ -52,10 +76,10 @@ body{min-height:100vh}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 .feature-header{margin-bottom:24px}
-.feature-header .tag{display:inline-block;background:var(--navy);color:#fff;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;margin-bottom:8px;letter-spacing:.5px}
+.feature-header .tag{display:inline-block;background:var(--nhsv-main);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:8px;letter-spacing:.5px}
 .feature-header .tag.new{background:var(--green)}
 .feature-header .tag.restructure{background:var(--violet)}
-.feature-header h2{font-size:26px;font-weight:700;color:var(--navy-deep);margin-bottom:6px;letter-spacing:-.5px}
+.feature-header h2{font-size:26px;font-weight:700;color:var(--fg-title);margin-bottom:6px;letter-spacing:-.5px}
 .feature-header p.lead{font-size:14px;color:var(--text-muted)}
 
 /* Context callout */
@@ -64,8 +88,8 @@ body{min-height:100vh}
 
 /* Block heading */
 .block{margin-bottom:36px}
-.block h3{font-size:15px;font-weight:700;color:var(--navy-deep);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border-soft);display:flex;align-items:center;gap:8px}
-.block h3 .dot{width:8px;height:8px;background:var(--navy);border-radius:50%}
+.block h3{font-size:15px;font-weight:700;color:var(--fg-title);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border-soft);display:flex;align-items:center;gap:8px}
+.block h3 .dot{width:8px;height:8px;background:var(--nhsv-main);border-radius:50%}
 
 /* Mockup gallery */
 .mockup-row{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;margin-bottom:18px}
@@ -98,7 +122,7 @@ body{min-height:100vh}
 /* Pills (filter) */
 .pills{display:flex;gap:6px;padding:8px 12px 10px;overflow-x:auto;flex-shrink:0}
 .pill{padding:5px 12px;border-radius:999px;font-size:10px;font-weight:600;background:#f1f5f9;color:var(--text-muted);white-space:nowrap;border:1px solid transparent}
-.pill.active{background:var(--navy);color:#fff}
+.pill.active{background:var(--nhsv-main);color:#fff}
 .pill.teal{background:var(--teal-light);color:var(--teal)}
 .pill.teal-active{background:var(--teal);color:#fff}
 
@@ -106,16 +130,16 @@ body{min-height:100vh}
 .tab-bar{display:flex;border-top:1px solid var(--border);background:#fff;padding:6px 0 0;flex-shrink:0}
 .tab-bar .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;font-size:9px;color:var(--text-soft);font-weight:500}
 .tab-bar .tab .ico{font-size:16px;line-height:1}
-.tab-bar .tab.active{color:var(--navy);font-weight:700}
+.tab-bar .tab.active{color:var(--nhsv-main);font-weight:700}
 
 /* ===== NHSV Channel tab strip ===== */
 .channel-tabs{display:flex;gap:0;background:#fff;border-bottom:1px solid var(--border-soft);overflow-x:auto;flex-shrink:0}
 .channel-tabs .ctab{padding:9px 12px;font-size:11px;font-weight:600;color:var(--text-muted);border-bottom:2px solid transparent;white-space:nowrap;flex-shrink:0}
-.channel-tabs .ctab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.channel-tabs .ctab.active{color:var(--nhsv-main);border-bottom-color:var(--nhsv-main)}
 
 /* ===== Mockup primitives ===== */
 .section-title{font-size:13px;font-weight:700;color:var(--text);margin:8px 0 6px;padding:0 4px;display:flex;align-items:center;gap:6px}
-.section-title .more{margin-left:auto;font-size:10px;color:var(--navy);font-weight:600}
+.section-title .more{margin-left:auto;font-size:10px;color:var(--nhsv-main);font-weight:600}
 
 /* News card (current style — flat list) */
 .news-card{background:#fff;border:1px solid var(--border-soft);border-radius:10px;padding:10px;margin-bottom:8px;display:flex;gap:10px}
@@ -130,7 +154,7 @@ body{min-height:100vh}
 
 /* Event card */
 .evt{background:#fff;border:1px solid var(--border-soft);border-radius:10px;padding:9px 10px;margin-bottom:6px;display:flex;gap:10px;align-items:center}
-.evt .code{min-width:34px;height:32px;background:var(--navy);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.evt .code{min-width:34px;height:32px;background:var(--nhsv-main);color:#fff;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 .evt .info{flex:1;min-width:0}
 .evt .info .typ{font-size:10px;color:var(--text);font-weight:600;line-height:1.2}
 .evt .info .dt{font-size:9px;color:var(--text-muted);margin-top:1px}
@@ -162,11 +186,11 @@ body{min-height:100vh}
 .rec .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border-soft);border:1px solid var(--border-soft);border-radius:6px;overflow:hidden;margin-bottom:8px}
 .rec .grid .cell{background:#fff;padding:5px 6px;text-align:center}
 .rec .grid .cell .lbl{font-size:7.5px;color:var(--text-soft);font-weight:500;text-transform:uppercase;letter-spacing:.3px}
-.rec .grid .cell .val{font-size:10px;font-weight:700;color:var(--navy);margin-top:1px}
-.rec .grid .cell .val.teal{color:var(--teal)}
+.rec .grid .cell .val{font-size:10px;font-weight:700;color:var(--fg-title);margin-top:1px;font-variant-numeric:tabular-nums}
+.rec .grid .cell .val.teal{color:var(--nhsv-main)}
 .rec .bot{display:flex;justify-content:space-between;align-items:center;gap:6px}
-.rec .badge{background:var(--blue-light);color:var(--navy);font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px}
-.rec .pdf-btn{background:var(--navy);color:#fff;font-size:9px;font-weight:600;padding:3px 8px;border-radius:5px}
+.rec .badge{background:#E6F6EF;color:var(--nhsv-main);font-size:8px;font-weight:700;padding:2px 6px;border-radius:4px;letter-spacing:.3px}
+.rec .pdf-btn{background:var(--nhsv-main);color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px}
 
 /* Rating table */
 .rtbl{background:#fff;border:1px solid var(--border-soft);border-radius:8px;overflow:hidden;font-size:10px}
@@ -178,7 +202,7 @@ body{min-height:100vh}
 .rate-bd{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;min-width:18px;text-align:center}
 .rate-bd.s{background:var(--amber-light);color:var(--amber)}
 .rate-bd.a{background:var(--green-light);color:var(--green)}
-.rate-bd.b{background:var(--blue-light);color:var(--navy)}
+.rate-bd.b{background:#dbeafe;color:#1e40af}
 .rate-bd.c{background:var(--amber-light);color:var(--amber)}
 .rate-bd.d{background:var(--red-light);color:var(--red)}
 
@@ -196,10 +220,20 @@ body{min-height:100vh}
 .tech .box.target{background:var(--green-light);color:var(--green)}
 .tech .box.stop{background:var(--red-light);color:var(--red)}
 .tech .box.upsize{background:#f1f5f9;color:var(--text-muted)}
+/* Tech card status badge — A-05.3 improvement */
+.tech-status{font-size:7.5px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.3px;white-space:nowrap}
+.tech-status.active{background:var(--green-light);color:var(--green)}
+.tech-status.achieved{background:var(--blue-light);color:var(--nhsv-main)}
+.tech-status.stopped{background:var(--red-light);color:var(--red)}
+/* P&L row in rec cards — A-05.1 improvement */
+.pl-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:5px 7px;background:var(--green-light);border-radius:5px}
+.pl-row .pl-lbl{font-size:7.5px;color:var(--green);font-weight:500;flex:1;opacity:.8}
+.pl-row .pl-val{font-size:11px;font-weight:700;color:var(--green)}
+.pl-row .pl-sub{font-size:7.5px;color:var(--green);opacity:.7}
 
 /* Search */
 .search-bar{margin:8px 12px 0;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-soft);flex-shrink:0}
-.search-bar.active{border-color:var(--navy);background:#fff}
+.search-bar.active{border-color:var(--nhsv-main);background:#fff}
 .search-bar .ico{color:var(--text-muted)}
 .search-bar .input{flex:1}
 .search-bar .input strong{color:var(--text);font-weight:600}
@@ -211,13 +245,13 @@ body{min-height:100vh}
 /* Detail screen */
 .detail-hero{background:#f8fafc;border:1px solid var(--border-soft);border-radius:10px;padding:12px;margin:0 0 10px}
 .detail-hero .row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
-.detail-hero .code-box{width:36px;height:36px;background:var(--navy);color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.detail-hero .code-box{width:36px;height:36px;background:var(--nhsv-main);color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
 .detail-hero .row .name{flex:1;min-width:0}
 .detail-hero .row .name .full{font-size:11px;font-weight:600;color:var(--text);line-height:1.2}
 .detail-hero .row .name .ex{font-size:8px;color:var(--text-soft);margin-top:1px}
 .detail-hero .meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .detail-hero .pct-big{font-size:18px;font-weight:700;color:var(--green);margin-left:auto}
-.tag-chip{font-size:8px;font-weight:600;padding:2px 6px;border-radius:4px;background:var(--blue-light);color:var(--navy)}
+.tag-chip{font-size:8px;font-weight:600;padding:2px 6px;border-radius:4px;background:#E6F6EF;color:var(--nhsv-main)}
 .tag-chip.teal{background:var(--teal-light);color:var(--teal)}
 .tag-chip.violet{background:var(--violet-light);color:var(--violet)}
 .tag-chip.green{background:var(--green-light);color:var(--green)}
@@ -230,7 +264,7 @@ body{min-height:100vh}
 .info-card .kv .v{font-weight:600;color:var(--text)}
 .info-card .kv .v.green{color:var(--green)}
 
-.cta-btn{width:100%;background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:9px;border-radius:8px;text-align:center;margin-top:6px}
+.cta-btn{width:100%;background:var(--nhsv-main);color:#fff;font-size:11px;font-weight:700;padding:9px;border-radius:8px;text-align:center;margin-top:6px}
 .disclaimer{font-size:8px;color:var(--text-soft);text-align:center;padding:4px;line-height:1.4}
 
 /* PDF section */
@@ -239,7 +273,7 @@ body{min-height:100vh}
 .pdf-card .meta{flex:1;min-width:0}
 .pdf-card .meta .fn{font-size:10px;font-weight:600;color:var(--text);line-height:1.2}
 .pdf-card .meta .sz{font-size:8px;color:var(--text-soft);margin-top:1px}
-.pdf-card .open{background:var(--navy);color:#fff;font-size:9px;font-weight:700;padding:5px 9px;border-radius:6px}
+.pdf-card .open{background:var(--nhsv-main);color:#fff;font-size:9px;font-weight:700;padding:5px 9px;border-radius:6px}
 
 /* PDF viewer */
 .pdf-view{flex:1;background:#1f2937;display:flex;flex-direction:column}
@@ -260,8 +294,8 @@ body{min-height:100vh}
 /* Steps */
 .steps{counter-reset:step;list-style:none;padding:0}
 .steps li{counter-increment:step;position:relative;padding:10px 14px 10px 50px;background:#fff;border:1px solid var(--border-soft);border-radius:8px;margin-bottom:8px;font-size:13px;color:var(--text)}
-.steps li::before{content:counter(step);position:absolute;left:14px;top:50%;transform:translateY(-50%);width:26px;height:26px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
-.steps li strong{color:var(--navy-deep);font-weight:600}
+.steps li::before{content:counter(step);position:absolute;left:14px;top:50%;transform:translateY(-50%);width:26px;height:26px;background:var(--nhsv-main);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.steps li strong{color:var(--fg-title);font-weight:700}
 .steps li em{font-style:normal;color:var(--text-muted);font-size:12px;display:block;margin-top:2px}
 
 /* Annotation table */
@@ -270,15 +304,15 @@ body{min-height:100vh}
 .dep-table th{background:#f8fafc;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
 .dep-table tr:last-child td{border-bottom:none}
 .dep-table .badge-cell{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;display:inline-block}
-.dep-table .b-mobile{background:var(--blue-light);color:var(--navy)}
+.dep-table .b-mobile{background:#E6F6EF;color:var(--nhsv-main)}
 .dep-table .b-be{background:var(--violet-light);color:var(--violet)}
-.dep-table .b-admin{background:var(--teal-light);color:var(--teal)}
+.dep-table .b-admin{background:#ccfbf1;color:#0e7490}
 
 /* Footer */
 .footer{padding:30px 48px;border-top:1px solid var(--border);color:var(--text-muted);font-size:12px;text-align:center;background:var(--card)}
 
 /* Home Screen specific */
-.home-bar{background:var(--navy-deep);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.home-bar{background:var(--nhsv-grad);color:#fff;padding:8px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
 .home-bar .greet{flex:1}
 .home-bar .greet .hi{font-size:9px;opacity:.7}
 .home-bar .greet .nm{font-size:11px;font-weight:700}
@@ -329,28 +363,28 @@ body{min-height:100vh}
   <aside class="sidebar">
     <h3>Home Screen</h3>
     <a href="#" class="nav-link active" data-target="event-calendar">
-      <span class="icon">📅</span>Lịch sự kiện<span class="status">A-02</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Lịch sự kiện<span class="status">A-02</span>
     </a>
 
     <h3>NHSV Channel — Tái cấu trúc</h3>
     <a href="#" class="nav-link" data-target="layout">
-      <span class="icon">🗂️</span>Layout mới<span class="status">A-01</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></span>Layout mới<span class="status">A-01</span>
     </a>
     <a href="#" class="nav-link" data-target="tab-reorder">
-      <span class="icon">↔️</span>Sắp lại tabs<span class="status">A-03</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span>Sắp lại tabs<span class="status">A-03</span>
     </a>
     <a href="#" class="nav-link" data-target="nh-research">
-      <span class="icon">📊</span>NH Research<span class="status">A-04</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>NH Research<span class="status">A-04</span>
     </a>
     <a href="#" class="nav-link" data-target="khuyen-nghi">
-      <span class="icon">⭐</span>Khuyến nghị<span class="status">A-05</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>Khuyến nghị<span class="status">A-05</span>
     </a>
     <a href="#" class="nav-link" data-target="search">
-      <span class="icon">🔍</span>Search<span class="status">A-06</span>
+      <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>Search<span class="status">A-06</span>
     </a>
 
     <h3>Tham khảo</h3>
-    <a href="../README.md" style="font-size:12px">📄 README dự án</a>
+    <a href="../README.md" style="font-size:12px;display:flex;align-items:center;gap:8px"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>README dự án</a>
   </aside>
 
   <main class="content">
@@ -381,19 +415,19 @@ body{min-height:100vh}
               <div class="app">
                 <div class="home-bar">
                   <div class="greet"><div class="hi">Xin chào</div><div class="nm">Anh Nguyễn Minh Đức</div></div>
-                  <div class="icn">🔔</div>
-                  <div class="icn">⚙️</div>
+                  <div class="icn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+                  <div class="icn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9 1.65 1.65 0 0 0 4.27 7.18l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
                 </div>
                 <div class="app-body" style="background:#f8fafc">
                   <div class="qa-grid">
-                    <div class="qa"><div class="ic">📈</div><div class="lb">Đặt lệnh</div></div>
-                    <div class="qa"><div class="ic">💼</div><div class="lb">Danh mục</div></div>
-                    <div class="qa"><div class="ic">💰</div><div class="lb">Nạp tiền</div></div>
-                    <div class="qa"><div class="ic">⋯</div><div class="lb">Khác</div></div>
+                    <div class="qa"><div class="ic" style="color:var(--nhsv-main)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div><div class="lb">Đặt lệnh</div></div>
+                    <div class="qa"><div class="ic" style="color:var(--nhsv-main)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div><div class="lb">Danh mục</div></div>
+                    <div class="qa"><div class="ic" style="color:var(--nhsv-main)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><div class="lb">Nạp tiền</div></div>
+                    <div class="qa"><div class="ic" style="color:var(--text-muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div><div class="lb">Khác</div></div>
                   </div>
 
                   <div class="home-card">
-                    <div class="h-row"><div class="h-tt">📅 Lịch sự kiện<span class="new-dot">MỚI</span></div><div class="see">Xem tất cả →</div></div>
+                    <div class="h-row"><div class="h-tt" style="display:flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Lịch sự kiện<span class="new-dot">MỚI</span></div><div class="see">Xem tất cả →</div></div>
                     <div class="evt" style="padding:6px 0;border:none;margin:0">
                       <div class="code" style="min-width:30px;height:28px;font-size:9px">NFC</div>
                       <div class="info">
@@ -413,17 +447,17 @@ body{min-height:100vh}
                   </div>
 
                   <div class="home-card">
-                    <div class="h-row"><div class="h-tt">📰 Tin nóng thị trường</div><div class="see">→</div></div>
+                    <div class="h-row"><div class="h-tt">Tin nóng thị trường</div><div class="see">→</div></div>
                     <div style="font-size:9px;color:var(--text-muted)">VN-Index tăng 12 điểm, vượt 1,300...</div>
                   </div>
                 </div>
 
                 <div class="tab-bar">
-                  <div class="tab active"><div class="ico">🏠</div>Home</div>
-                  <div class="tab"><div class="ico">📊</div>Thị trường</div>
-                  <div class="tab"><div class="ico">📈</div>Đặt lệnh</div>
-                  <div class="tab"><div class="ico">💼</div>Danh mục</div>
-                  <div class="tab"><div class="ico">⋯</div>Khác</div>
+                  <div class="tab active"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>Home</div>
+                  <div class="tab"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>Thị trường</div>
+                  <div class="tab"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Đặt lệnh</div>
+                  <div class="tab"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div>Danh mục</div>
+                  <div class="tab"><div class="ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></div>Khác</div>
                 </div>
                 <div class="home-indicator"></div>
               </div>
@@ -442,8 +476,8 @@ body{min-height:100vh}
               <div class="app">
                 <div class="app-header">
                   <span class="back">←</span>
-                  <span class="title">📅 Lịch sự kiện</span>
-                  <span class="icon-btn">ℹ</span>
+                  <span class="title">Lịch sự kiện</span>
+                  <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
                 </div>
                 <div class="pills">
                   <span class="pill active">Tất cả</span>
@@ -452,7 +486,7 @@ body{min-height:100vh}
                   <span class="pill">Upcom</span>
                 </div>
                 <div class="app-body" style="background:#f8fafc;padding-top:0">
-                  <span class="date-grp">📍 HÔM NAY · 11/06</span>
+                  <span class="date-grp">HÔM NAY · 11/06</span>
                   <div class="evt">
                     <div class="code">NFC</div>
                     <div class="info">
@@ -508,7 +542,7 @@ body{min-height:100vh}
                 <div class="app-header">
                   <span class="back">←</span>
                   <span class="title">Chi tiết sự kiện</span>
-                  <span class="icon-btn">⋯</span>
+                  <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></span>
                 </div>
                 <div class="app-body" style="background:#f8fafc">
                   <div class="detail-hero">
@@ -621,13 +655,13 @@ body{min-height:100vh}
                 <div class="app-header">
                   <span class="back">←</span>
                   <span class="title">Kênh tin tức NHSV</span>
-                  <span class="icon-btn">🔍</span>
+                  <span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
                 </div>
                 <div class="channel-tabs">
-                  <div class="ctab">⭐ Khuyến nghị</div>
-                  <div class="ctab active">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
-                  <div class="ctab">📈 Thị trường</div>
+                  <div class="ctab">Khuyến nghị</div>
+                  <div class="ctab active">NH Research</div>
+                  <div class="ctab">Tin tức</div>
+                  <div class="ctab">Thị trường</div>
                 </div>
                 <div class="pills">
                   <span class="pill active">Thị trường</span>
@@ -637,7 +671,7 @@ body{min-height:100vh}
                 <div class="app-body" style="padding-top:0;background:#f8fafc">
                   <div class="art">
                     <div class="strip market"><div class="cat">Thị trường</div><div class="dt">11/06</div></div>
-                    <div class="body"><div class="ttl">VƯỢT QUA RUNG LẮC</div><div class="prev">Thị trường tiếp tục hồi phục với dòng tiền cải thiện đáng kể trong tuần...</div><div class="pdf">📎 PDF · 2.4 MB</div></div>
+                    <div class="body"><div class="ttl">VƯỢT QUA RUNG LẮC</div><div class="prev">Thị trường tiếp tục hồi phục với dòng tiền cải thiện đáng kể trong tuần...</div><div class="pdf">PDF · 2.4 MB</div></div>
                   </div>
                   <div class="art">
                     <div class="strip market"><div class="cat">Thị trường</div><div class="dt">04/06</div></div>
@@ -698,8 +732,8 @@ body{min-height:100vh}
               <div class="app">
                 <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span></div>
                 <div class="channel-tabs">
-                  <div class="ctab active">📰 Tin tức</div>
-                  <div class="ctab">📈 Thị trường</div>
+                  <div class="ctab active">Tin tức</div>
+                  <div class="ctab">Thị trường</div>
                 </div>
                 <div class="app-body" style="background:#f8fafc;padding-top:8px">
                   <div style="background:#fff;border:1px dashed var(--border);border-radius:8px;padding:14px;text-align:center;color:var(--text-muted);font-size:11px">
@@ -725,12 +759,12 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab active">⭐ Khuyến nghị<span class="new-dot">MỚI</span></div>
-                  <div class="ctab">📊 NH Research<span class="new-dot">MỚI</span></div>
-                  <div class="ctab">📰 Tin tức</div>
-                  <div class="ctab">📈 Thị trường</div>
+                  <div class="ctab active">Khuyến nghị<span class="new-dot">MỚI</span></div>
+                  <div class="ctab">NH Research<span class="new-dot">MỚI</span></div>
+                  <div class="ctab">Tin tức</div>
+                  <div class="ctab">Thị trường</div>
                 </div>
                 <div class="app-body" style="background:#f8fafc;padding-top:8px">
                   <div class="rec">
@@ -743,7 +777,7 @@ body{min-height:100vh}
                       <div class="cell"><div class="lbl">Kỳ vọng</div><div class="val teal">40,000</div></div>
                       <div class="cell"><div class="lbl">KN</div><div class="val">04/06/26</div></div>
                     </div>
-                    <div class="bot"><span class="badge">BLUECHIP</span><span class="pdf-btn">📄 Báo cáo</span></div>
+                    <div class="bot"><span class="badge">BLUECHIP</span><span class="pdf-btn">Báo cáo</span></div>
                   </div>
                 </div>
                 <div class="home-indicator"></div>
@@ -762,10 +796,10 @@ body{min-height:100vh}
       <table class="dep-table">
         <thead><tr><th>Vị trí</th><th>Tab</th><th>Lý do ưu tiên</th></tr></thead>
         <tbody>
-          <tr><td><strong style="color:var(--navy)">1</strong></td><td>⭐ Khuyến nghị</td><td>Giá trị cao nhất — actionable, ảnh hưởng quyết định mua/bán</td></tr>
-          <tr><td><strong style="color:var(--navy)">2</strong></td><td>📊 NH Research</td><td>Báo cáo phân tích chuyên sâu — nội dung độc quyền của NHSV</td></tr>
-          <tr><td><strong style="color:var(--navy)">3</strong></td><td>📰 Tin tức</td><td>Cập nhật chung — tham khảo hằng ngày</td></tr>
-          <tr><td><strong style="color:var(--navy)">4</strong></td><td>📈 Thị trường</td><td>Diễn biến chung — bổ trợ</td></tr>
+          <tr><td><strong style="color:var(--navy)">1</strong></td><td>Khuyến nghị</td><td>Giá trị cao nhất — actionable, ảnh hưởng quyết định mua/bán</td></tr>
+          <tr><td><strong style="color:var(--navy)">2</strong></td><td>NH Research</td><td>Báo cáo phân tích chuyên sâu — nội dung độc quyền của NHSV</td></tr>
+          <tr><td><strong style="color:var(--navy)">3</strong></td><td>Tin tức</td><td>Cập nhật chung — tham khảo hằng ngày</td></tr>
+          <tr><td><strong style="color:var(--navy)">4</strong></td><td>Thị trường</td><td>Diễn biến chung — bổ trợ</td></tr>
         </tbody>
       </table>
     </div>
@@ -798,12 +832,12 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab">⭐ Khuyến nghị</div>
-                  <div class="ctab active">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
-                  <div class="ctab">📈 Thị trường</div>
+                  <div class="ctab">Khuyến nghị</div>
+                  <div class="ctab active">NH Research</div>
+                  <div class="ctab">Tin tức</div>
+                  <div class="ctab">Thị trường</div>
                 </div>
                 <div class="pills">
                   <span class="pill active">Thị trường</span>
@@ -813,11 +847,11 @@ body{min-height:100vh}
                 <div class="app-body" style="background:#f8fafc;padding-top:0">
                   <div class="art">
                     <div class="strip market"><div class="cat">Thị trường</div><div class="dt">11/06</div></div>
-                    <div class="body"><div class="ttl">VƯỢT QUA RUNG LẮC</div><div class="prev">Thị trường tiếp tục hồi phục với dòng tiền cải thiện đáng kể...</div><div class="pdf">📎 PDF · 2.4 MB</div></div>
+                    <div class="body"><div class="ttl">VƯỢT QUA RUNG LẮC</div><div class="prev">Thị trường tiếp tục hồi phục với dòng tiền cải thiện đáng kể...</div><div class="pdf">PDF · 2.4 MB</div></div>
                   </div>
                   <div class="art">
                     <div class="strip market"><div class="cat">Thị trường</div><div class="dt">04/06</div></div>
-                    <div class="body"><div class="ttl">NHỊP HỒI KHẢ QUAN</div><div class="prev">Sau giai đoạn điều chỉnh, các chỉ báo kỹ thuật bắt đầu...</div><div class="pdf">📎 PDF · 1.8 MB</div></div>
+                    <div class="body"><div class="ttl">NHỊP HỒI KHẢ QUAN</div><div class="prev">Sau giai đoạn điều chỉnh, các chỉ báo kỹ thuật bắt đầu...</div><div class="pdf">PDF · 1.8 MB</div></div>
                   </div>
                   <div class="art">
                     <div class="strip company"><div class="cat">Doanh nghiệp</div><div class="dt">28/05</div></div>
@@ -839,7 +873,7 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">VƯỢT QUA RUNG LẮC</span><span class="icon-btn">⤴</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">VƯỢT QUA RUNG LẮC</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg></span></div>
                 <div class="app-body" style="background:#f8fafc">
                   <div style="margin-bottom:8px"><span class="tag-chip">Thị trường · 11/06/2026</span></div>
                   <h4 style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;line-height:1.3">VƯỢT QUA RUNG LẮC</h4>
@@ -851,7 +885,7 @@ body{min-height:100vh}
                     <span class="tag-chip green">MBB +1.5%</span>
                   </div>
                   <div class="pdf-card">
-                    <div class="ic">PDF</div>
+                    <div class="ic" style="font-size:10px;font-weight:700">PDF</div>
                     <div class="meta"><div class="fn">NHSV_TT_11062026.pdf</div><div class="sz">2.4 MB · 8 trang</div></div>
                     <div class="open">Mở xem</div>
                   </div>
@@ -901,7 +935,7 @@ body{min-height:100vh}
       <h3><span class="dot"></span>Luồng chính</h3>
       <ol class="steps">
         <li><strong>Phòng Phân tích upload qua Admin Tool</strong> → Tạo bài mới: chọn chuyên mục, viết tiêu đề + nội dung, đính PDF, mention mã CK liên quan<em>Admin tool ở web nhsv-admin · Không qua mobile</em></li>
-        <li><strong>User mở app</strong> → Vào Kênh tin tức NHSV → Tap tab "📊 NH Research"<em>Default category: Thị trường</em></li>
+        <li><strong>User mở app</strong> → Vào Kênh tin tức NHSV → Tap tab "NH Research"<em>Default category: Thị trường</em></li>
         <li><strong>Chọn chuyên mục</strong> → Tap pill Thị trường / Doanh nghiệp / Vĩ mô<em>Mỗi pill có màu nhận diện</em></li>
         <li><strong>Tap card bài viết</strong> → Mở chi tiết: nội dung full + tag mã CK kèm % thay đổi giá realtime<em>Tap mã CK → chuyển sang trang stock detail</em></li>
         <li><strong>Tap "Mở xem"</strong> → Mở PDF viewer in-app · Pinch-to-zoom, navigation page<em>Cache trong session, không tải lại nếu mở lần 2</em></li>
@@ -946,11 +980,11 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab active">⭐ Khuyến nghị</div>
-                  <div class="ctab">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
+                  <div class="ctab active">Khuyến nghị</div>
+                  <div class="ctab">NH Research</div>
+                  <div class="ctab">Tin tức</div>
                 </div>
                 <div class="pills">
                   <span class="pill active">Danh mục cơ bản</span>
@@ -971,7 +1005,8 @@ body{min-height:100vh}
                       <div class="cell"><div class="lbl">Kỳ vọng</div><div class="val teal">40,000</div></div>
                       <div class="cell"><div class="lbl">KN</div><div class="val">04/06/26</div></div>
                     </div>
-                    <div class="bot"><span class="badge">BLUECHIP</span><span class="pdf-btn">📄 Báo cáo</span></div>
+                    <div class="pl-row"><span class="pl-lbl">P&amp;L từ ngày KN</span><span class="pl-val">+8.9%</span><span class="pl-sub">từ 04/06</span></div>
+                    <div class="bot"><span class="badge">BLUECHIP</span><span class="pdf-btn">Báo cáo</span></div>
                   </div>
                   <div class="rec">
                     <div class="top"><div class="left"><div class="code">TV1</div><div class="name">Tân Tạo · HOSE</div></div>
@@ -981,7 +1016,8 @@ body{min-height:100vh}
                       <div class="cell"><div class="lbl">Kỳ vọng</div><div class="val teal">43,900</div></div>
                       <div class="cell"><div class="lbl">KN</div><div class="val">17/04/26</div></div>
                     </div>
-                    <div class="bot"><span class="badge" style="background:var(--violet-light);color:var(--violet)">MIDCAP</span><span class="pdf-btn">📄 Báo cáo</span></div>
+                    <div class="pl-row"><span class="pl-lbl">P&amp;L từ ngày KN</span><span class="pl-val">+6.5%</span><span class="pl-sub">từ 17/04</span></div>
+                    <div class="bot"><span class="badge" style="background:var(--violet-light);color:var(--violet)">MIDCAP</span><span class="pdf-btn">Báo cáo</span></div>
                   </div>
                 </div>
                 <div class="home-indicator"></div>
@@ -999,19 +1035,26 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab active">⭐ Khuyến nghị</div>
-                  <div class="ctab">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
+                  <div class="ctab active">Khuyến nghị</div>
+                  <div class="ctab">NH Research</div>
+                  <div class="ctab">Tin tức</div>
                 </div>
                 <div class="pills">
                   <span class="pill">Danh mục</span>
                   <span class="pill active">NHSV Rating</span>
                   <span class="pill">Kỹ thuật</span>
                 </div>
-                <div class="search-bar"><span class="ico">🔍</span><span class="input">Tìm mã CK...</span></div>
-                <div class="app-body" style="background:#f8fafc;padding-top:8px">
+                <div class="search-bar"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span class="input">Tìm mã CK...</span></div>
+                <div class="pills" style="padding:4px 8px 6px;gap:5px">
+                  <span class="pill active" style="font-size:8px">Tất cả</span>
+                  <span class="pill" style="font-size:8px">S</span>
+                  <span class="pill" style="font-size:8px">A</span>
+                  <span class="pill" style="font-size:8px">B</span>
+                  <span class="pill" style="font-size:8px">C</span>
+                </div>
+                <div class="app-body" style="background:#f8fafc;padding-top:4px">
                   <div class="rtbl">
                     <div class="hd"><div>Mã CK</div><div style="text-align:center">Cơ bản</div><div style="text-align:center">Thị trường</div><div style="text-align:center">Tổng</div></div>
                     <div class="row"><div class="sym">ACB<small>HOSE</small></div><div class="rt"><span class="rate-bd s">S</span></div><div class="rt"><span class="rate-bd s">S</span></div><div class="rt"><span class="rate-bd s">S</span></div></div>
@@ -1037,11 +1080,11 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab active">⭐ Khuyến nghị</div>
-                  <div class="ctab">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
+                  <div class="ctab active">Khuyến nghị</div>
+                  <div class="ctab">NH Research</div>
+                  <div class="ctab">Tin tức</div>
                 </div>
                 <div class="pills">
                   <span class="pill">Danh mục</span>
@@ -1049,12 +1092,12 @@ body{min-height:100vh}
                   <span class="pill active">Kỹ thuật</span>
                 </div>
                 <div style="display:flex;gap:6px;padding:0 12px 8px;align-items:center;flex-shrink:0">
-                  <span class="pill teal-active" style="font-size:9px">📅 Hôm nay · 11/06</span>
+                  <span class="pill teal-active" style="font-size:9px">Hôm nay · 11/06</span>
                 </div>
                 <div class="app-body" style="background:#f8fafc;padding-top:0">
                   <div class="tech">
                     <div class="top"><div class="left"><div class="code">GMD</div><div class="name">Gemadept · HOSE</div></div>
-                    <div class="action">MUA +19.2%</div></div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="action">MUA +19.2%</div><span class="tech-status active">Còn hiệu lực</span></div></div>
                     <div class="grid">
                       <div class="box buy"><div class="lbl">Vùng mua</div><div class="val">75.50 – 76.50</div></div>
                       <div class="box target"><div class="lbl">Mục tiêu</div><div class="val">90.00</div></div>
@@ -1064,7 +1107,7 @@ body{min-height:100vh}
                   </div>
                   <div class="tech">
                     <div class="top"><div class="left"><div class="code">MBB</div><div class="name">MB Bank · HOSE</div></div>
-                    <div class="action">MUA +14.5%</div></div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div class="action">MUA +14.5%</div><span class="tech-status achieved">Đạt target</span></div></div>
                     <div class="grid">
                       <div class="box buy"><div class="lbl">Vùng mua</div><div class="val">23.00 – 23.80</div></div>
                       <div class="box target"><div class="lbl">Mục tiêu</div><div class="val">27.20</div></div>
@@ -1124,13 +1167,13 @@ body{min-height:100vh}
             <div class="iphone-screen">
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
-                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn">🔍</span></div>
+                <div class="app-header"><span class="back">←</span><span class="title">Kênh tin tức NHSV</span><span class="icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span></div>
                 <div class="channel-tabs">
-                  <div class="ctab">⭐ Khuyến nghị</div>
-                  <div class="ctab active">📊 NH Research</div>
-                  <div class="ctab">📰 Tin tức</div>
+                  <div class="ctab">Khuyến nghị</div>
+                  <div class="ctab active">NH Research</div>
+                  <div class="ctab">Tin tức</div>
                 </div>
-                <div class="search-bar"><span class="ico">🔍</span><span class="input">Tìm mã CK hoặc nội dung...</span></div>
+                <div class="search-bar"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span class="input">Tìm mã CK hoặc nội dung...</span></div>
                 <div class="app-body" style="background:#f8fafc;padding-top:8px">
                   <div class="art"><div class="strip market"><div class="cat">Thị trường</div><div class="dt">11/06</div></div><div class="body"><div class="ttl">VƯỢT QUA RUNG LẮC</div><div class="prev">Thị trường tiếp tục hồi phục...</div></div></div>
                   <div class="art"><div class="strip company"><div class="cat">Doanh nghiệp</div><div class="dt">10/06</div></div><div class="body"><div class="ttl">VCB Q2/2026: Tăng trưởng tín dụng</div><div class="prev">Vietcombank công bố KQKD...</div></div></div>
@@ -1151,10 +1194,10 @@ body{min-height:100vh}
               <div class="status-bar"><span class="time">9:41</span><span class="icons">●●● 100%</span></div>
               <div class="app">
                 <div class="app-header"><span class="back">←</span><span class="title">Tìm kiếm</span><span class="icon-btn">✕</span></div>
-                <div class="search-bar active"><span class="ico">🔍</span><span class="input"><strong>VCB</strong></span></div>
+                <div class="search-bar active"><span class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span><span class="input"><strong>VCB</strong></span></div>
                 <div class="app-body" style="background:#f8fafc">
                   <div class="sr-grp">
-                    <div class="lbl">⭐ Khuyến nghị · 2 kết quả</div>
+                    <div class="lbl">Khuyến nghị · 2 kết quả</div>
                     <div class="rec" style="margin-bottom:6px">
                       <div class="top"><div class="left"><div class="code">VCB</div><div class="name">Vietcombank · HOSE</div></div>
                       <div class="right"><div class="pct" style="font-size:11px">+25.44%</div></div></div>
@@ -1165,11 +1208,11 @@ body{min-height:100vh}
                     </div>
                   </div>
                   <div class="sr-grp">
-                    <div class="lbl">📊 NH Research · 1 kết quả</div>
+                    <div class="lbl">NH Research · 1 kết quả</div>
                     <div class="art"><div class="strip company"><div class="cat">Doanh nghiệp</div><div class="dt">10/06</div></div><div class="body"><div class="ttl">VCB Q2/2026: Tăng trưởng tín dụng</div><div class="prev">Vietcombank công bố KQKD...</div></div></div>
                   </div>
                   <div class="sr-grp">
-                    <div class="lbl">📰 Tin tức · 3 kết quả</div>
+                    <div class="lbl">Tin tức · 3 kết quả</div>
                     <div class="news-card" style="margin-bottom:4px"><div class="thumb" style="width:32px;height:32px"></div><div class="body"><div class="ttl">VN-Index: VCB dẫn dắt sóng tăng</div><div class="meta">11/06</div></div></div>
                   </div>
                 </div>

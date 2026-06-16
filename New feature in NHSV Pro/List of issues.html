@@ -314,6 +314,35 @@
     margin-top: 1px;
   }
 
+  /* ── Improvement box ── */
+  .improvement-box {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #14532d;
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .improvement-box::before {
+    content: '+';
+    display: inline-flex;
+    width: 18px; height: 18px;
+    background: #22c55e;
+    color: white;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .tag-improvement { background: #dcfce7; color: #166534; }
+
   /* ── Note box ── */
   .note-box {
     background: var(--sky);
@@ -423,7 +452,7 @@
 <!-- SUMMARY STATS -->
 <div class="summary-grid">
   <div class="summary-card"><div class="num blue">2</div><div class="label">Màn hình ảnh hưởng</div></div>
-  <div class="summary-card"><div class="num teal">12</div><div class="label">Tính năng / Work items</div></div>
+  <div class="summary-card"><div class="num teal">14</div><div class="label">Tính năng / Work items</div></div>
   <div class="summary-card"><div class="num green">3</div><div class="label">Nguồn dữ liệu nội bộ</div></div>
   <div class="summary-card"><div class="num amber">3</div><div class="label">Open questions</div></div>
 </div>
@@ -481,6 +510,7 @@
         <span class="tag tag-new">Mới</span>
         <span class="tag tag-realtime">Realtime</span>
         <span class="tag tag-public">Nguồn công khai</span>
+        <span class="tag tag-improvement">+Cải tiến</span>
       </div>
     </div>
     <div class="feature-body">
@@ -510,6 +540,9 @@
       </div>
       <div class="note-box">
         <strong>API cần làm rõ:</strong> nguồn dữ liệu công khai cụ thể (SSC, HOSE data feed, hay Vietstock?) và cơ chế sync realtime cần được xác nhận với IT trước khi estimate.
+      </div>
+      <div class="improvement-box">
+        <div><strong>[Improvement]</strong> Push notification T-3 ngày trước ngày GDKHQ — user nhận thông báo trước để chuẩn bị. Phụ thuộc vào X-03 (Push Notification Infrastructure).</div>
       </div>
     </div>
   </div>
@@ -555,6 +588,7 @@
         <span class="tag tag-new">Mới</span>
         <span class="tag tag-tool">Upload Tool</span>
         <span class="tag tag-internal">Phòng Phân tích</span>
+        <span class="tag tag-improvement">+Cải tiến</span>
       </div>
     </div>
     <div class="feature-body">
@@ -592,6 +626,9 @@
           <div class="box-val">Tool nhập nội dung: hỗ trợ cả <strong>text</strong> và <strong>đính kèm file PDF</strong></div>
         </div>
       </div>
+      <div class="improvement-box">
+        <div><strong>[Improvement]</strong> Push notification khi có bài mới được đăng — FE cần implement deeplink để navigate thẳng vào màn hình NH Research (<code>nhsvpro://channel/nh-research</code>). Phụ thuộc vào X-03.</div>
+      </div>
     </div>
   </div>
 
@@ -606,6 +643,7 @@
         <span class="tag tag-new">Mới</span>
         <span class="tag tag-realtime">Realtime (một phần)</span>
         <span class="tag tag-internal">Multi-source</span>
+        <span class="tag tag-improvement">+Cải tiến</span>
       </div>
     </div>
     <div class="feature-body">
@@ -621,7 +659,7 @@
             <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
               <div class="detail-box">
                 <div class="box-label">Thông tin hiển thị</div>
-                <div class="box-val">Giá hiện tại, Giá kỳ vọng, % Lãi/lỗ tiềm năng, Ngày khuyến nghị, Nút download báo cáo</div>
+                <div class="box-val">Giá hiện tại, Giá kỳ vọng, % Lãi/lỗ tiềm năng, Ngày khuyến nghị, Nút download báo cáo<br><span style="color:#166534; font-weight:600;">+ P&amp;L tính từ ngày khuyến nghị</span></div>
               </div>
               <div class="detail-box">
                 <div class="box-label">Nguồn dữ liệu</div>
@@ -640,7 +678,7 @@
           <div class="sub-num">5.2</div>
           <div class="sub-content" style="width:100%">
             <div class="sub-title">NHSV Rating</div>
-            <div class="sub-desc" style="margin-bottom:8px">Bảng rating cổ phiếu theo thang điểm chữ cái S → A → B → C → D, hiển thị 2 cột đánh giá riêng biệt. <strong>Bắt buộc có chức năng tìm kiếm theo mã.</strong></div>
+            <div class="sub-desc" style="margin-bottom:8px">Bảng rating cổ phiếu theo thang điểm chữ cái S → A → B → C → D, hiển thị 2 cột đánh giá riêng biệt. <strong>Bắt buộc có chức năng tìm kiếm theo mã.</strong> <span style="color:#166534; font-weight:600;">+ Sort/filter theo mức rating (S/A/B/C/D).</span></div>
             <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
               <div class="detail-box">
                 <div class="box-label">Thông tin hiển thị</div>
@@ -670,7 +708,7 @@
             <div style="display:grid; grid-template-columns: repeat(3,1fr); gap:8px;">
               <div class="detail-box">
                 <div class="box-label">Thông tin hiển thị</div>
-                <div class="box-val">Giá mua (range)<br>Giá kỳ vọng<br>Cắt lỗ<br>Upsize</div>
+                <div class="box-val">Giá mua (range)<br>Giá kỳ vọng<br>Cắt lỗ<br>Upsize<br><span style="color:#166534; font-weight:600;">+ Status: Còn hiệu lực / Đạt target / Đã cắt lỗ</span></div>
               </div>
               <div class="detail-box">
                 <div class="box-label">Nguồn dữ liệu</div>
@@ -686,6 +724,9 @@
             </div>
           </div>
         </div>
+      </div>
+      <div class="improvement-box">
+        <div><strong>[Improvement]</strong> Push notification khi có bài Khuyến nghị mới — deeplink navigate vào đúng sub-tab (<code>nhsvpro://channel/khuyen-nghi</code>). Admin Tool (X-01) cần thêm nút "Publish &amp; Notify". Phụ thuộc vào X-03.</div>
       </div>
     </div>
   </div>
@@ -896,7 +937,7 @@
       <h2>Cross-cutting / Hạ tầng dùng chung</h2>
       <div class="module-desc">Các component / hệ thống phục vụ nhiều tính năng cùng lúc</div>
     </div>
-    <div class="feature-count">2 work items</div>
+    <div class="feature-count">3 work items</div>
   </div>
 
   <!-- X1 -->
@@ -978,6 +1019,65 @@
   </div>
 
 
+  <!-- X3 -->
+  <div class="feature-card">
+    <div class="feature-top">
+      <span class="feature-id id-x">X-03</span>
+      <div>
+        <div class="feature-title">Push Notification Infrastructure <span class="en">Notification Service + Deeplink Handler</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag tag-new">Mới</span>
+        <span class="tag tag-tool">BE + Admin + FE</span>
+      </div>
+    </div>
+    <div class="feature-body">
+      <div class="feature-desc">Hạ tầng push notification dùng chung, phục vụ cả Event Calendar (A-02) và NHSV Channel (A-04, A-05). Gồm 3 thành phần: BE notification service, FE deeplink handler, và nút "Publish & Notify" trong Admin Tool.</div>
+      <div class="sub-list">
+        <div class="sub-item">
+          <div class="sub-num">1</div>
+          <div class="sub-content">
+            <div class="sub-title">BE — Notification Service</div>
+            <div class="sub-desc">Trigger mới: (a) T-3 ngày trước ngày GDKHQ của Event Calendar, (b) khi Phòng Phân tích publish bài mới lên NH Research hoặc Khuyến nghị. Gửi push qua Firebase / APNs.</div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">2</div>
+          <div class="sub-content">
+            <div class="sub-title">FE — Deeplink Handler</div>
+            <div class="sub-desc">Khi user tap notification, app navigate thẳng vào đúng màn hình:<br>
+              <code>nhsvpro://event-calendar</code> → A-02<br>
+              <code>nhsvpro://channel/nh-research</code> → A-04<br>
+              <code>nhsvpro://channel/khuyen-nghi</code> → A-05
+            </div>
+          </div>
+        </div>
+        <div class="sub-item">
+          <div class="sub-num">3</div>
+          <div class="sub-content">
+            <div class="sub-title">Admin Tool — Nút "Publish & Notify"</div>
+            <div class="sub-desc">Mở rộng X-01: sau khi upload bài, người dùng admin có thể chọn gửi push notification ngay (toggle). Notification template cần hỗ trợ tiếng Việt.</div>
+          </div>
+        </div>
+      </div>
+      <div class="detail-grid" style="margin-top:12px;">
+        <div class="detail-box">
+          <div class="box-label">Phục vụ tính năng</div>
+          <div class="box-val">A-02 (Event Calendar) · A-04 (NH Research) · A-05 (Khuyến nghị)</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Layer</div>
+          <div class="box-val">BE: notification service<br>FE: deeplink routing<br>Admin: publish UI</div>
+        </div>
+        <div class="detail-box">
+          <div class="box-label">Phụ thuộc</div>
+          <div class="box-val">Blocker cho: A-02 (push), A-04 (push), A-05 (push)<br>Extend: X-01 (Admin Tool)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
   <!-- ===== SUMMARY TABLE ===== -->
   <div class="divider"></div>
   <div class="module-header" style="margin-top:28px;">
@@ -1012,7 +1112,7 @@
         <td>BE + Mobile FE</td>
         <td>Nguồn công khai</td>
         <td>Auto realtime</td>
-        <td>X-02</td>
+        <td>X-02, X-03</td>
       </tr>
       <tr>
         <td>A-03</td>
@@ -1028,7 +1128,7 @@
         <td>BE + Mobile FE + Admin</td>
         <td>Phòng Phân tích</td>
         <td>Tool (text + PDF)</td>
-        <td>X-01, A-06</td>
+        <td>X-01, X-03, A-06</td>
       </tr>
       <tr>
         <td>A-05</td>
@@ -1036,7 +1136,7 @@
         <td>BE + Mobile FE + Admin</td>
         <td>Phòng PT, Phòng QTRR, Vietstock</td>
         <td>Tool (text + PDF + import)</td>
-        <td>X-01, X-02, A-06</td>
+        <td>X-01, X-02, X-03, A-06</td>
       </tr>
       <tr>
         <td>A-06</td>
@@ -1091,8 +1191,8 @@
         <td>Admin Upload Tool (NH Research + Khuyến nghị)</td>
         <td>BE + Admin Web</td>
         <td>Nội bộ (multi-dept)</td>
-        <td>Text + PDF + Import Excel</td>
-        <td>Blocked by: A-04, A-05</td>
+        <td>Text + PDF + Import Excel + Publish & Notify</td>
+        <td>Blocked by: A-04, A-05; Extended by: X-03</td>
       </tr>
       <tr>
         <td>X-02</td>
@@ -1101,6 +1201,14 @@
         <td>TBD (FiinGroup/Vietstock/...)</td>
         <td>Auto (API/WebSocket)</td>
         <td>Blocker cho A-02, B-02→B-05</td>
+      </tr>
+      <tr>
+        <td>X-03</td>
+        <td>Push Notification Infrastructure</td>
+        <td>BE + Mobile FE + Admin</td>
+        <td>Internal (trigger-based)</td>
+        <td>Firebase / APNs</td>
+        <td>Blocker cho A-02 (push), A-04 (push), A-05 (push); Extend X-01</td>
       </tr>
     </tbody>
   </table>
@@ -1135,7 +1243,7 @@
   <!-- FOOTER -->
   <div class="doc-footer">
     <div>NHSV Pro · Feature Breakdown · Phòng Research &amp; CLKD</div>
-    <div>Tổng: 13 work items · 2 modules · 3 open questions</div>
+    <div>Tổng: 14 work items · 2 modules · 3 open questions · cập nhật 2026-06-16</div>
   </div>
 
 </div>
