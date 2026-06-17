@@ -113,6 +113,28 @@ Extracted to `/tmp/design_files/nhsv-pro-design-system/` (session-local, re-fetc
 
 ---
 
+## Event Calendar screens (designed 2026-06-17)
+
+4 screens at x=31091–32711, y=-6493 on "Official - Light Mode" page.
+- EC_01 `40009945:87146` — Tất cả tab, all-market events list
+- EC_02 `40009945:87224` — Danh mục tab, portfolio events with "Đang nắm giữ" badge
+- EC_03 `40009945:207607` — Event detail bottom sheet (h=400, 21px top corners)
+- EC_04 `40009945:207669` — Empty state with CTA
+- Labels `40009945:207708` — section label at x=31091 y=-6593
+
+**Component specs applied:**
+- Header: Background Header "Page" `#F2F6FB` (NOT gradient) + Status h=44 + NavBar h=52
+- Secondary Tab: active `#028D96` 14px/700 + 3px underline; inactive `#2F4A4B` 14px/700
+- Tertiary chips: active = white bg 5px radius; inactive = no fill, 4px radius (bg `#F2F6FB`)
+- Row Data H64: dot 8×8 left, title 14px/700, subtitle 12px/400/#8691B3, time right
+- Title Modules H44: date 14px/700/#2F4A4B + Today badge (#2F4A4B bg, white text, r=4)
+- Badge Success: `#E6F6EF` bg + `#07A461` text "Đang nắm giữ", r=4
+- Bottom Menu: `#FFFFFF` h=80, top-line `#EDF0F4`, active tab `#028D96`
+
+**Event type dot colors:** green=#07A461 (cổ tức), teal=#028D96 (họp ĐHCĐ), yellow=#FCAF17 (phát hành)
+
+---
+
 ## Chart Tooltip (designed 2026-06-17)
 
 Correct NHSV Pro chart tooltip for "Thanh khoản khớp lệnh" (2-line chart):
