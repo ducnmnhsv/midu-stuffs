@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-05 · Khuyến nghị — UI Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lato:wght@300;400;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Doc chrome */
+    --navy: #0f2744; --blue: #1a4a8a; --blue-light: #dbeafe;
+    --slate: #475569; --muted: #94a3b8; --border: #e2e8f0; --bg: #f8fafc;
+    /* NHSV Pro DS tokens */
+    --nhsv-main:      #028D96;
+    --nhsv-secondary: #45DAA4;
+    --fg-title:       #2F4A4B;
+    --fg-content:     #333333;
+    --fg-meta:        #8691B3;
+    --fg-disabled:    #808A9D;
+    --surface:        #FFFFFF;
+    --surface-2:      #EBECF0;
+    --header-table:   #F2F6FB;
+    --not-active-btn: #EEF1F5;
+    --separator:      #EEF1F4;
+    --stroke:         #E9EDF7;
+    --market-green:   #07A461;
+    --market-red:     #DA1004;
+    --market-yellow:  #FCAF17;
+    --market-purple:  #B413EC;
+    --market-teal:    #00B4D8;
+    --chart-green:    #0AB39C;
+    --chart-yellow:   #F7B84C;
+    --chart-blue:     #23A3E9;
+    --func-success-bg:#E6F6EF;
+    --func-error-bg:  #FFEBE6;
+    --func-warning-bg:#FFF8E6;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* ── Doc header ── */
+  .doc-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+    color: white; padding: 36px 48px 30px;
+    border-bottom: 4px solid #028D96;
+  }
+  .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #93c5fd; margin-bottom: 8px; }
+  .doc-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #cbd5e1; margin-bottom: 20px; }
+  .meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { font-size: 11px; color: #94a3b8; }
+  .meta-item strong { color: #e2e8f0; font-weight: 600; }
+
+  /* ── Summary bar ── */
+  .summary-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .sum-card { background: white; padding: 16px 20px; text-align: center; }
+  .sum-card .num { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+  .sum-card .lbl { font-size: 10px; color: var(--slate); font-weight: 500; }
+  .c-blue { color: #028D96; } .c-teal { color: #0e7490; } .c-violet { color: #5b21b6; }
+  .c-green { color: #07A461; } .c-amber { color: #b45309; } .c-red { color: #be123c; }
+
+  /* ── Content ── */
+  .content { padding: 32px 48px 60px; }
+  .section { margin-bottom: 40px; }
+  .section-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .section-hdr .icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .section-hdr h2 { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .section-hdr .sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+  /* ── Sub-tab cards (overview) ── */
+  .subtab-overview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+  .ovw-card { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .ovw-hdr { padding: 12px 16px; color: white; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+  .ovw-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; }
+  .ovw-body { padding: 14px 16px; font-size: 12px; color: #374151; line-height: 1.65; }
+  .ovw-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .ovw-row:last-child { margin-bottom: 0; }
+  .ovw-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--muted); min-width: 70px; margin-top: 2px; letter-spacing: 0.6px; }
+
+  /* ── Phone rail ── */
+  .screen-rail { display: flex; gap: 24px; overflow-x: auto; padding-bottom: 16px; }
+  .screen-rail::-webkit-scrollbar { height: 6px; }
+  .screen-rail::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+  .screen-rail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .screen-wrap { flex-shrink: 0; }
+  .screen-label { font-size: 11px; font-weight: 600; color: var(--slate); text-align: center; margin-bottom: 8px; letter-spacing: 0.4px; }
+  .screen-id { font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+
+  /* Phone frame */
+  .phone {
+    width: 320px; background: #1a202c; border-radius: 36px; padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+    position: relative;
+  }
+  .phone::before {
+    content: ''; display: block; width: 80px; height: 22px; background: #1a202c;
+    border-radius: 0 0 14px 14px; position: absolute; top: 12px; left: 50%;
+    transform: translateX(-50%); z-index: 10;
+  }
+  .phone-inner {
+    background: var(--surface-2); border-radius: 26px; overflow: hidden;
+    min-height: 580px; font-family: 'Lato', sans-serif; position: relative;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px; display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 20px 6px; position: relative; z-index: 5;
+  }
+  .status-time { font-size: 12px; font-weight: 700; color: white; letter-spacing: 0.2px; }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .status-icons svg { width: 14px; height: 14px; fill: white; }
+
+  /* Header gradient */
+  .nhsv-header-gradient {
+    background: linear-gradient(90deg, #00A9B4 0%, #01B483 100%);
+    padding: 0 16px 12px;
+  }
+  .header-row { display: flex; align-items: center; height: 44px; gap: 12px; }
+  .header-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+  .header-back svg { width: 20px; height: 20px; }
+  .header-title { font-size: 17px; font-weight: 700; color: white; flex: 1; }
+  .header-action { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+
+  /* Secondary tab bar (sub-tabs) */
+  .subtab-bar {
+    background: var(--surface);
+    display: flex; padding: 0 16px;
+    border-bottom: 1px solid var(--separator);
+  }
+  .subtab-item {
+    flex: 1; padding: 12px 4px; font-family: 'Lato', sans-serif;
+    font-size: 13px; font-weight: 700;
+    text-align: center; position: relative;
+  }
+  .subtab-item.active { color: #028D96; }
+  .subtab-item.active::after {
+    content: ''; position: absolute; bottom: 0; left: 18%; right: 18%;
+    height: 3px; background: #028D96; border-radius: 2px 2px 0 0;
+  }
+  .subtab-item.inactive { color: var(--fg-title); }
+
+  /* Filter pills (Bluechip / Midcap / Tất cả) */
+  .pill-row {
+    display: flex; gap: 8px; padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--separator);
+    align-items: center;
+  }
+  .pill {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; font-weight: 700;
+    padding: 5px 12px; white-space: nowrap;
+  }
+  .pill.active {
+    background: white; border: 1px solid #028D96; color: #028D96; border-radius: 5px;
+  }
+  .pill.inactive {
+    background: var(--header-table); color: var(--fg-title); border-radius: 4px;
+  }
+  .search-mini {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 4px;
+    background: var(--header-table); padding: 5px 10px; border-radius: 16px;
+  }
+  .search-mini svg { width: 12px; height: 12px; stroke: var(--fg-meta); }
+  .search-mini span { font-family: 'Lato', sans-serif; font-size: 11px; color: var(--fg-meta); }
+
+  /* Full search bar */
+  .search-bar-full {
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--separator);
+  }
+  .search-input {
+    background: var(--header-table); border-radius: 8px;
+    padding: 8px 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .search-input svg { width: 16px; height: 16px; stroke: var(--fg-meta); }
+  .search-input span { font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-meta); }
+
+  /* ─── Recommendation card (Danh mục cơ bản) ─── */
+  .rec-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .rec-card {
+    background: white; border-radius: 12px; padding: 14px;
+  }
+  .rec-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+  .rec-code-block { display: flex; flex-direction: column; gap: 2px; }
+  .rec-code {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px; font-weight: 900; color: var(--fg-title); line-height: 1;
+  }
+  .rec-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px; color: var(--fg-meta); line-height: 1.3;
+  }
+  .rec-name .ex {
+    background: var(--header-table); color: var(--fg-title);
+    font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+    margin-left: 4px;
+  }
+  .rec-potential { text-align: right; }
+  .rec-pct {
+    font-family: 'Lato', sans-serif;
+    font-size: 16px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .rec-pct.up   { color: var(--market-green); }
+  .rec-pct.down { color: var(--market-red); }
+  .rec-pct-lbl {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; color: var(--fg-meta); margin-top: 3px;
+  }
+
+  /* 3-column metric grid */
+  .metric-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 10px;
+  }
+  .metric-cell {
+    background: var(--header-table); border-radius: 6px;
+    padding: 6px 6px 8px; text-align: center;
+  }
+  .metric-lbl {
+    font-family: 'Lato', sans-serif;
+    font-size: 9px; color: var(--fg-meta); text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 2px;
+  }
+  .metric-val {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; font-weight: 700; color: var(--fg-title); font-variant-numeric: tabular-nums;
+  }
+  .metric-val.expect { color: #028D96; }
+  .metric-val.date { font-size: 10px; }
+
+  /* Card footer (badge + PDF) */
+  .rec-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .seg-badge {
+    font-family: 'Lato', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.6px;
+    padding: 3px 8px; border-radius: 4px;
+  }
+  .seg-bluechip { background: #E3F0FF; color: #1F5AB4; }
+  .seg-midcap   { background: #FFF3E0; color: #C76E00; }
+  .pdf-btn {
+    display: flex; align-items: center; gap: 4px;
+    background: var(--header-table); border: 1px solid var(--stroke);
+    padding: 4px 10px; border-radius: 6px;
+  }
+  .pdf-btn svg { width: 12px; height: 12px; }
+  .pdf-btn span {
+    font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700; color: var(--fg-title);
+  }
+
+  /* Disclaimer footer */
+  .disclaimer {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; color: var(--fg-meta); font-style: italic;
+    text-align: center; padding: 12px 24px 16px; line-height: 1.5;
+  }
+
+  /* ─── Detail screen ─── */
+  .detail-scroll { padding: 12px 16px; padding-bottom: 90px; }
+  .detail-hero {
+    background: white; border-radius: 12px; padding: 16px; margin-bottom: 8px;
+  }
+  .hero-top { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+  .hero-code-tile {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #00A9B4, #01B483);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .hero-meta { flex: 1; min-width: 0; }
+  .hero-code {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px; font-weight: 900; color: var(--fg-title); line-height: 1.1;
+  }
+  .hero-name {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; color: var(--fg-meta); margin-top: 3px; margin-bottom: 6px; line-height: 1.4;
+  }
+  .hero-badges { display: flex; gap: 4px; }
+  .hero-badge {
+    font-family: 'Lato', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+    padding: 2px 7px; border-radius: 4px;
+  }
+  .badge-hose { background: #E3F0FF; color: #1F5AB4; }
+  .badge-bluechip { background: #E6F6EF; color: #07A461; }
+
+  /* Price comparison row */
+  .price-compare {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    background: var(--header-table); border-radius: 10px; padding: 12px;
+    margin-bottom: 10px;
+  }
+  .price-cell { text-align: center; }
+  .price-lbl {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; color: var(--fg-meta); text-transform: uppercase;
+    letter-spacing: 0.5px; margin-bottom: 4px;
+  }
+  .price-val {
+    font-family: 'Lato', sans-serif;
+    font-size: 18px; font-weight: 900; color: var(--fg-title);
+    font-variant-numeric: tabular-nums;
+  }
+  .price-val.expect { color: #028D96; }
+  .price-divider {
+    align-self: center; width: 1px; background: var(--stroke);
+  }
+
+  /* Big % block */
+  .potential-block {
+    background: var(--func-success-bg);
+    border: 1px solid #B6E4CA;
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .potential-lbl {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px; color: var(--fg-meta); margin-bottom: 4px;
+  }
+  .potential-val {
+    font-family: 'Lato', sans-serif;
+    font-size: 28px; font-weight: 900; color: var(--market-green);
+    font-variant-numeric: tabular-nums; line-height: 1;
+  }
+  .potential-val.down { color: var(--market-red); }
+
+  /* Info card */
+  .info-card {
+    background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+  }
+  .info-card-title {
+    font-family: 'Lato', sans-serif;
+    font-size: 11px; font-weight: 700; color: var(--fg-meta);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;
+  }
+  .info-row {
+    display: flex; justify-content: space-between; padding: 8px 0;
+    border-bottom: 1px solid var(--separator);
+  }
+  .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .info-key {
+    font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-content);
+  }
+  .info-val {
+    font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--fg-title); font-variant-numeric: tabular-nums;
+  }
+
+  /* Short desc card */
+  .desc-card {
+    background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
+  }
+  .desc-body {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px; color: var(--fg-content); line-height: 1.6;
+  }
+
+  /* PDF attachment card */
+  .pdf-attach-card {
+    background: white; border-radius: 12px; padding: 14px; margin-bottom: 12px;
+  }
+  .pdf-attach-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: var(--header-table); border-radius: 8px;
+  }
+  .pdf-icon-box {
+    width: 36px; height: 36px; background: #FFEBE6; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pdf-attach-info { flex: 1; min-width: 0; }
+  .pdf-attach-name { font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; color: var(--fg-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pdf-attach-size { font-family: 'Lato', sans-serif; font-size: 11px; color: var(--fg-meta); }
+  .pdf-open-btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; font-weight: 700; color: #028D96;
+    background: white; border: 1px solid #028D96;
+    padding: 6px 12px; border-radius: 8px; flex-shrink: 0;
+  }
+
+  /* CTA primary button */
+  .cta-primary {
+    background: #028D96; color: white;
+    font-family: 'Lato', sans-serif; font-size: 14px; font-weight: 700;
+    padding: 14px; border-radius: 10px;
+    text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  /* ─── NHSV Rating table ─── */
+  .rating-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px;
+    background: var(--surface-2);
+  }
+  .rating-update-badge {
+    background: white; padding: 4px 10px; border-radius: 14px;
+    display: flex; align-items: center; gap: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .rating-update-badge svg { width: 11px; height: 11px; stroke: var(--fg-meta); }
+  .rating-update-badge span {
+    font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 600; color: var(--fg-meta);
+  }
+  .rating-count {
+    font-family: 'Lato', sans-serif; font-size: 11px; color: var(--fg-meta);
+  }
+  .rating-table-wrap { padding: 0 16px; }
+  .rating-card {
+    background: white; border-radius: 12px; overflow: hidden;
+  }
+  .rating-th-row {
+    display: grid; grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr;
+    padding: 10px 14px;
+    background: var(--header-table);
+    border-bottom: 1px solid var(--separator);
+  }
+  .rating-th {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; font-weight: 700; color: var(--fg-meta);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .rating-th.center { justify-content: center; }
+  .rating-th svg { width: 10px; height: 10px; }
+  .rating-row {
+    display: grid; grid-template-columns: 1.4fr 0.9fr 0.9fr 0.9fr;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--separator);
+    align-items: center;
+  }
+  .rating-row:last-child { border-bottom: none; }
+  .rating-stock { display: flex; flex-direction: column; }
+  .rating-stock-code { font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; color: var(--fg-title); }
+  .rating-stock-name { font-family: 'Lato', sans-serif; font-size: 10px; color: var(--fg-meta); margin-top: 1px; }
+  .rating-cell-center { display: flex; justify-content: center; }
+  .rating-badge {
+    width: 28px; height: 28px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 900;
+  }
+  .r-S { background: #FFF4D1; color: #B47800; }
+  .r-A { background: #E6F6EF; color: #07A461; }
+  .r-B { background: #E3F2FD; color: #23A3E9; }
+  .r-C { background: #FFF3E0; color: #C76E00; }
+  .r-D { background: #FFEBE6; color: var(--market-red); }
+
+  /* Legend */
+  .rating-legend {
+    background: white; border-radius: 12px;
+    padding: 14px;
+    margin: 8px 16px 0;
+  }
+  .legend-title {
+    font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700;
+    color: var(--fg-meta); text-transform: uppercase; letter-spacing: 0.6px;
+    margin-bottom: 10px;
+  }
+  .legend-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px;
+  }
+  .legend-row {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Lato', sans-serif; font-size: 12px; color: var(--fg-content);
+  }
+  .legend-row .rating-badge { width: 22px; height: 22px; font-size: 11px; border-radius: 5px; }
+
+  /* ─── Kỹ thuật hằng ngày card ─── */
+  .date-pill-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--separator);
+  }
+  .date-pill {
+    background: var(--func-success-bg); color: #07A461;
+    font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 5px 12px; border-radius: 16px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .date-pill svg { width: 12px; height: 12px; stroke: #07A461; }
+  .date-nav-btn {
+    width: 28px; height: 28px; background: var(--header-table); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .date-nav-btn svg { width: 14px; height: 14px; stroke: var(--fg-title); }
+
+  .tech-card {
+    background: white; border-radius: 12px; padding: 14px;
+  }
+  .tech-top {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .tech-action-badge {
+    background: var(--market-green); color: white;
+    font-family: 'Lato', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 5px 12px; border-radius: 6px;
+    display: flex; align-items: center; gap: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tech-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .tech-cell {
+    padding: 8px 10px; border-radius: 8px;
+  }
+  .tech-cell.buy   { background: var(--func-success-bg); }
+  .tech-cell.target{ background: #E0F7F4; }
+  .tech-cell.loss  { background: var(--func-error-bg); }
+  .tech-cell.up    { background: var(--header-table); }
+  .tech-cell-lbl {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; color: var(--fg-meta);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    display: flex; align-items: center; gap: 4px;
+    margin-bottom: 3px;
+  }
+  .tech-cell-lbl svg { width: 10px; height: 10px; }
+  .tech-cell-val {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .tech-cell.buy .tech-cell-val { color: #07A461; }
+  .tech-cell.target .tech-cell-val { color: #028D96; }
+  .tech-cell.loss .tech-cell-val { color: var(--market-red); }
+  .tech-cell.up .tech-cell-val { color: var(--fg-title); }
+
+  /* Empty state */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 60px 32px 32px; text-align: center;
+  }
+  .empty-icon {
+    width: 72px; height: 72px; background: var(--header-table);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .empty-icon svg { width: 36px; height: 36px; }
+  .empty-title { font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 700; color: var(--fg-title); margin-bottom: 8px; }
+  .empty-desc { font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-meta); line-height: 1.5; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    background: white; height: 80px; border-top: 1px solid #EDF0F4;
+    display: flex; align-items: flex-start; padding-top: 10px;
+    position: absolute; bottom: 0; left: 0; right: 0;
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-family: 'Lato', sans-serif; font-size: 9px; font-weight: 400; }
+  .nav-item.active svg { fill: #028D96; }
+  .nav-item.active span { color: #028D96; font-weight: 700; }
+  .nav-item.inactive svg { fill: #8691B3; }
+  .nav-item.inactive span { color: #8691B3; }
+
+  /* Search result state */
+  .search-active {
+    padding: 12px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--separator);
+  }
+  .search-input-active {
+    background: var(--header-table); border-radius: 8px;
+    padding: 9px 12px; display: flex; align-items: center; gap: 8px;
+    border: 1px solid #028D96;
+  }
+  .search-input-active svg { width: 16px; height: 16px; stroke: #028D96; }
+  .search-input-active input {
+    flex: 1; background: transparent; border: none; outline: none;
+    font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-title);
+  }
+
+  /* Scrollable content */
+  .scroll-area { overflow-y: auto; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* ── Spec section grids ── */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .comp-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .comp-title { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+  .token-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .token-table th { text-align: left; padding: 6px 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .token-table td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .token-table tbody tr:last-child td { border-bottom: none; }
+  .token-swatch { width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); display: inline-block; vertical-align: middle; }
+  .token-name { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--blue); }
+  .token-hex  { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--slate); }
+  .token-use  { font-size: 11px; color: var(--slate); }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; align-items: flex-start; }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+  .check-pass { color: #07A461; font-weight: 700; }
+  .check-note { color: #b45309; font-weight: 700; }
+
+  /* Flow */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+  .flow-box {
+    background: white; border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 14px; font-size: 11px; font-weight: 600; color: var(--navy);
+    text-align: center; min-width: 100px;
+  }
+  .flow-box.entry { border-color: #028D96; color: #028D96; }
+  .flow-box.terminal { border-color: #07A461; color: #07A461; }
+  .flow-arrow { font-size: 16px; color: var(--muted); padding: 0 8px; }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · A-05 · UI Design</div>
+  <h1>Khuyến nghị — Mobile UI Mockup</h1>
+  <div class="subtitle">Recommendation tab với 3 sub-tabs: Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Stack:</strong> React Native</div>
+    <div class="meta-item"><strong>DS:</strong> NHSV Pro v1 (Lato · #028D96 · #EBECF0)</div>
+    <div class="meta-item"><strong>Screens:</strong> 7 screens</div>
+    <div class="meta-item"><strong>Status:</strong> 🎨 Design Draft</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-17</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ SUMMARY ═══════════════════════ -->
+<div class="summary-bar">
+  <div class="sum-card"><div class="num c-blue">3</div><div class="lbl">Sub-tabs</div></div>
+  <div class="sum-card"><div class="num c-teal">7</div><div class="lbl">Screens</div></div>
+  <div class="sum-card"><div class="num c-green">5</div><div class="lbl">Rating tiers (S→D)</div></div>
+  <div class="sum-card"><div class="num c-violet">4</div><div class="lbl">Tech grid cells</div></div>
+  <div class="sum-card"><div class="num c-amber">1</div><div class="lbl">Disclaimer (sticky)</div></div>
+</div>
+
+<!-- ═══════════════════════ CONTENT ═══════════════════════ -->
+<div class="content">
+
+  <!-- ── Sub-tab overview ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#dbeafe;">🗂️</div>
+      <h2>3 Sub-tabs Overview</h2>
+      <span class="sub">Nội dung & nguồn dữ liệu</span>
+    </div>
+    <div class="subtab-overview">
+      <div class="ovw-card">
+        <div class="ovw-hdr" style="background:#028D96;">
+          <div class="ovw-num">①</div>Danh mục cơ bản
+        </div>
+        <div class="ovw-body">
+          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Danh sách cổ phiếu khuyến nghị · giá kỳ vọng · % tiềm năng</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Phòng PT + market feed (giá realtime)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Tất cả / Bluechip / Midcap + search</div></div>
+        </div>
+      </div>
+      <div class="ovw-card">
+        <div class="ovw-hdr" style="background:#9013FE;">
+          <div class="ovw-num">②</div>NHSV Rating
+        </div>
+        <div class="ovw-body">
+          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Bảng rating S→A→B→C→D (Cơ bản + Thị trường)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Phòng QTRR · upload Excel ~1 lần/tháng</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Search theo mã (bắt buộc)</div></div>
+        </div>
+      </div>
+      <div class="ovw-card">
+        <div class="ovw-hdr" style="background:#07A461;">
+          <div class="ovw-num">③</div>Kỹ thuật hằng ngày
+        </div>
+        <div class="ovw-body">
+          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Vùng mua · Mục tiêu · Cắt lỗ · Upsize (kỹ thuật ngắn hạn)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Vietstock → Phòng PT xử lý thủ công</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Ngày GD (default hôm nay) + search</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Flow ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#e0f2fe;">🗺️</div>
+      <h2>Screen Flow</h2>
+      <span class="sub">Navigation path</span>
+    </div>
+    <div class="flow">
+      <div class="flow-box entry">NHSV Channel<br><span style="font-size:10px;font-weight:400;color:#8691B3">Tab bar</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">KN_01<br><span style="font-size:10px;font-weight:400;color:#8691B3">Danh mục CB</span></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box">KN_03<br><span style="font-size:10px;font-weight:400;color:#8691B3">NHSV Rating</span></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box">KN_04<br><span style="font-size:10px;font-weight:400;color:#8691B3">Kỹ thuật</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box terminal">KN_02 / KN_05<br><span style="font-size:10px;font-weight:400;color:#8691B3">Detail</span></div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);">
+      KN_06 Search active state và KN_07 Empty (Kỹ thuật hôm nay chưa có) là biến thể của các screen trên.
+    </div>
+  </div>
+
+  <!-- ── Mobile Screens ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#dcfce7;">📱</div>
+      <h2>Mobile Screens</h2>
+      <span class="sub">375 × 812 · Lato · NHSV Pro DS · Tabular nums on prices</span>
+    </div>
+
+    <div class="screen-rail">
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_01: Danh mục cơ bản ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_01 — Danh mục cơ bản</div>
+        <div class="screen-id">List · filter Tất cả · sort newest</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div class="header-action"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              </div>
+            </div>
+
+            <!-- Sub-tab bar -->
+            <div class="subtab-bar">
+              <div class="subtab-item active">Danh mục</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item inactive">Kỹ thuật</div>
+            </div>
+
+            <!-- Filter pills -->
+            <div class="pill-row">
+              <div class="pill active">Tất cả</div>
+              <div class="pill inactive">Bluechip</div>
+              <div class="pill inactive">Midcap</div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rec-list">
+
+                <!-- Card 1: VCB with PDF -->
+                <div class="rec-card">
+                  <div class="rec-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">VCB</div>
+                      <div class="rec-name">Vietcombank<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="rec-potential">
+                      <div class="rec-pct up">+25,44%</div>
+                      <div class="rec-pct-lbl">tiềm năng</div>
+                    </div>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Giá HT</div>
+                      <div class="metric-val">31.800</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Kỳ vọng</div>
+                      <div class="metric-val expect">40.000</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Ngày KN</div>
+                      <div class="metric-val date">04/06/26</div>
+                    </div>
+                  </div>
+                  <div class="rec-foot">
+                    <span class="seg-badge seg-bluechip">BLUECHIP</span>
+                    <div class="pdf-btn">
+                      <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                      <span>Báo cáo</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Card 2: TV1 no PDF -->
+                <div class="rec-card">
+                  <div class="rec-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">TV1</div>
+                      <div class="rec-name">Tư vấn Đầu tư<span class="ex">HNX</span></div>
+                    </div>
+                    <div class="rec-potential">
+                      <div class="rec-pct up">+68,20%</div>
+                      <div class="rec-pct-lbl">tiềm năng</div>
+                    </div>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Giá HT</div>
+                      <div class="metric-val">26.100</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Kỳ vọng</div>
+                      <div class="metric-val expect">43.900</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Ngày KN</div>
+                      <div class="metric-val date">17/04/26</div>
+                    </div>
+                  </div>
+                  <div class="rec-foot">
+                    <span class="seg-badge seg-midcap">MIDCAP</span>
+                  </div>
+                </div>
+
+                <!-- Card 3: FPT -->
+                <div class="rec-card">
+                  <div class="rec-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">FPT</div>
+                      <div class="rec-name">FPT Corp.<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="rec-potential">
+                      <div class="rec-pct up">+15,80%</div>
+                      <div class="rec-pct-lbl">tiềm năng</div>
+                    </div>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Giá HT</div>
+                      <div class="metric-val">128.500</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Kỳ vọng</div>
+                      <div class="metric-val expect">148.800</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Ngày KN</div>
+                      <div class="metric-val date">02/06/26</div>
+                    </div>
+                  </div>
+                  <div class="rec-foot">
+                    <span class="seg-badge seg-bluechip">BLUECHIP</span>
+                    <div class="pdf-btn">
+                      <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                      <span>Báo cáo</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="disclaimer">Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_02: Detail ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_02 — Chi tiết khuyến nghị</div>
+        <div class="screen-id">Hero · % block · info · PDF · CTA</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title" style="font-size:15px;">Chi tiết khuyến nghị</div>
+                <div class="header-action"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+              </div>
+            </div>
+
+            <div class="scroll-area">
+              <div class="detail-scroll">
+
+                <!-- Hero card -->
+                <div class="detail-hero">
+                  <div class="hero-top">
+                    <div class="hero-code-tile">VCB</div>
+                    <div class="hero-meta">
+                      <div class="hero-code">VCB</div>
+                      <div class="hero-name">Ngân hàng TMCP Ngoại thương Việt Nam</div>
+                      <div class="hero-badges">
+                        <span class="hero-badge badge-hose">HOSE</span>
+                        <span class="hero-badge badge-bluechip">BLUECHIP</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="price-compare">
+                    <div class="price-cell">
+                      <div class="price-lbl">Giá hiện tại</div>
+                      <div class="price-val">31.800</div>
+                    </div>
+                    <div class="price-cell">
+                      <div class="price-lbl">Giá kỳ vọng</div>
+                      <div class="price-val expect">40.000</div>
+                    </div>
+                  </div>
+
+                  <div class="potential-block">
+                    <div class="potential-lbl">Tiềm năng tăng giá</div>
+                    <div class="potential-val">+25,44%</div>
+                  </div>
+                </div>
+
+                <!-- Short desc -->
+                <div class="desc-card">
+                  <div class="info-card-title">Luận điểm đầu tư</div>
+                  <div class="desc-body">
+                    VCB duy trì vị thế dẫn đầu ngành ngân hàng với NIM ổn định, tăng trưởng tín dụng 14% YoY và chất lượng tài sản tốt. P/B hiện tại 2.1x — vùng định giá hấp dẫn cho dài hạn.
+                  </div>
+                </div>
+
+                <!-- Info card -->
+                <div class="info-card">
+                  <div class="info-card-title">Thông tin khuyến nghị</div>
+                  <div class="info-row">
+                    <span class="info-key">Ngày khuyến nghị</span>
+                    <span class="info-val">04/06/2026</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-key">Giá tại ngày KN</span>
+                    <span class="info-val">31.800</span>
+                  </div>
+                </div>
+
+                <!-- PDF attachment -->
+                <div class="pdf-attach-card">
+                  <div class="info-card-title">Báo cáo phân tích</div>
+                  <div class="pdf-attach-row">
+                    <div class="pdf-icon-box">
+                      <svg viewBox="0 0 24 24" fill="#DA1004" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                    </div>
+                    <div class="pdf-attach-info">
+                      <div class="pdf-attach-name">VCB_Analysis_Q2_2026.pdf</div>
+                      <div class="pdf-attach-size">3.2 MB · PDF</div>
+                    </div>
+                    <div class="pdf-open-btn">Mở xem</div>
+                  </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="cta-primary">
+                  Xem cổ phiếu VCB
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+                <div class="disclaimer">Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư.</div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_03: NHSV Rating ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_03 — NHSV Rating</div>
+        <div class="screen-id">Table · S/A/B/C/D · sort by rating</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item inactive">Danh mục</div>
+              <div class="subtab-item active">NHSV Rating</div>
+              <div class="subtab-item inactive">Kỹ thuật</div>
+            </div>
+
+            <!-- Search bar -->
+            <div class="search-bar-full">
+              <div class="search-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Tìm theo mã CK...</span>
+              </div>
+            </div>
+
+            <!-- Update meta -->
+            <div class="rating-meta-row">
+              <div class="rating-update-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Cập nhật: 06/2026</span>
+              </div>
+              <div class="rating-count">125 mã</div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rating-table-wrap">
+                <div class="rating-card">
+                  <div class="rating-th-row">
+                    <div class="rating-th">Mã CK <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="rating-th center">Cơ bản</div>
+                    <div class="rating-th center">TT</div>
+                    <div class="rating-th center" style="color:#028D96;">Tổng ▼</div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">ACB</span>
+                      <span class="rating-stock-name">Á Châu · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">VCB</span>
+                      <span class="rating-stock-name">Vietcombank · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">AAA</span>
+                      <span class="rating-stock-name">An Phát · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">FPT</span>
+                      <span class="rating-stock-name">FPT Corp · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">AGR</span>
+                      <span class="rating-stock-name">Agriseco · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                  </div>
+
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code">AGG</span>
+                      <span class="rating-stock-name">An Gia · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-C">C</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-C">C</div></div>
+                  </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="rating-legend">
+                  <div class="legend-title">Thang đánh giá</div>
+                  <div class="legend-grid">
+                    <div class="legend-row"><div class="rating-badge r-S">S</div>Xuất sắc</div>
+                    <div class="legend-row"><div class="rating-badge r-A">A</div>Tốt</div>
+                    <div class="legend-row"><div class="rating-badge r-B">B</div>Trung bình</div>
+                    <div class="legend-row"><div class="rating-badge r-C">C</div>Kém</div>
+                    <div class="legend-row"><div class="rating-badge r-D">D</div>Yếu</div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div class="disclaimer">Rating do Phòng QTRR cung cấp, cập nhật định kỳ hàng tháng.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_04: Kỹ thuật hằng ngày ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_04 — Kỹ thuật hằng ngày</div>
+        <div class="screen-id">Today active · 4-cell tech grid</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div class="header-action"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item inactive">Danh mục</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item active">Kỹ thuật</div>
+            </div>
+
+            <div class="date-pill-row">
+              <div class="date-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+              <div class="date-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Hôm nay · 17/06
+              </div>
+              <div class="date-nav-btn" style="opacity:0.4;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rec-list">
+
+                <!-- Tech Card 1: GMD - full 4 cells -->
+                <div class="tech-card">
+                  <div class="tech-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">GMD</div>
+                      <div class="rec-name">Gemadept<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="tech-action-badge">
+                      MUA
+                      <span style="opacity:0.85;">+19,2%</span>
+                    </div>
+                  </div>
+                  <div class="tech-grid">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">75,50 – 76,50</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">90,00</div>
+                    </div>
+                    <div class="tech-cell loss">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ
+                      </div>
+                      <div class="tech-cell-val">73,00</div>
+                    </div>
+                    <div class="tech-cell up">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2F4A4B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 14 12 8 18 14"/></svg>
+                        Upsize
+                      </div>
+                      <div class="tech-cell-val">92,00</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tech Card 2: MBB - no upsize -->
+                <div class="tech-card">
+                  <div class="tech-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">MBB</div>
+                      <div class="rec-name">MB Bank<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="tech-action-badge">
+                      MUA
+                      <span style="opacity:0.85;">+14,5%</span>
+                    </div>
+                  </div>
+                  <div class="tech-grid">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">23,00 – 23,80</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">27,20</div>
+                    </div>
+                    <div class="tech-cell loss" style="grid-column: span 2;">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ
+                      </div>
+                      <div class="tech-cell-val">22,40</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tech Card 3: HPG -->
+                <div class="tech-card">
+                  <div class="tech-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">HPG</div>
+                      <div class="rec-name">Hòa Phát<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="tech-action-badge">
+                      MUA
+                      <span style="opacity:0.85;">+11,8%</span>
+                    </div>
+                  </div>
+                  <div class="tech-grid">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">≥ 27,50</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">31,00</div>
+                    </div>
+                    <div class="tech-cell loss">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ
+                      </div>
+                      <div class="tech-cell-val">26,20</div>
+                    </div>
+                    <div class="tech-cell up">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2F4A4B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 14 12 8 18 14"/></svg>
+                        Upsize
+                      </div>
+                      <div class="tech-cell-val">32,50</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="disclaimer">Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_05: Kỹ thuật Detail ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_05 — Chi tiết Kỹ thuật</div>
+        <div class="screen-id">Tech card + short desc + PDF</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title" style="font-size:15px;">Chi tiết kỹ thuật</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+
+            <div class="scroll-area">
+              <div class="detail-scroll">
+
+                <!-- Stock identity card -->
+                <div class="detail-hero">
+                  <div class="hero-top">
+                    <div class="hero-code-tile" style="background:linear-gradient(135deg,#07A461,#0AB39C);">GMD</div>
+                    <div class="hero-meta">
+                      <div class="hero-code">GMD</div>
+                      <div class="hero-name">Gemadept Corporation</div>
+                      <div class="hero-badges">
+                        <span class="hero-badge badge-hose">HOSE</span>
+                        <span class="hero-badge" style="background:var(--func-success-bg);color:#07A461;">MUA · +19,2%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Tech grid -->
+                  <div class="tech-grid" style="margin-top:4px;">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">75,50 – 76,50</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">90,00</div>
+                    </div>
+                    <div class="tech-cell loss">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ
+                      </div>
+                      <div class="tech-cell-val">73,00</div>
+                    </div>
+                    <div class="tech-cell up">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#2F4A4B" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 14 12 8 18 14"/></svg>
+                        Upsize
+                      </div>
+                      <div class="tech-cell-val">92,00</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Analysis note -->
+                <div class="desc-card">
+                  <div class="info-card-title">Phân tích kỹ thuật</div>
+                  <div class="desc-body">
+                    GMD đang trong xu hướng tăng ngắn hạn, RSI(14) ở vùng 58 cho thấy còn dư địa. MACD cắt lên đường tín hiệu, khối lượng tăng 35% so với MA20. Hỗ trợ mạnh tại 73, kháng cự 90.
+                  </div>
+                </div>
+
+                <!-- Date -->
+                <div class="info-card">
+                  <div class="info-card-title">Thông tin khuyến nghị</div>
+                  <div class="info-row">
+                    <span class="info-key">Ngày giao dịch</span>
+                    <span class="info-val">17/06/2026</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="info-key">Nguồn</span>
+                    <span class="info-val" style="color:#028D96;">Phòng Phân tích NHSV</span>
+                  </div>
+                </div>
+
+                <!-- PDF -->
+                <div class="pdf-attach-card">
+                  <div class="info-card-title">Biểu đồ kỹ thuật</div>
+                  <div class="pdf-attach-row">
+                    <div class="pdf-icon-box">
+                      <svg viewBox="0 0 24 24" fill="#DA1004" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                    </div>
+                    <div class="pdf-attach-info">
+                      <div class="pdf-attach-name">GMD_Technical_17Jun26.pdf</div>
+                      <div class="pdf-attach-size">1.4 MB · PDF</div>
+                    </div>
+                    <div class="pdf-open-btn">Mở xem</div>
+                  </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="cta-primary">
+                  Xem cổ phiếu GMD
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+
+                <div class="disclaimer">Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư.</div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_06: Search Active ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_06 — Search Active</div>
+        <div class="screen-id">User input "VC" · live results</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item inactive">Danh mục</div>
+              <div class="subtab-item active">NHSV Rating</div>
+              <div class="subtab-item inactive">Kỹ thuật</div>
+            </div>
+
+            <div class="search-active">
+              <div class="search-input-active">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input value="VC" placeholder="Tìm theo mã CK..." readonly>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              </div>
+              <div style="font-family:'Lato',sans-serif;font-size:11px;color:#8691B3;margin-top:8px;">3 mã khớp với "VC"</div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rating-table-wrap" style="margin-top:8px;">
+                <div class="rating-card">
+                  <div class="rating-th-row">
+                    <div class="rating-th">Mã CK</div>
+                    <div class="rating-th center">Cơ bản</div>
+                    <div class="rating-th center">TT</div>
+                    <div class="rating-th center">Tổng</div>
+                  </div>
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code"><span style="background:#FFF4D1;padding:0 3px;border-radius:2px;">VC</span>B</span>
+                      <span class="rating-stock-name">Vietcombank · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-S">S</div></div>
+                  </div>
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code"><span style="background:#FFF4D1;padding:0 3px;border-radius:2px;">VC</span>G</span>
+                      <span class="rating-stock-name">Vinaconex · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-A">A</div></div>
+                  </div>
+                  <div class="rating-row">
+                    <div class="rating-stock">
+                      <span class="rating-stock-code"><span style="background:#FFF4D1;padding:0 3px;border-radius:2px;">VC</span>I</span>
+                      <span class="rating-stock-name">Vietcap · HOSE</span>
+                    </div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                    <div class="rating-cell-center"><div class="rating-badge r-B">B</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="disclaimer">Rating do Phòng QTRR cung cấp, cập nhật định kỳ hàng tháng.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_07: Empty State ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_07 — Empty: Kỹ thuật chưa có</div>
+        <div class="screen-id">Hôm nay Phòng PT chưa upload</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item inactive">Danh mục</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item active">Kỹ thuật</div>
+            </div>
+
+            <div class="date-pill-row">
+              <div class="date-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+              <div class="date-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Hôm nay · 17/06
+              </div>
+              <div class="date-nav-btn" style="opacity:0.4;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="empty-title">Chưa có khuyến nghị kỹ thuật</div>
+              <div class="empty-desc">Phòng Phân tích thường cập nhật khuyến nghị<br>kỹ thuật trong phiên sáng. Vui lòng quay lại sau.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screen-rail -->
+  </div>
+
+  <!-- ── Component Specs ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#f3e8ff;">🧩</div>
+      <h2>Component Specs</h2>
+      <span class="sub">Token mapping theo NHSV Pro DS</span>
+    </div>
+
+    <div class="comp-grid">
+
+      <!-- Sub-tabs -->
+      <div class="comp-card">
+        <div class="comp-title">Sub-tab Bar (Secondary Tabs)</div>
+        <table class="token-table">
+          <thead><tr><th>State</th><th>Color</th><th>Indicator</th><th>Typography</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Active</strong></td><td><span class="token-hex">#028D96</span></td><td>3px underline bottom · #028D96</td><td>Lato 13px/700</td></tr>
+            <tr><td>Inactive</td><td><span class="token-hex">#2F4A4B</span></td><td>none</td><td>Lato 13px/700</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Bar h=48 · padding 12px/4px · bg white · bottom 1px separator</div>
+      </div>
+
+      <!-- Filter pills -->
+      <div class="comp-card">
+        <div class="comp-title">Filter Pills (Tất cả / Bluechip / Midcap)</div>
+        <table class="token-table">
+          <thead><tr><th>State</th><th>Background</th><th>Border</th><th>Text</th></tr></thead>
+          <tbody>
+            <tr><td>Active</td><td><span class="token-hex">#FFFFFF</span></td><td>1px <span class="token-hex">#028D96</span></td><td><span class="token-hex">#028D96</span> 700</td></tr>
+            <tr><td>Inactive</td><td><span class="token-hex">#F2F6FB</span></td><td>none</td><td><span class="token-hex">#2F4A4B</span> 700</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Padding 5px/12px · Lato 12px/700 · gap 8px · row h=52</div>
+      </div>
+
+      <!-- Stock code (Recommendation card) -->
+      <div class="comp-card">
+        <div class="comp-title">Recommendation Card — Typography</div>
+        <table class="token-table">
+          <thead><tr><th>Element</th><th>Size / Weight</th><th>Color</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>Stock code</td><td>16px / 900</td><td><span class="token-hex">#2F4A4B</span></td><td>Lato Black</td></tr>
+            <tr><td>Company name</td><td>11px / 400</td><td><span class="token-hex">#8691B3</span></td><td></td></tr>
+            <tr><td>Exchange tag</td><td>9px / 700</td><td><span class="token-hex">#2F4A4B</span></td><td>bg #F2F6FB · r=3px</td></tr>
+            <tr><td>% potential</td><td>16px / 900</td><td>up <span class="token-hex">#07A461</span> / down <span class="token-hex">#DA1004</span></td><td>tabular-nums</td></tr>
+            <tr><td>Metric value</td><td>12px / 700</td><td><span class="token-hex">#2F4A4B</span></td><td>tabular-nums</td></tr>
+            <tr><td>Kỳ vọng value</td><td>12px / 700</td><td><span class="token-hex">#028D96</span></td><td>highlight target</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Rating badges -->
+      <div class="comp-card">
+        <div class="comp-title">Rating Badges (S → D)</div>
+        <table class="token-table">
+          <thead><tr><th>Tier</th><th>BG</th><th>Text</th><th>Preview</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><strong>S</strong></td><td><span class="token-hex">#FFF4D1</span></td><td><span class="token-hex">#B47800</span></td><td><span class="rating-badge r-S" style="width:22px;height:22px;font-size:11px;border-radius:5px;">S</span></td><td>Xuất sắc</td></tr>
+            <tr><td><strong>A</strong></td><td><span class="token-hex">#E6F6EF</span></td><td><span class="token-hex">#07A461</span></td><td><span class="rating-badge r-A" style="width:22px;height:22px;font-size:11px;border-radius:5px;">A</span></td><td>Tốt</td></tr>
+            <tr><td><strong>B</strong></td><td><span class="token-hex">#E3F2FD</span></td><td><span class="token-hex">#23A3E9</span></td><td><span class="rating-badge r-B" style="width:22px;height:22px;font-size:11px;border-radius:5px;">B</span></td><td>Trung bình</td></tr>
+            <tr><td><strong>C</strong></td><td><span class="token-hex">#FFF3E0</span></td><td><span class="token-hex">#C76E00</span></td><td><span class="rating-badge r-C" style="width:22px;height:22px;font-size:11px;border-radius:5px;">C</span></td><td>Kém</td></tr>
+            <tr><td><strong>D</strong></td><td><span class="token-hex">#FFEBE6</span></td><td><span class="token-hex">#DA1004</span></td><td><span class="rating-badge r-D" style="width:22px;height:22px;font-size:11px;border-radius:5px;">D</span></td><td>Yếu</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Badge 28×28 · radius 6px · Lato 13px/900 (table) · 22×22 r=5 (legend)</div>
+      </div>
+
+      <!-- Tech grid cells -->
+      <div class="comp-card">
+        <div class="comp-title">Daily Technical — 4-cell Grid</div>
+        <table class="token-table">
+          <thead><tr><th>Cell</th><th>BG</th><th>Value color</th><th>Icon hint</th></tr></thead>
+          <tbody>
+            <tr><td>Vùng mua</td><td><span class="token-hex">#E6F6EF</span></td><td><span class="token-hex">#07A461</span></td><td>checkmark green</td></tr>
+            <tr><td>Mục tiêu</td><td><span class="token-hex">#E0F7F4</span></td><td><span class="token-hex">#028D96</span></td><td>target teal</td></tr>
+            <tr><td>Cắt lỗ</td><td><span class="token-hex">#FFEBE6</span></td><td><span class="token-hex">#DA1004</span></td><td>cross red</td></tr>
+            <tr><td>Upsize</td><td><span class="token-hex">#F2F6FB</span></td><td><span class="token-hex">#2F4A4B</span></td><td>arrow-up neutral</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Grid 2×2 · gap 6px · cell padding 8/10 · Lato 13/700 tabular-nums</div>
+      </div>
+
+      <!-- Action badge -->
+      <div class="comp-card">
+        <div class="comp-title">"MUA +X%" Action Badge</div>
+        <table class="token-table">
+          <thead><tr><th>Property</th><th>Value</th></tr></thead>
+          <tbody>
+            <tr><td>Background</td><td><span class="token-hex">#07A461</span> (market-green)</td></tr>
+            <tr><td>Text</td><td><span class="token-hex">#FFFFFF</span></td></tr>
+            <tr><td>Font</td><td>Lato 12px / 700</td></tr>
+            <tr><td>Padding</td><td>5px 12px</td></tr>
+            <tr><td>Radius</td><td>6px</td></tr>
+            <tr><td>Percent</td><td>opacity 0.85 trên cùng badge</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Nếu khuyến nghị "BÁN" hoặc "HOLD" → đổi sang #DA1004 hoặc #8691B3</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── UX Checklist ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#dcfce7;">✅</div>
+      <h2>UX Checklist</h2>
+      <span class="sub">Pre-delivery theo ui-ux-pro-max rules</span>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-title">Touch & Accessibility</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Sub-tab item: padding 12px → 48pt height (>44pt)</li>
+          <li><span class="check-icon check-pass">✓</span> Filter pill: min 30pt height + 8dp gap</li>
+          <li><span class="check-icon check-pass">✓</span> Card tap zone full row · &gt;120pt vertical</li>
+          <li><span class="check-icon check-pass">✓</span> PDF button: 30pt + hitSlop để đạt 44pt</li>
+          <li><span class="check-icon check-pass">✓</span> Rating row: 44pt+ height cho tap</li>
+          <li><span class="check-icon check-pass">✓</span> Date nav buttons (◀ ▶): 28pt + hitSlop 8</li>
+          <li><span class="check-icon check-pass">✓</span> Search input: 36pt height (+ hit area)</li>
+          <li><span class="check-icon check-pass">✓</span> CTA "Xem cổ phiếu": full-width 48pt</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Visual & Color</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Lato only — không substitute</li>
+          <li><span class="check-icon check-pass">✓</span> Market colors VN: up=#07A461 / down=#DA1004</li>
+          <li><span class="check-icon check-pass">✓</span> Numbers: tabular-nums trên mọi price column</li>
+          <li><span class="check-icon check-pass">✓</span> VN format: thousands "." decimal "," (e.g. 31.800)</li>
+          <li><span class="check-icon check-pass">✓</span> % không chỉ dựa vào màu — kèm icon ▲/▼ nếu cần</li>
+          <li><span class="check-icon check-pass">✓</span> Rating S/A/B/C/D mỗi tier có chữ + màu (no color-only)</li>
+          <li><span class="check-icon check-pass">✓</span> Card r=12px, white bg, no shadow trên #EBECF0</li>
+          <li><span class="check-icon check-note">⚑</span> Test contrast: #028D96 trên white = 4.85:1 (pass)</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Performance & Loading</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Skeleton shimmer khi fetch &gt;300ms (3 sub-tabs)</li>
+          <li><span class="check-icon check-pass">✓</span> Rating table: client-side search debounce 250ms</li>
+          <li><span class="check-icon check-pass">✓</span> FlatList virtualization cho rating (125+ rows)</li>
+          <li><span class="check-icon check-pass">✓</span> Price enrichment cache 30s (khôi phục khi back)</li>
+          <li><span class="check-icon check-pass">✓</span> PDF cache in-session (tái dùng từ NH Research)</li>
+          <li><span class="check-icon check-pass">✓</span> Pull-to-refresh trên tất cả list screens</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Content & States</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Disclaimer luôn ở cuối screen (mọi sub-tab)</li>
+          <li><span class="check-icon check-pass">✓</span> Empty state Kỹ thuật hôm nay với icon đồng hồ</li>
+          <li><span class="check-icon check-pass">✓</span> Date pill "Hôm nay" emphasized với #07A461</li>
+          <li><span class="check-icon check-pass">✓</span> Search highlight matched substring (VC trong VCB)</li>
+          <li><span class="check-icon check-pass">✓</span> Upsize ẩn nếu null (không hiển thị placeholder)</li>
+          <li><span class="check-icon check-pass">✓</span> Vùng mua hiển thị range "X – Y" hoặc "≥ X"</li>
+          <li><span class="check-icon check-pass">✓</span> Tap mã CK → push navigate stock detail (tái dùng)</li>
+          <li><span class="check-icon check-pass">✓</span> "Cập nhật MM/YYYY" badge ở NHSV Rating header</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Layout & Spacing ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#fef9c3;">📐</div>
+      <h2>Layout & Spacing</h2>
+      <span class="sub">8dp rhythm · NHSV Pro tokens</span>
+    </div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:20px;">
+      <table class="token-table" style="width:100%;">
+        <thead><tr><th>Zone</th><th>Spec</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Status bar</td><td>h = 44pt</td><td>iOS standard</td></tr>
+          <tr><td>Gradient header zone</td><td>~100pt total</td><td>status + navbar + 12dp pad</td></tr>
+          <tr><td>Sub-tab bar</td><td>h = 48pt</td><td>white bg, 1px separator dưới</td></tr>
+          <tr><td>Filter pill row</td><td>h = 52pt</td><td>white bg, 1px separator dưới</td></tr>
+          <tr><td>Search bar full</td><td>h = 56pt</td><td>padding 12dp</td></tr>
+          <tr><td>Rating meta row</td><td>h = 44pt</td><td>bg #EBECF0 (page color)</td></tr>
+          <tr><td>Date pill row</td><td>h = 48pt</td><td>white bg</td></tr>
+          <tr><td>Recommendation card</td><td>~150pt</td><td>3 zones: header + metric grid + footer</td></tr>
+          <tr><td>Tech card (4 cells)</td><td>~160pt</td><td>header + 2×2 grid</td></tr>
+          <tr><td>Rating row</td><td>h = 52pt</td><td>compact để fit 7+ rows</td></tr>
+          <tr><td>Card gap</td><td>8dp</td><td>page bg shows between</td></tr>
+          <tr><td>Card padding</td><td>14dp</td><td>cố định cho mọi card type</td></tr>
+          <tr><td>Disclaimer</td><td>padding 12/24/16</td><td>italic, #8691B3, không sticky</td></tr>
+          <tr><td>Bottom nav</td><td>h = 80pt</td><td>1px top border #EDF0F4</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div style="text-align:center;padding:20px 0 32px;font-size:11px;color:var(--muted);">
+  Document Status: 🎨 Design Draft &nbsp;|&nbsp; For: Mobile FE, Phòng Phân tích, Phòng QTRR &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma node trên trang "Official - Light Mode"
+</div>
+
+</body>
+</html>

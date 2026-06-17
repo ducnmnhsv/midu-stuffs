@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A-04 · NH Research — UI Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lato:wght@300;400;700;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Doc chrome */
+    --navy: #0f2744; --blue: #1a4a8a; --blue-light: #dbeafe;
+    --teal: #0e7490; --teal-light: #ccfbf1;
+    --slate: #475569; --muted: #94a3b8; --border: #e2e8f0; --bg: #f8fafc;
+    /* NHSV Pro DS tokens */
+    --nhsv-main:      #028D96;
+    --nhsv-secondary: #45DAA4;
+    --fg-title:       #2F4A4B;
+    --fg-content:     #333333;
+    --fg-meta:        #8691B3;
+    --fg-disabled:    #808A9D;
+    --surface:        #FFFFFF;
+    --surface-2:      #EBECF0;
+    --header-table:   #F2F6FB;
+    --not-active-btn: #EEF1F5;
+    --separator:      #EEF1F4;
+    --stroke:         #E9EDF7;
+    --market-green:   #07A461;
+    --market-red:     #DA1004;
+    --market-yellow:  #FCAF17;
+    --market-purple:  #B413EC;
+    --shadow-card:    0px 4px 16px 0px rgba(0,34,71,0.10);
+    --shadow-elevated: 0px 8px 24px 0px rgba(0,34,71,0.12);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: #1e293b;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  /* ── Doc header ── */
+  .doc-header {
+    background: linear-gradient(135deg, var(--navy) 0%, #1e3a6e 100%);
+    color: white; padding: 36px 48px 30px;
+    border-bottom: 4px solid #028D96;
+  }
+  .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #93c5fd; margin-bottom: 8px; }
+  .doc-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #cbd5e1; margin-bottom: 20px; }
+  .meta-row { display: flex; gap: 28px; flex-wrap: wrap; }
+  .meta-item { font-size: 11px; color: #94a3b8; }
+  .meta-item strong { color: #e2e8f0; font-weight: 600; }
+
+  /* ── Summary bar ── */
+  .summary-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .sum-card { background: white; padding: 16px 20px; text-align: center; }
+  .sum-card .num { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+  .sum-card .lbl { font-size: 10px; color: var(--slate); font-weight: 500; }
+  .c-blue  { color: #028D96; } .c-teal  { color: #0e7490; } .c-violet { color: #5b21b6; }
+  .c-green { color: #0f766e; } .c-amber { color: #b45309; }
+
+  /* ── Content ── */
+  .content { padding: 32px 48px 60px; }
+  .section { margin-bottom: 40px; }
+  .section-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .section-hdr .icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+  .section-hdr h2 { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .section-hdr .sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+  /* ── Phone rail ── */
+  .screen-rail {
+    display: flex; gap: 24px; overflow-x: auto;
+    padding-bottom: 16px;
+  }
+  .screen-rail::-webkit-scrollbar { height: 6px; }
+  .screen-rail::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 3px; }
+  .screen-rail::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+  .screen-wrap { flex-shrink: 0; }
+  .screen-label { font-size: 11px; font-weight: 600; color: var(--slate); text-align: center; margin-bottom: 8px; letter-spacing: 0.4px; }
+  .screen-id { font-size: 10px; color: var(--muted); text-align: center; margin-bottom: 10px; }
+
+  /* Phone frame */
+  .phone {
+    width: 320px;
+    background: #1a202c;
+    border-radius: 36px;
+    padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.08);
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    display: block;
+    width: 80px; height: 22px;
+    background: #1a202c;
+    border-radius: 0 0 14px 14px;
+    position: absolute;
+    top: 12px; left: 50%; transform: translateX(-50%);
+    z-index: 10;
+  }
+  .phone-inner {
+    background: var(--surface-2);
+    border-radius: 26px;
+    overflow: hidden;
+    min-height: 580px;
+    font-family: 'Lato', sans-serif;
+    position: relative;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 44px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 20px 6px;
+    position: relative; z-index: 5;
+  }
+  .status-bar.on-gradient { /* handled by parent */ }
+  .status-time { font-size: 12px; font-weight: 700; color: white; letter-spacing: 0.2px; }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .status-icons svg { width: 14px; height: 14px; fill: white; }
+
+  /* Header variants */
+  .nhsv-header-gradient {
+    background: linear-gradient(90deg, #00A9B4 0%, #01B483 100%);
+    padding: 0 16px 12px;
+  }
+  .nhsv-header-plain {
+    background: var(--header-table);
+    padding: 0 16px 12px;
+  }
+  .header-row {
+    display: flex; align-items: center; height: 44px; gap: 12px;
+  }
+  .header-back {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-back svg { width: 20px; height: 20px; }
+  .header-title {
+    font-size: 17px; font-weight: 700; color: white; flex: 1;
+  }
+  .header-title.dark { color: var(--fg-title); }
+  .header-action {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Filter chips */
+  .chip-row {
+    display: flex; gap: 8px; padding: 12px 16px;
+    background: var(--surface); border-bottom: 1px solid var(--separator);
+  }
+  .chip {
+    font-family: 'Lato', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 5px 14px; border-radius: 5px;
+    border: 1px solid transparent;
+    cursor: pointer; white-space: nowrap;
+  }
+  .chip.active {
+    background: white; border-color: #028D96; color: #028D96;
+  }
+  .chip.inactive {
+    background: var(--header-table); color: var(--fg-title); border-radius: 4px;
+  }
+
+  /* Article card */
+  .article-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .article-card {
+    background: white; border-radius: 12px; padding: 14px 14px 12px;
+    box-shadow: none;
+  }
+  .card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .cat-badge {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .cat-market  { background: #E3F6F8; color: #028D96; }
+  .cat-company { background: #E6F6EF; color: #07A461; }
+  .cat-macro   { background: #F3E8FF; color: #9013FE; }
+  .card-date { font-size: 11px; color: var(--fg-meta); font-family: 'Lato', sans-serif; margin-left: auto; }
+  .card-title-text {
+    font-family: 'Lato', sans-serif;
+    font-size: 14px; font-weight: 700; color: var(--fg-title);
+    line-height: 1.4; margin-bottom: 6px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-desc {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; color: var(--fg-content); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .pdf-indicator {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 8px; background: #F2F6FB; border-radius: 6px;
+  }
+  .pdf-indicator svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .pdf-indicator span { font-family: 'Lato', sans-serif; font-size: 11px; color: var(--fg-meta); }
+  .pdf-indicator .pdf-name { color: var(--fg-title); font-weight: 600; }
+
+  /* Divider */
+  .list-divider { height: 1px; background: var(--separator); margin: 0 16px; }
+
+  /* Scroll content area */
+  .scroll-area { overflow-y: auto; }
+  .scroll-area::-webkit-scrollbar { display: none; }
+
+  /* Article Detail */
+  .detail-body { padding: 16px; background: var(--surface-2); }
+  .detail-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 8px; }
+  .detail-cat-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .detail-date { font-size: 11px; color: var(--fg-meta); font-family: 'Lato', sans-serif; }
+  .detail-title {
+    font-family: 'Lato', sans-serif;
+    font-size: 17px; font-weight: 700; color: var(--fg-title); line-height: 1.4; margin-bottom: 8px;
+  }
+  .detail-author {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; color: var(--fg-meta); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .detail-divider { height: 1px; background: var(--separator); margin-bottom: 14px; }
+  .detail-body-text {
+    font-family: 'Lato', sans-serif;
+    font-size: 14px; color: var(--fg-content); line-height: 1.65;
+  }
+  .detail-body-text p { margin-bottom: 10px; }
+  .detail-body-text p:last-child { margin-bottom: 0; }
+
+  /* PDF attachment card */
+  .pdf-attach-card {
+    background: white; border-radius: 12px; padding: 14px;
+  }
+  .pdf-attach-label { font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700; color: var(--fg-meta); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+  .pdf-attach-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px; background: var(--header-table); border-radius: 8px;
+  }
+  .pdf-icon-box {
+    width: 36px; height: 36px; background: #FFEBE6; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .pdf-icon-box svg { width: 18px; height: 18px; }
+  .pdf-attach-info { flex: 1; min-width: 0; }
+  .pdf-attach-name { font-family: 'Lato', sans-serif; font-size: 13px; font-weight: 700; color: var(--fg-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pdf-attach-size { font-family: 'Lato', sans-serif; font-size: 11px; color: var(--fg-meta); }
+  .pdf-open-btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; font-weight: 700; color: #028D96;
+    background: white; border: 1px solid #028D96;
+    padding: 6px 12px; border-radius: 8px; flex-shrink: 0;
+  }
+
+  /* PDF Viewer */
+  .pdf-viewer-header {
+    background: rgba(26,32,44,0.95);
+    padding: 0 16px 12px;
+  }
+  .pdf-viewer-header .header-title { color: white; }
+  .pdf-page-indicator {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; color: rgba(255,255,255,0.7);
+    text-align: center; padding: 6px 0;
+    background: rgba(26,32,44,0.8);
+  }
+  .pdf-canvas {
+    background: #525659;
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 16px; gap: 8px;
+    min-height: 440px;
+  }
+  .pdf-page-sim {
+    background: white; width: 200px;
+    border-radius: 2px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    padding: 16px;
+  }
+  .pdf-page-sim .line { height: 8px; background: #e2e8f0; border-radius: 4px; margin-bottom: 6px; }
+  .pdf-page-sim .line.short { width: 60%; }
+  .pdf-page-sim .line.title { height: 12px; background: #94a3b8; width: 80%; margin-bottom: 12px; }
+  .pdf-page-sim .line.xs { height: 5px; margin-bottom: 4px; }
+  .pdf-page-sim .line.xs.short { width: 55%; }
+  .pdf-toolbar {
+    background: rgba(26,32,44,0.9);
+    display: flex; justify-content: center; align-items: center; gap: 24px;
+    padding: 12px 0;
+  }
+  .pdf-tool-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pdf-tool-btn svg { width: 18px; height: 18px; fill: white; }
+
+  /* Empty state */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px 32px; text-align: center; flex: 1;
+  }
+  .empty-icon {
+    width: 72px; height: 72px; background: var(--header-table);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .empty-icon svg { width: 36px; height: 36px; }
+  .empty-title { font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 700; color: var(--fg-title); margin-bottom: 8px; }
+  .empty-desc { font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-meta); line-height: 1.5; }
+
+  /* Error state */
+  .error-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 48px 32px; text-align: center;
+  }
+  .error-icon { width: 72px; height: 72px; background: #FFEBE6; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+  .error-icon svg { width: 36px; height: 36px; }
+  .error-title { font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 700; color: var(--fg-title); margin-bottom: 8px; }
+  .error-desc { font-family: 'Lato', sans-serif; font-size: 13px; color: var(--fg-meta); line-height: 1.5; margin-bottom: 20px; }
+  .retry-btn {
+    font-family: 'Lato', sans-serif;
+    font-size: 14px; font-weight: 700; color: white;
+    background: #028D96; border-radius: 8px; padding: 10px 24px;
+  }
+
+  /* Skeleton shimmer */
+  @keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+  .skeleton {
+    background: linear-gradient(90deg, #e8ecf0 25%, #f5f7fa 50%, #e8ecf0 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+  .skel-card { background: white; border-radius: 12px; padding: 14px; margin-bottom: 8px; }
+  .skel-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .skel-badge { width: 60px; height: 18px; border-radius: 4px; }
+  .skel-date { width: 50px; height: 12px; border-radius: 4px; margin-left: auto; }
+  .skel-title { height: 16px; border-radius: 4px; margin-bottom: 5px; }
+  .skel-title.line2 { width: 70%; }
+  .skel-desc { height: 12px; border-radius: 4px; margin-bottom: 4px; }
+  .skel-desc.line2 { width: 85%; }
+
+  /* Bottom nav */
+  .bottom-nav {
+    background: white; height: 80px;
+    border-top: 1px solid #EDF0F4;
+    display: flex; align-items: flex-start; padding-top: 10px;
+    position: absolute; bottom: 0; left: 0; right: 0;
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-family: 'Lato', sans-serif; font-size: 9px; font-weight: 400; }
+  .nav-item.active svg { fill: #028D96; }
+  .nav-item.active span { color: #028D96; font-weight: 700; }
+  .nav-item.inactive svg { fill: #8691B3; }
+  .nav-item.inactive span { color: #8691B3; }
+
+  /* ── Component spec section ── */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .comp-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .comp-title { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+
+  /* ── Token table ── */
+  .token-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .token-table th { text-align: left; padding: 6px 10px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  .token-table td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+  .token-table tbody tr:last-child td { border-bottom: none; }
+  .token-swatch { width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.08); display: inline-block; vertical-align: middle; }
+  .token-name { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--blue); }
+  .token-hex  { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--slate); }
+  .token-use  { font-size: 11px; color: var(--slate); }
+
+  /* ── UX checklist ── */
+  .checklist { list-style: none; }
+  .checklist li { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f1f5f9; font-size: 12px; color: #374151; align-items: flex-start; }
+  .checklist li:last-child { border-bottom: none; }
+  .check-icon { flex-shrink: 0; margin-top: 1px; }
+  .check-pass { color: #07A461; }
+  .check-note { color: #b45309; }
+
+  /* ── Flow diagram ── */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+  .flow-box {
+    background: white; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 11px; font-weight: 600; color: var(--navy); text-align: center;
+    min-width: 100px;
+  }
+  .flow-box.entry { border-color: #028D96; color: #028D96; }
+  .flow-box.terminal { border-color: #07A461; color: #07A461; }
+  .flow-arrow { font-size: 16px; color: var(--muted); padding: 0 8px; flex-shrink: 0; }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════ HEADER -->
+<div class="doc-header">
+  <div class="eyebrow">NHSV Pro · A-04 · UI Design</div>
+  <h1>NH Research — Mobile UI Mockup</h1>
+  <div class="subtitle">Feature: Content tab hiển thị báo cáo phân tích từ Phòng Phân tích NHSV</div>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Stack:</strong> React Native</div>
+    <div class="meta-item"><strong>DS:</strong> NHSV Pro v1 (Lato · #028D96 · #EBECF0)</div>
+    <div class="meta-item"><strong>Screens:</strong> 5 screens</div>
+    <div class="meta-item"><strong>Status:</strong> 🎨 Design Draft</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-06-17</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ SUMMARY -->
+<div class="summary-bar">
+  <div class="sum-card"><div class="num c-blue">5</div><div class="lbl">Screens</div></div>
+  <div class="sum-card"><div class="num c-teal">3</div><div class="lbl">Category chips</div></div>
+  <div class="sum-card"><div class="num c-green">2</div><div class="lbl">Card variants</div></div>
+  <div class="sum-card"><div class="num c-violet">2</div><div class="lbl">States (empty / error)</div></div>
+  <div class="sum-card"><div class="num c-amber">1</div><div class="lbl">PDF Viewer</div></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════ CONTENT -->
+<div class="content">
+
+  <!-- ── Screen Flow ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#e0f2fe;">🗺️</div>
+      <h2>Screen Flow</h2>
+      <span class="sub">Navigation path</span>
+    </div>
+    <div class="flow">
+      <div class="flow-box entry">NHSV Channel<br><span style="font-size:10px;font-weight:400;color:#8691B3">Tab bar</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">NHR_01<br><span style="font-size:10px;font-weight:400;color:#8691B3">Article List</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box">NHR_02<br><span style="font-size:10px;font-weight:400;color:#8691B3">Article Detail</span></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box terminal">NHR_03<br><span style="font-size:10px;font-weight:400;color:#8691B3">PDF Viewer</span></div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--muted);">
+      NHR_04 Empty State và NHR_05 Error State thay thế nội dung list trong NHR_01 khi không có bài hoặc mất kết nối.
+    </div>
+  </div>
+
+  <!-- ── Mobile Screens ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#dcfce7;">📱</div>
+      <h2>Mobile Screens</h2>
+      <span class="sub">375 × 812 · Lato · NHSV Pro DS</span>
+    </div>
+
+    <div class="screen-rail">
+
+      <!-- ─── NHR_01: Article List ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_01 — Article List</div>
+        <div class="screen-id">Default · Thị trường tab active</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <!-- Gradient header zone -->
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <!-- Signal -->
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <!-- Battery -->
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+                <div class="header-title">NH Research</div>
+                <div class="header-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Category chips -->
+            <div class="chip-row">
+              <div class="chip active">Thị trường</div>
+              <div class="chip inactive">Doanh nghiệp</div>
+              <div class="chip inactive">Vĩ mô</div>
+            </div>
+
+            <!-- Article list -->
+            <div class="scroll-area" style="padding-bottom:80px;">
+              <div class="article-list">
+
+                <!-- Card 1 - with PDF -->
+                <div class="article-card">
+                  <div class="card-top">
+                    <span class="cat-badge cat-market">Thị trường</span>
+                    <span class="card-date">17/06/2026</span>
+                  </div>
+                  <div class="card-title-text">Tổng quan thị trường tuần 3 tháng 6: VN-Index hồi phục tích cực sau phiên giảm mạnh</div>
+                  <div class="card-desc">VN-Index kết thúc tuần với mức tăng 1,2%, thanh khoản cải thiện rõ rệt so với tuần trước. Nhóm ngân hàng và bất động sản dẫn dắt đà phục hồi.</div>
+                  <div class="pdf-indicator">
+                    <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                    <span class="pdf-name">Weekly_Market_Brief_W3_Jun26.pdf</span>
+                    <span>&nbsp;·&nbsp;2.8 MB</span>
+                  </div>
+                </div>
+
+                <!-- Card 2 - no PDF -->
+                <div class="article-card">
+                  <div class="card-top">
+                    <span class="cat-badge cat-market">Thị trường</span>
+                    <span class="card-date">16/06/2026</span>
+                  </div>
+                  <div class="card-title-text">Nhận định thị trường ngày 17/06: Kháng cự 1.270 — tín hiệu kỹ thuật cần theo dõi</div>
+                  <div class="card-desc">Phiên hôm nay VN-Index đối mặt kháng cự quan trọng 1.270 điểm. Nhà đầu tư nên quan sát diễn biến thanh khoản phiên buổi chiều.</div>
+                </div>
+
+                <!-- Card 3 - with PDF -->
+                <div class="article-card">
+                  <div class="card-top">
+                    <span class="cat-badge cat-market">Thị trường</span>
+                    <span class="card-date">14/06/2026</span>
+                  </div>
+                  <div class="card-title-text">Chiến lược đầu tư tháng 7: Cơ hội từ nhóm ngành phòng thủ trong giai đoạn bất ổn</div>
+                  <div class="card-desc">Trong bối cảnh lãi suất toàn cầu duy trì cao, các nhà phân tích NHSV khuyến nghị tỷ trọng phòng thủ 40-50% danh mục.</div>
+                  <div class="pdf-indicator">
+                    <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                    <span class="pdf-name">Strategy_July2026.pdf</span>
+                    <span>&nbsp;·&nbsp;4.1 MB</span>
+                  </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="article-card">
+                  <div class="card-top">
+                    <span class="cat-badge cat-market">Thị trường</span>
+                    <span class="card-date">12/06/2026</span>
+                  </div>
+                  <div class="card-title-text">Báo cáo thanh khoản thị trường tháng 6: Dòng tiền dần trở lại</div>
+                  <div class="card-desc">Khối ngoại mua ròng tuần thứ 2 liên tiếp với giá trị 580 tỷ đồng, tập trung vào nhóm bluechip và ETF.</div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Bottom nav -->
+            <div class="bottom-nav">
+              <div class="nav-item inactive">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                <span>Trang chủ</span>
+              </div>
+              <div class="nav-item inactive">
+                <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span>Lệnh</span>
+              </div>
+              <div class="nav-item active">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span>Kênh NH</span>
+              </div>
+              <div class="nav-item inactive">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Tài khoản</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── NHR_01b: Loading skeleton ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_01 — Loading State</div>
+        <div class="screen-id">Skeleton shimmer khi fetch lần đầu</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+                <div class="header-title">NH Research</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+            <!-- Chip row skeleton -->
+            <div class="chip-row" style="gap:8px;">
+              <div class="skeleton" style="height:30px;width:90px;border-radius:5px;"></div>
+              <div class="skeleton" style="height:30px;width:100px;border-radius:4px;"></div>
+              <div class="skeleton" style="height:30px;width:60px;border-radius:4px;"></div>
+            </div>
+            <!-- Skeleton cards -->
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px;padding-bottom:80px;">
+              <div class="skel-card">
+                <div class="skel-row"><div class="skeleton skel-badge"></div><div class="skeleton skel-date"></div></div>
+                <div class="skeleton skel-title" style="width:95%;margin-bottom:5px;"></div>
+                <div class="skeleton skel-title line2" style="margin-bottom:12px;"></div>
+                <div class="skeleton skel-desc" style="width:100%;"></div>
+                <div class="skeleton skel-desc line2"></div>
+              </div>
+              <div class="skel-card">
+                <div class="skel-row"><div class="skeleton skel-badge"></div><div class="skeleton skel-date"></div></div>
+                <div class="skeleton skel-title" style="width:88%;margin-bottom:5px;"></div>
+                <div class="skeleton skel-title line2" style="margin-bottom:12px;"></div>
+                <div class="skeleton skel-desc" style="width:100%;"></div>
+                <div class="skeleton skel-desc line2"></div>
+              </div>
+              <div class="skel-card">
+                <div class="skel-row"><div class="skeleton skel-badge"></div><div class="skeleton skel-date"></div></div>
+                <div class="skeleton skel-title" style="width:92%;margin-bottom:5px;"></div>
+                <div class="skeleton skel-title line2" style="margin-bottom:12px;"></div>
+                <div class="skeleton skel-desc" style="width:100%;"></div>
+                <div class="skeleton skel-desc" style="width:70%;"></div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── NHR_02: Article Detail ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_02 — Article Detail</div>
+        <div class="screen-id">Full content + PDF attachment card</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+                <div class="header-title" style="font-size:15px;">Chi tiết báo cáo</div>
+                <div class="header-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:16px;">
+              <div class="detail-body">
+                <!-- Article card -->
+                <div class="detail-card" style="margin-bottom:8px;">
+                  <div class="detail-cat-row">
+                    <span class="cat-badge cat-market">Thị trường</span>
+                    <span class="detail-date">17/06/2026 · 08:30</span>
+                  </div>
+                  <div class="detail-title">Tổng quan thị trường tuần 3 tháng 6: VN-Index hồi phục tích cực sau phiên giảm mạnh</div>
+                  <div class="detail-author">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Phòng Phân tích NHSV
+                  </div>
+                  <div class="detail-divider"></div>
+                  <div class="detail-body-text">
+                    <p>VN-Index kết thúc tuần giao dịch 3 tháng 6 với mức tăng 1,2% so với tuần trước, dừng lại ở mức 1.265,4 điểm. Đây là tuần phục hồi tích cực sau 2 phiên giảm liên tiếp vào đầu tuần.</p>
+                    <p>Thanh khoản cải thiện đáng kể, bình quân khớp lệnh đạt 14.500 tỷ đồng/phiên, tăng 18% so với tuần trước. Nhóm ngân hàng và bất động sản là động lực chính dẫn dắt đà phục hồi.</p>
+                    <p>Khối ngoại tiếp tục mua ròng tuần thứ 2 liên tiếp với giá trị 420 tỷ đồng, tập trung VHM, VCB và các mã bluechip...</p>
+                  </div>
+                </div>
+
+                <!-- PDF attachment -->
+                <div class="pdf-attach-card">
+                  <div class="pdf-attach-label">Tài liệu đính kèm</div>
+                  <div class="pdf-attach-row">
+                    <div class="pdf-icon-box">
+                      <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="1.5"/><text x="5" y="18" font-size="5" fill="white" font-weight="700">PDF</text></svg>
+                    </div>
+                    <div class="pdf-attach-info">
+                      <div class="pdf-attach-name">Weekly_Market_Brief_W3_Jun26.pdf</div>
+                      <div class="pdf-attach-size">2.8 MB · PDF Document</div>
+                    </div>
+                    <div class="pdf-open-btn">Mở xem</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── NHR_03: PDF Viewer ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_03 — PDF Viewer</div>
+        <div class="screen-id">In-app PDF reader · pinch-to-zoom</div>
+        <div class="phone">
+          <div class="phone-inner" style="background:#525659;">
+            <!-- Dark header for PDF viewer -->
+            <div class="pdf-viewer-header">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-family:'Lato',sans-serif;font-size:13px;font-weight:700;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Weekly_Market_Brief_W3_Jun26.pdf</div>
+                  <div style="font-family:'Lato',sans-serif;font-size:10px;color:rgba(255,255,255,0.6);">2.8 MB</div>
+                </div>
+                <div class="header-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Page indicator -->
+            <div class="pdf-page-indicator">Trang 1 / 8</div>
+
+            <!-- PDF canvas sim -->
+            <div class="pdf-canvas">
+              <div class="pdf-page-sim">
+                <div style="height:14px;background:#1a4a8a;border-radius:3px;margin-bottom:8px;"></div>
+                <div class="line title"></div>
+                <div class="line"></div>
+                <div class="line short"></div>
+                <div style="margin:10px 0;height:1px;background:#e2e8f0;"></div>
+                <div class="line xs"></div>
+                <div class="line xs"></div>
+                <div class="line xs short"></div>
+                <div style="margin:8px 0;height:40px;background:#f1f5f9;border-radius:4px;"></div>
+                <div class="line xs"></div>
+                <div class="line xs"></div>
+                <div class="line xs" style="width:45%;"></div>
+              </div>
+            </div>
+
+            <!-- PDF toolbar -->
+            <div class="pdf-toolbar">
+              <div class="pdf-tool-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+              </div>
+              <div style="font-family:'Lato',sans-serif;font-size:13px;color:rgba(255,255,255,0.8);min-width:60px;text-align:center;">1 / 8</div>
+              <div class="pdf-tool-btn">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+              <div style="width:1px;height:24px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>
+              <div class="pdf-tool-btn">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              </div>
+              <div class="pdf-tool-btn">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── NHR_04: Empty State ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_04 — Empty State</div>
+        <div class="screen-id">Khi category không có bài nào</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">NH Research</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+            <div class="chip-row">
+              <div class="chip inactive">Thị trường</div>
+              <div class="chip inactive">Doanh nghiệp</div>
+              <div class="chip active">Vĩ mô</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;padding:60px 32px;text-align:center;">
+              <div class="empty-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              </div>
+              <div class="empty-title">Chưa có báo cáo Vĩ mô</div>
+              <div class="empty-desc">Phòng Phân tích NHSV sẽ sớm cập nhật<br>báo cáo vĩ mô mới nhất cho bạn.</div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── NHR_05: Error / Offline ─── -->
+      <div class="screen-wrap">
+        <div class="screen-label">NHR_05 — Error State</div>
+        <div class="screen-id">Mất kết nối / API lỗi + retry</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">NH Research</div>
+                <div style="width:32px;"></div>
+              </div>
+            </div>
+            <div class="chip-row">
+              <div class="chip active">Thị trường</div>
+              <div class="chip inactive">Doanh nghiệp</div>
+              <div class="chip inactive">Vĩ mô</div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;padding:52px 32px;text-align:center;">
+              <div class="error-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </div>
+              <div class="error-title">Không tải được danh sách</div>
+              <div class="error-desc">Kiểm tra lại kết nối internet<br>và thử lại.</div>
+              <div class="retry-btn">Thử lại</div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /screen-rail -->
+  </div>
+
+  <!-- ── Component Specs ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#f3e8ff;">🧩</div>
+      <h2>Component Specs</h2>
+      <span class="sub">Token mapping theo NHSV Pro DS</span>
+    </div>
+
+    <div class="comp-grid">
+
+      <!-- Category chips -->
+      <div class="comp-card">
+        <div class="comp-title">Category Chips</div>
+        <table class="token-table">
+          <thead><tr><th>State</th><th>Background</th><th>Border</th><th>Text</th><th>Radius</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Active</strong></td>
+              <td><span class="token-hex">#FFFFFF</span></td>
+              <td><span class="token-hex">#028D96</span> 1px</td>
+              <td><span class="token-hex">#028D96</span> 700</td>
+              <td><span class="token-hex">5px</span></td>
+            </tr>
+            <tr>
+              <td><strong>Inactive</strong></td>
+              <td><span class="token-hex">#F2F6FB</span></td>
+              <td><span class="token-hex">none</span></td>
+              <td><span class="token-hex">#2F4A4B</span> 700</td>
+              <td><span class="token-hex">4px</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Font: Lato 13px/700 · Padding: 5px 14px · Min-width: auto</div>
+      </div>
+
+      <!-- Category badges -->
+      <div class="comp-card">
+        <div class="comp-title">Category Badges (on card)</div>
+        <table class="token-table">
+          <thead><tr><th>Category</th><th>Background</th><th>Text Color</th><th>Preview</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Thị trường</td>
+              <td><span class="token-hex">#E3F6F8</span></td>
+              <td><span class="token-hex">#028D96</span></td>
+              <td><span class="cat-badge cat-market">Thị trường</span></td>
+            </tr>
+            <tr>
+              <td>Doanh nghiệp</td>
+              <td><span class="token-hex">#E6F6EF</span></td>
+              <td><span class="token-hex">#07A461</span></td>
+              <td><span class="cat-badge cat-company">Doanh nghiệp</span></td>
+            </tr>
+            <tr>
+              <td>Vĩ mô</td>
+              <td><span class="token-hex">#F3E8FF</span></td>
+              <td><span class="token-hex">#9013FE</span></td>
+              <td><span class="cat-badge cat-macro">Vĩ mô</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Font: Lato 10px/700 · Padding: 2px 8px · Radius: 4px</div>
+      </div>
+
+      <!-- Article card -->
+      <div class="comp-card">
+        <div class="comp-title">Article Card — Typography</div>
+        <table class="token-table">
+          <thead><tr><th>Element</th><th>Size / Weight</th><th>Color token</th><th>Lines</th></tr></thead>
+          <tbody>
+            <tr><td>Title</td><td>14px / 700</td><td><span class="token-name">fg-title</span> <span class="token-hex">#2F4A4B</span></td><td>max 2</td></tr>
+            <tr><td>Description</td><td>12px / 400</td><td><span class="token-name">fg-content</span> <span class="token-hex">#333333</span></td><td>max 2</td></tr>
+            <tr><td>Date</td><td>11px / 400</td><td><span class="token-name">fg-meta</span> <span class="token-hex">#8691B3</span></td><td>1</td></tr>
+            <tr><td>PDF filename</td><td>11px / 700</td><td><span class="token-name">fg-title</span></td><td>1 ellipsis</td></tr>
+            <tr><td>PDF size</td><td>11px / 400</td><td><span class="token-name">fg-meta</span></td><td>1</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Card: white · radius 12px · padding 14px · no shadow on #EBECF0 bg</div>
+      </div>
+
+      <!-- Colors summary -->
+      <div class="comp-card">
+        <div class="comp-title">Key Design Tokens Used</div>
+        <table class="token-table">
+          <thead><tr><th>Token</th><th></th><th>Hex</th><th>Usage</th></tr></thead>
+          <tbody>
+            <tr><td class="token-name">nhsv-main</td><td><span class="token-swatch" style="background:#028D96;"></span></td><td class="token-hex">#028D96</td><td class="token-use">Active chips, icons</td></tr>
+            <tr><td class="token-name">fg-title</td><td><span class="token-swatch" style="background:#2F4A4B;border:1px solid #ccc;"></span></td><td class="token-hex">#2F4A4B</td><td class="token-use">Card titles, headings</td></tr>
+            <tr><td class="token-name">fg-content</td><td><span class="token-swatch" style="background:#333333;border:1px solid #ccc;"></span></td><td class="token-hex">#333333</td><td class="token-use">Body text</td></tr>
+            <tr><td class="token-name">fg-meta</td><td><span class="token-swatch" style="background:#8691B3;"></span></td><td class="token-hex">#8691B3</td><td class="token-use">Date, metadata</td></tr>
+            <tr><td class="token-name">surface-2</td><td><span class="token-swatch" style="background:#EBECF0;"></span></td><td class="token-hex">#EBECF0</td><td class="token-use">Page background</td></tr>
+            <tr><td class="token-name">header-grad</td><td><span class="token-swatch" style="background:linear-gradient(90deg,#00A9B4,#01B483);"></span></td><td class="token-hex">→</td><td class="token-use">#00A9B4→#01B483</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── UX Checklist ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#dcfce7;">✅</div>
+      <h2>UX Checklist</h2>
+      <span class="sub">Pre-delivery theo ui-ux-pro-max rules</span>
+    </div>
+    <div class="comp-grid">
+      <div class="comp-card">
+        <div class="comp-title">Touch & Accessibility</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Card height >44pt — full row tappable</li>
+          <li><span class="check-icon check-pass">✓</span> Category chips: min height 30pt, 8dp gap</li>
+          <li><span class="check-icon check-pass">✓</span> PDF "Mở xem" button: 44×44pt hit area</li>
+          <li><span class="check-icon check-pass">✓</span> Bottom nav tabs: 44pt+ tap zone</li>
+          <li><span class="check-icon check-pass">✓</span> Header back icon: 32pt box (hitSlop 8)</li>
+          <li><span class="check-icon check-pass">✓</span> Error retry button: 44pt min height</li>
+          <li><span class="check-icon check-pass">✓</span> PDF zoom toolbar buttons: 36pt with hitSlop</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Visual & Contrast</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Lato font only — no font substitution</li>
+          <li><span class="check-icon check-pass">✓</span> Title #2F4A4B on white — passes 4.5:1</li>
+          <li><span class="check-icon check-pass">✓</span> Body #333 on white — passes 4.5:1</li>
+          <li><span class="check-icon check-pass">✓</span> Meta #8691B3 on white — 3.4:1 (>3:1 for secondary)</li>
+          <li><span class="check-icon check-pass">✓</span> No emoji — SVG icons from Lucide/Heroicons</li>
+          <li><span class="check-icon check-pass">✓</span> gradient header only on authenticated screens</li>
+          <li><span class="check-icon check-note">⚑</span> Tabular nums cần bật cho file size & date khi dùng số</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Performance & Loading</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Skeleton shimmer thay vì spinner khi fetch &gt;300ms</li>
+          <li><span class="check-icon check-pass">✓</span> PDF cache in session — không tải lại lần 2</li>
+          <li><span class="check-icon check-pass">✓</span> Infinite scroll / "Xem thêm" — lazy load</li>
+          <li><span class="check-icon check-pass">✓</span> FlatList với virtualisation cho danh sách dài</li>
+          <li><span class="check-icon check-pass">✓</span> PDF: trang đầu &lt;3s, progressive render</li>
+          <li><span class="check-icon check-pass">✓</span> Image placeholder cho thumbnail nếu có</li>
+        </ul>
+      </div>
+      <div class="comp-card">
+        <div class="comp-title">Navigation & States</div>
+        <ul class="checklist">
+          <li><span class="check-icon check-pass">✓</span> Back navigation: giữ scroll position khi pop</li>
+          <li><span class="check-icon check-pass">✓</span> Deep link: nhsvpro://channel/nh-research?category=MARKET</li>
+          <li><span class="check-icon check-pass">✓</span> Empty state: icon + title + desc (không blank)</li>
+          <li><span class="check-icon check-pass">✓</span> Error state: icon + message + retry CTA</li>
+          <li><span class="check-icon check-pass">✓</span> PDF Viewer: close/back rõ ràng ở header</li>
+          <li><span class="check-icon check-pass">✓</span> Category switch: instant chip feedback + new fetch</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Layout & Spacing ── -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="icon" style="background:#fef9c3;">📐</div>
+      <h2>Layout & Spacing</h2>
+      <span class="sub">8dp rhythm · 375×812 canvas</span>
+    </div>
+    <div style="background:white;border:1px solid var(--border);border-radius:10px;padding:20px;">
+      <table class="token-table" style="width:100%;">
+        <thead>
+          <tr><th>Zone</th><th>Spec</th><th>Note</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Status bar</td><td>h = 44pt</td><td>iOS standard</td></tr>
+          <tr><td>NavBar (header row)</td><td>h = 44pt</td><td>Back icon + title + action icon</td></tr>
+          <tr><td>Header gradient zone</td><td>44 + 44 + 12dp bottom pad</td><td>Total ~100pt</td></tr>
+          <tr><td>Chip row</td><td>h = 52pt (12dp pad top/bottom)</td><td>White bg + 1px bottom separator</td></tr>
+          <tr><td>Page padding horizontal</td><td>16dp</td><td>Both sides</td></tr>
+          <tr><td>Card padding</td><td>14dp</td><td>All sides</td></tr>
+          <tr><td>Card gap</td><td>8dp</td><td>Surface-2 shows between cards</td></tr>
+          <tr><td>Section gap</td><td>8dp</td><td>Same as card gap</td></tr>
+          <tr><td>Bottom nav</td><td>h = 80pt</td><td>Incl. home indicator area</td></tr>
+          <tr><td>Bottom safe inset</td><td>34pt</td><td>iPhone X+ home indicator</td></tr>
+          <tr><td>List bottom inset</td><td>80 + 16pt</td><td>Scroll clears bottom nav</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<div style="text-align:center;padding:20px 0 32px;font-size:11px;color:var(--muted);">
+  Document Status: 🎨 Design Draft &nbsp;|&nbsp; For: Mobile FE &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma
+</div>
+
+</body>
+</html>
