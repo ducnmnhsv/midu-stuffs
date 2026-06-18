@@ -4,250 +4,1468 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QA CV Scoring Dashboard — NHSV Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <style>
+/* ─── TOKENS ────────────────────────────────────────────────────────────────── */
 :root {
-  --tier-b:#2563EB;--tier-c:#6B7280;--tier-r:#DC2626;
-  --bg:#0F172A;--surface:#1E293B;--surface2:#273344;--border:#334155;
-  --text:#F1F5F9;--muted:#94A3B8;--accent:#38BDF8;
+  /* Surfaces — light mode */
+  --bg:       #F1F5F9;
+  --surface:  #FFFFFF;
+  --surface2: #F8FAFC;
+  --surface3: #EFF3F8;
+  --border:   #CBD5E1;
+  --border2:  #E2E8F0;
+
+  /* Text */
+  --text:     #0F172A;
+  --text-2:   #334155;
+  --text-3:   #64748B;
+
+  /* Badge text */
+  --badge-b-text: #1D4ED8;
+  --badge-c-text: #92400E;
+  --badge-r-text: #991B1B;
+  --hl-text:  #1D4ED8;
+  --rr-text:  #B91C1C;
+
+  /* Layout bg */
+  --header-bg: linear-gradient(160deg, #EFF6FF 0%, #F1F5F9 100%);
+  --modal-hdr-bg: linear-gradient(135deg, #EFF6FF 0%, #F8FAFC 100%);
+
+  /* Semantic text */
+  --q-pass: #065F46;
+  --q-warn: #92400E;
+  --note-box-color: #92400E;
+  --reject-color: #991B1B;
+
+  /* Brand */
+  --blue:     #2563EB;
+  --blue-dim: rgba(37,99,235,.08);
+  --blue-glow:rgba(37,99,235,.18);
+
+  /* Tiers */
+  --tier-b:       #2563EB;
+  --tier-b-bg:    rgba(37,99,235,.08);
+  --tier-b-bd:    rgba(37,99,235,.25);
+  --tier-c:       #D97706;
+  --tier-c-bg:    rgba(217,119,6,.08);
+  --tier-c-bd:    rgba(217,119,6,.25);
+  --tier-r:       #DC2626;
+  --tier-r-bg:    rgba(220,38,38,.06);
+  --tier-r-bd:    rgba(220,38,38,.2);
+
+  /* Semantic */
+  --green:    #059669;
+  --green-bg: rgba(5,150,105,.08);
+  --amber:    #D97706;
+  --amber-bg: rgba(217,119,6,.08);
+  --red:      #DC2626;
+  --red-bg:   rgba(220,38,38,.06);
+
+  /* Bars */
+  --bar-d1: linear-gradient(90deg, #6366F1, #818CF8);
+  --bar-d2: linear-gradient(90deg, #2563EB, #60A5FA);
+  --bar-d3: linear-gradient(90deg, #0891B2, #38BDF8);
+  --bar-d4: linear-gradient(90deg, #059669, #34D399);
+  --bar-total: linear-gradient(90deg, #7C3AED, #A78BFA);
+
+  /* Motion */
+  --ease: cubic-bezier(.4,0,.2,1);
+  --dur: 180ms;
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* Header */
-.header{background:linear-gradient(135deg,#1E3A5F 0%,#0F172A 100%);border-bottom:1px solid var(--border);padding:20px 32px}
-.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.header h1{font-size:22px;font-weight:700;color:var(--accent)}
-.header-meta{font-size:12px;color:var(--muted);margin-top:2px}
-.stats{display:flex;gap:12px;flex-wrap:wrap}
-.stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;text-align:center;min-width:80px}
-.stat-num{font-size:26px;font-weight:800}
-.stat-label{font-size:10px;color:var(--muted);margin-top:1px}
-.stat.b .stat-num{color:var(--tier-b)}.stat.c .stat-num{color:var(--tier-c)}.stat.r .stat-num{color:var(--tier-r)}.stat.total .stat-num{color:var(--accent)}
+/* ─── DARK MODE ─────────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg:       #070D1A;
+  --surface:  #0F1829;
+  --surface2: #162035;
+  --surface3: #1C2A45;
+  --border:   #263554;
+  --border2:  #1E2E4A;
+  --text:     #EEF2FF;
+  --text-2:   #A8BCDB;
+  --text-3:   #637799;
+  --badge-b-text: #93C5FD;
+  --badge-c-text: #FCD34D;
+  --badge-r-text: #FCA5A5;
+  --hl-text:  #93C5FD;
+  --rr-text:  #FCA5A5;
+  --header-bg: linear-gradient(160deg, #0D1E3E 0%, #070D1A 70%);
+  --modal-hdr-bg: linear-gradient(135deg, #162035 0%, #0F1829 100%);
+  --q-pass: #6EE7B7;
+  --q-warn: #FCD34D;
+  --note-box-color: #FCD34D;
+  --reject-color: #FCA5A5;
+}
 
-/* Filter */
-.filter-bar{padding:12px 32px;display:flex;gap:8px;border-bottom:1px solid var(--border);background:var(--surface);align-items:center}
-.filter-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px;font-weight:500;transition:all .2s}
-.filter-btn:hover{border-color:var(--accent);color:var(--text)}
-.filter-btn.active{background:var(--accent);color:#0F172A;border-color:var(--accent);font-weight:700}
-.filter-btn.fb.active{background:var(--tier-b);border-color:var(--tier-b);color:#fff}
-.filter-btn.fc.active{background:var(--tier-c);border-color:var(--tier-c);color:#fff}
-.filter-btn.fr.active{background:var(--tier-r);border-color:var(--tier-r);color:#fff}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* Grid */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;padding:20px 32px}
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
 
-/* Cards */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
-.card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 20px rgba(56,189,248,.1)}
-.card.tier-B{border-left:4px solid var(--tier-b)}.card.tier-C{border-left:4px solid var(--tier-c)}.card.tier-REJECT{border-left:4px solid var(--tier-r);opacity:.75}
-.card-header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
-.card-name{font-size:15px;font-weight:700}.card-role{font-size:11px;color:var(--muted);margin-top:2px}
-.card-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-.tier-badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
-.badge-B{background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.3)}
-.badge-C{background:rgba(107,114,128,.15);color:#9CA3AF;border:1px solid rgba(107,114,128,.3)}
-.badge-REJECT{background:rgba(220,38,38,.1);color:#F87171;border:1px solid rgba(220,38,38,.3)}
-.notes-badge{font-size:10px;padding:2px 8px;border-radius:10px;background:rgba(251,191,36,.1);color:#FCD34D;border:1px solid rgba(251,191,36,.3)}
-.decision-badge{font-size:10px;padding:2px 8px;border-radius:10px;white-space:nowrap}
-.db-proceed{background:rgba(5,150,105,.1);color:#34D399;border:1px solid rgba(5,150,105,.3)}
-.db-reject{background:rgba(220,38,38,.1);color:#F87171;border:1px solid rgba(220,38,38,.2)}
-.db-hold{background:rgba(245,158,11,.1);color:#FCD34D;border:1px solid rgba(245,158,11,.2)}
+/* ─── SCROLLBAR ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
-.card-bars{padding:0 16px 10px}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
-.bar-lbl{font-size:10px;color:var(--muted);width:34px;flex-shrink:0}
-.bar-track{flex:1;background:var(--surface2);border-radius:3px;height:6px;overflow:hidden}
-.bar-fill{height:100%;border-radius:3px;transition:width .4s}
-.bd1{background:linear-gradient(90deg,#8B5CF6,#A78BFA)}.bd2{background:linear-gradient(90deg,#3B82F6,#60A5FA)}
-.bd3{background:linear-gradient(90deg,#0891B2,#38BDF8)}.bd4{background:linear-gradient(90deg,#059669,#34D399)}
-.btotal{background:linear-gradient(90deg,#D97706,#FBBF24);height:8px}
-.bar-val{font-size:10px;color:var(--muted);width:22px;text-align:right;flex-shrink:0}
+/* ─── HEADER ────────────────────────────────────────────────────────────────── */
+.header {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border2);
+  padding: 22px 32px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
 
-.card-hl{margin:0 16px 10px;background:var(--surface2);border-radius:7px;padding:7px 10px;font-size:11px;color:var(--accent);border-left:2px solid var(--accent)}
-.card-rr{margin:0 16px 10px;background:rgba(220,38,38,.07);border-radius:7px;padding:7px 10px;font-size:11px;color:#F87171;border-left:2px solid var(--tier-r)}
-.card-footer{padding:8px 16px 12px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border)}
-.score-total{font-size:20px;font-weight:800}.score-max{font-size:11px;color:var(--muted)}
-.card-btn{padding:5px 12px;border-radius:7px;font-size:11px;font-weight:600;border:none;cursor:pointer;transition:all .2s}
-.btn-interview{background:rgba(37,99,235,.15);color:#60A5FA;border:1px solid rgba(37,99,235,.4)}
-.btn-interview:hover{background:var(--tier-b);color:#fff}
-.btn-test{background:rgba(245,158,11,.1);color:#FCD34D;border:1px solid rgba(245,158,11,.3)}
-.btn-test:hover{background:#D97706;color:#fff}
-.btn-reject{background:rgba(220,38,38,.07);color:#F87171;border:1px solid rgba(220,38,38,.25)}
-.btn-second{background:rgba(245,158,11,.07);color:#FCD34D;border:1px solid rgba(245,158,11,.2)}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 18px;
+}
 
-/* Modal */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .2s}
-.overlay.open{opacity:1;pointer-events:all}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:900px;overflow:hidden;transform:translateY(16px);transition:transform .25s;margin:auto}
-.overlay.open .modal{transform:translateY(0)}
+.header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
 
-.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.modal-name{font-size:18px;font-weight:800}.modal-sub{font-size:12px;color:var(--muted);margin-top:3px}
-.modal-hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
-.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:5px 10px;cursor:pointer;font-size:16px;line-height:1}
-.modal-close:hover{color:var(--text)}
+.theme-toggle {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 180ms cubic-bezier(.4,0,.2,1);
+  white-space: nowrap;
+}
+.theme-toggle:hover { color: var(--text); border-color: var(--border); }
+
+.header-brand { display: flex; flex-direction: column; gap: 3px; }
+
+.header-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--tier-b);
+  opacity: .8;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.02em;
+  line-height: 1.2;
+}
+
+.header-meta {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* Stats strip */
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 18px;
+  text-align: center;
+  min-width: 72px;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.stat:hover { border-color: var(--border); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+
+.stat-num {
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -.03em;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.stat.total .stat-num { color: var(--text); }
+.stat.b     .stat-num { color: var(--tier-b); }
+.stat.c     .stat-num { color: var(--tier-c); }
+.stat.r     .stat-num { color: var(--tier-r); }
+
+/* ─── FILTER BAR ────────────────────────────────────────────────────────────── */
+.filter-bar {
+  padding: 10px 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+  flex-wrap: wrap;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+
+.filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+  line-height: 1.4;
+}
+.filter-btn:hover { border-color: var(--text-2); color: var(--text); }
+
+.filter-btn.active {
+  font-weight: 700;
+  border-color: transparent;
+}
+.filter-btn.all.active   { background: var(--surface3); color: var(--text); border-color: var(--border); }
+.filter-btn.fb.active    { background: var(--tier-b-bg); color: var(--tier-b); border-color: var(--tier-b-bd); }
+.filter-btn.fc.active    { background: var(--tier-c-bg); color: var(--tier-c); border-color: var(--tier-c-bd); }
+.filter-btn.fr.active    { background: var(--tier-r-bg); color: var(--tier-r); border-color: var(--tier-r-bd); }
+
+.filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+  background: rgba(255,255,255,.08);
+}
+
+/* ─── PIPELINE FILTER BAR ────────────────────────────────────────────────────── */
+.pipeline-filter-bar {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+  box-shadow: none;
+}
+
+.pfb {
+  padding: 4px 12px;
+  border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.pfb:hover { border-color: var(--text-2); color: var(--text); }
+.pfb.active { font-weight: 700; border-color: transparent; }
+
+.pfb-all.active  { background: var(--surface3); color: var(--text);   border-color: var(--border); }
+.pfb-stage.active{ background: rgba(13,148,136,.1); color: #0d9488;   border-color: rgba(13,148,136,.3); }
+.pfb-none.active { background: var(--surface3);   color: var(--text-2); border-color: var(--border); }
+.pfb-rej.active  { background: var(--tier-r-bg);  color: var(--tier-r); border-color: var(--tier-r-bd); }
+
+[data-theme="dark"] .pfb-stage.active { background: rgba(20,184,166,.14); color: #2dd4bf; border-color: rgba(45,212,191,.3); }
+
+/* ─── GRID ──────────────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 14px;
+  padding: 22px 32px;
+}
+
+/* ─── CANDIDATE CARD ────────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  border-radius: 14px 0 0 14px;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.4);
+}
+
+.card.tier-B  { border-color: var(--tier-b-bd); }
+.card.tier-B::before  { background: var(--tier-b); }
+.card.tier-B:hover    { border-color: var(--tier-b); box-shadow: 0 8px 24px rgba(37,99,235,.12); transform: translateY(-3px); }
+
+.card.tier-C  { border-color: var(--tier-c-bd); }
+.card.tier-C::before  { background: var(--tier-c); }
+.card.tier-C:hover    { border-color: var(--tier-c); box-shadow: 0 8px 24px rgba(217,119,6,.10); transform: translateY(-3px); }
+
+.card.tier-REJECT { opacity: .65; border-color: var(--tier-r-bd); }
+.card.tier-REJECT::before { background: var(--tier-r); }
+.card.tier-REJECT:hover   { opacity: 1; border-color: var(--tier-r); box-shadow: 0 8px 24px rgba(220,38,38,.10); transform: translateY(-3px); }
+
+/* Card header */
+.card-hdr {
+  padding: 14px 16px 10px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-identity { flex: 1; min-width: 0; }
+
+.card-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-role {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Tier badge */
+.tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  border: 1px solid transparent;
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tier-badge.badge-B {
+  background: var(--tier-b-bg);
+  color: #93C5FD;
+  border-color: var(--tier-b-bd);
+}
+.tier-badge.badge-B .badge-dot { background: var(--tier-b); box-shadow: 0 0 4px var(--tier-b); }
+
+.tier-badge.badge-C {
+  background: var(--tier-c-bg);
+  color: #FCD34D;
+  border-color: var(--tier-c-bd);
+}
+.tier-badge.badge-C .badge-dot { background: var(--tier-c); box-shadow: 0 0 4px var(--tier-c); }
+
+.tier-badge.badge-REJECT {
+  background: var(--tier-r-bg);
+  color: #FCA5A5;
+  border-color: var(--tier-r-bd);
+}
+.tier-badge.badge-REJECT .badge-dot { background: var(--tier-r); }
+
+.notes-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(251,191,36,.08);
+  color: #FCD34D;
+  border: 1px solid rgba(251,191,36,.2);
+  letter-spacing: .02em;
+}
+
+.decision-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid transparent;
+}
+.decision-pill.dp-proceed { background: var(--green-bg); color: #6EE7B7; border-color: rgba(16,185,129,.25); }
+.decision-pill.dp-reject  { background: var(--red-bg);   color: #FCA5A5; border-color: rgba(239,68,68,.2); }
+.decision-pill.dp-hold    { background: var(--amber-bg); color: #FCD34D; border-color: rgba(245,158,11,.2); }
+
+/* Score bars */
+.card-bars { padding: 2px 18px 10px; }
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+.bar-row:last-child { margin-bottom: 0; }
+
+.bar-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  width: 26px;
+  flex-shrink: 0;
+  letter-spacing: .02em;
+}
+
+.bar-track {
+  flex: 1;
+  background: var(--surface3);
+  border-radius: 99px;
+  height: 5px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width .45s var(--ease);
+}
+
+.bd1 { background: var(--bar-d1); }
+.bd2 { background: var(--bar-d2); }
+.bd3 { background: var(--bar-d3); }
+.bd4 { background: var(--bar-d4); }
+.btotal { background: var(--bar-total); height: 7px; }
+
+.bar-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-2);
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Highlight / reject strip */
+.card-hl {
+  margin: 0 18px 10px;
+  background: rgba(37,99,235,.05);
+  border-left: 2px solid rgba(37,99,235,.35);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--hl-text);
+  line-height: 1.4;
+}
+
+.card-rr {
+  margin: 0 18px 10px;
+  background: rgba(220,38,38,.05);
+  border-left: 2px solid rgba(220,38,38,.35);
+  border-radius: 0 6px 6px 0;
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--rr-text);
+  line-height: 1.4;
+}
+
+/* Card footer */
+.card-footer {
+  padding: 10px 18px 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border2);
+  margin-top: auto;
+  background: var(--surface2);
+}
+
+.score-block { display: flex; align-items: baseline; gap: 3px; }
+.score-total { font-size: 22px; font-weight: 900; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.score-max   { font-size: 11px; color: var(--text-3); font-weight: 500; }
+.score-reject-label { font-size: 13px; font-weight: 700; color: var(--tier-r); letter-spacing: -.01em; }
+
+.card-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+  letter-spacing: .01em;
+}
+
+.btn-interview {
+  background: var(--tier-b-bg);
+  color: #93C5FD;
+  border-color: var(--tier-b-bd);
+}
+.btn-interview:hover { background: var(--tier-b); color: #fff; border-color: var(--tier-b); }
+
+.btn-test {
+  background: rgba(245,158,11,.08);
+  color: #FCD34D;
+  border-color: rgba(245,158,11,.25);
+}
+.btn-test:hover { background: var(--tier-c); color: #000; border-color: var(--tier-c); }
+
+.btn-reject {
+  background: var(--tier-r-bg);
+  color: #FCA5A5;
+  border-color: var(--tier-r-bd);
+}
+.btn-second {
+  background: rgba(139,92,246,.08);
+  color: #C4B5FD;
+  border-color: rgba(139,92,246,.25);
+}
+.btn-second:hover { background: rgba(139,92,246,.2); border-color: #8B5CF6; }
+
+/* ─── OVERLAY / MODAL ───────────────────────────────────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.45);
+  backdrop-filter: blur(4px);
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease);
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: min(98vw, 1700px);
+  height: 96vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(16px) scale(.98);
+  transition: transform .26s var(--ease);
+  box-shadow: 0 24px 60px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.08);
+}
+.overlay.open .modal { transform: translateY(0) scale(1); }
+
+.modal-hdr {
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border2);
+  background: var(--modal-hdr-bg);
+  flex-shrink: 0;
+}
+
+.modal-hdr-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+/* Modal body — two-panel layout */
+.modal-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modal-left {
+  width: 44%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border2);
+  min-width: 0;
+}
+
+.modal-right {
+  width: 56%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cv-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  gap: 8px;
+}
+
+.cv-panel-toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.cv-panel-frame {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cv-panel-frame iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+.cv-panel-note {
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 6px;
+  border-left: 2px solid var(--border);
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.modal-name {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.modal-sub {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+.modal-hdr-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.modal-close {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  border-radius: 8px;
+  padding: 5px 11px;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+}
+.modal-close:hover { color: var(--text); background: var(--border2); border-color: var(--border); }
 
 /* Tabs */
-.tab-bar{display:flex;border-bottom:1px solid var(--border);background:var(--surface2);padding:0 20px;gap:0}
-.tab-btn{padding:10px 18px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap}
-.tab-btn:hover{color:var(--text)}
-.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
-.tab-content{display:none;padding:18px 20px;max-height:72vh;overflow-y:auto}
-.tab-content.active{display:block}
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface2);
+  padding: 0 16px;
+  gap: 2px;
+  flex-shrink: 0;
+}
 
-/* Score section */
-.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px}
-.score-detail{background:var(--surface2);border-radius:9px;padding:12px}
-.dim-row{margin-bottom:10px}.dim-row:last-child{margin-bottom:0}
-.dim-hdr{display:flex;justify-content:space-between;margin-bottom:4px;font-size:11px}
-.dim-name{color:var(--text);font-weight:600}.dim-val{color:var(--accent);font-weight:700}
-.dim-bar{background:#0F172A;border-radius:3px;height:7px;overflow:hidden}
-.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:5px}
-.sub-item{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
-.sub-item span:last-child{color:var(--text)}
-.total-display{background:var(--surface2);border-radius:9px;padding:10px 14px;display:flex;align-items:center;gap:14px;margin-top:10px}
-.total-num{font-size:38px;font-weight:900}
-.tn-b{color:#60A5FA}.tn-c{color:#9CA3AF}.tn-r{color:#F87171}
-.total-info{flex:1}.total-tier{font-size:12px;font-weight:700;margin-bottom:3px}.total-group{font-size:10px;color:var(--muted)}
+.tab-btn {
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 2px solid transparent;
+  transition: all var(--dur) var(--ease);
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: .01em;
+}
+.tab-btn:hover { color: var(--text-2); }
+.tab-btn.active { color: var(--tier-b); border-bottom-color: var(--tier-b); }
 
-/* Pros/cons */
-.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.pc-box{background:var(--surface2);border-radius:9px;padding:10px}
-.pc-pros{border-top:2px solid #059669}.pc-cons{border-top:2px solid #DC2626}
-.pc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
-.pc-pros .pc-title{color:#34D399}.pc-cons .pc-title{color:#F87171}
-.pc-list{list-style:none}
-.pc-list li{font-size:11px;padding:3px 0;border-bottom:1px solid var(--border);display:flex;gap:6px;line-height:1.45}
-.pc-list li:last-child{border-bottom:none}
-.pc-list.pros li::before{content:'✓';color:#34D399;flex-shrink:0;font-weight:700}
-.pc-list.cons li::before{content:'✕';color:#F87171;flex-shrink:0;font-weight:700}
-.note-box{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:7px;padding:9px 12px;font-size:11px;color:#FCD34D;margin-top:10px}
+.tab-content { display: none; padding: 18px 20px; flex: 1; overflow-y: auto; min-height: 0; }
+.tab-content.active { display: block; }
+
+/* ─── SCORE TAB ─────────────────────────────────────────────────────────────── */
+.sec-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 10px;
+}
+
+.score-detail {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
+}
+
+.dim-row { margin-bottom: 12px; }
+.dim-row:last-child { margin-bottom: 0; }
+
+.dim-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+  font-size: 11px;
+}
+
+.dim-name { color: var(--text); font-weight: 600; }
+
+.dim-val {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.01em;
+}
+
+.dim-row:nth-child(1) .dim-val { color: #4F46E5; }
+.dim-row:nth-child(2) .dim-val { color: #2563EB; }
+.dim-row:nth-child(3) .dim-val { color: #0891B2; }
+.dim-row:nth-child(4) .dim-val { color: #059669; }
+
+.dim-bar {
+  background: var(--surface3);
+  border-radius: 99px;
+  height: 6px;
+  overflow: hidden;
+}
+
+.sub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+  margin-top: 6px;
+}
+
+.sub-item {
+  font-size: 10px;
+  color: var(--text-3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1px 0;
+}
+
+.sub-item span:last-child {
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Total display */
+.total-display {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.03);
+}
+
+.total-num {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.tn-b { color: #1D4ED8; }
+.tn-c { color: #B45309; }
+.tn-r { color: #B91C1C; }
+
+.total-info { flex: 1; }
+
+.total-tier {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 3px;
+  letter-spacing: -.01em;
+}
+
+.total-group {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+.hc-pass { color: var(--green); font-weight: 700; }
+.hc-fail { color: var(--tier-r); font-weight: 700; }
+
+/* Pros/Cons */
+.pc-section { margin: 16px 0; }
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.pc-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 12px 13px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+
+.pc-pros { border-top: 2px solid var(--green); }
+.pc-cons { border-top: 2px solid var(--tier-r); }
+
+.pc-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+.pc-pros .pc-title { color: var(--green); }
+.pc-cons .pc-title { color: var(--tier-r); }
+
+.pc-list { list-style: none; }
+
+.pc-list li {
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  gap: 7px;
+}
+.pc-list li:last-child { border-bottom: none; }
+
+.pc-list.pros li::before { content: '+'; color: var(--green); font-weight: 800; flex-shrink: 0; }
+.pc-list.cons li::before { content: '−'; color: var(--tier-r); font-weight: 800; flex-shrink: 0; font-size: 14px; line-height: 1.2; }
+
+.note-box {
+  background: rgba(217,119,6,.06);
+  border: 1px solid rgba(217,119,6,.2);
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 11px;
+  color: var(--note-box-color);
+  margin-top: 12px;
+  line-height: 1.5;
+}
 
 /* Interview questions */
-.q-wrap{background:var(--surface2);border-radius:9px;overflow:hidden}
-.q-hdr{padding:10px 12px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.q-gbadge{font-size:9px;padding:2px 7px;border-radius:8px}
-.gb-b{background:rgba(56,189,248,.1);color:var(--accent)}.gb-c{background:rgba(139,92,246,.1);color:#A78BFA}
-.q-item{border-bottom:1px solid var(--border)}.q-item:last-child{border-bottom:none}
-.q-q{padding:9px 12px;font-size:11px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;line-height:1.5}
-.q-q:hover{background:rgba(255,255,255,.03)}
-.q-num{color:var(--accent);font-weight:700;flex-shrink:0}
-.q-arrow{color:var(--muted);flex-shrink:0;transition:transform .2s;font-size:12px}
-.q-item.open .q-arrow{transform:rotate(90deg)}
-.q-detail{padding:0 12px 9px 26px;font-size:10px;color:var(--muted);line-height:1.6;display:none}
-.q-item.open .q-detail{display:block}
-.q-pass{color:#34D399}.q-warn{color:#FBBF24}
+.q-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
 
-/* CV Tab */
-.cv-toolbar{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.cv-btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
-.cv-open{background:rgba(56,189,248,.1);color:var(--accent);border:1px solid rgba(56,189,248,.3)}
-.cv-open:hover{background:var(--accent);color:#0F172A}
-.cv-dl{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.cv-dl:hover{border-color:var(--accent)}
-.cv-frame-wrap{border:1px solid var(--border);border-radius:9px;overflow:hidden;background:#fff}
-.cv-frame{width:100%;height:560px;border:none;display:block}
-.cv-note{font-size:10px;color:var(--muted);margin-top:7px;padding:7px 10px;background:var(--surface2);border-radius:6px;border-left:2px solid var(--border)}
+.q-hdr {
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface2);
+}
 
-/* Notes Tab */
-.notes-form{display:flex;flex-direction:column;gap:14px}
-.notes-saved{font-size:10px;color:#34D399;transition:opacity .5s;opacity:0;text-align:right}
-.notes-saved.show{opacity:1}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.form-group{display:flex;flex-direction:column;gap:5px}
-.form-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
-.form-input{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none;transition:border .2s}
-.form-input:focus{border-color:var(--accent)}
-.form-input::placeholder{color:#475569}
-textarea.form-input{resize:vertical;min-height:70px}
+.q-gbadge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: .04em;
+}
+.gb-b { background: rgba(59,130,246,.12); color: #93C5FD; border: 1px solid rgba(59,130,246,.25); }
+.gb-c { background: rgba(139,92,246,.12); color: #C4B5FD; border: 1px solid rgba(139,92,246,.25); }
 
-/* Star Rating */
-.ratings-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.rating-group{background:var(--surface2);border-radius:8px;padding:10px 12px}
-.rating-label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:6px}
-.stars{display:flex;gap:4px}
-.star{font-size:20px;cursor:pointer;color:#334155;transition:color .15s;user-select:none}
-.star:hover,.star.lit{color:#FBBF24}
+.q-item { border-bottom: 1px solid var(--border2); }
+.q-item:last-child { border-bottom: none; }
+
+.q-q {
+  padding: 10px 14px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.55;
+  transition: background var(--dur) var(--ease);
+}
+.q-q:hover { background: var(--surface2); }
+
+.q-num { color: var(--tier-b); font-weight: 700; flex-shrink: 0; }
+
+.q-arrow {
+  color: var(--text-3);
+  flex-shrink: 0;
+  transition: transform var(--dur) var(--ease);
+  font-size: 13px;
+  margin-top: 1px;
+}
+.q-item.open .q-arrow { transform: rotate(90deg); }
+
+.q-detail {
+  padding: 0 14px 10px 14px;
+  font-size: 10px;
+  color: var(--text-3);
+  line-height: 1.65;
+  display: none;
+  border-top: 1px solid var(--border2);
+}
+.q-item.open .q-detail { display: block; }
+
+.q-intent { margin-bottom: 5px; font-style: italic; color: var(--text-2); }
+.q-pass { color: var(--q-pass); margin-top: 4px; }
+.q-warn { color: var(--q-warn); margin-top: 4px; }
+
+/* ─── CV TAB ────────────────────────────────────────────────────────────────── */
+.cv-toolbar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.cv-btn {
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+}
+
+.cv-open {
+  background: var(--tier-b-bg);
+  color: #93C5FD;
+  border-color: var(--tier-b-bd);
+}
+.cv-open:hover { background: var(--tier-b); color: #fff; border-color: var(--tier-b); }
+
+.cv-dl {
+  background: var(--surface2);
+  color: var(--text-2);
+  border-color: var(--border);
+}
+.cv-dl:hover { border-color: var(--text-2); }
+
+.cv-filename {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-left: auto;
+}
+
+.cv-frame-wrap {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+}
+.cv-frame { width: 100%; height: 560px; border: none; display: block; }
+
+.cv-note {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 8px;
+  padding: 8px 11px;
+  background: var(--surface2);
+  border-radius: 7px;
+  border-left: 2px solid var(--border);
+  line-height: 1.5;
+}
+
+/* ─── NOTES TAB ─────────────────────────────────────────────────────────────── */
+.notes-form { display: flex; flex-direction: column; gap: 14px; }
+
+.notes-form-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notes-saved {
+  font-size: 10px;
+  color: var(--green);
+  font-weight: 600;
+  transition: opacity .5s;
+  opacity: 0;
+}
+.notes-saved.show { opacity: 1; }
+
+.notes-meta {
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: -6px;
+}
+.notes-meta strong { color: var(--text-2); font-weight: 600; }
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  white-space: nowrap;
+}
+.user-chip:hover { border-color: var(--blue); color: var(--blue); }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+
+.form-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.form-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 11px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  min-height: 36px;
+}
+.form-input:focus { border-color: var(--tier-b); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.form-input::placeholder { color: var(--text-3); }
+textarea.form-input { resize: vertical; min-height: 72px; }
+
+/* Star ratings */
+.ratings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.rating-group {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+
+.rating-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin-bottom: 7px;
+}
+
+.stars { display: flex; gap: 3px; }
+
+.star {
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--border);
+  transition: color var(--dur) var(--ease), transform var(--dur) var(--ease);
+  user-select: none;
+  line-height: 1;
+}
+.star:hover { transform: scale(1.15); }
+.star.lit { color: #FBBF24; }
 
 /* Decision */
-.decision-group{background:var(--surface2);border-radius:8px;padding:10px 12px}
-.decision-opts{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-.decision-opt{display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 12px;border-radius:7px;border:1px solid var(--border);font-size:12px;transition:all .2s;background:transparent;color:var(--muted)}
-.decision-opt input{display:none}
-.decision-opt.proceed{border-color:rgba(5,150,105,.3);color:#34D399}
-.decision-opt.hold{border-color:rgba(245,158,11,.3);color:#FCD34D}
-.decision-opt.reject-d{border-color:rgba(220,38,38,.3);color:#F87171}
-.decision-opt.selected.proceed{background:rgba(5,150,105,.15);border-color:#059669}
-.decision-opt.selected.hold{background:rgba(245,158,11,.1);border-color:#D97706}
-.decision-opt.selected.reject-d{background:rgba(220,38,38,.1);border-color:#DC2626}
+.decision-group {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 9px;
+  padding: 11px 13px;
+}
 
-.save-btn{background:var(--accent);color:#0F172A;border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;width:100%}
-.save-btn:hover{background:#7DD3FC}
+.decision-opts { display: flex; gap: 8px; margin-top: 9px; flex-wrap: wrap; }
 
-.reject-overlay{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:9px;padding:14px;font-size:12px;color:#F87171;text-align:center}
+.decision-opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+  background: var(--surface2);
+  color: var(--text-3);
+}
+.decision-opt input { display: none; }
 
-@media(max-width:640px){
-  .grid{grid-template-columns:1fr;padding:12px 14px}
-  .pc-grid{grid-template-columns:1fr}
-  .form-row,.ratings-grid{grid-template-columns:1fr}
-  .header{padding:14px}
-  .filter-bar{padding:10px 14px;flex-wrap:wrap}
-  .tab-content{max-height:none}
+.decision-opt.proceed      { border-color: rgba(5,150,105,.3);  color: #065F46; }
+.decision-opt.hold         { border-color: rgba(217,119,6,.3);  color: #92400E; }
+.decision-opt.reject-d     { border-color: rgba(220,38,38,.3);  color: #991B1B; }
+
+.decision-opt.selected.proceed  { background: rgba(5,150,105,.08);  border-color: #059669; color: #065F46; }
+.decision-opt.selected.hold     { background: rgba(217,119,6,.08);  border-color: #D97706; color: #92400E; }
+.decision-opt.selected.reject-d { background: rgba(220,38,38,.07);  border-color: #DC2626; color: #991B1B; }
+
+.save-btn {
+  background: var(--tier-b);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--dur) var(--ease);
+  width: 100%;
+  letter-spacing: .01em;
+}
+.save-btn:hover { background: #1D4ED8; box-shadow: 0 4px 14px rgba(37,99,235,.25); }
+
+/* Reject overlay */
+.reject-overlay {
+  background: rgba(220,38,38,.05);
+  border: 1px solid rgba(220,38,38,.18);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--reject-color);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.reject-overlay strong { font-size: 14px; font-weight: 800; display: block; margin-bottom: 8px; letter-spacing: -.01em; color: var(--rr-text); }
+
+/* Empty state */
+.no-interviews {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+
+/* ─── PIPELINE STEPPER (MODAL HDR) ─────────────────────────────────────────── */
+.pipeline-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 8px 0 4px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  width: 100%;
+}
+
+.pip-step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.pip-pill {
+  flex: 1;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: var(--surface3);
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 180ms cubic-bezier(.4,0,.2,1);
+  white-space: nowrap;
+  text-align: center;
+  letter-spacing: .01em;
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  position: relative;
+}
+.pip-pill:hover { border-color: var(--border); color: var(--text-2); }
+.pip-pill.pip-done {
+  background: rgba(5,150,105,.1);
+  color: #059669;
+  border-color: rgba(5,150,105,.3);
+}
+.pip-pill.pip-active {
+  background: var(--tier-b-bg);
+  color: var(--tier-b);
+  border-color: var(--tier-b-bd);
+  font-weight: 700;
+}
+.pip-pill.pip-rejected {
+  background: var(--tier-r-bg);
+  color: var(--tier-r);
+  border-color: var(--tier-r-bd);
+}
+.pip-pill.pip-pending {
+  background: transparent;
+  color: var(--text-3);
+  border-color: var(--border2);
+}
+
+.pip-connector {
+  width: 18px;
+  height: 2px;
+  background: var(--border2);
+  flex-shrink: 0;
+}
+.pip-connector.done { background: #059669; opacity: .5; }
+
+.pip-reset {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 180ms;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+.pip-reset:hover { border-color: var(--border); color: var(--text-2); }
+
+/* ─── MINI STEPPER (CARD) ───────────────────────────────────────────────────── */
+.mini-stepper {
+  padding: 8px 18px 11px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.ms-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--surface3);
+  border: 1.5px solid var(--border);
+  flex-shrink: 0;
+  transition: all 200ms;
+}
+.ms-dot.done  { background: #059669; border-color: #059669; }
+.ms-dot.active { background: var(--tier-b); border-color: var(--tier-b); box-shadow: 0 0 0 3px rgba(37,99,235,.15); animation: ms-pulse 1.6s ease-in-out infinite; }
+.ms-dot.rejected { background: var(--tier-r); border-color: var(--tier-r); animation: none; }
+
+@keyframes ms-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+  50%       { box-shadow: 0 0 0 5px rgba(37,99,235,.08); }
+}
+
+.ms-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border2);
+  min-width: 8px;
+}
+.ms-line.done { background: rgba(5,150,105,.4); }
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; padding: 12px 14px; }
+  .header { padding: 14px; }
+  .header-row { flex-direction: column; gap: 12px; }
+  .filter-bar { padding: 10px 14px; }
+  .tab-content { max-height: none; }
+  .pc-grid { grid-template-columns: 1fr; }
+  .form-row, .ratings-grid, .sub-grid { grid-template-columns: 1fr; }
+  .decision-opts { flex-direction: column; }
+  .pipeline-stepper { gap: 4px; }
+  .pip-connector { width: 8px; }
+}
+
+@media (max-width: 900px) {
+  .pc-grid { grid-template-columns: 1fr; }
+  .modal-body { flex-direction: column; }
+  .modal-left { width: 100%; border-right: none; border-bottom: 1px solid var(--border2); max-height: 55vh; }
+  .modal-right { width: 100%; flex: 1; min-height: 0; }
+  .modal { height: 96vh; }
 }
 </style>
 </head>
 <body>
 
+<!-- ─── HEADER ─────────────────────────────────────────────────────────────── -->
 <div class="header">
-  <div class="header-top">
-    <div>
-      <h1>QA CV Scoring Dashboard — NHSV Pro</h1>
-      <div class="header-meta">Batch June 2026 · 4 Hard Criteria · 100 điểm · Ưu tiên: Securities / Fintech domain</div>
+  <div class="header-row">
+    <div class="header-brand">
+      <div class="header-eyebrow">NHSV Pro · Hiring</div>
+      <h1>QA CV Scoring Dashboard</h1>
+      <div class="header-meta">Batch June 2026 &nbsp;·&nbsp; 4 Dimensions &nbsp;·&nbsp; 100 điểm &nbsp;·&nbsp; Ưu tiên: Securities / Fintech domain</div>
     </div>
-  </div>
-  <div class="stats">
-    <div class="stat total"><div class="stat-num">10</div><div class="stat-label">Tổng CV</div></div>
-    <div class="stat b"><div class="stat-num">3</div><div class="stat-label">Tier B</div></div>
-    <div class="stat c"><div class="stat-num">5</div><div class="stat-label">Tier C</div></div>
-    <div class="stat r"><div class="stat-num">2</div><div class="stat-label">Reject</div></div>
+    <div class="header-right">
+      <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()">☾ Dark</button>
+      <span class="user-chip" title="Ghi chú với tư cách này — click để đổi tên" onclick="changeUser()"><span id="current-user-label">...</span></span>
+      <div class="stats" id="stats-strip">
+        <div class="stat total"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Tổng CV</div></div>
+        <div class="stat b"><div class="stat-num" id="stat-b">—</div><div class="stat-label">Tier B</div></div>
+        <div class="stat c"><div class="stat-num" id="stat-c">—</div><div class="stat-label">Tier C</div></div>
+        <div class="stat r"><div class="stat-num" id="stat-r">—</div><div class="stat-label">Reject</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
+<!-- ─── FILTER BAR ─────────────────────────────────────────────────────────── -->
 <div class="filter-bar">
-  <button class="filter-btn active" onclick="filter('all',this)">Tất cả</button>
-  <button class="filter-btn fb" onclick="filter('B',this)">🔵 Tier B</button>
-  <button class="filter-btn fc" onclick="filter('C',this)">⚪ Tier C</button>
-  <button class="filter-btn fr" onclick="filter('REJECT',this)">🔴 Reject</button>
+  <span class="filter-label">Lọc</span>
+  <button class="filter-btn all active"  onclick="filter('all',this)">Tất cả <span class="filter-count" id="fc-all">—</span></button>
+  <button class="filter-btn fb"          onclick="filter('B',this)">Tier B <span class="filter-count" id="fc-b">—</span></button>
+  <button class="filter-btn fc"          onclick="filter('C',this)">Tier C <span class="filter-count" id="fc-c">—</span></button>
+  <button class="filter-btn fr"          onclick="filter('REJECT',this)">Reject <span class="filter-count" id="fc-r">—</span></button>
+</div>
+
+<!-- ─── PIPELINE FILTER BAR ─────────────────────────────────────────────────── -->
+<div class="filter-bar pipeline-filter-bar">
+  <span class="filter-label">Pipeline</span>
+  <button class="pfb pfb-all active" onclick="filterPipeline('all',this)">Tất cả <span class="filter-count" id="pfc-all">—</span></button>
+  <button class="pfb pfb-stage"      onclick="filterPipeline('1',this)">Pass CV <span class="filter-count" id="pfc-1">—</span></button>
+  <button class="pfb pfb-stage"      onclick="filterPipeline('2',this)">Bài test <span class="filter-count" id="pfc-2">—</span></button>
+  <button class="pfb pfb-stage"      onclick="filterPipeline('3',this)">PV Vòng 1 <span class="filter-count" id="pfc-3">—</span></button>
+  <button class="pfb pfb-stage"      onclick="filterPipeline('4',this)">PV Vòng 2 <span class="filter-count" id="pfc-4">—</span></button>
+  <button class="pfb pfb-stage"      onclick="filterPipeline('5',this)">Offer <span class="filter-count" id="pfc-5">—</span></button>
+  <button class="pfb pfb-none"       onclick="filterPipeline('none',this)">Chưa có <span class="filter-count" id="pfc-none">—</span></button>
+  <button class="pfb pfb-rej"        onclick="filterPipeline('rejected',this)">Bị loại <span class="filter-count" id="pfc-rej">—</span></button>
 </div>
 
 <div class="grid" id="grid"></div>
 
-<!-- Modal -->
+<!-- ─── MODAL ─────────────────────────────────────────────────────────────── -->
 <div class="overlay" id="overlay" onclick="closeOnBg(event)">
 <div class="modal">
   <div class="modal-hdr">
-    <div>
-      <div class="modal-name" id="m-name"></div>
-      <div class="modal-sub" id="m-sub"></div>
+    <div class="modal-hdr-top">
+      <div>
+        <div class="modal-name" id="m-name"></div>
+        <div class="modal-sub"  id="m-sub"></div>
+      </div>
+      <div class="modal-hdr-right">
+        <button class="modal-close" onclick="closeOverlay()">✕</button>
+        <div id="m-decision-badge"></div>
+      </div>
     </div>
-    <div class="modal-hdr-right">
-      <button class="modal-close" onclick="closeOverlay()">✕</button>
-      <div id="m-decision-badge"></div>
+    <div id="m-pipeline-stepper"></div>
+  </div>
+
+  <div class="modal-body">
+    <!-- Left panel: tabs + content -->
+    <div class="modal-left">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('score',this)">Đánh giá</button>
+        <button class="tab-btn"        onclick="switchTab('notes',this)">Ghi chú PV</button>
+      </div>
+      <div class="tab-content active" id="tab-score"></div>
+      <div class="tab-content"        id="tab-notes"></div>
+    </div>
+
+    <!-- Right panel: CV always visible -->
+    <div class="modal-right">
+      <div class="cv-panel" id="cv-panel"></div>
     </div>
   </div>
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('score',this)">📊 Đánh giá</button>
-    <button class="tab-btn" onclick="switchTab('cv',this)">📄 CV</button>
-    <button class="tab-btn" onclick="switchTab('notes',this)">📝 Ghi chú PV</button>
-  </div>
-  <div class="tab-content active" id="tab-score"></div>
-  <div class="tab-content" id="tab-cv"></div>
-  <div class="tab-content" id="tab-notes"></div>
 </div>
 </div>
 
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
+// ─── DATA ───────────────────────────────────────────────────────────────────
 
 const IQ = {
   B:{label:"Group B — QA tốt, chưa có CK domain",cls:"gb-b",qs:[
@@ -371,211 +1589,640 @@ const CV = [
    hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"_VNW Tran Doan Hieu.pdf",
    rejectReason:"HC-01 FAIL: Developer & IT Manager — không có QA experience trong toàn bộ career",
    pros:["10 năm Mottainai Japan — loyalty","Tech breadth: AI, BigData, Docker, TensorFlow","Japanese N3, quản lý team"],
-   cons:["HC-01 FAIL: Developer/IT Manager — không phải QA","Không có QA experience nào","Apply sai vị trí"]}
+   cons:["HC-01 FAIL: Developer/IT Manager — không phải QA","Không có QA experience nào","Apply sai vị trí"]},
+
+  // ── BATCH 2 ──────────────────────────────────────────────────────────────
+
+  {id:"loan-nt",name:"Nguyễn Thị Loan",role:"QA Engineer — TCBS (Techcombank Securities)",tier:"B",score:76,hc:true,
+   d1:35,d2:22,d3:11,d4:8,
+   d2s:{"API Testing":[10,12],"Mobile Testing":[4,8],"Automation":[5,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[3,6],"3rd-party":[3,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[3,3]},
+   hl:"TCBS 4+ năm — Bond trading: Gov bonds, Corp bonds, credit facilities",iq:"C",action:"interview",cvFile:"(Potential) Nguyen Thi Loan.pdf",
+   pros:["TCBS 4+ năm: wholesale bond trading system, multi-instrument securities","API automation + K6/JMeter performance testing","10 năm career, QA Lead team 3 người, test strategy ownership"],
+   cons:["Bond/wholesale trading vs. NHSV retail equity — product gap","CV sparse về technical detail","Có thể negotiate hard về lương"]},
+
+  {id:"dung-httd",name:"Hoàng Thị Thuý Dung",role:"Tester — FSS / VCBS Securities API",tier:"B",score:72,hc:true,
+   d1:32,d2:20,d3:13,d4:7,
+   d2s:{"API Testing":[11,12],"Mobile Testing":[5,8],"Automation":[0,6],"Performance":[4,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[1,6],"3rd-party":[4,4],"SQL/Log":[3,3],"SQL/Proc":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"FSS/VCBS OpenAPI — Order API, Cash API, Bank Gateway integration",iq:"C",action:"interview",cvFile:"(Potential) VNW Hoang Thi Thuy Dung.pdf",
+   pros:["VCBS securities OpenAPI: order/cash/account APIs — exact domain fit NHSV Pro","Bank-CK gateway integration (Bank → Core CK) — direct relevant flow","SQL procedure/function trace + log analysis, Q4/2024 outstanding employee"],
+   cons:["Chỉ 2.5 năm kinh nghiệm — còn junior level","Zero automation framework","Không có CI/CD hoặc performance testing tool"]},
+
+  {id:"vinh-dd",name:"Đỗ Đình Vinh",role:"Senior QA Engineer — CTECH Retail Banking",tier:"B",score:68,hc:true,
+   d1:28,d2:22,d3:11,d4:7,
+   d2s:{"API Testing":[10,12],"Mobile Testing":[6,8],"Automation":[2,6],"Performance":[4,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[2,6],"3rd-party":[4,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"CTECH Retail Banking: CBS, Payment Hub, QR Payment, Card Management",iq:"B",action:"interview",cvFile:"_LKD SeniorQA_VinhDD.pdf",
+   pros:["10+ năm QA, current: CBS + Payment Hub + QR Payment + Card Management","API testing sâu: Postman + backend workflow integration","Forex Trading mentioned — tài chính domain breadth"],
+   cons:["Banking domain, chưa có securities/CK cụ thể","Manual-focused, không có automation framework","Không có CI/CD toolchain rõ ràng"]},
+
+  {id:"khanh-nn",name:"Nguyễn Nam Khánh",role:"Test Lead — MB Bank (Paraline Vietnam)",tier:"B",score:61,hc:true,
+   d1:22,d2:21,d3:12,d4:6,
+   d2s:{"API Testing":[11,12],"Mobile Testing":[4,8],"Automation":[4,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[4,6],"3rd-party":[3,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"MB Bank — FX trading, ACH/24h transfers, Payment Platform microservices",iq:"C",action:"interview",cvFile:"_VNW Nguyen Nam Khanh.pdf",
+   pros:["MB Bank core banking: FX trading, fund transfer, Payment Platform microservices","Microservices API testing + log analysis; Katalon/Karate automation","CI/CD (Jenkins/Git) + Oracle SQL/MongoDB/DBeaver"],
+   cons:["Banking/payment domain — chưa phải securities/CK cụ thể","Mobile testing hạn chế","Không có explicit stock/order/market data experience"]},
+
+  {id:"dung-vtk",name:"Vũ Thị Kim Dung",role:"QA Lead — Sphinx JSC (HK Stock Trading)",tier:"B",score:59,hc:true,
+   d1:22,d2:20,d3:10,d4:7,
+   d2s:{"API Testing":[10,12],"Mobile Testing":[7,8],"Automation":[1,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[4,7],"CI/CD & Tools":[1,6],"3rd-party":[3,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"Sphinx JSC: HK/Singapore stock trading mobile app — real-time trading features",iq:"B",action:"interview",cvFile:"_VNW Vu Thi Kim Dung.pdf",
+   pros:["Test Lead trên HK/SG stock trading mobile app, real-time trading features","API + SQL testing trong fintech context; TOEIC 915","Sole QA tại Powergate — ownership & autonomy cao"],
+   cons:["HK stock market context, chưa có VN HOSE/HNX/HOSE context","Zero automation (đang học Selenium)","6 năm trước là Samsung System Support — không phải QA"]},
+
+  {id:"huong-ptt2",name:"Phạm Thị Thu Hương",role:"QA Lead — MSB (3 consecutive projects)",tier:"B",score:58,hc:true,
+   d1:23,d2:19,d3:9,d4:7,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[2,8],"Automation":[4,6],"Performance":[1,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[2,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"MSB 7 năm — Credit approval BPM, Enterprise Banking, Collateral Management",iq:"C",action:"interview",cvFile:"_LKD Pham-Thi-Thu-Huong-QA-ENGINEER.pdf",
+   pros:["MSB 3 consecutive projects: credit approval, EB, collateral — deep banking domain","QA Lead managing team 4, lessons-learned, process maturity","SQL/data migration testing + Robot Framework automation"],
+   cons:["Banking domain là credit/risk/BPM — không phải securities trading","Mobile testing minimal — NHSV Pro là React Native","Automation là basic Robot Framework, chưa CI/CD integrated"]},
+
+  {id:"thoai-kx",name:"Kiều Xuân Thoại",role:"QA Engineer / Automation — Deha Vietnam",tier:"B",score:50,hc:true,
+   d1:8,d2:23,d3:12,d4:7,
+   d2s:{"API Testing":[10,12],"Mobile Testing":[5,8],"Automation":[6,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[6,6],"3rd-party":[2,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[4,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Best automation engineer in batch — Playwright + Cypress + Azure DevOps CI/CD",iq:"B",action:"interview",cvFile:", LKD Kieu_Xuan_Thoai.pdf",
+   pros:["Automation mạnh nhất batch: Playwright + Cypress + Selenium, built from scratch","CI/CD: Azure DevOps + AWS/Azure/GCP cloud platforms","Exceptional learning: Oracle Java/SQL cert, JLPT N3, TOEIC 800, 2nd IT degree"],
+   cons:["Domain yếu — TPBank chỉ là dự án nhỏ, current là charity website","Không có performance testing","Không có financial/CK domain hiện tại"]},
+
+  {id:"mung-nq",name:"Nguyễn Quang Mừng",role:"Test Lead — Samsung Pay (12 năm)",tier:"C",score:44,hc:true,
+   d1:14,d2:17,d3:6,d4:7,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[8,8],"Automation":[0,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[2,6],"3rd-party":[3,4],"SQL/Log":[0,3]},
+   d4s:{"Learning":[2,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"Samsung Pay 5 năm — NFC payment, bank card integration, digital wallet",iq:"B",action:"interview_with_test",cvFile:"_LKD Nguyen Quang Mung_CV.pdf",
+   note:"Score 44 — borderline Tier B. Yêu cầu bài test API + test case design trước khi quyết định.",
+   pros:["12 năm, 7 năm Test Lead — Samsung Pay: NFC, digital wallet, bank card integration","Mobile testing cực mạnh (12 năm); Top 1 defect detector awards","ISTQB AI Testing cert, weekly reporting to HQ, trained members"],
+   cons:["Zero automation — toàn manual","Domain là payment/digital wallet, chưa phải securities/CK","Heavy Samsung internal tooling (PLM) — limited portable depth"]},
+
+  {id:"minh-ha",name:"Hoàng Anh Minh",role:"QA Leader — Bac Ha Software",tier:"C",score:41,hc:true,
+   d1:8,d2:18,d3:8,d4:7,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[4,8],"Automation":[5,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[2,6],"3rd-party":[2,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[4,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"ISTQB 39/40, Finance-Banking master's degree (NEU) — fastest domain learner",iq:"C",action:"interview_with_test",cvFile:"_VNW Hoang Anh Minh.pdf",
+   note:"ISTQB score 39/40 + Finance-Banking master's — exceptional learning potential. Yêu cầu bài test QA thực hành trước PV.",
+   pros:["ISTQB Foundation 39/40 + Agile — outstanding test methodology","Finance-Banking master's degree (NEU) — domain learning curve sẽ rất nhanh","Automation: Robot Framework + Playwright; TOEIC 885"],
+   cons:["QA career chỉ 3.5 năm tại generic software company — không có fintech project","Prudential role là administrative, không phải domain QA","Current role không có financial product domain rõ ràng"]},
+
+  {id:"ly-nh",name:"Nguyễn Hà Lý",role:"Manual Tester — Synodus / TravelCheck",tier:"C",score:41,hc:true,
+   d1:10,d2:17,d3:8,d4:6,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[6,8],"Automation":[1,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[1,6],"3rd-party":[3,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"TravelCheck: P2P FX, crypto wallet — INVETO: AI securities analysis platform",iq:"B",action:"second_look",cvFile:"_LKD CV_NguyenHaLy.pdf",
+   pros:["Multi-platform testing: POS/Nexgo/mobile/web; JMeter load/stress testing","TravelCheck: P2P exchange, crypto wallet, virtual card — fintech ecosystem","ISTQB certified, IELTS 6.0, bài luận kỹ năng tài chính (side project)"],
+   cons:["INVETO securities chỉ 5 tháng, likely front-end only","Không có core trading/order API experience","Automation minimal"]},
+
+  {id:"hung-qbt",name:"Quách Bảo Hùng",role:"Manual Tester — Decom Stars / Basal Pay",tier:"C",score:40,hc:true,
+   d1:8,d2:19,d3:8,d4:5,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[4,8],"Automation":[3,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[2,6],"3rd-party":[3,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Basal Pay blockchain wallet: Fireblocks integration, transaction sync testing",iq:"B",action:"second_look",cvFile:"_VNW (HCM) Quach Bao Trung.pdf",
+   pros:["API + DB testing sâu (Postman + SQL); performance testing in production","Transaction sync testing (Basal Pay blockchain/transfer flow)","Healthcare production load testing — disciplined testing practice"],
+   cons:["Domain: healthcare/blockchain/AI — không phải banking/securities","HCM-based — relocation consideration","Automation hạn chế, không có framework building"]},
+
+  {id:"nam-dh",name:"Dương Hà Nam",role:"Senior Tester — Earable Neuroscience",tier:"C",score:39,hc:true,
+   d1:7,d2:19,d3:7,d4:6,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[7,8],"Automation":[1,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[1,6],"3rd-party":[3,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"13 năm kinh nghiệm — Postman + JMeter; VPBank card mgmt (outsource brief)",iq:"B",action:"second_look",cvFile:"_LKD CV_DuongHaNam_Tester_EN.pdf",
+   pros:["13 năm kinh nghiệm rộng: API, mobile, performance testing","VPBank card management (Fsoft outsource) — banking exposure","Test Lead 4 năm, FRS/URS documentation, English proficiency"],
+   cons:["Banking exposure tối thiểu — VPBank chỉ là dự án nhỏ outsource","Current role (Earable brain band) xa fintech","Zero automation capability"]},
+
+  {id:"huy-nl",name:"Nguyễn Lê Huy",role:"QA Engineer — Online Payment Gateway",tier:"C",score:37,hc:true,
+   d1:10,d2:16,d3:7,d4:4,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[5,8],"Automation":[4,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[2,6],"3rd-party":[2,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[1,3],"Initiative":[1,3]},
+   hl:"Automation: Playwright + Robot Framework — Payment Gateway 3DS (current role)",iq:"B",action:"second_look",cvFile:"_LKD NGUYEN_LE_HUY_CV_QA.pdf",
+   pros:["Automation cho experience level: Playwright + Robot Framework","Current role: banking payment gateway với 3DS authentication","MySQL SQL validation; cross-platform (automotive + vehicle)"],
+   cons:["Chỉ 2.5 năm, mostly automotive/vehicle — non-fintech","Không có performance testing","Domain thin — 3DS gateway mới nhất, còn shallow"]},
+
+  {id:"hanh-lth",name:"Lý Thị Hồng Hạnh",role:"Tester Engineer — Viettel AI",tier:"C",score:35,hc:true,
+   d1:5,d2:17,d3:7,d4:6,
+   d2s:{"API Testing":[8,12],"Mobile Testing":[3,8],"Automation":[3,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[1,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Postman API + JMeter performance + SQL testing — tốt cho level 2 năm",iq:"B",action:"second_look",cvFile:"_LKD CV-HongHanh-Tester.pdf",
+   pros:["API + SQL + performance testing (Postman + JMeter) — tốt cho 2 năm","SQL/DB testing; test plans + compliance reports","BA skills + user manual writing — documentation discipline"],
+   cons:["Chỉ 2 năm, vẫn junior level","Không có banking/fintech/securities domain (Camera AI, E-gov)","Automation rất basic (Selenium learner level)"]},
+
+  {id:"thang-nv",name:"Nguyễn Việt Thắng",role:"Software Tester — Samsung Electronics Vietnam",tier:"C",score:21,hc:true,
+   d1:2,d2:11,d3:3,d4:5,
+   d2s:{"API Testing":[2,12],"Mobile Testing":[7,8],"Automation":[1,6],"Performance":[1,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[1,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Samsung mobile testing — 500+ test cases/release, ISTQB Foundation",iq:null,action:"reject",cvFile:"_VNW Nguyen Viet Thang.pdf",
+   pros:["Strong mobile testing discipline: 500+ test cases/release","ISTQB Foundation certified; AI tool adoption mindset","Cross-team collaboration tại Samsung"],
+   cons:["Zero API testing — critical gap cho NHSV Pro","Zero financial/securities domain","Toàn bộ experience là device/OS testing, không phải business logic"]},
+
+  {id:"lien-dt",name:"Dương Thị Liên",role:"IT Intern — Asia Software",tier:"REJECT",score:null,hc:false,
+   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
+   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"(Cancel) VNW Lien Duong.pdf",
+   rejectReason:"HC-01 FAIL: IT Intern (Software Development) — sinh viên đang thực tập, không có QA role",
+   pros:["Trẻ, có tiềm năng học hỏi"],
+   cons:["HC-01 FAIL: Thực tập sinh IT, không phải QA","Zero QA experience","Đang đi học, chưa ra trường"]},
+
+  {id:"huong-pt-kbsv",name:"Phạm Thu Hương (KBSV)",role:"IT Operations Specialist — KB Securities Vietnam",tier:"REJECT",score:null,hc:false,
+   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
+   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"(KB Security) VNW Pham Thu Huong.pdf",
+   rejectReason:"HC-01 FAIL: IT Ops / Technical Support / Sales Manager — không có QA/Tester role trong toàn bộ career",
+   pros:["KBSV OMS/WTS/HOSE/HNX operations background — securities domain knowledge","Technical ops mindset, system monitoring experience"],
+   cons:["HC-01 FAIL: IT Operations, không phải QA","Không có test case design, không có API testing background","Career path: Ops/Support/Sales — không align với QA"]},
+
+  {id:"chi-ttl",name:"Trần Thị Linh Chi",role:"Quality Control — (CV không đọc được)",tier:"REJECT",score:null,hc:false,
+   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
+   hl:"File DOCX không đọc được — cần resubmit",iq:null,action:"reject",cvFile:"_LKD Quality Control_Tran Thi Linh Chi (1).docx",
+   rejectReason:"File DOCX không thể parse — cần ứng viên resubmit dưới định dạng PDF để tiếp tục đánh giá",
+   pros:["Job title 'Quality Control' gợi ý HC-01 có thể Pass — cần xác nhận"],
+   cons:["CV format DOCX không đọc được bằng tool","Chưa thể đánh giá điểm số","Cần yêu cầu resubmit PDF"]}
 ];
 
-// ─── STATE ───────────────────────────────────────────────────────────────────
+// ─── PIPELINE STAGES ────────────────────────────────────────────────────────
+const STAGES = ['Pass CV', 'Gửi Bài test', 'Phỏng vấn vòng 1', 'Phỏng vấn vòng 2', 'Offer letter'];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
 let currentFilter = 'all';
+let currentPipelineFilter = 'all';
 let currentId = null;
 let saveTimer = null;
 
-// ─── NOTES ───────────────────────────────────────────────────────────────────
-function getNotes(id) {
-  try { return JSON.parse(localStorage.getItem('qa-notes-'+id)) || {}; } catch { return {}; }
+// ─── SHARED BACKEND ──────────────────────────────────────────────────────────
+let notesCache = {};
+let currentUser = '';
+
+function initUser() {
+  currentUser = localStorage.getItem('qa-user') || '';
+  if (!currentUser) {
+    const name = prompt('Bạn là ai?\n(Tên sẽ hiển thị khi bạn ghi chú — VD: "Midu", "HR Thảo")');
+    currentUser = (name && name.trim()) ? name.trim() : 'Ẩn danh';
+    localStorage.setItem('qa-user', currentUser);
+  }
+  const el = document.getElementById('current-user-label');
+  if (el) el.textContent = currentUser;
 }
+
+function changeUser() {
+  const name = prompt('Đổi tên ghi chú:', currentUser);
+  if (name && name.trim()) {
+    currentUser = name.trim();
+    localStorage.setItem('qa-user', currentUser);
+    const el = document.getElementById('current-user-label');
+    if (el) el.textContent = currentUser;
+  }
+}
+
+async function loadAllNotes() {
+  try {
+    const r = await fetch('/api/notes');
+    if (r.ok) notesCache = (await r.json()) || {};
+  } catch { /* offline: use empty cache */ }
+}
+
+async function syncNotes() {
+  const prev = JSON.stringify(notesCache);
+  await loadAllNotes();
+  if (JSON.stringify(notesCache) !== prev) {
+    renderCards(currentFilter);
+    if (currentId) buildPipelineStepper(currentId);
+  }
+}
+
+async function postNote(id, data) {
+  try {
+    await fetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, data })
+    });
+  } catch { /* silent fail */ }
+}
+
+// ─── NOTES ──────────────────────────────────────────────────────────────────
+function getNotes(id) {
+  return notesCache[id] || {};
+}
+
 function hasNotes(id) {
   const n = getNotes(id);
   return n.notes || n.decision || n.interviewer || n.date || n.actionItems ||
     n.domainScore || n.qaScore || n.commScore || n.cultureScore;
 }
-function saveNotes() {
+
+async function saveNotes() {
   if (!currentId) return;
+  const existing = getNotes(currentId);
   const n = {
-    date: (document.getElementById('n-date')||{}).value || '',
-    interviewer: (document.getElementById('n-interviewer')||{}).value || '',
-    domainScore: +((document.querySelector('.stars[data-dim="domain"] .star.lit:last-of-type')||{}).dataset?.val||0),
-    qaScore: +((document.querySelector('.stars[data-dim="qa"] .star.lit:last-of-type')||{}).dataset?.val||0),
-    commScore: +((document.querySelector('.stars[data-dim="comm"] .star.lit:last-of-type')||{}).dataset?.val||0),
-    cultureScore: +((document.querySelector('.stars[data-dim="culture"] .star.lit:last-of-type')||{}).dataset?.val||0),
-    notes: (document.getElementById('n-notes')||{}).value || '',
-    decision: (document.querySelector('.decision-opt.selected')||{}).dataset?.val || '',
-    actionItems: (document.getElementById('n-actions')||{}).value || '',
-    updatedAt: new Date().toLocaleString('vi-VN')
+    date:        (document.getElementById('n-date') || {}).value || '',
+    interviewer: (document.getElementById('n-interviewer') || {}).value || '',
+    domainScore: +((document.querySelector('.stars[data-dim="domain"] .star.lit:last-of-type') || {}).dataset?.val || 0),
+    qaScore:     +((document.querySelector('.stars[data-dim="qa"] .star.lit:last-of-type') || {}).dataset?.val || 0),
+    commScore:   +((document.querySelector('.stars[data-dim="comm"] .star.lit:last-of-type') || {}).dataset?.val || 0),
+    cultureScore:+((document.querySelector('.stars[data-dim="culture"] .star.lit:last-of-type') || {}).dataset?.val || 0),
+    notes:       (document.getElementById('n-notes') || {}).value || '',
+    decision:    (document.querySelector('.decision-opt.selected') || {}).dataset?.val || '',
+    actionItems: (document.getElementById('n-actions') || {}).value || '',
+    updatedAt:   new Date().toLocaleString('vi-VN'),
+    updatedBy:   currentUser,
+    pipeline:    existing.pipeline || 0,
+    pipelineStatus: existing.pipelineStatus || ''
   };
-  localStorage.setItem('qa-notes-'+currentId, JSON.stringify(n));
+  notesCache[currentId] = n;
+  await postNote(currentId, n);
   const el = document.getElementById('n-saved');
-  if (el) { el.textContent = '✓ Đã lưu '+n.updatedAt; el.classList.add('show'); setTimeout(()=>el.classList.remove('show'),2500); }
+  if (el) {
+    el.textContent = '✓ ' + currentUser + ' · ' + n.updatedAt;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
   renderCards(currentFilter);
   refreshDecisionBadge(n.decision);
 }
-function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes,800); }
 
-// ─── RENDER CARDS ─────────────────────────────────────────────────────────────
+// ─── PIPELINE ────────────────────────────────────────────────────────────────
+async function setPipeline(id, stageIdx, status) {
+  const n = { ...getNotes(id), pipeline: stageIdx, pipelineStatus: status, updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN') };
+  notesCache[id] = n;
+  await postNote(id, n);
+  renderCards(currentFilter);
+  if (currentId === id) buildPipelineStepper(id);
+}
+
+async function resetPipeline(id) {
+  const n = { ...getNotes(id), pipeline: 0, pipelineStatus: '', updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN') };
+  notesCache[id] = n;
+  await postNote(id, n);
+  renderCards(currentFilter);
+  if (currentId === id) buildPipelineStepper(id);
+}
+
+function buildPipelineStepper(id) {
+  const el = document.getElementById('m-pipeline-stepper');
+  if (!el) return;
+  const n = getNotes(id);
+  const pipeline = n.pipeline || 0;
+  const status = n.pipelineStatus || '';
+
+  let html = '<div class="pipeline-stepper">';
+  STAGES.forEach((s, i) => {
+    const stageNum = i + 1;
+    let cls = 'pip-pending';
+    let prefix = '';
+    if (stageNum < pipeline) { cls = 'pip-done'; prefix = '✓ '; }
+    else if (stageNum === pipeline) {
+      cls = status === 'rejected' ? 'pip-rejected' : (status === 'active' ? 'pip-active' : 'pip-active');
+      prefix = status === 'rejected' ? '✕ ' : '';
+    }
+    const connCls = stageNum < pipeline ? 'done' : '';
+    html += `<div class="pip-step">
+      <button class="pip-pill ${cls}" title="${s}"
+        onclick="setPipeline('${id}', ${stageNum}, 'active')"
+        oncontextmenu="event.preventDefault();setPipeline('${id}', ${stageNum}, 'rejected')"
+      >${prefix}${s}</button>
+    </div>`;
+    if (i < STAGES.length - 1) {
+      html += `<div class="pip-connector ${connCls}"></div>`;
+    }
+  });
+  html += `<button class="pip-reset" onclick="resetPipeline('${id}')">Reset</button>`;
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function buildMiniStepper(id) {
+  const n = getNotes(id);
+  const pipeline = n.pipeline || 0;
+  const status = n.pipelineStatus || '';
+  if (pipeline === 0 && status === '') return '';
+
+  let html = '<div class="mini-stepper">';
+  STAGES.forEach((s, i) => {
+    const stageNum = i + 1;
+    let cls = '';
+    if (stageNum < pipeline) cls = 'done';
+    else if (stageNum === pipeline) {
+      cls = status === 'rejected' ? 'rejected' : 'active';
+    }
+    if (i > 0) {
+      const lineCls = stageNum <= pipeline ? 'done' : '';
+      html += `<div class="ms-line ${lineCls}"></div>`;
+    }
+    html += `<div class="ms-dot ${cls}" title="${s}"></div>`;
+  });
+  html += '</div>';
+  return html;
+}
+
+function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes, 800); }
+
+// ─── RENDER CARDS ────────────────────────────────────────────────────────────
+function updatePipelineCounts() {
+  const tierList = currentFilter === 'all' ? CV : CV.filter(c => c.tier === currentFilter);
+  const counts = { all: tierList.length, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, none: 0, rejected: 0 };
+  tierList.forEach(c => {
+    const n = getNotes(c.id);
+    const p = n.pipeline || 0;
+    const s = n.pipelineStatus || '';
+    if (s === 'rejected') counts.rejected++;
+    else if (p === 0) counts.none++;
+    else if (p >= 1 && p <= 5) counts[p]++;
+  });
+  const idMap = { all: 'pfc-all', 1: 'pfc-1', 2: 'pfc-2', 3: 'pfc-3', 4: 'pfc-4', 5: 'pfc-5', none: 'pfc-none', rejected: 'pfc-rej' };
+  Object.entries(idMap).forEach(([k, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = counts[k] ?? 0;
+  });
+}
+
 function renderCards(f) {
   currentFilter = f;
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  const list = f === 'all' ? CV : CV.filter(c => c.tier === f);
-  list.forEach(c => {
+  let list = f === 'all' ? CV : CV.filter(c => c.tier === f);
+
+  if (currentPipelineFilter !== 'all') {
+    list = list.filter(c => {
+      const n = getNotes(c.id);
+      const p = n.pipeline || 0;
+      const s = n.pipelineStatus || '';
+      if (currentPipelineFilter === 'none')     return p === 0 && s !== 'rejected';
+      if (currentPipelineFilter === 'rejected') return s === 'rejected';
+      return p === +currentPipelineFilter && s !== 'rejected';
+    });
+  }
+
+  updatePipelineCounts();
+
+  list.forEach((c, idx) => {
     const notes = getNotes(c.id);
     const hasnotes = hasNotes(c.id);
-    const decisionLabel = {proceed:'✅ Tiến hành',reject:'❌ Từ chối',hold:'⏸ Xem xét'}[notes.decision]||'';
 
-    const tierLabel = c.tier==='REJECT'?'🔴 Reject':c.tier==='B'?'🔵 Tier B':'⚪ Tier C';
-    const badgeCls = 'badge-'+c.tier;
+    const decisionPillMap = {
+      proceed: '<span class="decision-pill dp-proceed">Tiến hành</span>',
+      reject:  '<span class="decision-pill dp-reject">Từ chối</span>',
+      hold:    '<span class="decision-pill dp-hold">Xem xét</span>'
+    };
+    const decisionPill = decisionPillMap[notes.decision] || '';
+
+    const tierLabelMap = { B: 'Tier B', C: 'Tier C', REJECT: 'Reject' };
+    const tierLabel = tierLabelMap[c.tier];
 
     let bars = '';
     if (c.score !== null) {
       bars = `<div class="card-bars">
-        ${brow('D1 Domain',c.d1,40,'bd1')}${brow('D2 QA',c.d2,30,'bd2')}
-        ${brow('D3 Tech',c.d3,20,'bd3')}${brow('D4 Soft',c.d4,10,'bd4')}
-        ${brow('Total',c.score,100,'btotal')}
+        ${brow('D1', c.d1, 40, 'bd1')}
+        ${brow('D2', c.d2, 30, 'bd2')}
+        ${brow('D3', c.d3, 20, 'bd3')}
+        ${brow('D4', c.d4, 10, 'bd4')}
+        ${brow('Total', c.score, 100, 'btotal')}
       </div>`;
     }
-    const hl = c.rejectReason
+
+    const hlBlock = c.rejectReason
       ? `<div class="card-rr">${c.rejectReason}</div>`
       : `<div class="card-hl">${c.hl}</div>`;
 
-    const actionLabel = {interview:'Phỏng vấn →',interview_with_test:'PV + Bài test →',second_look:'Chi tiết →',reject:'Xem lý do →'}[c.action];
-    const actionCls = {interview:'btn-interview',interview_with_test:'btn-test',second_look:'btn-second',reject:'btn-reject'}[c.action];
+    const actionMap = {
+      interview:           'Phỏng vấn →',
+      interview_with_test: 'PV + Bài test →',
+      second_look:         'Chi tiết →',
+      reject:              'Xem lý do →'
+    };
+    const actionClsMap = {
+      interview:           'btn-interview',
+      interview_with_test: 'btn-test',
+      second_look:         'btn-second',
+      reject:              'btn-reject'
+    };
 
-    const decisionBadgeCls = {proceed:'db-proceed',reject:'db-reject',hold:'db-hold'}[notes.decision]||'';
+    const miniStepper = c.tier !== 'REJECT' ? buildMiniStepper(c.id) : '';
 
     const card = document.createElement('div');
     card.className = `card tier-${c.tier}`;
     card.onclick = () => openModal(c.id);
     card.innerHTML = `
-      <div class="card-header">
-        <div><div class="card-name">${c.name}</div><div class="card-role">${c.role}</div></div>
+      <div class="card-hdr">
+        <div class="card-identity">
+          <div class="card-name">${c.name}</div>
+          <div class="card-role">${c.role}</div>
+        </div>
         <div class="card-badges">
-          <div class="tier-badge ${badgeCls}">${tierLabel}</div>
-          ${hasnotes?`<div class="notes-badge">📝 Notes</div>`:''}
-          ${decisionLabel?`<div class="decision-badge ${decisionBadgeCls}">${decisionLabel}</div>`:''}
+          <div class="tier-badge badge-${c.tier}">
+            <span class="badge-dot"></span>${tierLabel}
+          </div>
+          ${hasnotes ? '<span class="notes-badge">Notes</span>' : ''}
+          ${decisionPill}
         </div>
       </div>
-      ${bars}${hl}
+      ${bars}${hlBlock}
       <div class="card-footer">
-        <div>${c.score!==null?`<span class="score-total">${c.score}</span><span class="score-max">/100</span>`:'<span style="color:#F87171;font-weight:700">REJECT</span>'}</div>
-        <button class="card-btn ${actionCls}" onclick="event.stopPropagation();openModal('${c.id}')">${actionLabel}</button>
-      </div>`;
+        <div class="score-block">
+          ${c.score !== null
+            ? `<span class="score-total">${c.score}</span><span class="score-max">/100</span>`
+            : `<span class="score-reject-label">Auto-Reject</span>`}
+        </div>
+        <button class="card-btn ${actionClsMap[c.action]}"
+          onclick="event.stopPropagation();openModal('${c.id}')">
+          ${actionMap[c.action]}
+        </button>
+      </div>
+      ${miniStepper}`;
     grid.appendChild(card);
   });
 }
 
-function brow(lbl,val,max,cls) {
-  const pct = val!=null?(val/max*100).toFixed(1):0;
-  return `<div class="bar-row"><span class="bar-lbl">${lbl}</span><div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div><span class="bar-val">${val!=null?val:'—'}</span></div>`;
+function brow(lbl, val, max, cls) {
+  const pct = val != null ? (val / max * 100).toFixed(1) : 0;
+  return `<div class="bar-row">
+    <span class="bar-lbl">${lbl}</span>
+    <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
+    <span class="bar-val">${val != null ? val : '—'}</span>
+  </div>`;
 }
 
 // ─── MODAL ───────────────────────────────────────────────────────────────────
 function openModal(id) {
   currentId = id;
-  const c = CV.find(x=>x.id===id);
+  const c = CV.find(x => x.id === id);
   if (!c) return;
-  document.getElementById('m-name').textContent = c.name;
-  document.getElementById('m-sub').textContent = c.role + (c.score!=null?' · Tier '+c.tier+' · '+c.score+'/100':'· REJECT');
 
-  // Reset tabs
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',i===0));
-  document.querySelectorAll('.tab-content').forEach((t,i) => t.classList.toggle('active',i===0));
+  document.getElementById('m-name').textContent = c.name;
+  document.getElementById('m-sub').textContent =
+    c.score != null
+      ? `${c.role} · Tier ${c.tier} · ${c.score}/100`
+      : `${c.role} · Auto-Reject`;
+
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+  document.querySelectorAll('.tab-content').forEach((t, i) => t.classList.toggle('active', i === 0));
 
   buildScoreTab(c);
-  buildCvTab(c);
   buildNotesTab(c);
+  buildCvPanel(c);
+  buildPipelineStepper(id);
   refreshDecisionBadge(getNotes(id).decision);
   document.getElementById('overlay').classList.add('open');
 }
 
 function refreshDecisionBadge(decision) {
   const badge = document.getElementById('m-decision-badge');
-  const label = {proceed:'✅ Tiến hành tuyển',reject:'❌ Từ chối',hold:'⏸ Xem xét lại'}[decision]||'';
-  const cls = {proceed:'db-proceed',reject:'db-reject',hold:'db-hold'}[decision]||'';
-  badge.innerHTML = label ? `<div class="decision-badge ${cls}" style="font-size:11px;padding:3px 10px">${label}</div>` : '';
+  const map = {
+    proceed: ['Tiến hành tuyển', 'dp-proceed'],
+    reject:  ['Từ chối', 'dp-reject'],
+    hold:    ['Xem xét lại', 'dp-hold']
+  };
+  const entry = map[decision];
+  badge.innerHTML = entry
+    ? `<span class="decision-pill ${entry[1]}" style="font-size:11px;padding:3px 10px">${entry[0]}</span>`
+    : '';
 }
 
-// ─── TAB 1: SCORE ─────────────────────────────────────────────────────────────
+// ─── TAB 1: SCORE ────────────────────────────────────────────────────────────
 function buildScoreTab(c) {
   const el = document.getElementById('tab-score');
   if (c.score === null) {
-    el.innerHTML = `<div class="reject-overlay">🔴 <strong>AUTO-REJECT</strong><br><br>${c.rejectReason}<br><br>Gửi rejection email trong 2 ngày làm việc.</div>${pcHtml(c)}`;
+    el.innerHTML = `
+      <div class="reject-overlay">
+        <strong>Auto-Reject</strong>
+        ${c.rejectReason}<br><br>
+        Gửi rejection email trong 2 ngày làm việc.
+      </div>
+      ${pcHtml(c)}`;
     return;
   }
+
   const grp = IQ[c.iq];
-  const tierText = c.tier==='B'?'🔵 Tier B — Có thể phù hợp':'⚪ Tier C — Chưa phù hợp';
-  const groupText = c.iq ? `Interview Group ${c.iq}: ${c.iq==='B'?'QA tốt, thiếu domain CK':'Domain CK, QA cần train'}` : 'Tier C — Không mời phỏng vấn';
-  const tnCls = 'tn-'+c.tier.toLowerCase();
+  const tierText = c.tier === 'B'
+    ? 'Tier B — Có thể phù hợp'
+    : 'Tier C — Chưa phù hợp';
+  const groupText = c.iq
+    ? `Interview Group ${c.iq}: ${c.iq === 'B' ? 'QA tốt, thiếu domain CK' : 'Domain CK, QA cần train'}`
+    : 'Tier C — Không mời phỏng vấn';
+  const tnCls = 'tn-' + c.tier.toLowerCase();
+  const hcHtml = c.hc
+    ? '<span class="hc-pass">Pass</span>'
+    : '<span class="hc-fail">Fail</span>';
 
   el.innerHTML = `
-    <div style="margin-bottom:16px">
+    <div style="margin-bottom:18px">
       <div class="sec-title">Score Breakdown</div>
       <div class="score-detail">
-        ${dimRow('D1 — Domain Expertise',c.d1,40,'bd1',null)}
-        ${dimRow('D2 — QA Skills',c.d2,30,'bd2',c.d2s)}
-        ${dimRow('D3 — Technical Fit',c.d3,20,'bd3',c.d3s)}
-        ${dimRow('D4 — Soft Skills',c.d4,10,'bd4',c.d4s)}
+        ${dimRow('D1 — Domain Expertise', c.d1, 40, 'bd1', null)}
+        ${dimRow('D2 — QA Skills',        c.d2, 30, 'bd2', c.d2s)}
+        ${dimRow('D3 — Technical Fit',    c.d3, 20, 'bd3', c.d3s)}
+        ${dimRow('D4 — Soft Skills',      c.d4, 10, 'bd4', c.d4s)}
       </div>
       <div class="total-display">
         <div class="total-num ${tnCls}">${c.score}</div>
         <div class="total-info">
           <div class="total-tier">${tierText}</div>
           <div class="total-group">${groupText}</div>
-          <div class="total-group" style="margin-top:3px">HC: ${c.hc?'✓ Pass':'✕ Fail'} · Hard Criteria</div>
+          <div class="total-group" style="margin-top:4px">Hard Criteria: ${hcHtml}</div>
         </div>
       </div>
     </div>
     ${pcHtml(c)}
-    ${c.note?`<div class="note-box">⚠️ ${c.note}</div>`:''}
-    ${grp?`<div style="margin-top:16px"><div class="sec-title">Câu hỏi phỏng vấn</div><div class="q-wrap">
-      <div class="q-hdr">${grp.label}<span class="q-gbadge ${grp.cls}">Group ${c.iq}</span></div>
-      ${grp.qs.map((q,i)=>`<div class="q-item" id="qi-${c.id}-${i}">
-        <div class="q-q" onclick="toggleQ('qi-${c.id}-${i}')">
-          <span><span class="q-num">${q.q.split('.')[0]}.</span> ${q.q.split('. ').slice(1).join('. ')}</span>
-          <span class="q-arrow">›</span>
-        </div>
-        ${(q.intent||q.pass||q.warn)?`<div class="q-detail">
-          ${q.intent?`<div>💡 <em>${q.intent}</em></div>`:''}
-          ${q.pass?`<div class="q-pass" style="margin-top:4px">✓ Pass: ${q.pass}</div>`:''}
-          ${q.warn?`<div class="q-warn" style="margin-top:4px">⚠ Warn: ${q.warn}</div>`:''}
-        </div>`:''}
-      </div>`).join('')}
-    </div></div>`
-    :`<div style="background:var(--surface2);border-radius:9px;padding:12px;font-size:12px;color:var(--muted);text-align:center;margin-top:16px">Ứng viên Tier C — Gửi rejection email trong 2 ngày làm việc</div>`}`;
+    ${c.note ? `<div class="note-box">${c.note}</div>` : ''}
+    ${grp
+      ? `<div style="margin-top:18px">
+           <div class="sec-title">Câu hỏi phỏng vấn</div>
+           <div class="q-wrap">
+             <div class="q-hdr">
+               ${grp.label}
+               <span class="q-gbadge ${grp.cls}">Group ${c.iq}</span>
+             </div>
+             ${grp.qs.map((q, i) => `
+               <div class="q-item" id="qi-${c.id}-${i}">
+                 <div class="q-q" onclick="toggleQ('qi-${c.id}-${i}')">
+                   <span>
+                     <span class="q-num">${q.q.split('.')[0]}.</span>
+                     ${q.q.split('. ').slice(1).join('. ')}
+                   </span>
+                   <span class="q-arrow">›</span>
+                 </div>
+                 ${(q.intent || q.pass || q.warn) ? `
+                   <div class="q-detail">
+                     ${q.intent ? `<div class="q-intent">${q.intent}</div>` : ''}
+                     ${q.pass   ? `<div class="q-pass">Pass: ${q.pass}</div>` : ''}
+                     ${q.warn   ? `<div class="q-warn">Warn: ${q.warn}</div>` : ''}
+                   </div>` : ''}
+               </div>`).join('')}
+           </div>
+         </div>`
+      : `<div class="no-interviews">Ứng viên Tier C — Gửi rejection email trong 2 ngày làm việc.</div>`}`;
 }
 
 function pcHtml(c) {
-  return `<div style="margin-bottom:14px;margin-top:14px"><div class="sec-title">Ưu điểm & Nhược điểm</div>
-    <div class="pc-grid">
-      <div class="pc-box pc-pros"><div class="pc-title">Điểm mạnh</div><ul class="pc-list pros">${c.pros.map(p=>`<li>${p}</li>`).join('')}</ul></div>
-      <div class="pc-box pc-cons"><div class="pc-title">Điểm cần lưu ý</div><ul class="pc-list cons">${c.cons.map(p=>`<li>${p}</li>`).join('')}</ul></div>
-    </div></div>`;
+  return `
+    <div class="pc-section">
+      <div class="sec-title">Ưu điểm & Nhược điểm</div>
+      <div class="pc-grid">
+        <div class="pc-box pc-pros">
+          <div class="pc-title">Điểm mạnh</div>
+          <ul class="pc-list pros">${c.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+        <div class="pc-box pc-cons">
+          <div class="pc-title">Điểm cần lưu ý</div>
+          <ul class="pc-list cons">${c.cons.map(p => `<li>${p}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>`;
 }
 
-function dimRow(lbl,val,max,cls,subs) {
-  const pct = (val/max*100).toFixed(1);
-  const subHtml = subs ? `<div class="sub-grid">${Object.entries(subs).map(([k,[v,m]])=>`<div class="sub-item"><span>${k}</span><span>${v}/${m}</span></div>`).join('')}</div>` : '';
-  return `<div class="dim-row"><div class="dim-hdr"><span class="dim-name">${lbl}</span><span class="dim-val">${val}/${max}</span></div>
-    <div class="dim-bar"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>${subHtml}</div>`;
+function dimRow(lbl, val, max, cls, subs) {
+  const pct = (val / max * 100).toFixed(1);
+  const subHtml = subs
+    ? `<div class="sub-grid">${Object.entries(subs).map(([k, [v, m]]) =>
+        `<div class="sub-item"><span>${k}</span><span>${v}/${m}</span></div>`).join('')}</div>`
+    : '';
+  return `
+    <div class="dim-row">
+      <div class="dim-hdr">
+        <span class="dim-name">${lbl}</span>
+        <span class="dim-val">${val}/${max}</span>
+      </div>
+      <div class="dim-bar">
+        <div class="bar-fill ${cls}" style="width:${pct}%"></div>
+      </div>
+      ${subHtml}
+    </div>`;
 }
 
 function toggleQ(id) { document.getElementById(id).classList.toggle('open'); }
 
-// ─── TAB 2: CV ────────────────────────────────────────────────────────────────
-function buildCvTab(c) {
-  const el = document.getElementById('tab-cv');
+// ─── RIGHT PANEL: CV ─────────────────────────────────────────────────────────
+function buildCvPanel(c) {
+  const el = document.getElementById('cv-panel');
   const cvPath = 'CV empoyees/' + c.cvFile;
   const cvUrl = encodeURI(cvPath);
   el.innerHTML = `
-    <div class="cv-toolbar">
-      <button class="cv-btn cv-open" onclick="window.open('${cvUrl}','_blank')">↗ Mở CV trong tab mới</button>
+    <div class="cv-panel-toolbar">
+      <button class="cv-btn cv-open" onclick="window.open('${cvUrl}','_blank')">↗ Mở tab mới</button>
       <a href="${cvUrl}" download="${c.cvFile}" style="text-decoration:none">
-        <button class="cv-btn cv-dl">↓ Tải xuống</button>
+        <button class="cv-btn cv-dl">⬇ Tải xuống</button>
       </a>
-      <span style="font-size:11px;color:var(--muted);margin-left:auto">${c.cvFile}</span>
+      <span class="cv-filename">${c.cvFile}</span>
     </div>
-    <div class="cv-frame-wrap">
-      <iframe class="cv-frame" src="${cvUrl}" title="CV ${c.name}"></iframe>
+    <div class="cv-panel-frame">
+      <iframe src="${cvUrl}" title="CV ${c.name}"></iframe>
     </div>
-    <div class="cv-note">⚠ Chrome có thể chặn embedded PDF từ file local. Nếu khung trống, dùng nút <strong>"Mở CV trong tab mới"</strong> phía trên. Firefox / Safari hiển thị bình thường.</div>`;
+    <div class="cv-panel-note">
+      Chrome có thể chặn embedded PDF từ file local. Nếu khung trống, dùng nút
+      <strong>Mở tab mới</strong>. Firefox / Safari hiển thị bình thường.
+    </div>`;
 }
 
 // ─── TAB 3: NOTES ────────────────────────────────────────────────────────────
@@ -584,59 +2231,74 @@ function buildNotesTab(c) {
   const n = getNotes(c.id);
   el.innerHTML = `
     <div class="notes-form">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="sec-title" style="margin:0">Ghi chú Phỏng vấn Trực tiếp</div>
+      <div class="notes-form-hdr">
+        <div class="sec-title" style="margin:0">Ghi chú Phỏng vấn</div>
         <div class="notes-saved" id="n-saved"></div>
       </div>
+      ${n.updatedBy ? `<div class="notes-meta">Cập nhật bởi <strong>${n.updatedBy}</strong> · ${n.updatedAt || ''}</div>` : ''}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Ngày phỏng vấn</label>
-          <input id="n-date" type="date" class="form-input" value="${n.date||''}" oninput="autoSave()">
+          <input id="n-date" type="date" class="form-input"
+            value="${n.date || ''}" oninput="autoSave()">
         </div>
         <div class="form-group">
           <label class="form-label">Người phỏng vấn</label>
-          <input id="n-interviewer" type="text" class="form-input" placeholder="Tên interviewer..." value="${n.interviewer||''}" oninput="autoSave()">
+          <input id="n-interviewer" type="text" class="form-input"
+            placeholder="Tên interviewer..." value="${n.interviewer || ''}" oninput="autoSave()">
         </div>
       </div>
+
       <div>
-        <div class="form-label" style="margin-bottom:8px">Đánh giá thực tế (1–5 ★)</div>
+        <div class="form-label" style="margin-bottom:8px">Đánh giá thực tế (1–5 sao)</div>
         <div class="ratings-grid">
-          ${starGroup('domain','Domain Knowledge',n.domainScore||0)}
-          ${starGroup('qa','QA Technical Skills',n.qaScore||0)}
-          ${starGroup('comm','Communication',n.commScore||0)}
-          ${starGroup('culture','Culture Fit',n.cultureScore||0)}
+          ${starGroup('domain',  'Domain Knowledge',  n.domainScore  || 0)}
+          ${starGroup('qa',      'QA Technical',      n.qaScore      || 0)}
+          ${starGroup('comm',    'Communication',     n.commScore    || 0)}
+          ${starGroup('culture', 'Culture Fit',       n.cultureScore || 0)}
         </div>
       </div>
+
       <div class="form-group">
         <label class="form-label">Nhận xét tổng quan</label>
-        <textarea id="n-notes" class="form-input" rows="4" placeholder="Observations, điểm nổi bật, red flags..." oninput="autoSave()">${n.notes||''}</textarea>
+        <textarea id="n-notes" class="form-input" rows="4"
+          placeholder="Observations, điểm nổi bật, red flags..."
+          oninput="autoSave()">${n.notes || ''}</textarea>
       </div>
+
       <div class="decision-group">
         <div class="form-label">Quyết định cuối</div>
         <div class="decision-opts">
-          <label class="decision-opt proceed${n.decision==='proceed'?' selected':''}" onclick="selectDecision(this,'proceed')">
-            <input type="radio" name="n-dec" value="proceed"> ✅ Tiến hành tuyển
+          <label class="decision-opt proceed${n.decision === 'proceed' ? ' selected' : ''}"
+            onclick="selectDecision(this,'proceed')">
+            <input type="radio" name="n-dec" value="proceed"> Tiến hành tuyển
           </label>
-          <label class="decision-opt hold${n.decision==='hold'?' selected':''}" onclick="selectDecision(this,'hold')">
-            <input type="radio" name="n-dec" value="hold"> ⏸ Xem xét lại
+          <label class="decision-opt hold${n.decision === 'hold' ? ' selected' : ''}"
+            onclick="selectDecision(this,'hold')">
+            <input type="radio" name="n-dec" value="hold"> Xem xét lại
           </label>
-          <label class="decision-opt reject-d${n.decision==='reject'?' selected':''}" onclick="selectDecision(this,'reject')">
-            <input type="radio" name="n-dec" value="reject"> ❌ Từ chối
+          <label class="decision-opt reject-d${n.decision === 'reject' ? ' selected' : ''}"
+            onclick="selectDecision(this,'reject')">
+            <input type="radio" name="n-dec" value="reject"> Từ chối
           </label>
         </div>
       </div>
+
       <div class="form-group">
         <label class="form-label">Action items / Next steps</label>
-        <textarea id="n-actions" class="form-input" rows="3" placeholder="Gửi bài test, check reference, extend offer..." oninput="autoSave()">${n.actionItems||''}</textarea>
+        <textarea id="n-actions" class="form-input" rows="3"
+          placeholder="Gửi bài test, check reference, extend offer..."
+          oninput="autoSave()">${n.actionItems || ''}</textarea>
       </div>
-      <button class="save-btn" onclick="saveNotes()">💾 Lưu ghi chú</button>
+
+      <button class="save-btn" onclick="saveNotes()">Lưu ghi chú</button>
     </div>`;
-  // Re-attach star events
+
   document.querySelectorAll('.stars').forEach(sg => {
     sg.querySelectorAll('.star').forEach(s => {
       s.addEventListener('click', () => { setStars(sg, +s.dataset.val); autoSave(); });
       s.addEventListener('mouseenter', () => highlightStars(sg, +s.dataset.val));
-      s.addEventListener('mouseleave', () => setStars(sg, +sg.dataset.current||0));
+      s.addEventListener('mouseleave', () => setStars(sg, +(sg.dataset.current) || 0));
     });
   });
 }
@@ -645,7 +2307,9 @@ function starGroup(dim, label, current) {
   return `<div class="rating-group">
     <div class="rating-label">${label}</div>
     <div class="stars" data-dim="${dim}" data-current="${current}">
-      ${[1,2,3,4,5].map(v=>`<span class="star${v<=current?' lit':''}" data-val="${v}">★</span>`).join('')}
+      ${[1, 2, 3, 4, 5].map(v =>
+        `<span class="star${v <= current ? ' lit' : ''}" data-val="${v}">★</span>`
+      ).join('')}
     </div>
   </div>`;
 }
@@ -654,6 +2318,7 @@ function setStars(sg, val) {
   sg.dataset.current = val;
   sg.querySelectorAll('.star').forEach(s => s.classList.toggle('lit', +s.dataset.val <= val));
 }
+
 function highlightStars(sg, val) {
   sg.querySelectorAll('.star').forEach(s => s.classList.toggle('lit', +s.dataset.val <= val));
 }
@@ -672,18 +2337,69 @@ function filter(f, btn) {
   renderCards(f);
 }
 
-function switchTab(name, btn) {
-  const tabMap = {score:0, cv:1, notes:2};
-  const idx = tabMap[name];
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active',i===idx));
-  document.querySelectorAll('.tab-content').forEach((t,i) => t.classList.toggle('active',i===idx));
+function filterPipeline(f, btn) {
+  currentPipelineFilter = f;
+  document.querySelectorAll('.pfb').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards(currentFilter);
 }
 
-function closeOverlay() { document.getElementById('overlay').classList.remove('open'); currentId=null; }
-function closeOnBg(e) { if (e.target===document.getElementById('overlay')) closeOverlay(); }
+function switchTab(name, btn) {
+  const tabMap = { score: 0, notes: 1 };
+  const idx = tabMap[name];
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  document.querySelectorAll('.tab-content').forEach((t, i) => t.classList.toggle('active', i === idx));
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('open');
+  currentId = null;
+}
+
+function closeOnBg(e) {
+  if (e.target === document.getElementById('overlay')) closeOverlay();
+}
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle-btn');
+  if (btn) btn.textContent = theme === 'dark' ? '☀ Light' : '☾ Dark';
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('qa-theme', next);
+  applyTheme(next);
+}
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-renderCards('all');
+function updateStats() {
+  const total = CV.length;
+  const b = CV.filter(c => c.tier === 'B').length;
+  const c = CV.filter(c => c.tier === 'C').length;
+  const r = CV.filter(c => c.tier === 'REJECT').length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-b').textContent = b;
+  document.getElementById('stat-c').textContent = c;
+  document.getElementById('stat-r').textContent = r;
+  document.getElementById('fc-all').textContent = total;
+  document.getElementById('fc-b').textContent = b;
+  document.getElementById('fc-c').textContent = c;
+  document.getElementById('fc-r').textContent = r;
+}
+
+const savedTheme = localStorage.getItem('qa-theme') || 'light';
+applyTheme(savedTheme);
+updateStats();
+
+(async () => {
+  initUser();
+  await loadAllNotes();
+  renderCards('all');
+  setInterval(syncNotes, 8000);
+})();
 </script>
 </body>
 </html>
