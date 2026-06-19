@@ -32,7 +32,26 @@
 
 ## Key Standards
 
-### 1. Auto-Populated Fields
+### 0. URL Naming — camelCase
+
+TradeX URL path segments dùng **camelCase**, KHÔNG kebab-case:
+
+| ✅ | ❌ |
+|---|---|
+| `/api/v1/nhResearch/articles` | `/api/v1/nh-research/articles` |
+| `/api/v1/derivatives/stopOrder` | `/api/v1/derivatives/stop-order` |
+| `/api/v1/smartOtp/activationOtp/send` | `/api/v1/smart-otp/activation-otp/send` |
+
+> Jira labels, FE routes, deeplinks vẫn dùng kebab-case — rule này chỉ cho TradeX API paths.
+
+### 1. Integration Type — khai báo trong mọi spec
+
+```
+TradeX-native:    không qua Lotte — không cần field mapping, Kafka, auto-populate
+Lotte-integrated: qua lotte-bridge → Core — bắt buộc field mapping + pass-through error
+```
+
+### 2. Auto-Populated Fields
 
 Fields backend tự động điền (FE không cần truyền):
 
@@ -155,6 +174,6 @@ tradex-api-conventions.md
 
 ---
 
-**Last Updated:** 2026-02-04  
+**Last Updated:** 2026-06-19  
 **Maintainer:** Architecture Team, BA/PM Team  
 **Change Approval:** Required for all updates

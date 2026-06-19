@@ -122,13 +122,13 @@ Chi tiết kỹ thuật đầy đủ trong `jira-issues.md`. Tóm tắt endpoint
 
 | Endpoint | Dùng bởi | Mục đích |
 |---|---|---|
-| `GET /api/v1/nh-research/articles` | Mobile | Danh sách bài (có filter category, pagination) |
-| `GET /api/v1/nh-research/articles/{articleId}` | Mobile | Chi tiết bài viết + PDF metadata |
-| `GET /admin/nh-research/articles` | Admin FE | Quản lý danh sách (all statuses) |
-| `POST /admin/nh-research/articles` | Admin FE | Tạo bài mới |
-| `PUT /admin/nh-research/articles/{id}` | Admin FE | Chỉnh sửa / đổi visibility |
-| `DELETE /admin/nh-research/articles/{id}` | Admin FE | Soft delete |
-| `POST /admin/nh-research/upload/pdf` | Admin FE | Upload file PDF, trả về URL |
+| `GET /api/v1/nhResearch/articles` | Mobile | Danh sách bài (có filter category, pagination) |
+| `GET /api/v1/nhResearch/articles/{articleId}` | Mobile | Chi tiết bài viết + PDF metadata |
+| `GET /admin/nhResearch/articles` | Admin FE | Quản lý danh sách (all statuses) |
+| `POST /admin/nhResearch/articles` | Admin FE | Tạo bài mới |
+| `PUT /admin/nhResearch/articles/{id}` | Admin FE | Chỉnh sửa / đổi visibility |
+| `DELETE /admin/nhResearch/articles/{id}` | Admin FE | Soft delete |
+| `POST /admin/nhResearch/upload/pdf` | Admin FE | Upload file PDF, trả về URL |
 
 Danh mục (category): `MARKET` / `COMPANY` / `MACRO` — tương ứng "Thị trường" / "Doanh nghiệp" / "Vĩ mô" trên UI.
 

@@ -53,7 +53,7 @@ Create the `nh_research_articles` table to store all NH Research articles publis
 
 ---
 
-### BE-02 · [Mobile API] GET /api/v1/nh-research/articles
+### BE-02 · [Mobile API] GET /api/v1/nhResearch/articles
 
 | Field | Value |
 |---|---|
@@ -64,12 +64,12 @@ Create the `nh_research_articles` table to store all NH Research articles publis
 
 **Description**
 
-Implement the public article list API consumed by the mobile app. Returns paginated articles filtered by category, sorted newest first. Only `published` articles are returned.
+Implement the public article list API consumed by the mobile app. Returns paginated articles filtered by category, sorted newest first. Only `PUBLISHED` articles are returned.
 
 **Endpoint**
 
 ```
-GET /api/v1/nh-research/articles
+GET /api/v1/nhResearch/articles
 Auth: Bearer token
 ```
 
@@ -78,8 +78,10 @@ Auth: Bearer token
 | Param | Type | Required | Description |
 |---|---|---|---|
 | `category` | string | No | Filter: `MARKET` \| `COMPANY` \| `MACRO`. Omit → return all |
-| `page` | int | No | Default: 1 (offset-based, TradeX-native) |
 | `fetchCount` | int | No | Số bài mỗi trang. Default: 20, max: 50 |
+| `nextKey` | string | No | Cursor token cho trang tiếp theo. Trang đầu: bỏ qua hoặc `""`. Trang sau: dùng giá trị `nextKey` từ response lần trước |
+
+> Cursor-based pagination — TradeX standard cho mobile infinite scroll. `nextKey` encode vị trí bài cuối cùng trong trang hiện tại (server-side opaque token).
 
 **Response (200)**
 
@@ -95,9 +97,12 @@ Auth: Bearer token
       "publishedAt": "2026-06-10T09:15:00Z"
     }
   ],
-  "totalCount": 12
+  "totalCount": 12,
+  "nextKey": "eyJwdWJsaXNoZWRBdCI6IjIwMjYtMDYtMDVUMDk6MDA6MDBaIiwiYXJ0aWNsZUlkIjo1fQ=="
 }
 ```
+
+> `nextKey` là `null` khi đã hết dữ liệu (trang cuối cùng).
 
 **Acceptance Criteria**
 
@@ -106,12 +111,16 @@ Auth: Bearer token
 - [ ] Sorted by `publishedAt DESC` (newest first)
 - [ ] `shortContent` returned in full — mobile truncates on render
 - [ ] `hasPdf` is `true` when `pdf_url` is not null
-- [ ] Pagination returns correct `totalCount` matching the current filter
-- [ ] Invalid `category` value returns HTTP 400 `INVALID_PARAMETER`
+- [ ] Pagination: `nextKey` trong response dùng để fetch trang tiếp. Trang cuối trả `nextKey: null`
+- [ ] `totalCount` phản ánh tổng số bài khớp với filter hiện tại (không phụ thuộc cursor)
+- [ ] Invalid `category` value returns HTTP 400:
+  ```json
+  { "code": "INVALID_PARAMETER", "params": [{ "code": "INVALID_VALUE", "param": "category", "messageParams": ["category", "MARKET|COMPANY|MACRO"] }] }
+  ```
 
 ---
 
-### BE-03 · [Mobile API] GET /api/v1/nh-research/articles/{articleId}
+### BE-03 · [Mobile API] GET /api/v1/nhResearch/articles/{articleId}
 
 | Field | Value |
 |---|---|
@@ -127,7 +136,7 @@ Implement the article detail API. Returns full article data including PDF metada
 **Endpoint**
 
 ```
-GET /api/v1/nh-research/articles/{articleId}
+GET /api/v1/nhResearch/articles/{articleId}
 Auth: Bearer token
 ```
 
@@ -157,7 +166,7 @@ Auth: Bearer token
 
 ---
 
-### BE-04 · [Admin API] GET /admin/nh-research/articles
+### BE-04 · [Admin API] GET /admin/nhResearch/articles
 
 | Field | Value |
 |---|---|
@@ -168,12 +177,12 @@ Auth: Bearer token
 
 **Description**
 
-Admin article list API. Unlike the mobile API, this returns all articles including `disabled` ones for management. Supports search by title and filter by category and status.
+Admin article list API. Unlike the mobile API, this returns all articles including `DISABLED` ones for management. Supports search by title and filter by category and status.
 
 **Endpoint**
 
 ```
-GET /admin/nh-research/articles
+GET /admin/nhResearch/articles
 Auth: Admin session
 ```
 
@@ -184,8 +193,10 @@ Auth: Admin session
 | `category` | string | No | `MARKET` \| `COMPANY` \| `MACRO` |
 | `status` | string | No | `PUBLISHED` \| `DISABLED`. Omit → return all (excl. `DELETED`) |
 | `search` | string | No | LIKE search on `title` |
-| `page` | int | No | Default: 1 (offset-based, TradeX-native) |
+| `page` | int | No | Default: 1 — offset-based (xem note bên dưới) |
 | `fetchCount` | int | No | Số bài mỗi trang. Default: 20 |
+
+> **Note:** Admin API dùng offset-based pagination (`page`) thay vì cursor-based (`nextKey`) vì management UI cần hiển thị "Trang X / Y" và cho phép jump đến trang bất kỳ. Đây là exception có chủ ý so với TradeX convention — áp dụng cho admin-only APIs.
 
 **Response (200)**
 
@@ -204,7 +215,8 @@ Auth: Admin session
       "createdBy": "duc.nguyen"
     }
   ],
-  "totalCount": 12
+  "totalCount": 12,
+  "totalPages": 1
 }
 ```
 
@@ -213,12 +225,13 @@ Auth: Admin session
 - [ ] Returns `PUBLISHED` + `DISABLED` articles (excludes `DELETED`)
 - [ ] When `status` filter provided, returns only articles of that status
 - [ ] `search` performs case-insensitive LIKE on `title`
-- [ ] Response includes `createdBy`, `status`, `createdAt`, `updatedAt`
+- [ ] Response includes `articleId`, `category`, `title`, `hasPdf`, `status`, `publishedAt`, `createdAt`, `updatedAt`, `createdBy`
+- [ ] `totalPages` = `ceil(totalCount / fetchCount)` — dùng cho admin pagination UI
 - [ ] Requires admin authentication — returns 401 if not authenticated
 
 ---
 
-### BE-05 · [Admin API] POST /admin/nh-research/articles
+### BE-05 · [Admin API] POST /admin/nhResearch/articles
 
 | Field | Value |
 |---|---|
@@ -234,7 +247,7 @@ Create a new article. Article is published immediately upon creation (`status = 
 **Endpoint**
 
 ```
-POST /admin/nh-research/articles
+POST /admin/nhResearch/articles
 Auth: Admin session
 Content-Type: application/json
 ```
@@ -267,7 +280,7 @@ Content-Type: application/json
 
 ---
 
-### BE-06 · [Admin API] PUT + DELETE /admin/nh-research/articles/{id}
+### BE-06 · [Admin API] PUT + DELETE /admin/nhResearch/articles/{id}
 
 | Field | Value |
 |---|---|
@@ -283,8 +296,8 @@ Update an existing article (partial update) and soft-delete. The PUT endpoint al
 **Endpoints**
 
 ```
-PUT    /admin/nh-research/articles/{id}
-DELETE /admin/nh-research/articles/{id}
+PUT    /admin/nhResearch/articles/{id}
+DELETE /admin/nhResearch/articles/{id}
 Auth: Admin session
 ```
 
@@ -346,7 +359,7 @@ Internal file service that accepts a PDF, validates it, saves it to storage (S3-
 
 ---
 
-### BE-08 · [Admin API] POST /admin/nh-research/upload/pdf
+### BE-08 · [Admin API] POST /admin/nhResearch/upload/pdf
 
 | Field | Value |
 |---|---|
@@ -362,7 +375,7 @@ HTTP endpoint that wraps the file service (BE-07). Admin FE calls this before cr
 **Endpoint**
 
 ```
-POST /admin/nh-research/upload/pdf
+POST /admin/nhResearch/upload/pdf
 Auth: Admin session
 Content-Type: multipart/form-data
 ```
@@ -479,13 +492,19 @@ Reusable card component for displaying article previews in the list. Shows categ
 
 The main list screen inside the NH Research tab. Renders article cards from API, handles pagination, and shows empty state when no articles exist for a category.
 
-**API:** `GET /api/v1/nh-research/articles?category=MARKET&fetchCount=20`
+**API:** `GET /api/v1/nhResearch/articles?category=MARKET&fetchCount=20`
+
+**Pagination flow (cursor-based):**
+- Trang đầu: không gửi `nextKey` (hoặc `""`)
+- Trang tiếp: gửi `nextKey` = giá trị từ response lần trước
+- Hết dữ liệu: `nextKey` trong response là `null` → ẩn "Load more" / dừng infinite scroll
 
 **Acceptance Criteria**
 
 - [ ] Renders `ArticleCard` list from `articles` array in API response
-- [ ] Pagination: 20 articles per page; infinite scroll or "Load more" button (Mobile team decides)
-- [ ] Switching category: resets page to 1, clears current list, fetches fresh data
+- [ ] Trang đầu: fetch không có `nextKey`; mỗi lần "Load more" / scroll đến cuối gửi `nextKey` từ response trước
+- [ ] Khi `nextKey = null` trong response: dừng pagination, ẩn trigger load more
+- [ ] Switching category: xóa `nextKey` hiện tại, clear list, fetch trang đầu của category mới
 - [ ] Loading skeleton shown during API call
 - [ ] Empty state message when `totalCount = 0`: *"Chưa có nội dung. Vui lòng quay lại sau."*
 - [ ] Network error state with retry button
@@ -506,7 +525,7 @@ The main list screen inside the NH Research tab. Renders article cards from API,
 
 Full article view. Displays title, category tag, publish date, full `shortContent`, and optionally the PDF attachment section. Opened via push navigation from article card.
 
-**API:** `GET /api/v1/nh-research/articles/{articleId}`
+**API:** `GET /api/v1/nhResearch/articles/{articleId}`
 
 **Acceptance Criteria**
 
@@ -613,7 +632,7 @@ Add "NH Research" as a new menu item in the nhsv-admin sidebar under the Content
 
 Main management page at `/nhsv-admin/nh-research`. Lists all articles with filtering, sorting, and bulk management capabilities.
 
-**API:** `GET /admin/nh-research/articles`
+**API:** `GET /admin/nhResearch/articles`
 
 **Acceptance Criteria**
 
@@ -627,7 +646,7 @@ Main management page at `/nhsv-admin/nh-research`. Lists all articles with filte
 - [ ] Row opacity reduced for DISABLED articles
 - [ ] Edit button → opens edit form (ADM-04)
 - [ ] Delete button → opens confirmation modal (ADM-05)
-- [ ] Pagination: 20 rows per page
+- [ ] Pagination: 20 rows per page; hiển thị "Trang X / Y" dùng `page` và `totalPages` từ response
 - [ ] Default sort: `createdAt DESC`
 
 ---
@@ -646,14 +665,14 @@ Main management page at `/nhsv-admin/nh-research`. Lists all articles with filte
 Form for creating a new article. Accessible via "+ Thêm bài mới" button. Calls POST article API then PDF upload API as a two-step flow.
 
 **API flow:**  
-`POST /admin/nh-research/upload/pdf` → get `pdfUrl` → `POST /admin/nh-research/articles`
+`POST /admin/nhResearch/upload/pdf` → get `pdfUrl` → `POST /admin/nhResearch/articles`
 
 **Acceptance Criteria**
 
 - [ ] Fields: Category (required dropdown), Title (required, max 500 chars with char counter), Short content (required textarea), PDF upload (optional)
 - [ ] Category dropdown values: `MARKET` (Thị trường) · `COMPANY` (Doanh nghiệp) · `MACRO` (Vĩ mô)
 - [ ] PDF upload: drag-and-drop zone + browse button, accepts `.pdf` only
-- [ ] PDF upload flow: file selected → auto-upload to `/admin/nh-research/upload/pdf` → show filename + size + remove option
+- [ ] PDF upload flow: file selected → auto-upload to `/admin/nhResearch/upload/pdf` → show filename + size + remove option
 - [ ] Client-side validation: required fields highlighted before submit
 - [ ] Submit ("Đăng bài"): calls POST article API with `pdfUrl` from upload step
 - [ ] On success: redirect to list page + toast "Đăng bài thành công"
@@ -675,14 +694,14 @@ Form for creating a new article. Accessible via "+ Thêm bài mới" button. Cal
 
 Pre-filled edit form for an existing article. Uses the same layout as create form with additional status toggle. Calls PUT article API on save.
 
-**API:** `PUT /admin/nh-research/articles/{id}`
+**API:** `PUT /admin/nhResearch/articles/{id}`
 
 **Acceptance Criteria**
 
 - [ ] All fields pre-filled from current article data
 - [ ] Category, title, shortContent editable
 - [ ] PDF section shows existing file with option to replace or remove
-  - Replace: re-upload via `/admin/nh-research/upload/pdf`, update `pdfUrl`
+  - Replace: re-upload via `/admin/nhResearch/upload/pdf`, update `pdfUrl`
   - Remove: set `pdfUrl = null` in PUT request
 - [ ] Status toggle (`PUBLISHED` / `DISABLED`) visible — allows toggling visibility without leaving the form
 - [ ] Submit ("Lưu thay đổi"): calls PUT, shows success toast on 200
@@ -710,7 +729,7 @@ Shared components used across create and edit forms: the PDF upload widget and t
 - [ ] Drag-and-drop area with visual feedback on hover
 - [ ] Browse button as fallback
 - [ ] Accepts only `.pdf` files — shows inline error for other formats
-- [ ] Upload progress indicator while calling `/admin/nh-research/upload/pdf`
+- [ ] Upload progress indicator while calling `/admin/nhResearch/upload/pdf`
 - [ ] On success: shows filename, formatted file size, and remove (✕) button
 - [ ] On upload error: shows error message, allows retry
 - [ ] Remove button clears the upload state
@@ -719,7 +738,7 @@ Shared components used across create and edit forms: the PDF upload widget and t
 - [ ] Triggered by Delete button on list page
 - [ ] Shows article title in the confirmation dialog
 - [ ] Warning copy: article will be hidden immediately; PDF file is retained on storage
-- [ ] Confirm → calls `DELETE /admin/nh-research/articles/{id}`, on success removes row from list + toast "Đã xóa bài viết"
+- [ ] Confirm → calls `DELETE /admin/nhResearch/articles/{id}`, on success removes row from list + toast "Đã xóa bài viết"
 - [ ] Cancel → closes modal, no action taken
 
 ---

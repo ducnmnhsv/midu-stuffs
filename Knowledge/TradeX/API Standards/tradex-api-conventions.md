@@ -1,22 +1,24 @@
-# TradeX Derivatives API Conventions
+# TradeX API Conventions
 
 **Document Type:** Technical Conventions  
-**Category:** Derivatives - All APIs  
+**Category:** ALL TradeX APIs (Equity, Derivatives, Account, New Features)  
 **Audience:** Backend Developers, PM  
 **Date:** February 4, 2026  
-**Version:** 1.0
+**Version:** 1.1 · Updated 2026-06-19
 
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Validation Strategy](#validation-strategy)
-3. [Auto-Populated Fields](#auto-populated-fields)
-4. [Standard Error Formats](#standard-error-formats)
-5. [Language Handling](#language-handling)
-6. [Common Request Fields](#common-request-fields)
-7. [Response Format Standards](#response-format-standards)
+2. [URL Naming Convention](#url-naming-convention)
+3. [Integration Type](#integration-type)
+4. [Validation Strategy](#validation-strategy)
+5. [Auto-Populated Fields](#auto-populated-fields)
+6. [Standard Error Formats](#standard-error-formats)
+7. [Language Handling](#language-handling)
+8. [Common Request Fields](#common-request-fields)
+9. [Response Format Standards](#response-format-standards)
 
 ---
 
@@ -40,6 +42,103 @@ Convention này áp dụng cho:
 - Account APIs (Portfolio, Balance, Margin)
 - Market Data APIs (Quote, Chart, Symbol Info)
 - **Future Derivatives APIs**
+
+---
+
+## URL Naming Convention
+
+### Rule: camelCase cho tất cả path segments
+
+TradeX dùng **camelCase** cho resource names trong URL path. Không dùng kebab-case hay snake_case.
+
+| ✅ Đúng | ❌ Sai |
+|---------|--------|
+| `/api/v1/nhResearch/articles` | `/api/v1/nh-research/articles` |
+| `/api/v1/derivatives/stopOrder` | `/api/v1/derivatives/stop-order` |
+| `/api/v1/derivatives/advanceOrder` | `/api/v1/derivatives/advance-order` |
+| `/api/v1/smartOtp/activationOtp/send` | `/api/v1/smart-otp/activation-otp/send` |
+| `/rest/api/v1/account/resetPassword` | `/rest/api/v1/account/reset-password` |
+| `/api/v1/orderOtp/verify` | `/api/v1/order-otp/verify` |
+
+### Phạm vi áp dụng
+
+Áp dụng **CHỈ** cho TradeX API path segments:
+- `/api/v1/...`
+- `/admin/...`
+- `/rest/api/v1/...`
+
+**KHÔNG** áp dụng cho:
+| Context | Convention | Ví dụ |
+|---------|------------|-------|
+| Jira labels | kebab-case | `nh-research`, `smart-otp` |
+| Admin FE routes | kebab-case | `/nhsv-admin/nh-research` |
+| Mobile deeplinks | kebab-case | `nhsvpro://channel/nh-research` |
+| Query param names | camelCase | `fetchCount`, `nextKey`, `articleId` |
+| Response field names | camelCase | `publishedAt`, `shortContent`, `hasPdf` |
+| DB column names | snake_case | `published_at`, `short_content` |
+
+### Production evidence
+
+Patterns xác nhận từ production API (NHSV Pro):
+```
+GET /api/v1/derivatives/stopOrder/history
+GET /api/v1/derivatives/tpslOrder/active
+POST /api/v1/derivatives/advanceOrder
+GET /api/v1/derivatives/asset/openPositions
+GET /api/v1/derivatives/asset/unrealizedPnl
+POST /api/v1/smartOtp/activationOtp/send
+POST /api/v1/orderOtp/send
+GET /rest/api/v1/equity/account/cashBalance
+GET /rest/api/v1/equity/account/assetInfo
+POST /rest/api/v1/account/resetPassword/init
+```
+
+---
+
+## Integration Type
+
+Xác định integration type **trước khi** check convention — quyết định phần nào của spec bắt buộc implement.
+
+### Lotte-Integrated
+
+API forward request qua `lotte-bridge` → Kafka → Core Lotte.
+
+**Bắt buộc implement:**
+- Auto-populate: `sourceIp`, `userId`, `name`, `identifierNumber`, `mdm_tp`
+- Lotte field mapping (TradeX camelCase → Lotte snake_case)
+- Pass-through error: `{OPERATION}_{LOTTE_ERROR_CODE}`
+- Language mapping: `Accept-Language` → `lang_code` (V/E/K)
+- `deviceUniqueId` — FE phải gửi
+
+**Examples:** Order placement, Order cancel/modify, Cash transfer, Account info
+
+### TradeX-Native
+
+API dùng TradeX DB trực tiếp, không qua Lotte/Core.
+
+**KHÔNG cần implement:** Lotte field mapping, Kafka forward, `sourceIp`/`deviceUniqueId` auto-populate, lang_code
+
+**VẪN bắt buộc:** Response format standards, `INVALID_PARAMETER` error format, HTTP status codes, camelCase URL naming, camelCase field naming
+
+**Mutation response:**
+```json
+{ "id": 42 }
+```
+HTTP 200 (không phải 201).
+
+**Examples:** NH Research articles, Push notification tokens, User preferences
+
+### Label trong spec
+
+Mọi Jira issue hoặc API spec **phải** khai báo rõ integration type ở đầu:
+
+```
+**Integration type:** TradeX-native (internal DB only)
+```
+hoặc
+```
+**Integration type:** Lotte-integrated (via lotte-bridge → Core Lotte)
+```
 
 ---
 
