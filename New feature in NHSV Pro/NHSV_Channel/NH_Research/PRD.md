@@ -151,7 +151,7 @@ Danh mục (category): `MARKET` / `COMPANY` / `MACRO` — tương ứng "Thị t
 |---|---|---|---|---|
 | Q1 | Nội dung `shortContent` giới hạn bao nhiêu ký tự? Hay không giới hạn và mobile tự cắt? | UX + DB schema | PM + BE | Trước khi BE-01 |
 | Q2 | Storage provider cho PDF: S3, MinIO, hay server NHSV tự host? Max file size? | BE-07 + BE-08 scope | IT Lead | Trước khi BE-07 |
-| Q3 | URL PDF là public URL hay signed URL có TTL? | Security + UX (PDF cache) | IT Lead | Trước khi BE-03 |
+| Q3 | URL PDF là public URL hay signed URL có TTL? | Security + UX (PDF cache) — **blocker cho MOB-05**: mobile cần biết TTL để quyết định cache strategy | IT Lead | Trước khi BE-03 và MOB-05 |
 | Q4 | Role nào trong nhsv-admin được phép upload NH Research? Phòng Phân tích có role riêng chưa? | Admin FE + BE access control | IT + Admin | Trước khi ADM-01 |
 
 ---

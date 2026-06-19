@@ -1,9 +1,11 @@
 # Jira Issues — A-04 NH Research Feature
 
 **Epic:** NH Research — Analysis Content Tab  
-**Spec ref:** [PRD.html](./PRD.html) · [Admin demo](./admin-demo.html)  
+**Spec ref:** [PRD.md](./PRD.md) · [Admin demo](./admin-demo.html)  
+**Integration type:** TradeX-native (internal DB only — không qua Lotte/Core, không cần Lotte mapping, Kafka forward, hay auto-populate `sourceIp`/`deviceUniqueId`)  
 **Category values (API):** `MARKET` · `COMPANY` · `MACRO`  
-**Category labels (UI):** Thị trường · Doanh nghiệp · Vĩ mô
+**Category labels (UI):** Thị trường · Doanh nghiệp · Vĩ mô  
+**Status values (API):** `PUBLISHED` · `DISABLED` · `DELETED`
 
 ---
 
@@ -40,7 +42,7 @@ Create the `nh_research_articles` table to store all NH Research articles publis
   - `pdf_url` — VARCHAR(1000), NULL
   - `pdf_filename` — VARCHAR(255), NULL
   - `pdf_size_bytes` — BIGINT, NULL
-  - `status` — ENUM `('published', 'disabled', 'deleted')`, DEFAULT `'published'`
+  - `status` — ENUM `('PUBLISHED', 'DISABLED', 'DELETED')`, DEFAULT `'PUBLISHED'`
   - `published_at` — DATETIME, NOT NULL
   - `created_by` — VARCHAR(100), NOT NULL
   - `created_at` — DATETIME, auto-generated
@@ -99,7 +101,7 @@ Auth: Bearer token
 
 **Acceptance Criteria**
 
-- [ ] Returns only articles with `status = 'published'`
+- [ ] Returns only articles with `status = 'PUBLISHED'`
 - [ ] Filtered correctly by `category` when provided
 - [ ] Sorted by `publishedAt DESC` (newest first)
 - [ ] `shortContent` returned in full — mobile truncates on render
@@ -144,11 +146,13 @@ Auth: Bearer token
 }
 ```
 
+**Note:** `shortContent` là tên DB column chứa toàn bộ nội dung bài viết. Ở list API (BE-02), mobile tự truncate để hiển thị preview. Ở detail API này, trả về nguyên vẹn — không truncate phía backend.
+
 **Acceptance Criteria**
 
-- [ ] Returns full `shortContent` (no truncation)
+- [ ] Returns full `shortContent` without truncation (mobile renders as-is)
 - [ ] `pdfUrl`, `pdfFilename`, `pdfSizeBytes` are `null` when no PDF attached
-- [ ] Returns HTTP 404 + `{"code": "OBJECT_NOT_FOUND"}` if article doesn't exist, is `deleted`, or is `disabled`
+- [ ] Returns HTTP 404 + `{"code": "OBJECT_NOT_FOUND"}` if article doesn't exist, is `DELETED`, or is `DISABLED`
 - [ ] `pdfUrl` is accessible from mobile (public URL or valid signed URL)
 
 ---
@@ -178,7 +182,7 @@ Auth: Admin session
 | Param | Type | Required | Description |
 |---|---|---|---|
 | `category` | string | No | `MARKET` \| `COMPANY` \| `MACRO` |
-| `status` | string | No | `published` \| `disabled`. Omit → return all (excl. `deleted`) |
+| `status` | string | No | `PUBLISHED` \| `DISABLED`. Omit → return all (excl. `DELETED`) |
 | `search` | string | No | LIKE search on `title` |
 | `page` | int | No | Default: 1 (offset-based, TradeX-native) |
 | `fetchCount` | int | No | Số bài mỗi trang. Default: 20 |
@@ -193,7 +197,8 @@ Auth: Admin session
       "category": "MARKET",
       "title": "VƯỢT QUA RUNG LẮC",
       "hasPdf": true,
-      "status": "published",
+      "status": "PUBLISHED",
+      "publishedAt": "2026-06-10T09:15:00Z",
       "createdAt": "2026-06-10T09:15:00Z",
       "updatedAt": "2026-06-10T09:15:00Z",
       "createdBy": "duc.nguyen"
@@ -205,7 +210,7 @@ Auth: Admin session
 
 **Acceptance Criteria**
 
-- [ ] Returns `published` + `disabled` articles (excludes `deleted`)
+- [ ] Returns `PUBLISHED` + `DISABLED` articles (excludes `DELETED`)
 - [ ] When `status` filter provided, returns only articles of that status
 - [ ] `search` performs case-insensitive LIKE on `title`
 - [ ] Response includes `createdBy`, `status`, `createdAt`, `updatedAt`
@@ -224,7 +229,7 @@ Auth: Admin session
 
 **Description**
 
-Create a new article. Article is published immediately upon creation (`status = 'published'`, `publishedAt = now()`). No approval workflow in v1.
+Create a new article. Article is published immediately upon creation (`status = 'PUBLISHED'`, `publishedAt = now()`). No approval workflow in v1.
 
 **Endpoint**
 
@@ -255,7 +260,7 @@ Content-Type: application/json
 
 - [ ] Validates required fields — returns HTTP 400 `INVALID_PARAMETER` on missing/invalid
 - [ ] Validates `category` is one of `MARKET`, `COMPANY`, `MACRO`
-- [ ] Sets `status = 'published'`, `publishedAt = createdAt = now()` automatically
+- [ ] Sets `status = 'PUBLISHED'`, `publishedAt = createdAt = now()` automatically
 - [ ] Sets `createdBy` from admin session JWT
 - [ ] Returns `{"id": <articleId>}` — no extra fields
 - [ ] Returns HTTP 200 on success
@@ -273,7 +278,7 @@ Content-Type: application/json
 
 **Description**
 
-Update an existing article (partial update) and soft-delete. The PUT endpoint also handles visibility toggling (`published` ↔ `disabled`) via the `status` field. DELETE performs a soft delete (`status = 'deleted'`).
+Update an existing article (partial update) and soft-delete. The PUT endpoint also handles visibility toggling (`PUBLISHED` ↔ `DISABLED`) via the `status` field. DELETE performs a soft delete (`status = 'DELETED'`).
 
 **Endpoints**
 
@@ -293,7 +298,7 @@ Auth: Admin session
 | `pdfUrl` | string? | `null` to remove PDF |
 | `pdfFilename` | string? | |
 | `pdfSizeBytes` | number? | |
-| `status` | string | `'published'` \| `'disabled'` — for visibility toggle |
+| `status` | string | `'PUBLISHED'` \| `'DISABLED'` — for visibility toggle |
 
 **Responses**
 
@@ -305,10 +310,10 @@ DEL  200: { "id": 42 }
 **Acceptance Criteria**
 
 - [ ] PUT supports partial update — only provided fields are updated
-- [ ] PUT with `status: 'disabled'` hides article from mobile app immediately
-- [ ] PUT with `status: 'published'` makes article visible on mobile app
-- [ ] PUT does not allow `status: 'deleted'` — use DELETE for that
-- [ ] DELETE sets `status = 'deleted'` (soft delete) — record retained in DB
+- [ ] PUT with `status: 'DISABLED'` hides article from mobile app immediately
+- [ ] PUT with `status: 'PUBLISHED'` makes article visible on mobile app
+- [ ] PUT does not allow `status: 'DELETED'` — use DELETE for that
+- [ ] DELETE sets `status = 'DELETED'` (soft delete) — record retained in DB
 - [ ] DELETE does NOT delete PDF from storage
 - [ ] `updatedAt` is refreshed on every PUT
 - [ ] Returns HTTP 404 if article not found or already deleted
@@ -381,8 +386,14 @@ Content-Type: multipart/form-data
 **Acceptance Criteria**
 
 - [ ] Calls file service (BE-07) to validate and store the file
-- [ ] Returns HTTP 400 + `INVALID_PARAMETER` (sub-code: `INVALID_FILE_TYPE`) if file is not PDF
-- [ ] Returns HTTP 400 + `INVALID_PARAMETER` (sub-code: `FILE_TOO_LARGE`) if file exceeds size limit
+- [ ] Returns HTTP 400 if file is not PDF:
+  ```json
+  { "code": "INVALID_PARAMETER", "params": [{ "code": "INVALID_FILE_TYPE", "param": "file", "messageParams": ["file"] }] }
+  ```
+- [ ] Returns HTTP 400 if file exceeds size limit:
+  ```json
+  { "code": "INVALID_PARAMETER", "params": [{ "code": "FILE_TOO_LARGE", "param": "file", "messageParams": ["file", "20MB"] }] }
+  ```
 - [ ] Returns `pdfUrl`, `pdfFilename`, `pdfSizeBytes` on success
 - [ ] Admin FE uses returned `pdfUrl` when calling POST/PUT article API
 
@@ -607,13 +618,13 @@ Main management page at `/nhsv-admin/nh-research`. Lists all articles with filte
 **Acceptance Criteria**
 
 - [ ] Page header: "NH Research" title + "+ Thêm bài mới" primary button
-- [ ] Filter bar: Category dropdown (`MARKET`/`COMPANY`/`MACRO`) + Status dropdown (`published`/`disabled`) + title search input
+- [ ] Filter bar: Category dropdown (`MARKET`/`COMPANY`/`MACRO`) + Status dropdown (`PUBLISHED`/`DISABLED`) + title search input
 - [ ] Table columns: # | Category | Title | PDF | Status | Upload date | Update date | Created by | Visibility toggle | Actions
 - [ ] Category shown as colored badge (MARKET=blue, COMPANY=teal, MACRO=violet)
-- [ ] Status shown as colored badge (published=green, disabled=gray)
+- [ ] Status shown as colored badge (PUBLISHED=green, DISABLED=gray)
 - [ ] PDF column: file size if attached, "—" if not
-- [ ] Visibility toggle: inline switch, calls `PUT` with `{status: 'published' | 'disabled'}` — no confirmation modal needed
-- [ ] Row opacity reduced for disabled articles
+- [ ] Visibility toggle: inline switch, calls `PUT` with `{status: 'PUBLISHED' | 'DISABLED'}` — no confirmation modal needed
+- [ ] Row opacity reduced for DISABLED articles
 - [ ] Edit button → opens edit form (ADM-04)
 - [ ] Delete button → opens confirmation modal (ADM-05)
 - [ ] Pagination: 20 rows per page
@@ -673,7 +684,7 @@ Pre-filled edit form for an existing article. Uses the same layout as create for
 - [ ] PDF section shows existing file with option to replace or remove
   - Replace: re-upload via `/admin/nh-research/upload/pdf`, update `pdfUrl`
   - Remove: set `pdfUrl = null` in PUT request
-- [ ] Status toggle (Published / Disabled) visible — allows toggling visibility without leaving the form
+- [ ] Status toggle (`PUBLISHED` / `DISABLED`) visible — allows toggling visibility without leaving the form
 - [ ] Submit ("Lưu thay đổi"): calls PUT, shows success toast on 200
 - [ ] Unsaved changes warning if user tries to navigate away
 - [ ] On API error: show inline error, do not redirect
@@ -717,7 +728,7 @@ Shared components used across create and edit forms: the PDF upload widget and t
 
 | Layer | Stories | Priority breakdown |
 |---|---|---|
-| Backend | 8 | 7 High · 1 High |
+| Backend | 8 | 8 High |
 | Mobile FE | 6 | 4 High · 2 Medium |
 | Admin FE | 5 | 4 High · 1 Medium |
 | **Total** | **19** | |
