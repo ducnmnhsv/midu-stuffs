@@ -38,7 +38,9 @@ Create the `nh_research_articles` table to store all NH Research articles publis
   - `article_id` — PK, auto-generated (BIGINT or UUID)
   - `category` — ENUM `('MARKET', 'COMPANY', 'MACRO')`, NOT NULL
   - `title` — VARCHAR(500), NOT NULL
+  - `title_en` — VARCHAR(500), NULL
   - `short_content` — TEXT, NOT NULL
+  - `short_content_en` — TEXT, NULL
   - `pdf_url` — VARCHAR(1000), NULL
   - `pdf_filename` — VARCHAR(255), NULL
   - `pdf_size_bytes` — BIGINT, NULL
@@ -73,7 +75,11 @@ GET /api/v1/nhResearch/articles
 Auth: Bearer token
 ```
 
-**Request — Query Params**
+**Request — Headers + Query Params**
+
+| | Type | Notes |
+|---|---|---|
+| `Accept-Language` header | string | `vi` hoặc `en`. Xác định ngôn ngữ `title` và `shortContent` trả về. Fallback về `vi` nếu bản EN chưa có. |
 
 | Param | Type | Required | Description |
 |---|---|---|---|
@@ -94,13 +100,15 @@ Auth: Bearer token
       "title": "VƯỢT QUA RUNG LẮC",
       "shortContent": "Thị trường tiếp tục hồi phục...",
       "hasPdf": true,
-      "publishedAt": "2026-06-10T09:15:00Z"
+      "publishedAt": "20260610 09:15:00"
     }
   ],
   "totalCount": 12,
   "nextKey": "eyJwdWJsaXNoZWRBdCI6IjIwMjYtMDYtMDVUMDk6MDA6MDBaIiwiYXJ0aWNsZUlkIjo1fQ=="
 }
 ```
+
+> `title` và `shortContent` theo `Accept-Language`. Khi bài chưa có bản EN → trả VIE (không báo lỗi). `nextKey = null` khi đã hết dữ liệu.
 
 > `nextKey` là `null` khi đã hết dữ liệu (trang cuối cùng).
 
@@ -109,6 +117,7 @@ Auth: Bearer token
 - [ ] Returns only articles with `status = 'PUBLISHED'`
 - [ ] Filtered correctly by `category` when provided
 - [ ] Sorted by `publishedAt DESC` (newest first)
+- [ ] `title` và `shortContent` trả về theo `Accept-Language` header. Khi `Accept-Language: en` nhưng bài không có bản EN → trả VIE (không báo lỗi)
 - [ ] `shortContent` returned in full — mobile truncates on render
 - [ ] `hasPdf` is `true` when `pdf_url` is not null
 - [ ] Pagination: `nextKey` trong response dùng để fetch trang tiếp. Trang cuối trả `nextKey: null`
@@ -140,6 +149,8 @@ GET /api/v1/nhResearch/articles/{articleId}
 Auth: Bearer token
 ```
 
+**Request — Header:** `Accept-Language: vi` hoặc `en`
+
 **Response (200)**
 
 ```json
@@ -147,18 +158,21 @@ Auth: Bearer token
   "articleId": 1,
   "category": "MARKET",
   "title": "VƯỢT QUA RUNG LẮC",
-  "shortContent": "Full content here...",
+  "shortContent": "Toàn bộ nội dung tiếng Việt...",
   "pdfUrl": "https://storage.nhsv.vn/research/NHSV_TT_10062026.pdf",
   "pdfFilename": "NHSV_TT_10062026.pdf",
   "pdfSizeBytes": 2516582,
-  "publishedAt": "2026-06-10T09:15:00Z"
+  "publishedAt": "20260610 09:15:00"
 }
 ```
+
+> `title` và `shortContent` theo `Accept-Language`. Fallback VIE nếu bản EN chưa có. `pdfUrl`, `pdfFilename`, `pdfSizeBytes` là `null` khi không có PDF.
 
 **Note:** `shortContent` là tên DB column chứa toàn bộ nội dung bài viết. Ở list API (BE-02), mobile tự truncate để hiển thị preview. Ở detail API này, trả về nguyên vẹn — không truncate phía backend.
 
 **Acceptance Criteria**
 
+- [ ] `title` và `shortContent` trả về theo `Accept-Language`. Fallback VIE nếu bản EN chưa có (không báo lỗi)
 - [ ] Returns full `shortContent` without truncation (mobile renders as-is)
 - [ ] `pdfUrl`, `pdfFilename`, `pdfSizeBytes` are `null` when no PDF attached
 - [ ] Returns HTTP 404 + `{"code": "OBJECT_NOT_FOUND"}` if article doesn't exist, is `DELETED`, or is `DISABLED`
@@ -186,13 +200,17 @@ GET /admin/nhResearch/articles
 Auth: Admin session
 ```
 
-**Request — Query Params**
+**Request — Headers + Query Params**
+
+| | Type | Notes |
+|---|---|---|
+| `Accept-Language` header | string | `vi` hoặc `en`. Xác định ngôn ngữ `title` trong list response. Fallback VIE. |
 
 | Param | Type | Required | Description |
 |---|---|---|---|
 | `category` | string | No | `MARKET` \| `COMPANY` \| `MACRO` |
 | `status` | string | No | `PUBLISHED` \| `DISABLED`. Omit → return all (excl. `DELETED`) |
-| `search` | string | No | LIKE search on `title` |
+| `search` | string | No | LIKE search trên cả `title` và `title_en` (case-insensitive) |
 | `page` | int | No | Default: 1 — offset-based (xem note bên dưới) |
 | `fetchCount` | int | No | Số bài mỗi trang. Default: 20 |
 
@@ -209,9 +227,9 @@ Auth: Admin session
       "title": "VƯỢT QUA RUNG LẮC",
       "hasPdf": true,
       "status": "PUBLISHED",
-      "publishedAt": "2026-06-10T09:15:00Z",
-      "createdAt": "2026-06-10T09:15:00Z",
-      "updatedAt": "2026-06-10T09:15:00Z",
+      "publishedAt": "20260610 09:15:00",
+      "createdAt": "20260610 09:15:00",
+      "updatedAt": "20260610 09:15:00",
       "createdBy": "duc.nguyen"
     }
   ],
@@ -220,11 +238,14 @@ Auth: Admin session
 }
 ```
 
+> `title` theo `Accept-Language`. Fallback VIE nếu bản EN chưa có.
+
 **Acceptance Criteria**
 
 - [ ] Returns `PUBLISHED` + `DISABLED` articles (excludes `DELETED`)
 - [ ] When `status` filter provided, returns only articles of that status
-- [ ] `search` performs case-insensitive LIKE on `title`
+- [ ] `search` performs case-insensitive LIKE on cả `title` (VIE) và `title_en` (EN)
+- [ ] `title` trong response theo `Accept-Language` — fallback VIE nếu bản EN chưa có
 - [ ] Response includes `articleId`, `category`, `title`, `hasPdf`, `status`, `publishedAt`, `createdAt`, `updatedAt`, `createdBy`
 - [ ] `totalPages` = `ceil(totalCount / fetchCount)` — dùng cho admin pagination UI
 - [ ] Requires admin authentication — returns 401 if not authenticated
@@ -254,11 +275,31 @@ Content-Type: application/json
 
 **Request Body**
 
+```json
+{
+  "category": "MARKET",
+  "vi": {
+    "title": "VƯỢT QUA RUNG LẮC",
+    "shortContent": "Toàn bộ nội dung tiếng Việt..."
+  },
+  "en": {
+    "title": "OVERCOMING MARKET VOLATILITY",
+    "shortContent": "Full English content..."
+  },
+  "pdfUrl": "https://storage.nhsv.vn/research/NHSV_TT_10062026_1718006400.pdf",
+  "pdfFilename": "NHSV_TT_10062026.pdf",
+  "pdfSizeBytes": 2516582
+}
+```
+
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `category` | string | Yes | `MARKET` \| `COMPANY` \| `MACRO` |
-| `title` | string | Yes | Max 500 chars |
-| `shortContent` | string | Yes | No max length |
+| `vi.title` | string | Yes | Tiêu đề tiếng Việt, max 500 chars |
+| `vi.shortContent` | string | Yes | Nội dung tiếng Việt, no max length |
+| `en` | object | No | Bỏ qua hoặc `null` nếu chưa có bản EN |
+| `en.title` | string | No | Tiêu đề tiếng Anh, max 500 chars |
+| `en.shortContent` | string | No | Nội dung tiếng Anh, no max length |
 | `pdfUrl` | string | No | URL returned from upload API |
 | `pdfFilename` | string | No | Original filename |
 | `pdfSizeBytes` | number | No | File size in bytes |
@@ -273,6 +314,7 @@ Content-Type: application/json
 
 - [ ] Validates required fields — returns HTTP 400 `INVALID_PARAMETER` on missing/invalid
 - [ ] Validates `category` is one of `MARKET`, `COMPANY`, `MACRO`
+- [ ] `vi.title` và `vi.shortContent` là bắt buộc; `en` object là optional
 - [ ] Sets `status = 'PUBLISHED'`, `publishedAt = createdAt = now()` automatically
 - [ ] Sets `createdBy` from admin session JWT
 - [ ] Returns `{"id": <articleId>}` — no extra fields
@@ -303,11 +345,22 @@ Auth: Admin session
 
 **PUT Request Body** (all fields optional)
 
+```json
+{
+  "vi": { "title": "Tiêu đề đã sửa", "shortContent": "Nội dung VIE cập nhật..." },
+  "en": null,
+  "status": "DISABLED"
+}
+```
+
 | Field | Type | Notes |
 |---|---|---|
 | `category` | string | `MARKET` \| `COMPANY` \| `MACRO` |
-| `title` | string | Max 500 chars |
-| `shortContent` | string | |
+| `vi.title` | string | Tiêu đề tiếng Việt, max 500 chars |
+| `vi.shortContent` | string | Nội dung tiếng Việt |
+| `en` | object? | `null` để xóa toàn bộ bản EN |
+| `en.title` | string? | Tiêu đề tiếng Anh |
+| `en.shortContent` | string? | Nội dung tiếng Anh |
 | `pdfUrl` | string? | `null` to remove PDF |
 | `pdfFilename` | string? | |
 | `pdfSizeBytes` | number? | |
@@ -667,14 +720,31 @@ Form for creating a new article. Accessible via "+ Thêm bài mới" button. Cal
 **API flow:**  
 `POST /admin/nhResearch/upload/pdf` → get `pdfUrl` → `POST /admin/nhResearch/articles`
 
+**Form layout — VIE/ENG tab:**
+
+Form có 2 tab ngôn ngữ: **VIE** (mặc định active) và **ENG**. Mỗi tab chứa riêng trường Title và Short Content. Category, PDF upload, và nút Đăng bài nằm ngoài tab (dùng chung cả 2 ngôn ngữ).
+
+```
+[ VIE | ENG ]
+━━━━━━━━━━━━━━━━━━━━━━━━━
+Tiêu đề *          [____________________]
+Nội dung *         [____________________]
+                   [____________________]
+━━━━━━━━━━━━━━━━━━━━━━━━━ (dùng chung)
+Danh mục *         [ Thị trường ▼ ]
+Đính kèm PDF       [ Upload / Drag-drop ]
+[ Hủy ]            [ Đăng bài ]
+```
+
 **Acceptance Criteria**
 
-- [ ] Fields: Category (required dropdown), Title (required, max 500 chars with char counter), Short content (required textarea), PDF upload (optional)
-- [ ] Category dropdown values: `MARKET` (Thị trường) · `COMPANY` (Doanh nghiệp) · `MACRO` (Vĩ mô)
-- [ ] PDF upload: drag-and-drop zone + browse button, accepts `.pdf` only
+- [ ] Form có 2 tab: VIE (mặc định) và ENG. Tab VIE là bắt buộc, tab ENG là optional
+- [ ] Mỗi tab chứa: Title (max 500 chars với char counter) và Short Content (textarea)
+- [ ] Category dropdown (dùng chung): `MARKET` (Thị trường) · `COMPANY` (Doanh nghiệp) · `MACRO` (Vĩ mô)
+- [ ] PDF upload (dùng chung): drag-and-drop zone + browse button, accepts `.pdf` only
 - [ ] PDF upload flow: file selected → auto-upload to `/admin/nhResearch/upload/pdf` → show filename + size + remove option
-- [ ] Client-side validation: required fields highlighted before submit
-- [ ] Submit ("Đăng bài"): calls POST article API with `pdfUrl` from upload step
+- [ ] Client-side validation: VIE Title và VIE Short Content là bắt buộc, ENG fields là optional
+- [ ] Submit ("Đăng bài"): gửi `{ "vi": {...}, "en": {...} }` — `en` object chỉ include nếu admin đã điền ít nhất 1 field ENG
 - [ ] On success: redirect to list page + toast "Đăng bài thành công"
 - [ ] On API error: show inline error message, do not redirect
 - [ ] "Hủy" button → navigate back without saving
@@ -696,15 +766,22 @@ Pre-filled edit form for an existing article. Uses the same layout as create for
 
 **API:** `PUT /admin/nhResearch/articles/{id}`
 
+**Pre-fill flow (2 API calls):**  
+Khi mở edit form → gọi song song:
+1. `GET /admin/nhResearch/articles/{id}` với `Accept-Language: vi` → điền tab VIE
+2. `GET /admin/nhResearch/articles/{id}` với `Accept-Language: en` → điền tab ENG (nếu response có data)
+
 **Acceptance Criteria**
 
-- [ ] All fields pre-filled from current article data
-- [ ] Category, title, shortContent editable
+- [ ] Form layout giống ADM-03: 2 tab VIE/ENG + Category + PDF (dùng chung)
+- [ ] Pre-fill tab VIE từ response `Accept-Language: vi`; pre-fill tab ENG từ response `Accept-Language: en`
+- [ ] Nếu bài chưa có bản EN → tab ENG để trống, không báo lỗi
+- [ ] Category, title, shortContent editable trên từng tab
 - [ ] PDF section shows existing file with option to replace or remove
   - Replace: re-upload via `/admin/nhResearch/upload/pdf`, update `pdfUrl`
   - Remove: set `pdfUrl = null` in PUT request
 - [ ] Status toggle (`PUBLISHED` / `DISABLED`) visible — allows toggling visibility without leaving the form
-- [ ] Submit ("Lưu thay đổi"): calls PUT, shows success toast on 200
+- [ ] Submit ("Lưu thay đổi"): gửi `{ "vi": {...}, "en": {...} }` — `en: null` nếu admin xóa hết ENG content
 - [ ] Unsaved changes warning if user tries to navigate away
 - [ ] On API error: show inline error, do not redirect
 

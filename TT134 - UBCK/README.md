@@ -14,6 +14,7 @@ Mỗi folder bên dưới đại diện cho một nhóm tính năng / yêu cầu
 | [`Session Management/`](./Session%20Management/) | Điều 7 — Kiểm soát phiên đăng nhập | ✅ MD + HTML spec (v1.1 — BE/FE/UX) |
 | [`Order 2FA/`](./Order%202FA/) | Điều 10 — Xác thực giao dịch 2 lớp | ✅ MD + HTML spec (v1.1 — BE/FE/UX) |
 | [`Alert System/`](./Alert%20System/) | Điều 8 — Hệ thống cảnh báo | 🆕 Chưa bắt đầu |
+| [`Service Agreement/`](./Service%20Agreement/) | Điều 5.4 — Hợp đồng/Điều khoản dịch vụ | ✅ MD + HTML spec (v1.0 — BE/FE/BA) |
 | [`Audit Log/`](./Audit%20Log/) | Điều 5, 10 — Audit trail | 🆕 Chưa bắt đầu |
 | [`Data Security/`](./Data%20Security/) | Điều 9 — Mã hóa & che dấu dữ liệu | 🆕 Chưa bắt đầu |
 | [`Risk Controls/`](./Risk%20Controls/) | Điều 11 — Quản lý rủi ro & hạn mức | 🆕 Chưa bắt đầu |
@@ -33,4 +34,4 @@ Mỗi feature có:
 
 **Document Status:** ✅ Active
 **For:** PM / BA / Dev
-**Next Steps:** P1 spec creation (Alert System, Audit Log, Risk Controls)
+**Next Steps:** P1 spec creation (Alert System, Audit Log, Risk Controls) — Service Agreement feature added

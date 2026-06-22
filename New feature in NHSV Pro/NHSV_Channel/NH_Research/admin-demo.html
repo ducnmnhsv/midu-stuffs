@@ -134,7 +134,7 @@
     background: var(--bg); outline: none;
   }
   .filter-select:focus, .filter-input:focus { border-color: #93c5fd; background: white; }
-  .filter-input { width: 220px; }
+  .filter-input { width: 240px; }
   .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
   .filter-label { font-size: 11px; color: var(--muted); font-weight: 500; white-space: nowrap; }
   .filter-clear { font-size: 11.5px; color: var(--blue); cursor: pointer; margin-left: auto; }
@@ -216,6 +216,18 @@
   }
   .pdf-no { font-size: 11px; color: var(--muted); }
 
+  /* ── Lang badge (list) ── */
+  .lang-flags {
+    display: flex; gap: 4px; margin-top: 3px;
+  }
+  .lang-flag {
+    font-size: 9.5px; font-weight: 700; padding: 1px 5px;
+    border-radius: 4px; letter-spacing: 0.3px;
+  }
+  .lang-vie { background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; }
+  .lang-eng { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+  .lang-eng-missing { background: #f8fafc; color: var(--muted); border: 1px solid var(--border); opacity: .6; }
+
   /* ── Date cell ── */
   .date-cell { font-size: 12px; color: var(--slate); white-space: nowrap; }
   .date-cell .time { font-size: 10.5px; color: var(--muted); display: block; margin-top: 1px; }
@@ -276,7 +288,7 @@
   }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal {
-    background: white; border-radius: 14px; width: 560px; max-width: 96vw;
+    background: white; border-radius: 14px; width: 600px; max-width: 96vw;
     max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.2);
     transform: translateY(12px); transition: transform .2s;
   }
@@ -284,6 +296,7 @@
   .modal-header {
     padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: white; z-index: 10; border-radius: 14px 14px 0 0;
   }
   .modal-title { font-size: 16px; font-weight: 700; color: var(--navy); }
   .modal-close {
@@ -296,6 +309,8 @@
   .modal-footer {
     padding: 16px 24px; border-top: 1px solid var(--border);
     display: flex; justify-content: flex-end; gap: 8px;
+    position: sticky; bottom: 0; background: white;
+    border-radius: 0 0 14px 14px;
   }
 
   /* ── Form ── */
@@ -317,6 +332,34 @@
   .form-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .char-count { font-size: 11px; color: var(--muted); text-align: right; margin-top: 3px; }
 
+  /* ── Language tabs ── */
+  .lang-tabs-wrap {
+    border: 1px solid var(--border); border-radius: 10px;
+    overflow: hidden; margin-bottom: 16px;
+  }
+  .lang-tab-bar {
+    display: flex; border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+  }
+  .lang-tab {
+    padding: 10px 20px; font-size: 12.5px; font-weight: 600;
+    color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .lang-tab:hover { color: var(--navy); }
+  .lang-tab.active { color: var(--navy); border-bottom-color: var(--blue); background: white; }
+  .lang-tab .tab-req {
+    font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+    background: var(--red-light); color: var(--red); letter-spacing: 0.3px;
+  }
+  .lang-tab .tab-opt {
+    font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 4px;
+    background: #f1f5f9; color: var(--muted); letter-spacing: 0.3px;
+  }
+  .lang-panel { padding: 16px; display: none; }
+  .lang-panel.active { display: block; }
+
   /* ── Upload zone ── */
   .upload-zone {
     border: 2px dashed var(--border); border-radius: 8px;
@@ -336,6 +379,18 @@
   .upload-file-name { font-size: 12.5px; font-weight: 500; color: var(--navy); }
   .upload-file-size { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .upload-remove { margin-left: auto; font-size: 11px; color: var(--red); cursor: pointer; }
+
+  /* ── Form divider ── */
+  .form-divider {
+    height: 1px; background: var(--border); margin: 18px 0;
+    position: relative;
+  }
+  .form-divider span {
+    position: absolute; top: -9px; left: 0;
+    font-size: 10px; font-weight: 600; color: var(--muted);
+    background: white; padding-right: 10px;
+    text-transform: uppercase; letter-spacing: 0.8px;
+  }
 
   /* ── Delete confirm modal ── */
   .del-modal { width: 420px; }
@@ -455,7 +510,7 @@
         <option>Disabled</option>
       </select>
       <div class="filter-sep"></div>
-      <input class="filter-input" type="text" placeholder="🔍  Tìm theo tiêu đề...">
+      <input class="filter-input" type="text" placeholder="🔍  Tìm tiêu đề (VIE hoặc ENG)...">
       <span class="filter-clear">Xóa bộ lọc</span>
     </div>
 
@@ -472,6 +527,7 @@
             <th class="col-stt">#</th>
             <th>Category</th>
             <th>Tiêu đề</th>
+            <th>Ngôn ngữ</th>
             <th>PDF</th>
             <th>Trạng thái</th>
             <th>Ngày upload</th>
@@ -483,13 +539,19 @@
         </thead>
         <tbody>
 
-          <!-- Row 1 -->
+          <!-- Row 1 — VIE + ENG -->
           <tr>
             <td class="col-stt">1</td>
             <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
             <td class="col-title">
               <div class="title-text">VƯỢT QUA RUNG LẮC</div>
               <div class="title-preview">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-yes">📄 2.4 MB</span></td>
             <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
@@ -498,25 +560,31 @@
             <td style="font-size:12px;">duc.nguyen</td>
             <td>
               <label class="toggle" title="Đang hiển thị — click để tắt">
-                <input type="checkbox" checked onchange="toggleStatus(this, 1)">
+                <input type="checkbox" checked onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 1)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 1)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
 
-          <!-- Row 2 -->
+          <!-- Row 2 — VIE + ENG -->
           <tr>
             <td class="col-stt">2</td>
             <td><span class="cat-tag cat-vi-mo">Vĩ mô</span></td>
             <td class="col-title">
               <div class="title-text">TRIỂN VỌNG KINH TẾ Q3/2026</div>
               <div class="title-preview">Tăng trưởng GDP dự báo đạt 6.8% trong quý 3, động lực từ xuất khẩu...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-yes">📄 5.1 MB</span></td>
             <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
@@ -525,25 +593,31 @@
             <td style="font-size:12px;">duc.nguyen</td>
             <td>
               <label class="toggle" title="Đang hiển thị — click để tắt">
-                <input type="checkbox" checked onchange="toggleStatus(this, 2)">
+                <input type="checkbox" checked onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 2)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 2)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
 
-          <!-- Row 3 — DISABLED -->
+          <!-- Row 3 — DISABLED, VIE only -->
           <tr style="opacity:.7">
             <td class="col-stt">3</td>
             <td><span class="cat-tag cat-doanh-nghiep">Doanh nghiệp</span></td>
             <td class="col-title">
               <div class="title-text">PHÂN TÍCH HPG — CẬP NHẬT MÔ HÌNH</div>
               <div class="title-preview">Điều chỉnh giá mục tiêu sau kết quả kinh doanh Q1/2026...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng-missing" title="Chưa có bản tiếng Anh">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-yes">📄 3.2 MB</span></td>
             <td><span class="status-badge status-disabled"><span class="status-dot dot-disabled"></span>Disabled</span></td>
@@ -552,25 +626,31 @@
             <td style="font-size:12px;">minh.tran</td>
             <td>
               <label class="toggle" title="Đang tắt — click để bật">
-                <input type="checkbox" onchange="toggleStatus(this, 3)">
+                <input type="checkbox" onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 3)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 3)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
 
-          <!-- Row 4 — No PDF -->
+          <!-- Row 4 — No PDF, VIE only -->
           <tr>
             <td class="col-stt">4</td>
             <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
             <td class="col-title">
               <div class="title-text">NHỊP HỒI KHẢ QUAN</div>
               <div class="title-preview">Thị trường chuyển biến tích cực, lực cầu bắt đáy rõ trong phiên chiều...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng-missing" title="Chưa có bản tiếng Anh">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-no">— Không có</span></td>
             <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
@@ -579,25 +659,31 @@
             <td style="font-size:12px;">duc.nguyen</td>
             <td>
               <label class="toggle" title="Đang hiển thị — click để tắt">
-                <input type="checkbox" checked onchange="toggleStatus(this, 4)">
+                <input type="checkbox" checked onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 4)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 4)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
 
-          <!-- Row 5 -->
+          <!-- Row 5 — VIE + ENG -->
           <tr>
             <td class="col-stt">5</td>
             <td><span class="cat-tag cat-vi-mo">Vĩ mô</span></td>
             <td class="col-title">
               <div class="title-text">CẬP NHẬT CHÍNH SÁCH TIỀN TỆ — FED & SBV</div>
               <div class="title-preview">Tác động của quyết định lãi suất Fed đến thị trường Việt Nam...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-yes">📄 4.8 MB</span></td>
             <td><span class="status-badge status-published"><span class="status-dot dot-published"></span>Published</span></td>
@@ -606,25 +692,31 @@
             <td style="font-size:12px;">minh.tran</td>
             <td>
               <label class="toggle" title="Đang hiển thị — click để tắt">
-                <input type="checkbox" checked onchange="toggleStatus(this, 5)">
+                <input type="checkbox" checked onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 5)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 5)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
 
-          <!-- Row 6 — DISABLED -->
+          <!-- Row 6 — DISABLED, VIE only -->
           <tr style="opacity:.7">
             <td class="col-stt">6</td>
             <td><span class="cat-tag cat-thi-truong">Thị trường</span></td>
             <td class="col-title">
               <div class="title-text">ĐIỂM LẠI TUẦN — 26/05–30/05</div>
               <div class="title-preview">Tuần giao dịch cuối tháng 5 với nhiều biến động từ dòng vốn ngoại...</div>
+            </td>
+            <td>
+              <div class="lang-flags">
+                <span class="lang-flag lang-vie">VIE</span>
+                <span class="lang-flag lang-eng-missing" title="Chưa có bản tiếng Anh">ENG</span>
+              </div>
             </td>
             <td><span class="pdf-yes">📄 1.9 MB</span></td>
             <td><span class="status-badge status-disabled"><span class="status-dot dot-disabled"></span>Disabled</span></td>
@@ -633,14 +725,14 @@
             <td style="font-size:12px;">duc.nguyen</td>
             <td>
               <label class="toggle" title="Đang tắt — click để bật">
-                <input type="checkbox" onchange="toggleStatus(this, 6)">
+                <input type="checkbox" onchange="toggleStatus(this)">
                 <span class="toggle-slider"></span>
               </label>
             </td>
             <td>
               <div class="action-group">
-                <button class="action-btn edit" title="Sửa" onclick="openModal('edit', 6)">✏️</button>
-                <button class="action-btn del" title="Xóa" onclick="openModal('delete', 6)">🗑️</button>
+                <button class="action-btn edit" title="Sửa" onclick="openModal('edit')">✏️</button>
+                <button class="action-btn del" title="Xóa" onclick="openModal('delete')">🗑️</button>
               </div>
             </td>
           </tr>
@@ -650,7 +742,7 @@
 
       <!-- Pagination -->
       <div class="pagination">
-        <div class="pag-info">Hiển thị 1–6 trong tổng số 12 bài viết</div>
+        <div class="pag-info">Hiển thị 1–6 trong tổng số 12 bài viết · Trang 1 / 2</div>
         <div class="pag-btns">
           <button class="pag-btn disabled">‹</button>
           <button class="pag-btn active">1</button>
@@ -672,6 +764,8 @@
       <button class="modal-close" onclick="closeModal('create')">✕</button>
     </div>
     <div class="modal-body">
+
+      <!-- Category — dùng chung -->
       <div class="form-group">
         <label class="form-label">Category <span class="req">*</span></label>
         <select class="form-select">
@@ -681,33 +775,71 @@
           <option value="MACRO">Vĩ mô (MACRO)</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Tiêu đề <span class="req">*</span></label>
-        <input class="form-input" type="text" placeholder="Nhập tiêu đề bài viết..." maxlength="500"
-          oninput="document.getElementById('title-count').textContent = this.value.length">
-        <div class="char-count"><span id="title-count">0</span> / 500</div>
+
+      <!-- Language tabs -->
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="margin-bottom:8px">Nội dung bài viết</label>
       </div>
-      <div class="form-group">
-        <label class="form-label">Nội dung tóm tắt <span class="req">*</span></label>
-        <textarea class="form-textarea" placeholder="Nội dung ngắn gọn hiển thị trên app. Vĩ mô có thể dài hơn..." rows="5"></textarea>
-        <div class="form-hint">Hiển thị toàn bộ trên màn hình Detail. Preview 2–3 dòng trên card danh sách.</div>
+      <div class="lang-tabs-wrap">
+        <div class="lang-tab-bar">
+          <div class="lang-tab active" onclick="switchTab('create','vi')">
+            🇻🇳 Tiếng Việt <span class="tab-req">BẮT BUỘC</span>
+          </div>
+          <div class="lang-tab" onclick="switchTab('create','en')">
+            🇺🇸 English <span class="tab-opt">TUỲ CHỌN</span>
+          </div>
+        </div>
+
+        <!-- VIE panel -->
+        <div class="lang-panel active" id="create-panel-vi">
+          <div class="form-group">
+            <label class="form-label">Tiêu đề <span class="req">*</span></label>
+            <input class="form-input" type="text" placeholder="Nhập tiêu đề tiếng Việt..." maxlength="500"
+              oninput="document.getElementById('create-title-vie-count').textContent = this.value.length">
+            <div class="char-count"><span id="create-title-vie-count">0</span> / 500</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Nội dung <span class="req">*</span></label>
+            <textarea class="form-textarea" placeholder="Nội dung tiếng Việt (hiển thị toàn bộ trên màn hình Detail)..." rows="5"></textarea>
+          </div>
+        </div>
+
+        <!-- ENG panel -->
+        <div class="lang-panel" id="create-panel-en">
+          <div class="form-hint" style="margin-bottom:12px; padding:8px 10px; background:#eff6ff; border-radius:6px; color:#1e40af; border:1px solid #bfdbfe;">
+            💡 Bỏ trống nếu chưa có bản tiếng Anh — app sẽ hiển thị bản tiếng Việt cho user ENG.
+          </div>
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" type="text" placeholder="Enter English title..." maxlength="500"
+              oninput="document.getElementById('create-title-eng-count').textContent = this.value.length">
+            <div class="char-count"><span id="create-title-eng-count">0</span> / 500</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" placeholder="Enter English content..." rows="5"></textarea>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Đính kèm PDF</label>
-        <div class="upload-zone" onclick="simulateUpload()">
+
+      <!-- PDF — dùng chung -->
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label">Đính kèm PDF <span style="font-weight:400;color:var(--muted)">(dùng chung cả 2 ngôn ngữ)</span></label>
+        <div class="upload-zone" onclick="simulateUpload('create')">
           <div class="uz-icon">📁</div>
           <div class="uz-text">Kéo thả file vào đây hoặc click để chọn</div>
           <div class="uz-hint">Chỉ chấp nhận .pdf · Tối đa 20MB</div>
         </div>
-        <div class="upload-file-preview" id="upload-preview" style="display:none">
+        <div class="upload-file-preview" id="create-upload-preview" style="display:none">
           <div class="upload-file-icon">📄</div>
           <div>
             <div class="upload-file-name">NHSV_TT_10062026.pdf</div>
             <div class="upload-file-size">2.4 MB · Đã upload</div>
           </div>
-          <div class="upload-remove" onclick="removeUpload()">✕ Xóa</div>
+          <div class="upload-remove" onclick="removeUpload('create')">✕ Xóa</div>
         </div>
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('create')">Hủy</button>
@@ -725,25 +857,66 @@
       <button class="modal-close" onclick="closeModal('edit')">✕</button>
     </div>
     <div class="modal-body">
+
+      <!-- Category — dùng chung -->
       <div class="form-group">
         <label class="form-label">Category <span class="req">*</span></label>
         <select class="form-select">
-          <option selected>Thị trường</option>
-          <option>Doanh nghiệp</option>
-          <option>Vĩ mô</option>
+          <option selected>Thị trường (MARKET)</option>
+          <option>Doanh nghiệp (COMPANY)</option>
+          <option>Vĩ mô (MACRO)</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Tiêu đề <span class="req">*</span></label>
-        <input class="form-input" type="text" value="VƯỢT QUA RUNG LẮC">
-        <div class="char-count">14 / 500</div>
+
+      <!-- Language tabs -->
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="margin-bottom:8px">Nội dung bài viết</label>
       </div>
-      <div class="form-group">
-        <label class="form-label">Nội dung tóm tắt <span class="req">*</span></label>
-        <textarea class="form-textarea" rows="5">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên. Lực cầu từ nhà đầu tư trong nước vẫn đủ mạnh để hấp thụ.</textarea>
+      <div class="lang-tabs-wrap">
+        <div class="lang-tab-bar">
+          <div class="lang-tab active" onclick="switchTab('edit','vi')">
+            🇻🇳 Tiếng Việt <span class="tab-req">BẮT BUỘC</span>
+          </div>
+          <div class="lang-tab" onclick="switchTab('edit','en')">
+            🇺🇸 English <span class="tab-opt">TUỲ CHỌN</span>
+          </div>
+        </div>
+
+        <!-- VIE panel — pre-filled -->
+        <div class="lang-panel active" id="edit-panel-vi">
+          <div class="form-group">
+            <label class="form-label">Tiêu đề <span class="req">*</span></label>
+            <input class="form-input" type="text" value="VƯỢT QUA RUNG LẮC" maxlength="500"
+              oninput="document.getElementById('edit-title-vie-count').textContent = this.value.length">
+            <div class="char-count"><span id="edit-title-vie-count">14</span> / 500</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Nội dung <span class="req">*</span></label>
+            <textarea class="form-textarea" rows="5">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên. Lực cầu từ nhà đầu tư trong nước vẫn đủ mạnh để hấp thụ.</textarea>
+          </div>
+        </div>
+
+        <!-- ENG panel — pre-filled -->
+        <div class="lang-panel" id="edit-panel-en">
+          <div class="form-hint" style="margin-bottom:12px; padding:8px 10px; background:#eff6ff; border-radius:6px; color:#1e40af; border:1px solid #bfdbfe;">
+            💡 Xóa hết nội dung và bấm Lưu → bản tiếng Anh sẽ bị xóa khỏi app.
+          </div>
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" type="text" value="OVERCOMING MARKET VOLATILITY" maxlength="500"
+              oninput="document.getElementById('edit-title-eng-count').textContent = this.value.length">
+            <div class="char-count"><span id="edit-title-eng-count">28</span> / 500</div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Content</label>
+            <textarea class="form-textarea" rows="5">The market continues to recover despite increasing selling pressure during the session. Domestic investor demand remains strong enough to absorb supply.</textarea>
+          </div>
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">PDF đính kèm</label>
+
+      <!-- PDF — dùng chung -->
+      <div class="form-group" style="margin-top:16px">
+        <label class="form-label">PDF đính kèm <span style="font-weight:400;color:var(--muted)">(dùng chung cả 2 ngôn ngữ)</span></label>
         <div class="upload-file-preview">
           <div class="upload-file-icon">📄</div>
           <div>
@@ -753,8 +926,10 @@
           <div class="upload-remove">✕ Thay thế</div>
         </div>
       </div>
+
+      <!-- Status toggle -->
       <div class="form-group">
-        <label class="form-label">Trạng thái</label>
+        <label class="form-label">Trạng thái hiển thị</label>
         <div style="display:flex; align-items:center; gap:10px; margin-top:2px;">
           <label class="toggle">
             <input type="checkbox" checked>
@@ -763,6 +938,7 @@
           <span style="font-size:12.5px; color:var(--slate)">Hiển thị trên app (Published)</span>
         </div>
       </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('edit')">Hủy</button>
@@ -795,7 +971,7 @@
 
 
 <script>
-  function openModal(type, id) {
+  function openModal(type) {
     document.getElementById('modal-' + type).classList.add('open');
   }
   function closeModal(type) {
@@ -809,10 +985,25 @@
     });
   });
 
-  function toggleStatus(checkbox, rowId) {
+  function switchTab(modalId, lang) {
+    const wrap = document.getElementById('modal-' + modalId);
+    // update tab buttons
+    wrap.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+    wrap.querySelectorAll('.lang-tab').forEach(t => {
+      if ((lang === 'vi' && t.textContent.includes('Việt')) ||
+          (lang === 'en' && t.textContent.includes('English'))) {
+        t.classList.add('active');
+      }
+    });
+    // update panels
+    wrap.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById(modalId + '-panel-' + lang);
+    if (panel) panel.classList.add('active');
+  }
+
+  function toggleStatus(checkbox) {
     const row = checkbox.closest('tr');
     const badge = row.querySelector('.status-badge');
-    const dot   = row.querySelector('.status-dot');
     if (checkbox.checked) {
       row.style.opacity = '1';
       badge.className = 'status-badge status-published';
@@ -826,11 +1017,11 @@
     }
   }
 
-  function simulateUpload() {
-    document.getElementById('upload-preview').style.display = 'flex';
+  function simulateUpload(modalId) {
+    document.getElementById(modalId + '-upload-preview').style.display = 'flex';
   }
-  function removeUpload() {
-    document.getElementById('upload-preview').style.display = 'none';
+  function removeUpload(modalId) {
+    document.getElementById(modalId + '-upload-preview').style.display = 'none';
   }
 </script>
 </body>
