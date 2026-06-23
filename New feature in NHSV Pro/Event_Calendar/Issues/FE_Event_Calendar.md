@@ -59,13 +59,14 @@ Khi section bị lỗi API, chỉ section đó hiển thị error — không ả
 
 Thay thế hoàn toàn UI placeholder. Màn hình nhận `eventId` từ params, gọi `GET /api/v1/eventCalendar/{eventId}` khi mount.
 
-Layout gồm 3 phần: Hero card (ô mã CK 36×36, tên công ty, exchange badge), Dates card (ngày GDKHQ kèm badge "HÔM NAY" nếu `isToday=true`, ngày ĐKCC nếu không null), Info card (loại cổ tức, tỷ lệ, sàn giao dịch).
+Layout gồm 3 phần: Hero card (ô mã CK 36×36, tên công ty, exchange badge, event type pill, `rateDisplay`, và `titleEvent` dạng text xám nhỏ italic nếu không null), Dates card (ngày GDKHQ kèm badge "HÔM NAY" nếu `isToday=true`, ngày ĐKCC nếu không null), Info card (loại cổ tức, tỷ lệ, giá quyền mua nếu `priceDisplay` không null, sàn giao dịch).
 
 Variant theo `eventType`:
 - `CASH_DIVIDEND`: pill teal, label "Cổ tức tiền mặt"
 - `STOCK_DIVIDEND`: pill violet, label "Cổ phiếu thưởng" hoặc "Cổ tức bằng cổ phiếu" (theo `eventTypeLabel`)
+- `RIGHTS_ISSUE`: pill amber (#fef3c7 / #b45309), label "Quyền mua phát hành thêm". Thêm dòng **"Giá quyền mua"** trong Info card hiển thị `priceDisplay` — ẩn dòng này nếu `priceDisplay = null`.
 
-Cuối màn hình: disclaimer text nhỏ "Dữ liệu từ Vietstock. Vui lòng xác nhận tại nguồn chính thức." và CTA button "Xem cổ phiếu {stockCode} →" navigate đến màn hình giao dịch của mã đó.
+Cuối màn hình (từ trên xuống): link "📄 Xem tài liệu chính thức →" (nếu `fileUrl` không null, tap mở in-app browser), disclaimer text nhỏ "Dữ liệu từ Vietstock. Vui lòng xác nhận tại nguồn chính thức.", CTA button "Xem cổ phiếu {stockCode} →" navigate đến màn hình giao dịch của mã đó.
 
 Xử lý 404: khi API trả `OBJECT_NOT_FOUND` (sự kiện đã qua ngày và bị cleanup), hiển thị thông báo "Sự kiện này đã kết thúc." và nút quay lại.
 
@@ -95,17 +96,20 @@ Khi user đang ở EventScreen với filter sàn là HOSE → tap vào event car
   stockCode: string
   companyName: string | null
   exchange: "HOSE" | "HNX" | "UPCOM"
-  eventType: "CASH_DIVIDEND" | "STOCK_DIVIDEND"
+  eventType: "CASH_DIVIDEND" | "STOCK_DIVIDEND" | "RIGHTS_ISSUE"
   eventTypeLabel: string
   gdkhqDate: string       // "YYYY-MM-DD"
-  rateDisplay: string     // "10%" hoặc "1,500 VNĐ/CP"
+  rateDisplay: string     // "10%" hoặc "1,500đ/CP"
   isToday: boolean
 }
 
 // GET /eventCalendar/{eventId}
 {
   ...Event,
-  ndkccDate: string | null  // "YYYY-MM-DD"
+  ndkccDate: string | null    // "YYYY-MM-DD"
+  priceDisplay: string | null // VD: "15,000đ/CP" — chỉ có giá trị với RIGHTS_ISSUE
+  titleEvent: string | null   // VD: "Trả cổ tức năm 2024 bằng tiền, 1,000 đồng/CP"
+  fileUrl: string | null      // URL PDF tài liệu chính thức từ Vietstock
 }
 ```
 
@@ -119,8 +123,12 @@ Khi user đang ở EventScreen với filter sàn là HOSE → tap vào event car
 - [ ] Date header hiển thị đúng format và màu (teal cho hôm nay, xám cho ngày khác)
 - [ ] Loading skeleton, empty state, error state hoạt động đúng
 - [ ] Tap card → navigate EventDetailScreen với đúng eventId
-- [ ] EventDetailScreen hiển thị đầy đủ thông tin, đúng variant CASH vs STOCK
+- [ ] EventDetailScreen hiển thị đầy đủ thông tin, đúng variant CASH / STOCK / RIGHTS
+- [ ] RIGHTS_ISSUE hiển thị pill amber và dòng "Giá quyền mua" khi `priceDisplay` khác null
 - [ ] ndkccDate null → ẩn dòng Ngày ĐKCC
+- [ ] priceDisplay null → ẩn dòng Giá quyền mua
+- [ ] titleEvent không null → hiển thị dưới pill trong Hero card (xám nhỏ italic); null → ẩn hoàn toàn
+- [ ] fileUrl không null → hiển thị link "📄 Xem tài liệu chính thức →" mở in-app browser; null → ẩn hoàn toàn
 - [ ] CTA "Xem cổ phiếu →" navigate đúng màn hình giao dịch
 - [ ] Deep link `nhsvpro://event-calendar/{eventId}` mở đúng detail ở cả 3 trạng thái app
 - [ ] Back từ detail về list giữ nguyên filter state đang chọn
