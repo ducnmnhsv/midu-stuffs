@@ -10,46 +10,52 @@
 
 ## 0. Flow Overview
 
+> **Architecture note:** Core (Lotte) đã có sẵn khả năng verify Smart OTP cho đặt lệnh. NHSV Pro app đã handle TOTP code generation (SmartOTPInput từ Login S-OTP). Với Smart OTP, TradeX chỉ cần proxy OTP code kèm order data sang Core — Core verify và process order atomically, không cần challenge/proof-token riêng. Proof token chỉ cần thiết cho Biometric L2 (verify local trên AAA, tách biệt với Core).
+
 ```
 [User chọn orders] → [Check giá trị]
      │
      ├─ < 10tr → không cần 2FA (silent)
      │
      ├─ 10-100tr → Biometric L2 (Face ID)
-     │     → Verify signature → Proof token → Confirm
+     │     → Verify RSA signature (AAA) → Proof token → Confirm order
      │
-     └─ ≥ 100tr → Smart-OTP TOTP
-           → Verify OTP → Proof token → Confirm
+     └─ ≥ 100tr → Smart OTP (TOTP)
+           → App generate code → User enter → Confirm order kèm otpCode
+           → lotte-bridge → Core (verify OTP + process order atomic)
      
-     [Fallback] Nếu method chính unavailable → SMS OTP
+     [Fallback] Smart OTP unavailable/locked → SMS OTP
+           → Send OTP → User enter → Confirm order kèm otpCode
+           → lotte-bridge → Core
 ```
 
-| Bước | Mô tả | BE/FE |
-|------|-------|-------|
-| 1 | FE check tổng giá trị giao dịch, tự động chọn method | FE |
-| 2 | Tạo 2FA challenge (POST /transactions/2fa/challenge) | BE |
-| 3 | User xác thực: Biometric L2 / OTP input | FE |
-| 4 | Verify + trả proof token (JWT 60s, 1-time) | BE |
-| 5 | Confirm order kèm X-2FA-Token header | BE |
+**Hai path khác nhau về architecture:**
+
+| Path | 2FA Challenge | Verify | Confirm |
+|---|---|---|---|
+| **Smart OTP** | Không cần — app gen code ngay | Core verify atomic | POST confirm kèm `smartOtpCode` |
+| **Biometric L2** | Cần — tạo challenge để bind RSA signature | AAA verify locally → proof token | POST confirm kèm `X-2FA-Token` |
+| **SMS OTP fallback** | Không cần challenge | Core verify (qua lotte-bridge) | POST confirm kèm `smsOtpCode` |
 
 ## 0a. UX Principles
 
 | Principle | Mô tả |
 |-----------|-------|
 | **Tự động chọn method** | Hệ thống tự chọn method mạnh nhất — không bắt user chọn |
-| **Fallback mượt mà** | Nếu method chính không khả dụng → tự động SMS OTP, không block |
+| **Fallback mượt mà** | Smart OTP locked/unavailable → SMS OTP tự động, không block |
 | **Minh bạch về bảo mật** | Hiển thị lý do cần 2FA, số tiền, SĐT nhận OTP |
+| **Reuse existing** | SmartOTPInput component và TOTP generation đã có từ Login flow — reuse, không build mới |
 
 ## 0b. BE / FE Responsibility Split
 
-| Component | Backend (AAA) | Frontend (App) |
-|-----------|---------------|----------------|
-| 2FA Challenge | t_2fa_challenge, POST challenge | TwoFAChallengeModal |
-| Smart-OTP verify | Proxy qua Lotte Core verify TOTP | SmartOTPInput (6-digit) |
-| Biometric L2 verify | RSA signature verify (local) | BiometricPromptHandler |
-| SMS OTP | POST orderOtp/send + verify | SMSOTPInput (+ resend) |
-| Proof token | JWT 60s, single-use, txHash-bound | Gửi X-2FA-Token header |
-| Confirm order | require2FA middleware | Update saga flow |
+| Component | Backend | Frontend (App) |
+|-----------|---------|----------------|
+| **Smart OTP generate** | N/A — không cần | ✅ **Đã có**: TOTP generation trong SmartOTPInput (Login S-OTP) — reuse |
+| **Smart OTP verify** | lotte-bridge proxy sang Core — Core verify + process order atomic | SmartOTPInput (6-digit) |
+| **Biometric L2 verify** | AAA: RSA signature verify locally → trả proof token | BiometricPromptHandler |
+| **SMS OTP** | POST /otp/send (`purpose: ORDER_PLACEMENT`) + Core verify | SMSOTPInput (+ countdown + resend) |
+| **Proof token** | Chỉ cần cho Biometric path: JWT 60s, single-use, txHash-bound | Gửi X-2FA-Token header (Biometric path only) |
+| **Confirm order** | Middleware check: `smartOtpCode` OR `smsOtpCode` OR `X-2FA-Token` | Update saga flow |
 
 ---
 
@@ -103,27 +109,59 @@ Hiện tại, việc xác nhận giao dịch (đặt lệnh, chuyển tiền, ch
 
 ### 2.1 2FA Verification Flow
 
+**Path A — Smart OTP (≥ 100tr)**
+
 ```
 User chọn items → tap "Confirm"
     │
-    ├─ (1) Check transaction value
-    │   ├─ < 10tr → No 2FA needed (access token sufficient)
-    │   ├─ 10tr ~ 100tr → Yêu cầu Biometric L2
-    │   └─ ≥ 100tr → Yêu cầu Smart-OTP TOTP
+    ├─ FE check totalValue ≥ 100tr → hiển thị Smart OTP screen
+    │   [SmartOTPInput — reuse từ Login S-OTP, app đã gen TOTP code]
     │
-    ├─ (2) Check 2FA device availability
-    │   ├─ Biometric available? → prompt biometric (Face ID / Touch ID)
-    │   ├─ Smart-OTP available? → prompt OTP input
-    │   └─ Neither? → fallback to SMS OTP
+    ├─ User nhập 6-digit TOTP code → tap "Xác nhận"
     │
-    ├─ (3) User cung cấp 2FA credential
-    │   ├─ /api/v1/smartOtp/verify (TOTP)
-    │   ├─ /api/v1/biometric/verify (Biometric L2)
-    │   └─ /api/v1/orderOtp/send + /orderOtp/verify (SMS OTP)
+    └─ FE: POST /api/v1/order/confirm
+           { orders: [...], smartOtpCode: "123456", purpose: "ORDER_PLACEMENT" }
+               │
+               └─ lotte-bridge → Core
+                       Core: verify Smart OTP + process order (atomic)
+                       ├─ OTP valid → order confirmed → trả kết quả
+                       └─ OTP invalid → trả lỗi → FE retry (max N lần)
+```
+
+**Path B — Biometric L2 (10tr ~ 100tr)**
+
+```
+User chọn items → tap "Confirm"
     │
-    └─ (4) On success → gọi POST confirm order API kèm 2FA proof token
-        ├─ 2FA token (ngắn hạn, 1-time, bound to transaction)
-        └─ Order được gửi đến Core
+    ├─ FE check 10tr ≤ totalValue < 100tr → trigger Biometric prompt
+    │
+    ├─ FE: POST /api/v1/transactions/2fa/challenge
+    │       { transactionType: "ORDER_CONFIRM", transactionData: {...} }
+    │       → nhận challengeId + transactionHash
+    │
+    ├─ FE: BiometricPromptHandler.sign(challengeId + transactionHash)
+    │
+    ├─ FE: POST /api/v1/transactions/2fa/verify
+    │       { challengeId, method: "BIOMETRIC", signature }
+    │       → nhận proofToken (JWT 60s, 1-time)
+    │
+    └─ FE: POST /api/v1/order/confirm kèm X-2FA-Token: proofToken
+```
+
+**Path C — SMS OTP Fallback**
+
+```
+[Smart OTP locked / unavailable] → FE switch sang SMS path
+    │
+    ├─ FE: POST /api/v1/otp/send
+    │       { purpose: "ORDER_PLACEMENT", transactionRef: pendingOrderRef }
+    │
+    ├─ User nhập SMS OTP
+    │
+    └─ FE: POST /api/v1/order/confirm
+           { orders: [...], smsOtpCode: "123456", purpose: "ORDER_PLACEMENT" }
+               │
+               └─ lotte-bridge → Core (verify SMS OTP + process order)
 ```
 
 ### 2.2 2FA Proof Token
@@ -154,236 +192,192 @@ User chọn items → tap "Confirm"
 
 ## 3. API Endpoints
 
-### 3.1 Initiate 2FA Challenge
+### 3.1 Confirm Order — Smart OTP Path (≥ 100tr)
 
-```
-POST /api/v1/transactions/2fa/challenge
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "transactionType": "ORDER_CONFIRM",
-  "transactionData": {
-    "orders": [
-      {
-        "orderDate": "2026-06-13",
-        "orderNumber": "123456"
-      }
-    ],
-    "totalValue": 150000000
-  },
-  "preferredMethod": "SMARTOTP"
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `transactionType` | enum | `ORDER_CONFIRM`, `CASH_TRANSFER`, `STOCK_TRANSFER`, `PROFILE_CHANGE` |
-| `transactionData` | object | Dữ liệu transaction (transactionHash được tính từ data này) |
-| `preferredMethod` | enum | `SMARTOTP`, `BIOMETRIC`, `SMS_OTP` |
-
-**Response:**
-```json
-{
-  "challengeId": "ch_abc123",
-  "transactionHash": "sha256hash...",
-  "requiredMethod": "SMARTOTP",
-  "expiresAt": "2026-06-13T10:30:00+07:00",
-  "methods": [
-    {
-      "type": "SMARTOTP",
-      "available": true,
-      "hint": "Nhập mã OTP từ ứng dụng Smart-OTP"
-    },
-    {
-      "type": "BIOMETRIC",
-      "available": false,
-      "reason": "Chưa đăng ký biometric"
-    },
-    {
-      "type": "SMS_OTP",
-      "available": true,
-      "hint": "Mã OTP sẽ được gửi đến SĐT 09*****678",
-      "phoneMask": "09*****678"
-    }
-  ]
-}
-```
-
-**Success Codes:**
-- `201 CREATED` — challenge created
-
-**Error Codes:**
-- `400 INVALID_TRANSACTION_TYPE`
-- `400 UNSUPPORTED_METHOD`
-- `403 MAX_SESSIONS_REACHED` (nếu user chưa set thiết bị 2FA)
-- `422 TRANSACTION_VALUE_EXCEEDS_LIMIT` (nếu vượt hạn mức, cần tăng cường 2FA)
-
-**Business Rules:**
-- `transactionHash` = SHA256(`transactionData` + `userId` + `challengeId`) — server-side, không trust client hash
-- Challenge TTL: 5 phút (có thể config)
-- Mỗi user chỉ có 1 challenge active tại 1 thời điểm
-- Nếu user có nhiều phương thức 2FA, hệ thống chọn method mạnh nhất hoặc theo preference
-
----
-
-### 3.2 Verify 2FA Challenge
-
-```
-POST /api/v1/transactions/2fa/verify
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "challengeId": "ch_abc123",
-  "method": "SMARTOTP",
-  "code": "482916",
-  "transactionHash": "sha256hash..."
-}
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `challengeId` | string | ID từ response khởi tạo challenge |
-| `method` | enum | Phương thức xác thực |
-| `code` | string | OTP code (cho SMARTOTP/SMS_OTP) hoặc `biometric_proof` (cho BIOMETRIC) |
-| `transactionHash` | string | Hash để verify data integrity (optional — server có thể tính lại) |
-
-**Response:**
-```json
-{
-  "status": "verified",
-  "proofToken": "eyJhbGciOiJSUzI1NiJ9...",
-  "proofTokenExpiresAt": "2026-06-13T10:30:15+07:00"
-}
-```
-
-**Success Codes:**
-- `200 OK` — verified, trả về proofToken
-
-**Error Codes:**
-- `400 CHALLENGE_EXPIRED` — challenge đã hết hạn
-- `400 INVALID_CODE` — OTP sai
-- `400 CHALLENGE_NOT_FOUND`
-- `429 TOO_MANY_ATTEMPTS` — vượt quá số lần thử (lockout)
-- `422 MAX_FAILED_ATTEMPTS` — đã đạt giới hạn fail, tài khoản bị khóa 30 phút
-
-**Business Rules:**
-- Smart-OTP: verify qua `/api/v1/smartOtp/verify` (Core Lotte)
-- Biometric: verify qua `/api/v1/biometric/verify` (AAA service)
-- SMS OTP: verify qua `/api/v1/orderOtp/verify` (AAA service)
-- Thử sai 5 lần → lock 30 phút (configurable)
-- Proof token TTL: 60 giây, single-use
-
----
-
-### 3.3 Confirm Order with 2FA Proof
+> Core verify Smart OTP và process order atomic. Không cần challenge/proof token riêng.
 
 ```
 POST /api/v1/order/confirm
 Authorization: Bearer <access_token>
-X-2FA-Token: <proofToken>
 Content-Type: application/json
 ```
 
-**Request Body:** (existing structure)
+**Request Body:**
 ```json
 {
   "accountNumber": "123456",
   "subNumber": "001",
   "orders": [
-    {
-      "orderDate": "2026-06-13",
-      "orderNumber": "123456"
-    }
-  ]
+    { "orderDate": "2026-06-13", "orderNumber": "123456" }
+  ],
+  "smartOtpCode": "482916",
+  "purpose": "ORDER_PLACEMENT"
 }
 ```
 
-**Response:**
+| Field | Type | Mô tả |
+|---|---|---|
+| `smartOtpCode` | string | 6-digit TOTP code từ NHSV Pro app |
+| `purpose` | enum | `ORDER_PLACEMENT` — bắt buộc để Core log đúng nghiệp vụ |
+
+**Response (success):**
 ```json
 {
   "status": "confirmed",
   "orderCount": 2,
   "totalValue": 150000000,
   "confirmedOrders": [
-    {
-      "orderNumber": "123456",
-      "status": "SUCCESS",
-      "message": "Lệnh đã được gửi đến Sở giao dịch"
-    }
+    { "orderNumber": "123456", "status": "SUCCESS", "message": "Lệnh đã được gửi đến Sở giao dịch" }
   ]
 }
 ```
 
-**Success Codes:**
-- `200 OK` — confirmed
-
 **Error Codes:**
-- `401 INVALID_2FA_TOKEN` — proof token không hợp lệ
-- `401 2FA_TOKEN_EXPIRED` — proof token đã hết hạn
-- `401 2FA_TRANSACTION_MISMATCH` — proof token không match với transaction này
-- `422 ORDER_PLACE_XXXX` — lỗi từ Core (pass-through)
-
-**Backend Logic:**
-```javascript
-// Middleware kiểm tra 2FA
-function require2FA(req, res, next) {
-  const proofToken = req.headers['x-2fa-token'];
-  if (!proofToken) return res.status(401).json({ code: '2FA_REQUIRED' });
-
-  try {
-    const decoded = jwt.verify(proofToken, conf.getJwt().publicKey);
-    if (decoded.sub !== '2fa_proof') throw new Error('invalid token type');
-
-    // Kiểm tra transaction match
-    const txHash = sha256(req.body + decoded.userId + decoded.challengeId);
-    if (txHash !== decoded.transactionHash) {
-      throw new Error('transaction mismatch');
-    }
-
-    // 1-time use
-    revokeProofToken(decoded.jti);
-
-    req.twoFA = decoded;
-    next();
-  } catch (err) {
-    return res.status(401).json({ code: 'INVALID_2FA_TOKEN' });
-  }
-}
-```
+| Code | HTTP | Mô tả |
+|---|---|---|
+| `SMART_OTP_REQUIRED` | 401 | Lệnh ≥ 100tr cần Smart OTP, chưa cung cấp |
+| `OTP_INVALID` | 400 | OTP sai |
+| `OTP_EXPIRED` | 400 | OTP quá 2 phút |
+| `SMART_OTP_LOCKED` | 403 | Smart OTP đã bị lock — FE fallback SMS OTP |
+| `SMART_OTP_NOT_ACTIVATED` | 403 | Chưa activate Smart OTP — FE fallback SMS OTP |
+| `ORDER_PLACE_XXXX` | 422 | Lỗi từ Core (pass-through) |
 
 ---
 
-### 3.4 Update Order 2FA for Other Transaction Types
+### 3.2 Confirm Order — SMS OTP Fallback Path
 
-Tương tự flow trên cho:
-
-**Cash Transfer Confirm:**
 ```
-POST /api/v1/cash-transfer/confirm
+POST /api/v1/order/confirm
+Authorization: Bearer <access_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "accountNumber": "123456",
+  "subNumber": "001",
+  "orders": [
+    { "orderDate": "2026-06-13", "orderNumber": "123456" }
+  ],
+  "smsOtpCode": "482916",
+  "purpose": "ORDER_PLACEMENT"
+}
+```
+
+> Cùng endpoint với Smart OTP — BE phân biệt qua field `smartOtpCode` vs `smsOtpCode`. Chỉ 1 trong 2 được phép có trong 1 request.
+
+---
+
+### 3.3 2FA Challenge — Biometric L2 Path (10tr ~ 100tr)
+
+> Challenge chỉ cần cho Biometric vì AAA verify RSA signature locally (không qua Core), cần binding transactionHash để prevent replay.
+
+```
+POST /api/v1/transactions/2fa/challenge
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "transactionType": "ORDER_CONFIRM",
+  "transactionData": { "orders": [...], "totalValue": 50000000 },
+  "preferredMethod": "BIOMETRIC"
+}
+```
+
+**Response:**
+```json
+{
+  "challengeId": "ch_abc123",
+  "transactionHash": "sha256hash...",
+  "requiredMethod": "BIOMETRIC",
+  "expiresAt": "2026-06-13T10:30:00+07:00"
+}
+```
+
+**Business Rules:**
+- `transactionHash` = SHA256(`transactionData` + `userId` + `challengeId`) — server-side
+- Challenge TTL: 5 phút; 1 challenge active per user tại 1 thời điểm
+
+---
+
+### 3.4 Verify Biometric + Get Proof Token
+
+```
+POST /api/v1/transactions/2fa/verify
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "challengeId": "ch_abc123",
+  "method": "BIOMETRIC",
+  "signature": "<RSA-SHA256 signature of challengeId+transactionHash>"
+}
+```
+
+**Response:**
+```json
+{
+  "proofToken": "eyJhbGciOiJSUzI1NiJ9...",
+  "proofTokenExpiresAt": "2026-06-13T10:30:15+07:00"
+}
+```
+
+**Error Codes:**
+| Code | HTTP | Mô tả |
+|---|---|---|
+| `BIOMETRIC_VERIFY_FAILED` | 400 | Signature không hợp lệ |
+| `CHALLENGE_EXPIRED` | 400 | Challenge quá 5 phút |
+| `TOO_MANY_ATTEMPTS` | 429 | Vượt số lần thử → fallback SMS OTP |
+
+---
+
+### 3.5 Confirm Order — Biometric Path (kèm proof token)
+
+```
+POST /api/v1/order/confirm
+Authorization: Bearer <access_token>
 X-2FA-Token: <proofToken>
 ```
 
-**Stock Transfer Confirm:**
+**Request Body:** (existing order structure, không kèm otpCode)
+
+**Business Rules:**
+- Proof token TTL: 60s, single-use, txHash-bound
+- Middleware verify token → match transactionHash → revoke → process order
+
+---
+
+### 3.6 Send SMS OTP cho Order (khi cần fallback)
+
 ```
-POST /api/v1/stock-transfer/confirm
-X-2FA-Token: <proofToken>
+POST /api/v1/otp/send
+Authorization: Bearer <access_token>
 ```
 
-**Profile Change:**
-```
-POST /api/v1/user/profile
-X-2FA-Token: <proofToken>
+**Request Body:**
+```json
+{
+  "purpose": "ORDER_PLACEMENT",
+  "transactionRef": "<pendingOrderRef>"
+}
 ```
 
-> Các endpoint này đã tồn tại, chỉ cần thêm middleware 2FA check.
+> SMS OTP khi gửi phải kèm mục đích: `"[NHSV] Mã xác thực ĐẶT LỆNH: {OTP}. Hiệu lực 5 phút. Không chia sẻ mã này với ai."`
+
+---
+
+### 3.7 Transaction Types Khác (tham khảo)
+
+| Transaction | Endpoint | `purpose` | 2FA method |
+|---|---|---|---|
+| Rút tiền < 10M | POST /cash/withdraw/confirm | `CASH_WITHDRAWAL` | Smart OTP / SMS OTP (kèm trong body) |
+| Stock transfer | POST /stock-transfer/confirm | `STOCK_TRANSFER` | Smart OTP / SMS OTP (kèm trong body) |
+| Profile change | POST /user/profile | — | SMS OTP (spec riêng) |
 
 ---
 
@@ -647,13 +641,15 @@ ConfirmOrdersScreen
 
 ## 11. Open Questions
 
-| Question | Proposed Decision |
-|----------|-------------------|
+| Question | Decision |
+|----------|----------|
 | Threshold 10tr/100tr có đúng không? | Cần confirm với compliance |
 | SmartOTP device binding: 1 device/user? | Hiện tại 1 device, future multi-device |
-| User chưa enroll Smart-OTP: force enroll hay SMS fallback? | SMS fallback (Phase 1), force enroll (Phase 2) |
-| Biometric L2 có verify qua Lotte Core không? | Không — verify local trên AAA (RSA) |
-| Admin transactions có cần 2FA không? | Có — nhưng admin có thể bypass trên màn hình confirm (configurable) |
+| User chưa enroll Smart-OTP: force enroll hay SMS fallback? | SMS fallback — không block giao dịch |
+| Biometric L2 có verify qua Lotte Core không? | **Không** — verify local trên AAA (RSA signature) |
+| Smart OTP verify có qua Core không? | **Có** — Core verify TOTP và process order atomic (đã clarify) |
+| SmartOTPInput component có sẵn chưa? | **Có** — NHSV Pro app đã có từ Login S-OTP flow, reuse |
+| Admin transactions có cần 2FA không? | Có — configurable |
 
 ---
 

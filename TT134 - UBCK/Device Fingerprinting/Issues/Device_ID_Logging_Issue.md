@@ -151,7 +151,30 @@ AC-9: FE không cho phép thực hiện GDCK/rút/chuyển tiền khi không có
 
 ---
 
-## 9. Dependencies
+## 9. Core Requirements — Web Trading Channel
+
+> Điều 18 khoản 3a quy định rõ *"Thông tin định danh máy tính là địa chỉ MAC hoặc kết hợp các thông tin liên quan đến máy tính"* — nghĩa là web trading của Core phải thu thập device ID máy tính, song song với mobile. BE-4 và FE-4 của NHSV Pro đã cover TradeX side; Core cần làm tương đương cho web trading system riêng của họ.
+
+### 9.1 Core Tasks
+
+| # | Yêu cầu với Core | Điều TT134 | Ưu tiên |
+|---|---|---|---|
+| CORE-1 | Thu thập và log **device identifier cho máy tính** khi đặt lệnh và rút/chuyển tiền qua web: ưu tiên địa chỉ MAC; nếu không lấy được MAC → sử dụng server-computed browser/PC fingerprint kết hợp (User-Agent + screen resolution + timezone + ...) | Điều 18 k3a | 🔴 Critical |
+| CORE-2 | Nhật ký GDCK của Core web phải ghi đủ **tất cả fields Điều 18 k4**: tên KH, loại hình KH, số TK, thời gian nhận lệnh (ngày+giờ+phút), mã CK, phương thức GD (`WEB`), loại lệnh, SL+giá, hình thức xác thực, thời gian xác thực, device ID, IP | Điều 18 k4 | 🔴 Critical |
+| CORE-3 | Nhật ký rút/chuyển tiền của Core web phải ghi đủ **fields Điều 18 k5**: tên KH, số TK, số tiền, TK ngân hàng nhận, thời gian GD, hình thức xác thực, device ID, IP | Điều 18 k5 | 🔴 Critical |
+| CORE-4 | Gửi `X-Device-Id` (MAC/PC fingerprint) trong mọi API call đặt lệnh và rút/chuyển tiền từ web trading sang các service phía sau. Cho phép NHSV audit cross-channel nếu cần | Điều 18 k3a | Cao |
+| CORE-5 | Nếu không thu thập được device identifier → web trading **không được phép thực hiện giao dịch** (Điều 18 k3a bắt buộc phải lưu trữ) | Điều 18 k3a | Cao |
+
+### 9.2 Cách raise với Core
+
+1. Gửi tham chiếu văn bản Điều 18 k3a, k4, k5 TT134 chính thức
+2. Confirm Core có khả năng thu thập MAC/browser fingerprint trên web không, nếu không → thống nhất phương án fallback fingerprint
+3. Yêu cầu Core chia sẻ schema nhật ký GDCK và rút/chuyển tiền hiện tại để đối chiếu với yêu cầu Điều 18
+4. Deadline: **28/08/2026** — align với NHSV Pro P0
+
+---
+
+## 10. Dependencies (TradeX side)
 
 | Dependency | Owner | Status |
 |---|---|---|
