@@ -433,6 +433,13 @@ body {
   border-color: var(--tier-r-bd);
 }
 .tier-badge.badge-REJECT .badge-dot { background: var(--tier-r); }
+.tier-badge.badge-OVERRIDE {
+  background: rgba(124,58,237,.10);
+  color: #C4B5FD;
+  border-color: rgba(124,58,237,.3);
+}
+.tier-badge.badge-OVERRIDE .badge-dot { background: #7C3AED; box-shadow: 0 0 4px #7C3AED; }
+[data-theme="light"] .tier-badge.badge-OVERRIDE { color: #6D28D9; }
 
 .notes-badge {
   font-size: 10px;
@@ -854,6 +861,7 @@ body {
 }
 .tn-b { color: #1D4ED8; }
 .tn-c { color: #B45309; }
+.tn-reject { color: #DC2626; }
 .tn-r { color: #B91C1C; }
 
 .total-info { flex: 1; }
@@ -1294,6 +1302,13 @@ textarea.form-input { resize: vertical; min-height: 72px; }
   color: var(--tier-r);
   border-color: var(--tier-r-bd);
 }
+.pip-pill.pip-failed {
+  background: rgba(217,119,6,.1);
+  color: #D97706;
+  border-color: rgba(217,119,6,.35);
+  font-weight: 700;
+}
+[data-theme="dark"] .pip-pill.pip-failed { background: rgba(217,119,6,.15); color: #FCD34D; border-color: rgba(217,119,6,.4); }
 .pip-pill.pip-pending {
   background: transparent;
   color: var(--text-3);
@@ -1341,9 +1356,10 @@ textarea.form-input { resize: vertical; min-height: 72px; }
   flex-shrink: 0;
   transition: all 200ms;
 }
-.ms-dot.done  { background: #059669; border-color: #059669; }
-.ms-dot.active { background: var(--tier-b); border-color: var(--tier-b); box-shadow: 0 0 0 3px rgba(37,99,235,.15); animation: ms-pulse 1.6s ease-in-out infinite; }
+.ms-dot.done     { background: #059669; border-color: #059669; }
+.ms-dot.active   { background: var(--tier-b); border-color: var(--tier-b); box-shadow: 0 0 0 3px rgba(37,99,235,.15); animation: ms-pulse 1.6s ease-in-out infinite; }
 .ms-dot.rejected { background: var(--tier-r); border-color: var(--tier-r); animation: none; }
+.ms-dot.failed   { background: #D97706; border-color: #D97706; animation: none; }
 
 @keyframes ms-pulse {
   0%, 100% { box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
@@ -1357,6 +1373,165 @@ textarea.form-input { resize: vertical; min-height: 72px; }
   min-width: 8px;
 }
 .ms-line.done { background: rgba(5,150,105,.4); }
+
+/* ─── PIPELINE STATE BAR & HISTORY ─────────────────────────────────────────── */
+.pip-state-bar {
+  margin-top: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  border: 1px solid;
+}
+.psb-status {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.psb-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.psb-stage { color: var(--text-2); font-weight: 500; }
+.psb-meta  { color: var(--text-3); font-size: 10px; margin-left: auto; flex-shrink: 0; }
+
+.pip-state-bar.psb-active   { background: var(--tier-b-bg); border-color: var(--tier-b-bd); color: var(--tier-b); }
+.pip-state-bar.psb-active .psb-dot { background: var(--tier-b); }
+.pip-state-bar.psb-failed   { background: rgba(217,119,6,.08); border-color: rgba(217,119,6,.3); color: #D97706; }
+.pip-state-bar.psb-failed .psb-dot { background: #D97706; }
+.pip-state-bar.psb-rejected { background: var(--tier-r-bg); border-color: var(--tier-r-bd); color: var(--tier-r); }
+.pip-state-bar.psb-rejected .psb-dot { background: var(--tier-r); }
+
+.pip-history { margin-top: 6px; }
+
+.ph-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-bottom: 4px;
+}
+
+.ph-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 96px;
+  overflow-y: auto;
+}
+
+.ph-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  line-height: 1.4;
+}
+.ph-icon  { flex-shrink: 0; width: 12px; text-align: center; font-size: 11px; }
+.ph-by    { font-weight: 600; color: var(--text-2); flex-shrink: 0; min-width: 56px; }
+.ph-what  { flex: 1; color: var(--text-2); }
+.ph-at    { color: var(--text-3); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+
+.ph-entry.phe-active   { border-color: rgba(37,99,235,.15); }
+.ph-entry.phe-failed   { border-color: rgba(217,119,6,.2);  }
+.ph-entry.phe-rejected { border-color: rgba(220,38,38,.15); }
+.ph-entry.phe-reset    { opacity: .55; }
+
+/* ─── CARD PIPELINE STATES ──────────────────────────────────────────────────── */
+.card.pip-terminated {
+  opacity: .52;
+}
+.card.pip-terminated:hover {
+  opacity: .88;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08) !important;
+}
+
+.card.pip-advancing {
+  border-color: rgba(5,150,105,.3) !important;
+  background: linear-gradient(175deg, rgba(5,150,105,.05) 0%, var(--surface) 52px) !important;
+}
+.card.pip-advancing:hover {
+  border-color: rgba(5,150,105,.55) !important;
+  box-shadow: 0 8px 24px rgba(5,150,105,.12) !important;
+}
+
+.card.pip-offer {
+  border-color: rgba(5,150,105,.45) !important;
+  background: linear-gradient(175deg, rgba(5,150,105,.1) 0%, var(--surface) 60px) !important;
+}
+.card.pip-offer:hover {
+  border-color: #059669 !important;
+  box-shadow: 0 8px 28px rgba(5,150,105,.18) !important;
+}
+
+[data-theme="dark"] .card.pip-advancing { background: linear-gradient(175deg, rgba(5,150,105,.08) 0%, var(--surface) 52px) !important; }
+[data-theme="dark"] .card.pip-offer     { background: linear-gradient(175deg, rgba(5,150,105,.13) 0%, var(--surface) 60px) !important; }
+
+/* ─── FILTER SEPARATOR ──────────────────────────────────────────────────────── */
+.pfb-sep {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 2px;
+}
+
+/* ─── CARD ACTIONS ──────────────────────────────────────────────────────────── */
+.card-actions {
+  padding: 7px 16px 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-top: 1px solid var(--border2);
+  background: var(--surface2);
+}
+
+.qa-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: .02em;
+}
+.qa-label.ql-active  { color: var(--tier-b); }
+.qa-label.ql-failed  { color: #D97706; }
+.qa-label.ql-rejected{ color: var(--tier-r); }
+.qa-label.ql-done    { color: var(--green); }
+
+.qa-btn {
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 140ms var(--ease);
+  flex-shrink: 0;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+.qa-next    { background: rgba(5,150,105,.08);  color: #059669; border-color: rgba(5,150,105,.25); }
+.qa-next:hover    { background: #059669; color: #fff; border-color: #059669; }
+.qa-fail    { background: rgba(217,119,6,.08);  color: #D97706; border-color: rgba(217,119,6,.25); }
+.qa-fail:hover    { background: #D97706; color: #fff; border-color: #D97706; }
+.qa-reject  { background: rgba(220,38,38,.06);  color: var(--tier-r); border-color: rgba(220,38,38,.2); }
+.qa-reject:hover  { background: var(--tier-r); color: #fff; border-color: var(--tier-r); }
+.qa-restore { background: rgba(37,99,235,.06);  color: var(--tier-b); border-color: var(--tier-b-bd); }
+.qa-restore:hover { background: var(--tier-b); color: #fff; border-color: var(--tier-b); }
+.qa-override { background: rgba(124,58,237,.07); color: #7C3AED; border-color: rgba(124,58,237,.25); }
+.qa-override:hover { background: #7C3AED; color: #fff; border-color: #7C3AED; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
@@ -1398,7 +1573,7 @@ textarea.form-input { resize: vertical; min-height: 72px; }
         <div class="stat total"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Tổng CV</div></div>
         <div class="stat b"><div class="stat-num" id="stat-b">—</div><div class="stat-label">Tier B</div></div>
         <div class="stat c"><div class="stat-num" id="stat-c">—</div><div class="stat-label">Tier C</div></div>
-        <div class="stat r"><div class="stat-num" id="stat-r">—</div><div class="stat-label">Reject</div></div>
+        <div class="stat r"><div class="stat-num" id="stat-r">—</div><div class="stat-label">Bị loại</div></div>
       </div>
     </div>
   </div>
@@ -1410,20 +1585,20 @@ textarea.form-input { resize: vertical; min-height: 72px; }
   <button class="filter-btn all active"  onclick="filter('all',this)">Tất cả <span class="filter-count" id="fc-all">—</span></button>
   <button class="filter-btn fb"          onclick="filter('B',this)">Tier B <span class="filter-count" id="fc-b">—</span></button>
   <button class="filter-btn fc"          onclick="filter('C',this)">Tier C <span class="filter-count" id="fc-c">—</span></button>
-  <button class="filter-btn fr"          onclick="filter('REJECT',this)">Reject <span class="filter-count" id="fc-r">—</span></button>
 </div>
 
 <!-- ─── PIPELINE FILTER BAR ─────────────────────────────────────────────────── -->
 <div class="filter-bar pipeline-filter-bar">
   <span class="filter-label">Pipeline</span>
   <button class="pfb pfb-all active" onclick="filterPipeline('all',this)">Tất cả <span class="filter-count" id="pfc-all">—</span></button>
-  <button class="pfb pfb-stage"      onclick="filterPipeline('1',this)">Pass CV <span class="filter-count" id="pfc-1">—</span></button>
+  <div class="pfb-sep"></div>
   <button class="pfb pfb-stage"      onclick="filterPipeline('2',this)">Bài test <span class="filter-count" id="pfc-2">—</span></button>
   <button class="pfb pfb-stage"      onclick="filterPipeline('3',this)">PV Vòng 1 <span class="filter-count" id="pfc-3">—</span></button>
   <button class="pfb pfb-stage"      onclick="filterPipeline('4',this)">PV Vòng 2 <span class="filter-count" id="pfc-4">—</span></button>
   <button class="pfb pfb-stage"      onclick="filterPipeline('5',this)">Offer <span class="filter-count" id="pfc-5">—</span></button>
+  <div class="pfb-sep"></div>
   <button class="pfb pfb-none"       onclick="filterPipeline('none',this)">Chưa có <span class="filter-count" id="pfc-none">—</span></button>
-  <button class="pfb pfb-rej"        onclick="filterPipeline('rejected',this)">Bị loại <span class="filter-count" id="pfc-rej">—</span></button>
+  <button class="pfb pfb-rej"        onclick="filterPipeline('terminated',this)">Bị loại <span class="filter-count" id="pfc-rej">—</span></button>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -1471,33 +1646,33 @@ const IQ = {
   B:{label:"Group B — QA tốt, chưa có CK domain",cls:"gb-b",qs:[
     {q:"B1. Đã từng gia nhập dự án với domain hoàn toàn mới chưa? Làm gì trong 2 tuần đầu để hiểu domain và test hiệu quả?",intent:"Learning strategy — tiêu chí quan trọng nhất nhóm này.",pass:"Hỏi domain expert, đọc spec kỹ, shadow user, trace workflow thực tế.",warn:"\"Chỉ cần đọc spec là đủ\" — thiếu chủ động."},
     {q:"B2. Biết khái niệm CK cơ bản không: lệnh limit, T+2, margin? Đã tự tìm hiểu trước chưa?",intent:"Baseline knowledge và sự chủ động tự học.",pass:"Giải thích được, hoặc thành thật nhưng đã research trước PV.",warn:"Không biết và không chuẩn bị gì."},
-    {q:"B3. Được giao: \"Test màn hình đặt lệnh mua cổ phiếu\" mà chưa dùng app trading — bắt đầu từ đâu?",intent:"Problem-solving khi thiếu domain.",pass:"Hỏi business owner, đọc spec/flow, dùng app thực tế, sau đó identify test cases.",warn:""},
+    {q:"B3. Được giao: \"Test màn hình đặt lệnh mua cổ phiếu\" mà chưa dùng app trading — bắt đầu từ đâu?",intent:"Problem-solving khi thiếu domain.",pass:"Hỏi business owner, đọc spec/flow, dùng app thực tế (mở tài khoản demo), sau đó identify test cases. Có thứ tự rõ ràng.",warn:"Bắt đầu test ngay theo spec mà không hiểu user flow → miss edge case quan trọng."},
     {q:"B4. Estimate bao lâu để làm quen đủ với domain CK để test hiệu quả?",intent:"Realistic self-assessment, có action plan.",pass:"2–4 tuần, có plan: tài liệu + mentor + thực hành.",warn:"\"Vài ngày là xong\" — underestimate complexity."},
-    {q:"B5. Mô tả test suite API hoàn chỉnh nhất bạn đã xây. Cover được gì? Integrate vào CI/CD không?",intent:"Xác nhận depth of QA skills — strength chính nhóm này.",pass:"",warn:""},
-    {q:"B6. Test mobile iOS và Android cùng codebase React Native — điều gì phức tạp nhất? Xử lý ra sao?",intent:"Core challenge của NHSV Pro.",pass:"",warn:""},
-    {q:"B7. Automation testing bạn làm ở mức nào? Có tự maintain script khi code thay đổi không?",intent:"Đánh giá ceiling of QA skills.",pass:"",warn:""},
-    {q:"B8. Trong domain cũ, test transaction tiền như thế nào? Điểm tương đồng với trading?",intent:"Transferable financial testing skills.",pass:"",warn:""},
-    {q:"B9. Đã test hệ thống dữ liệu realtime (giá, tồn kho, live tracking) chưa? Thách thức lớn nhất?",intent:"Real-time testing experience.",pass:"",warn:""},
-    {q:"B10. Bug chỉ xảy ra điều kiện cụ thể (user 0đ trong tk, hoặc 14:29 sắp đóng sàn) — test và reproduce?",intent:"Edge case + time-based testing.",pass:"",warn:""},
-    {q:"B11. Trading yêu cầu precision số rất cao (giá, khối lượng) — test rounding errors như thế nào?",intent:"Numeric precision trong fintech.",pass:"",warn:""},
-    {q:"B12. Điều lo ngại nhất khi làm QA lĩnh vực CK? Kế hoạch vượt qua?",intent:"Self-awareness và action plan.",pass:"",warn:""},
-    {q:"B13. (Thực hành) Cho xem Postman collection hoặc demo live một API test.",intent:"Evidence over claim.",pass:"",warn:""},
-    {q:"B14. Tại sao muốn chuyển sang tài chính/CK? Chủ động hay chỉ vì job opportunity?",intent:"Intrinsic motivation — học domain nhanh hơn.",pass:"Có lý do cụ thể, đã research ngành trước PV.",warn:""}
+    {q:"B5. Mô tả test suite API hoàn chỉnh nhất bạn đã xây. Cover được gì? Integrate vào CI/CD không?",intent:"Xác nhận depth of QA skills — strength chính nhóm này.",pass:"Cover positive + negative + boundary + auth/permission + concurrency. Có schema validation, data-driven tests. CI/CD pipeline (Jenkins/GitHub Actions) chạy auto mỗi PR.",warn:"Chỉ test happy path. Không có CI integration. Không biết test concurrency/race conditions."},
+    {q:"B6. Test mobile iOS và Android cùng codebase React Native — điều gì phức tạp nhất? Xử lý ra sao?",intent:"Core challenge của NHSV Pro.",pass:"Hiểu platform-specific behavior (keyboard, permissions, navigation, push, biometric). Device matrix theo OS version + screen size. Dùng device farm (BrowserStack/SauceLabs) hoặc real device pool.",warn:"\"React Native là cross-platform nên test 1 platform là đủ\" — sai. Hoặc không biết phân biệt iOS vs Android quirks."},
+    {q:"B7. Automation testing bạn làm ở mức nào? Có tự maintain script khi code thay đổi không?",intent:"Đánh giá ceiling of QA skills.",pass:"Tự viết + maintain framework (Appium/Detox/Playwright). Có Page Object pattern. Biết flaky test handling. Dùng Git, code review automation scripts.",warn:"Chỉ chạy script người khác viết. Không hiểu logic. Không biết handle flaky tests."},
+    {q:"B8. Trong domain cũ, test transaction tiền như thế nào? Điểm tương đồng với trading?",intent:"Transferable financial testing skills.",pass:"Test idempotency (no double-debit). Reconciliation (DB vs API vs UI). Rollback khi fail. Audit log. Liên hệ được với trading: order = transaction, khớp lệnh = settlement.",warn:"Không nghĩ tới idempotency hoặc reconciliation. Coi transaction như CRUD bình thường."},
+    {q:"B9. Đã test hệ thống dữ liệu realtime (giá, tồn kho, live tracking) chưa? Thách thức lớn nhất?",intent:"Real-time testing experience.",pass:"WebSocket/SSE testing. Kiểm tra reconnection, message ordering, latency. Stale data handling khi mất kết nối. Stress test với high message rate.",warn:"Chưa làm bao giờ và không biết bắt đầu từ đâu. Hoặc nghĩ chỉ là REST API thông thường."},
+    {q:"B10. Bug chỉ xảy ra điều kiện cụ thể (user 0đ trong tk, hoặc 14:29 sắp đóng sàn) — test và reproduce?",intent:"Edge case + time-based testing.",pass:"Setup state explicitly (seed DB, mock time). Boundary value analysis. Time travel testing (Chrome DevTools/SDK mock clock). Có reproducible test data setup.",warn:"\"Khó test edge case này nên skip\" hoặc test thủ công không systematic."},
+    {q:"B11. Trading yêu cầu precision số rất cao (giá, khối lượng) — test rounding errors như thế nào?",intent:"Numeric precision trong fintech.",pass:"Biết float vs decimal vs integer-in-cents. Test boundary: 0.005, 0.0049, max/min price. Verify BE/FE/DB consistency. Tránh dùng float cho money.",warn:"Không phân biệt được float/decimal. \"JavaScript number is fine\" — sai cho trading."},
+    {q:"B12. Điều lo ngại nhất khi làm QA lĩnh vực CK? Kế hoạch vượt qua?",intent:"Self-awareness và action plan.",pass:"Cụ thể (vd: regulatory compliance, market hours, settlement T+2). Có plan: 1-1 với domain expert, đọc tài liệu HOSE/HNX, mở tài khoản demo dùng app.",warn:"\"Không lo gì cả\" hoặc không có plan cụ thể — thiếu self-awareness."},
+    {q:"B13. (Thực hành) Cho xem Postman collection hoặc demo live một API test.",intent:"Evidence over claim.",pass:"Có collection organized (folders, env vars). Pre-request script, test script với assertions. Biết Newman CLI run.",warn:"Không có sample. Hoặc chỉ paste raw URL, no assertions, no automation."},
+    {q:"B14. Tại sao muốn chuyển sang tài chính/CK? Chủ động hay chỉ vì job opportunity?",intent:"Intrinsic motivation — học domain nhanh hơn.",pass:"Có lý do cụ thể, đã research ngành trước PV. Đầu tư cá nhân hoặc đã đọc về thị trường.",warn:"\"Vì gần nhà / lương ok\" — chỉ extrinsic, không hứng thú domain."}
   ]},
   C:{label:"Group C — CK/Banking domain, QA kỹ thuật cần train",cls:"gb-c",qs:[
     {q:"C1. Trong công việc cũ, báo cáo bug bằng cách nào? Quy trình từ phát hiện đến verify fix?",intent:"Verify basic QA process — có structured bug tracking không.",pass:"Title rõ, steps to reproduce, expected vs actual, environment, severity. Dùng tool (JIRA).",warn:"Chỉ report bằng miệng/chat, không có process."},
-    {q:"C2. Đã phát hiện lỗi nghiêm trọng (sai giá, sai số, sai tài khoản) trong hệ thống giao dịch chưa? Xử lý?",intent:"Severity awareness trong fintech, escalation process.",pass:"Hiểu P1/critical, escalate đúng người, không tự xử lý im lặng.",warn:""},
-    {q:"C3. Với kinh nghiệm CK/banking: luồng nào trong trading app risk nhất? Test cẩn thận nhất ở đâu?",intent:"Risk-based thinking từ domain — competitive advantage nhóm này.",pass:"Đặt lệnh, khớp lệnh, cập nhật số dư, margin call, withdraw.",warn:""},
-    {q:"C4. Giải thích forced-sell margin? Ai chịu rủi ro? Từ góc độ QA, test scenario này như thế nào?",intent:"Deep domain → translate thành test scenarios.",pass:"",warn:""},
-    {q:"C5. Trong phiên giao dịch, thời điểm nào hệ thống dễ lỗi nhất? (ATO, ATC, news release...)",intent:"Trading session lifecycle → design time-based test scenarios.",pass:"ATO/ATC peak load, trước/sau khi sàn đóng, lúc news shock.",warn:""},
+    {q:"C2. Đã phát hiện lỗi nghiêm trọng (sai giá, sai số, sai tài khoản) trong hệ thống giao dịch chưa? Xử lý?",intent:"Severity awareness trong fintech, escalation process.",pass:"Hiểu P1/critical, escalate đúng người, không tự xử lý im lặng. Có post-mortem mindset, ghi chép incident.",warn:"\"Tự fix tạm\" hoặc không escalate. Không phân biệt được severity P1 vs P3."},
+    {q:"C3. Với kinh nghiệm CK/banking: luồng nào trong trading app risk nhất? Test cẩn thận nhất ở đâu?",intent:"Risk-based thinking từ domain — competitive advantage nhóm này.",pass:"Đặt lệnh, khớp lệnh, cập nhật số dư, margin call, withdraw, OTP/2FA. Lý do: tiền thật, không reversible.",warn:"\"Login\" hoặc \"UI hiển thị\" — không thấy được risk thật về tiền."},
+    {q:"C4. Giải thích forced-sell margin? Ai chịu rủi ro? Từ góc độ QA, test scenario này như thế nào?",intent:"Deep domain → translate thành test scenarios.",pass:"Giải thích được: maintenance margin call → forced sell. CTCK + nhà đầu tư share risk. Test: trigger threshold, partial fill, notification timing, price gap (gap down ATO).",warn:"Không biết khái niệm. Hoặc chỉ biết tên gọi nhưng không hiểu cơ chế."},
+    {q:"C5. Trong phiên giao dịch, thời điểm nào hệ thống dễ lỗi nhất? (ATO, ATC, news release...)",intent:"Trading session lifecycle → design time-based test scenarios.",pass:"ATO 9:00, ATC 14:30, opening price determination, market shock (news). Hiểu vì sao peak: queue lệnh dồn, matching engine load.",warn:"Không biết phân biệt phiên ATO/ATC vs liên tục. Không hiểu vì sao peak load lại risky."},
     {q:"C6. (Thực hành) Viết tối thiểu 8 test cases cho: \"User nhập số lượng cổ phiếu muốn mua.\"",intent:"Verify basic QA methodology.",pass:"Boundary: 0, âm, max, lẻ. Invalid type, empty, max tài khoản, sàn đóng.",warn:"Chỉ nghĩ happy path → cần train từ đầu."},
-    {q:"C7. Đã dùng Postman test API chưa? Nếu chưa, estimate bao lâu thành thạo cơ bản?",intent:"API testing readiness — critical cho NHSV Pro.",pass:"Gửi request, check response, basic auth. Estimate realistic: 2–4 tuần.",warn:""},
+    {q:"C7. Đã dùng Postman test API chưa? Nếu chưa, estimate bao lâu thành thạo cơ bản?",intent:"API testing readiness — critical cho NHSV Pro.",pass:"Gửi request, check response, basic auth, env vars. Estimate realistic: 2–4 tuần để cơ bản, 2–3 tháng để proficient.",warn:"\"1 tuần là master\" — underestimate. Hoặc chưa dùng và không nhận ra đây là core skill cần học."},
     {q:"C8. Hiểu \"regression testing\" không? Khi nào chạy? Prioritize test cases thế nào cho mỗi release?",intent:"QA methodology foundation.",pass:"Risk-based: focus critical flows, recent changes, integration points.",warn:""},
     {q:"C9. Test \"Danh mục lệnh\" trên mobile iOS và Android — bao nhiêu device? Tiêu chí chọn device?",intent:"Mobile testing awareness — NHSV Pro là React Native app.",pass:"Top devices theo market share, OS version range, screen size coverage.",warn:"\"Test 1 device là đủ\"."},
     {q:"C10. Đã dùng JIRA hoặc issue tracker nào chưa? Workflow từ phát hiện bug đến close?",intent:"Tool proficiency và process familiarity.",pass:"Create → assign → fix → retest → close. Biết severity/priority.",warn:""},
     {q:"C11. So sánh domain knowledge vs kỹ năng QA kỹ thuật: mạnh/yếu gì? Kế hoạch cải thiện?",intent:"Self-awareness + growth mindset — quan trọng nhất nhóm này.",pass:"Thẳng thắn về gap, có plan học cụ thể (course/tool/timeline).",warn:""},
     {q:"C12. Estimate bao lâu đạt mức \"QA độc lập\" — tự viết test plan, execute, report?",intent:"Realistic timeline cho hiring manager plan resource.",pass:"1–3 tháng với domain background. Có milestones.",warn:""},
-    {q:"C13. Đã học/dùng ngôn ngữ programming/scripting nào? (Python, JS, SQL...) Muốn học automation?",intent:"Technical ceiling — có thể tiến đến automation QA không.",pass:"",warn:""},
+    {q:"C13. Đã học/dùng ngôn ngữ programming/scripting nào? (Python, JS, SQL...) Muốn học automation?",intent:"Technical ceiling — có thể tiến đến automation QA không.",pass:"Có nền tảng (script SQL, Python cơ bản, đọc được JS). Muốn học automation, có plan (course/mentor). Realistic về timeline 6–12 tháng.",warn:"Sợ code hoàn toàn. Không muốn học. Hoặc claim biết nhưng không show được output cụ thể."},
     {q:"C14. Lý do chuyển sang QA? Domain CK/banking là lợi thế như thế nào trong vai trò này?",intent:"Career motivation + articulate unique value.",pass:"Lý do rõ, articulate được unique value của domain knowledge.",warn:""}
   ]}
 };
@@ -1577,16 +1752,22 @@ const CV = [
    pros:["Samsung SDS Security Tester — reputable company","Burp Suite Certified Practitioner","AWS SA Associate, Microsoft SC-900","Security mindset: OWASP Top 10, auth/access control"],
    cons:["SAI ROLE: Penetration Tester ≠ Functional QA — khác hoàn toàn","D1=0 — không có domain tài chính/CK","Không có functional test case experience","Không có JIRA, TestRail, test management"]},
 
-  {id:"duong-lb",name:"Lai Bình Dương",role:"System Integration Engineer — VNTeleco",tier:"REJECT",score:null,hc:false,
-   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
-   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"_VNW Lai Binh Duong.pdf",
+  {id:"duong-lb",name:"Lai Bình Dương",role:"System Integration Engineer — VNTeleco",tier:"REJECT",score:10,hc:false,
+   d1:2,d2:1,d3:4,d4:3,
+   d2s:{"API Testing":[1,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[0,6],"3rd-party":[1,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[1,4],"Docs":[1,3],"Initiative":[1,3]},
+   hl:"HC-01 FAIL",iq:"C",action:"reject",cvFile:"_VNW Lai Binh Duong.pdf",
    rejectReason:"HC-01 FAIL: System Integration Engineer — không có QA/Tester role trong toàn bộ career",
    pros:["Technical depth: SIP, SMPP, TCP/IP protocols","Database: Oracle, MySQL, Redis, MongoDB","Log analysis, trace log, find bug skills","Team lead experience"],
    cons:["HC-01 FAIL: không có QA/Tester role","Không có test case design, test plan experience","Không có QA tools: Postman, JIRA, TestRail","Domain: Telecom VAS — không liên quan trading"]},
 
-  {id:"hieu-td",name:"Trần Doãn Hiếu",role:"IT Manager / Developer",tier:"REJECT",score:null,hc:false,
-   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
-   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"_VNW Tran Doan Hieu.pdf",
+  {id:"hieu-td",name:"Trần Doãn Hiếu",role:"IT Manager / Developer",tier:"REJECT",score:11,hc:false,
+   d1:1,d2:2,d3:3,d4:5,
+   d2s:{"API Testing":[1,12],"Mobile Testing":[0,8],"Automation":[1,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[1,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[2,4],"Docs":[1,3],"Initiative":[2,3]},
+   hl:"HC-01 FAIL",iq:"C",action:"reject",cvFile:"_VNW Tran Doan Hieu.pdf",
    rejectReason:"HC-01 FAIL: Developer & IT Manager — không có QA experience trong toàn bộ career",
    pros:["10 năm Mottainai Japan — loyalty","Tech breadth: AI, BigData, Docker, TensorFlow","Japanese N3, quản lý team"],
    cons:["HC-01 FAIL: Developer/IT Manager — không phải QA","Không có QA experience nào","Apply sai vị trí"]},
@@ -1730,16 +1911,22 @@ const CV = [
    pros:["Strong mobile testing discipline: 500+ test cases/release","ISTQB Foundation certified; AI tool adoption mindset","Cross-team collaboration tại Samsung"],
    cons:["Zero API testing — critical gap cho NHSV Pro","Zero financial/securities domain","Toàn bộ experience là device/OS testing, không phải business logic"]},
 
-  {id:"lien-dt",name:"Dương Thị Liên",role:"IT Intern — Asia Software",tier:"REJECT",score:null,hc:false,
-   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
-   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"(Cancel) VNW Lien Duong.pdf",
+  {id:"lien-dt",name:"Dương Thị Liên",role:"IT Intern — Asia Software",tier:"REJECT",score:1,hc:false,
+   d1:0,d2:0,d3:0,d4:1,
+   d2s:{"API Testing":[0,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[0,6],"3rd-party":[0,4],"SQL/Log":[0,3]},
+   d4s:{"Learning":[1,4],"Docs":[0,3],"Initiative":[0,3]},
+   hl:"HC-01 FAIL",iq:"C",action:"reject",cvFile:"(Cancel) VNW Lien Duong.pdf",
    rejectReason:"HC-01 FAIL: IT Intern (Software Development) — sinh viên đang thực tập, không có QA role",
    pros:["Trẻ, có tiềm năng học hỏi"],
    cons:["HC-01 FAIL: Thực tập sinh IT, không phải QA","Zero QA experience","Đang đi học, chưa ra trường"]},
 
-  {id:"huong-pt-kbsv",name:"Phạm Thu Hương (KBSV)",role:"IT Operations Specialist — KB Securities Vietnam",tier:"REJECT",score:null,hc:false,
-   d1:null,d2:null,d3:null,d4:null,d2s:null,d3s:null,d4s:null,
-   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"(KB Security) VNW Pham Thu Huong.pdf",
+  {id:"huong-pt-kbsv",name:"Phạm Thu Hương (KBSV)",role:"IT Operations Specialist — KB Securities Vietnam",tier:"REJECT",score:23,hc:false,
+   d1:15,d2:0,d3:3,d4:5,
+   d2s:{"API Testing":[0,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[0,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"HC-01 FAIL",iq:"C",action:"reject",cvFile:"(KB Security) VNW Pham Thu Huong.pdf",
    rejectReason:"HC-01 FAIL: IT Ops / Technical Support / Sales Manager — không có QA/Tester role trong toàn bộ career",
    pros:["KBSV OMS/WTS/HOSE/HNX operations background — securities domain knowledge","Technical ops mindset, system monitoring experience"],
    cons:["HC-01 FAIL: IT Operations, không phải QA","Không có test case design, không có API testing background","Career path: Ops/Support/Sales — không align với QA"]},
@@ -1749,11 +1936,101 @@ const CV = [
    hl:"File DOCX không đọc được — cần resubmit",iq:null,action:"reject",cvFile:"_LKD Quality Control_Tran Thi Linh Chi (1).docx",
    rejectReason:"File DOCX không thể parse — cần ứng viên resubmit dưới định dạng PDF để tiếp tục đánh giá",
    pros:["Job title 'Quality Control' gợi ý HC-01 có thể Pass — cần xác nhận"],
-   cons:["CV format DOCX không đọc được bằng tool","Chưa thể đánh giá điểm số","Cần yêu cầu resubmit PDF"]}
+   cons:["CV format DOCX không đọc được bằng tool","Chưa thể đánh giá điểm số","Cần yêu cầu resubmit PDF"]},
+
+  // ── BATCH 3 ──────────────────────────────────────────────────────────────
+
+  {id:"binh-tta",name:"Trần Thị An Bình",role:"Test Engineer — LPBank (Digital Banking)",tier:"B",score:65,hc:true,
+   d1:24,d2:20,d3:12,d4:9,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[6,8],"Automation":[3,6],"Performance":[2,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[4,6],"3rd-party":[4,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[4,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"LPBank 2.5 năm — Digital banking app/web, quản lý QA team 8–10 người",iq:"B",action:"interview",cvFile:"VNW Tran Thi An Binh.pdf",
+   pros:["LPBank 2.5 năm: mobile app/web (retail 5M users) + corporate banking, core T24/FCC","Managing QA team 8–10 tại 25 tuổi — test planning, task assignment, mentoring","SBV regulatory compliance (Decision 2345; Circulars 15, 17, 18, 77) — hiểu quy định tài chính VN","Postman + SoapUI (REST/SOAP) + Katalon + Selenium + JMeter + Oracle/MySQL/DBeaver","AI-assisted testing: ChatGPT, Copilot, Claude để tăng tốc test case generation"],
+   cons:["Chỉ 2.5 năm kinh nghiệm — còn junior nhưng bù lại bằng leadership sớm","Automation là Katalon/Selenium — không phải Playwright/Cypress thế hệ mới","Banking domain (lending/cards/payments), chưa phải securities/CK","Không có CI/CD pipeline integration rõ ràng","Không có real-time/WebSocket testing kinh nghiệm"]},
+
+  {id:"lam-nd",name:"Nguyễn Đức Lâm",role:"Senior Tester — MSB / 9Pay / Tikop Fintech",tier:"B",score:58,hc:true,
+   d1:20,d2:19,d3:11,d4:8,
+   d2s:{"API Testing":[10,12],"Mobile Testing":[4,8],"Automation":[4,6],"Performance":[1,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[5,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"12 năm kinh nghiệm — MSB Pay/CRM (3 năm) + 9Pay e-wallet + Tikop micro-investment",iq:"C",action:"interview",cvFile:"(Consier) VNW Nguyen Duc Lam.pdf",
+   pros:["12 năm testing, consistently Senior Tester qua nhiều công ty lớn","MSB (2022–2025): Digi Sale (mobile CRM), MSB Pay & CRM (payment gateway), M-connect","9Pay (2020–2022): e-wallet, QR payment, mobile/web + admin CMS","Tikop (2025-nay): micro-investment + mutual funds fintech — đang học securities domain","Automation: Python + RestAssured + Robot Framework + Selenium + Jenkins CI/CD","FSOFT (2015–2016) — process maturity; trained Senior/Middle/Junior/Fresher/Intern"],
+   cons:["Domain: banking/payment/e-wallet — chưa có securities/CK trực tiếp","Mobile testing không sâu so với các ứng viên chuyên mobile","Không có performance testing (JMeter/k6)","CV sparse về kết quả cụ thể — thiếu số liệu impact"]},
+
+  {id:"tra-nth",name:"Nguyễn Thu Trà",role:"QA Engineer — CATDANO / BLABS (DeFi/Blockchain)",tier:"B",score:50,hc:true,
+   d1:10,d2:20,d3:12,d4:8,
+   d2s:{"API Testing":[8,12],"Mobile Testing":[5,8],"Automation":[4,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[4,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"BLABS + CATDANO: DEX/DeFi testing — automated hourly swap simulation, on-chain/off-chain reconciliation",iq:"B",action:"interview",cvFile:"VNW Nguyen Thu Tra.pdf",
+   note:"Khác với Nguyễn Thị Trà (tra-nt) — đây là blockchain QA engineer, 4+ năm, English + Chinese.",
+   pros:["BLABS (Sep 2023–Jul 2025): DEX Aggregator, Perpetual Trading, AMM — automated JS test scripts, hourly swap simulation","CATDANO/Minswap (Jul 2025-nay): DeFi DEX Cardano + Sui, Playwright + CI test scripts","SQL/DBeaver daily: reconcile on-chain/off-chain data, verify data integrity","JMeter performance + Jenkins CI/CD + Kibana/Rancher log analysis + BrowserStack","English strong + Chinese — hiếm trong pool; AI-assisted productivity"],
+   cons:["Domain: blockchain/DeFi — không phải banking/securities VN","Không có regulatory compliance experience (SBV, VSD...)","Playwright vẫn đang adopt (chưa production-mature)","E-commerce/Fintech chỉ 6 tháng (Techlab + KiotViet) — domain depth mỏng"]},
+
+  {id:"khai-nq",name:"Nguyễn Quang Khải",role:"Senior QA Engineer — Minswap / WAX.IO Blockchain",tier:"B",score:49,hc:true,
+   d1:8,d2:23,d3:9,d4:8,
+   d2s:{"API Testing":[9,12],"Mobile Testing":[6,8],"Automation":[4,6],"Performance":[4,4]},
+   d3s:{"Real-time/WS":[3,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[3,3]},
+   hl:"K6 performance testing 100k RPS + Playwright automation — WAX.IO mobile wallet iOS/Android, Minswap DEX",iq:"B",action:"interview",cvFile:"VNW Nguyen Quang Khai.pdf",
+   note:"Cùng công ty Minswap với Nguyễn Thu Trà. Performance testing mạnh nhất pool (K6 100k RPS + Grafana). Xantus Network: QA Manager.",
+   pros:["WAX.IO (US blockchain startup): mobile wallet iOS/Android, multi-chain bridge, Telegram miniapp — K6 100k RPS + Grafana","Playwright + Python automation từ scratch; QA Manager tại Xantus Network Singapore","Performance testing sâu nhất pool: K6 + Grafana với real production scale","Testrail test management + Charles proxy","English tốt (làm cho US/Singapore startups)"],
+   cons:["Domain: blockchain/DeFi/gaming NFT — không có banking/fintech VN truyền thống","SQL/DB testing minimal — critical gap cho NHSV Pro backend validation","CI/CD pipeline không rõ ràng tại current role","Không có regulatory/compliance experience"]},
+
+  {id:"phuc-nv",name:"Nguyễn Văn Phúc",role:"Manual Tester — Alphaway / Techcombank",tier:"C",score:37,hc:true,
+   d1:15,d2:11,d3:6,d4:5,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[4,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[1,6],"3rd-party":[3,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[1,3]},
+   hl:"Techcombank RDB Platform & Merchant — T24 Core Banking, API + SQL testing",iq:null,action:"second_look",cvFile:"VNW Nguyen Van Phuc.pdf",
+   note:"Career gap 2018–2024 (6 năm) trước khi bắt đầu QA. Hiện đang học automation (REST Assured). Banking domain tốt nhưng thiếu chiều sâu.",
+   pros:["Techcombank RDB Platform: T24 Core Banking, API integration testing, SQL data validation","Multi-platform testing; Agile/Scrum environment lớn (30 người)","Đang học REST Assured — motivation tự nâng cấp","Banking domain (T24, merchant payments) có thể phát triển được"],
+   cons:["Career gap 2018–2024 — 6 năm không rõ làm gì trước khi vào QA","Chỉ 1 năm kinh nghiệm QA thực tế — còn rất junior","Zero automation production experience — đang học khóa ngoài","Không có mobile testing sâu, không có performance testing","GPA 2.65/4 — học lực trung bình"]},
+
+  {id:"loc-nt",name:"Nguyễn Tuấn Lộc",role:"Core System Engineer — FSS Stock Core (Trading/Margin/Account)",tier:"REJECT",score:32,hc:false,
+   d1:20,d2:1,d3:4,d4:7,
+   d2s:{"API Testing":[1,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[1,7],"CI/CD & Tools":[0,6],"3rd-party":[1,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[3,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"HC-01 FAIL — nhưng domain FSS Stock Core cực kỳ liên quan",iq:"C",action:"reject",cvFile:"(Potential) VNW Nguyen Tuan Loc.pdf",
+   rejectReason:"HC-01 FAIL: Core System Engineer / Application Support tại FSS — không phải QA/Tester role. Develop + maintain Oracle PL/SQL cho Stock Core.",
+   pros:["FSS Stock Core System (2024-nay): Trading (lệnh thỏa thuận), Account (eKYC, asset data), Margin (force sell, risk handling) — exact domain NHSV Pro","PL/SQL Oracle advanced + FLEX system — cùng technology stack với nhiều CTCK VN","IELTS 7.0 + GPA 3.53 VNU — profile học thuật mạnh","UAT coordination — có exposure với testing process"],
+   cons:["HC-01 FAIL: Developer/Support Engineer — không phải QA","Chỉ 2 năm đi làm, mới tốt nghiệp 2025","Không có test case design, test methodology experience","Role là maintain/develop code — không phải verify software quality"]},
+
+  {id:"long-ntl",name:"Ngô Thành Long",role:"Business Analyst / PO — Vietnam Airlines",tier:"REJECT",score:13,hc:false,
+   d1:2,d2:2,d3:2,d4:7,
+   d2s:{"API Testing":[1,12],"Mobile Testing":[0,8],"Automation":[1,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[0,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[2,4],"Docs":[3,3],"Initiative":[2,3]},
+   hl:"HC-01 FAIL: Business Analyst — không có QA/Tester background",iq:"C",action:"reject",cvFile:"VNW Ngo Thanh Long.pdf",
+   rejectReason:"HC-01 FAIL: Business Analyst / Product Owner tại Vietnam Airlines — không có QA/Testing role. Domain: Airlines digital marketing, affiliate, CRM.",
+   pros:["4.5 năm VNA: 12+ sản phẩm số — mobile app, affiliate system, financial systems","GA4 API, SQL, Looker Studio, Apps Script automation — data-driven profile","BRD/FSD/UAT coordination — hiểu quy trình phát triển phần mềm"],
+   cons:["HC-01 FAIL: BA/PO — không phải QA/Tester","Domain: Airlines/Digital Marketing — không liên quan securities","Không có test case design, test execution, defect tracking experience","Apply sai vị trí"]},
+
+  {id:"thinh-nd",name:"Nguyễn Duy Thịnh",role:"Game Tester — Koei Tecmo (NIOH 3, PS5/PC)",tier:"REJECT",score:8,hc:false,
+   d1:0,d2:1,d3:2,d4:5,
+   d2s:{"API Testing":[1,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[0,6],"3rd-party":[1,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[3,4],"Docs":[1,3],"Initiative":[1,3]},
+   hl:"HC-01 FAIL: Game Tester console — sinh viên chưa tốt nghiệp (03/2026)",iq:"C",action:"reject",cvFile:"VNW Nguyen Duy Thinh.pdf",
+   rejectReason:"HC-01 FAIL: Console Game Tester (PS5/PC NIOH 3) ≠ Software Functional QA. Sinh viên chưa tốt nghiệp (Hanoi Open University, graduation 03/2026). Zero software/API/mobile testing experience.",
+   pros:["Tiếng Nhật N3, Tiếng Anh C1 — language skills tốt","Game testing methodology (regression, bug reporting, Redmine) — transferable skills một phần","Java, MySQL, Postman, RESTful API trong CV — có nền tảng technical"],
+   cons:["HC-01 FAIL: Game Tester (PS5/PC) ≠ Software QA Functional Tester","Sinh viên chưa tốt nghiệp — graduation 03/2026","Zero software testing, API testing, mobile testing experience thực tế","Không có financial domain nào"]},
+
+  {id:"canh-nx",name:"Nguyễn Xuân Cảnh",role:"System Operation Specialist — NCB (Core Card / T24)",tier:"REJECT",score:34,hc:false,
+   d1:20,d2:0,d3:8,d4:6,
+   d2s:{"API Testing":[0,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[2,7],"CI/CD & Tools":[2,6],"3rd-party":[2,4],"SQL/Log":[2,3]},
+   d4s:{"Learning":[2,4],"Docs":[2,3],"Initiative":[2,3]},
+   hl:"HC-01 FAIL: Vận hành hệ thống T24 Core Banking — không phải QA",iq:"C",action:"reject",cvFile:"VNW Nguyen Xuan Canh.pdf",
+   rejectReason:"HC-01 FAIL: System Operation/Vận hành Hệ thống tại NCB — monitoring, incident response, Core Card TX Compass Plus operations. Không có QA/Tester role.",
+   pros:["7+ năm banking ops: T24 Core Banking, Payment Hub, NAPAS, eKYC — cực kỳ liên quan domain","Grafana, ELK Stack (Elasticsearch, Logstash, Kibana), Jenkins, Kubernetes — DevOps/monitoring depth","Root Cause Analysis, production incident handling — debugging skills","Core Card TX Compass Plus + ATM/POS operations — payment infrastructure knowledge"],
+   cons:["HC-01 FAIL: System Operation — không phải QA/Tester","Không có test case design, test execution, test management experience","Role là vận hành hệ thống 24/7, không phải kiểm thử phần mềm","Apply sai vị trí"]}
 ];
 
 // ─── PIPELINE STAGES ────────────────────────────────────────────────────────
-const STAGES = ['Pass CV', 'Gửi Bài test', 'Phỏng vấn vòng 1', 'Phỏng vấn vòng 2', 'Offer letter'];
+const STAGES = ['Gửi Bài test', 'Phỏng vấn vòng 1', 'Phỏng vấn vòng 2', 'Offer letter'];
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
 let currentFilter = 'all';
@@ -1764,6 +2041,7 @@ let saveTimer = null;
 // ─── SHARED BACKEND ──────────────────────────────────────────────────────────
 let notesCache = {};
 let currentUser = '';
+const LS_NOTES_KEY = 'qa-notes-v1';
 
 function initUser() {
   currentUser = localStorage.getItem('qa-user') || '';
@@ -1786,11 +2064,28 @@ function changeUser() {
   }
 }
 
+function loadLocalNotes() {
+  try { return JSON.parse(localStorage.getItem(LS_NOTES_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveLocalNotes(cache) {
+  try { localStorage.setItem(LS_NOTES_KEY, JSON.stringify(cache)); } catch {}
+}
+
 async function loadAllNotes() {
+  // Load localStorage immediately so UI is responsive even if backend is slow
+  const local = loadLocalNotes();
+  if (Object.keys(local).length > 0) notesCache = local;
+
   try {
     const r = await fetch('/api/notes');
-    if (r.ok) notesCache = (await r.json()) || {};
-  } catch { /* offline: use empty cache */ }
+    if (r.ok) {
+      const backend = (await r.json()) || {};
+      // Merge: backend wins for keys it has (shared state), keep local for keys backend lacks
+      notesCache = { ...local, ...backend };
+      saveLocalNotes(notesCache);
+    }
+  } catch { /* offline — use localStorage */ }
 }
 
 async function syncNotes() {
@@ -1803,13 +2098,20 @@ async function syncNotes() {
 }
 
 async function postNote(id, data) {
+  // Save to localStorage immediately — never fails, survives page refresh
+  const local = loadLocalNotes();
+  local[id] = data;
+  saveLocalNotes(local);
+  notesCache[id] = data;
+
+  // Then sync to backend for cross-user visibility
   try {
     await fetch('/api/notes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, data })
     });
-  } catch { /* silent fail */ }
+  } catch { /* backend unavailable — localStorage covers persistence */ }
 }
 
 // ─── NOTES ──────────────────────────────────────────────────────────────────
@@ -1854,8 +2156,13 @@ async function saveNotes() {
 }
 
 // ─── PIPELINE ────────────────────────────────────────────────────────────────
+const STAGE_LABELS = ['', '', 'Gửi Bài test', 'PV Vòng 1', 'PV Vòng 2', 'Offer letter'];
+
 async function setPipeline(id, stageIdx, status) {
-  const n = { ...getNotes(id), pipeline: stageIdx, pipelineStatus: status, updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN') };
+  const existing = getNotes(id);
+  const history = Array.isArray(existing.history) ? [...existing.history] : [];
+  history.unshift({ stage: stageIdx, stageName: STAGE_LABELS[stageIdx] || '—', status, by: currentUser, at: new Date().toLocaleString('vi-VN') });
+  const n = { ...existing, pipeline: stageIdx, pipelineStatus: status, updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN'), history };
   notesCache[id] = n;
   await postNote(id, n);
   renderCards(currentFilter);
@@ -1863,7 +2170,10 @@ async function setPipeline(id, stageIdx, status) {
 }
 
 async function resetPipeline(id) {
-  const n = { ...getNotes(id), pipeline: 0, pipelineStatus: '', updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN') };
+  const existing = getNotes(id);
+  const history = Array.isArray(existing.history) ? [...existing.history] : [];
+  history.unshift({ stage: 0, stageName: '—', status: 'reset', by: currentUser, at: new Date().toLocaleString('vi-VN') });
+  const n = { ...existing, pipeline: 0, pipelineStatus: '', updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN'), history };
   notesCache[id] = n;
   await postNote(id, n);
   renderCards(currentFilter);
@@ -1879,19 +2189,23 @@ function buildPipelineStepper(id) {
 
   let html = '<div class="pipeline-stepper">';
   STAGES.forEach((s, i) => {
-    const stageNum = i + 1;
+    const stageNum = i + 2;
     let cls = 'pip-pending';
     let prefix = '';
     if (stageNum < pipeline) { cls = 'pip-done'; prefix = '✓ '; }
     else if (stageNum === pipeline) {
-      cls = status === 'rejected' ? 'pip-rejected' : (status === 'active' ? 'pip-active' : 'pip-active');
-      prefix = status === 'rejected' ? '✕ ' : '';
+      if (status === 'rejected')         { cls = 'pip-rejected'; prefix = '✕ '; }
+      else if (status === 'failed-test') { cls = 'pip-failed';   prefix = '✗ '; }
+      else if (status === 'failed-cv')   { cls = 'pip-failed';   prefix = '✗ '; }
+      else                               { cls = 'pip-active';   prefix = ''; }
     }
     const connCls = stageNum < pipeline ? 'done' : '';
+    // Stage 2 (index 0) = Bài test → right-click: failed-test; others → rejected
+    const rclkStatus = (i === 0) ? 'failed-test' : 'rejected';
     html += `<div class="pip-step">
-      <button class="pip-pill ${cls}" title="${s}"
+      <button class="pip-pill ${cls}" title="${s} (click: active · right-click: ${i === 1 ? 'fail test' : 'loại'})"
         onclick="setPipeline('${id}', ${stageNum}, 'active')"
-        oncontextmenu="event.preventDefault();setPipeline('${id}', ${stageNum}, 'rejected')"
+        oncontextmenu="event.preventDefault();setPipeline('${id}', ${stageNum}, '${rclkStatus}')"
       >${prefix}${s}</button>
     </div>`;
     if (i < STAGES.length - 1) {
@@ -1900,7 +2214,51 @@ function buildPipelineStepper(id) {
   });
   html += `<button class="pip-reset" onclick="resetPipeline('${id}')">Reset</button>`;
   html += '</div>';
-  el.innerHTML = html;
+
+  // ── State summary bar ──
+  let stateBar = '';
+  if (pipeline > 0) {
+    let barCls, icon, statusLabel;
+    if (status === 'rejected')         { barCls = 'psb-rejected'; icon = '✕'; statusLabel = 'Bị loại'; }
+    else if (status === 'failed-test') { barCls = 'psb-failed';   icon = '✗'; statusLabel = 'Fail Test'; }
+    else if (status === 'failed-cv')   { barCls = 'psb-failed';   icon = '✗'; statusLabel = 'Fail CV'; }
+    else                               { barCls = 'psb-active';   icon = '→'; statusLabel = 'Đang tiến hành'; }
+    const meta = n.updatedBy ? `${n.updatedBy} · ${n.updatedAt || ''}` : '';
+    stateBar = `<div class="pip-state-bar ${barCls}">
+      <div class="psb-status"><span class="psb-dot"></span>${icon} ${statusLabel}</div>
+      <span class="psb-stage">${STAGE_LABELS[pipeline] || ''}</span>
+      ${meta ? `<span class="psb-meta">${meta}</span>` : ''}
+    </div>`;
+  }
+
+  // ── History list ──
+  const history = n.history || [];
+  let historyHtml = '';
+  if (history.length > 0) {
+    const entryMap = {
+      'active':      { icon: '→', cls: 'phe-active',   fmt: sn => sn },
+      'rejected':    { icon: '✕', cls: 'phe-rejected', fmt: sn => `Loại — ${sn}` },
+      'failed-test': { icon: '✗', cls: 'phe-failed',   fmt: sn => `Fail Test — ${sn}` },
+      'failed-cv':   { icon: '✗', cls: 'phe-failed',   fmt: sn => `Fail CV — ${sn}` },
+      'reset':       { icon: '↺', cls: 'phe-reset',    fmt: ()  => 'Reset pipeline' }
+    };
+    const rows = history.slice(0, 15).map(h => {
+      const e = entryMap[h.status] || { icon: '·', cls: '', fmt: sn => sn };
+      const dateShort = (h.at || '').split(',')[0] || '';
+      return `<div class="ph-entry ${e.cls}">
+        <span class="ph-icon">${e.icon}</span>
+        <span class="ph-by">${h.by || '—'}</span>
+        <span class="ph-what">${e.fmt(h.stageName || '—')}</span>
+        <span class="ph-at">${dateShort}</span>
+      </div>`;
+    }).join('');
+    historyHtml = `<div class="pip-history">
+      <div class="ph-label">Lịch sử · ${history.length} cập nhật</div>
+      <div class="ph-list">${rows}</div>
+    </div>`;
+  }
+
+  el.innerHTML = html + stateBar + historyHtml;
 }
 
 function buildMiniStepper(id) {
@@ -1911,11 +2269,14 @@ function buildMiniStepper(id) {
 
   let html = '<div class="mini-stepper">';
   STAGES.forEach((s, i) => {
-    const stageNum = i + 1;
+    const stageNum = i + 2;
     let cls = '';
     if (stageNum < pipeline) cls = 'done';
     else if (stageNum === pipeline) {
-      cls = status === 'rejected' ? 'rejected' : 'active';
+      if (status === 'rejected')         cls = 'rejected';
+      else if (status === 'failed-test') cls = 'failed';
+      else if (status === 'failed-cv')   cls = 'failed';
+      else                               cls = 'active';
     }
     if (i > 0) {
       const lineCls = stageNum <= pipeline ? 'done' : '';
@@ -1927,21 +2288,68 @@ function buildMiniStepper(id) {
   return html;
 }
 
+function buildCardActions(id) {
+  const n = getNotes(id);
+  const pipeline = n.pipeline || 0;
+  const status = n.pipelineStatus || '';
+
+  const stageNames  = ['—', '', 'Gửi Bài test', 'PV Vòng 1', 'PV Vòng 2', 'Offer'];
+  const nextLabels  = ['', '', '→ PV Vòng 1', '→ PV Vòng 2', '→ Offer', ''];
+
+  let labelText = '', labelCls = '', btns = '';
+
+  if (pipeline === 0) {
+    labelText = 'Chưa có stage'; labelCls = '';
+    btns = `<button class="qa-btn qa-next"   onclick="event.stopPropagation();setPipeline('${id}',2,'active')">Gửi Bài test ▶</button>
+            <button class="qa-btn qa-fail"   onclick="event.stopPropagation();setPipeline('${id}',2,'failed-cv')">✗ Fail CV</button>
+            <button class="qa-btn qa-reject" onclick="event.stopPropagation();setPipeline('${id}',2,'rejected')">⊗ Loại</button>`;
+
+  } else if (status === 'rejected') {
+    labelText = '✕ Bị loại'; labelCls = 'ql-rejected';
+    btns = `<button class="qa-btn qa-restore" onclick="event.stopPropagation();setPipeline('${id}',${pipeline},'active')">↺ Khôi phục</button>`;
+
+  } else if (status === 'failed-cv') {
+    labelText = '✗ Fail CV'; labelCls = 'ql-failed';
+    btns = `<button class="qa-btn qa-restore" onclick="event.stopPropagation();setPipeline('${id}',2,'active')">↺ Retry</button>
+            <button class="qa-btn qa-reject"  onclick="event.stopPropagation();setPipeline('${id}',2,'rejected')">⊗ Loại</button>`;
+
+  } else if (status === 'failed-test') {
+    labelText = '✗ Fail Test'; labelCls = 'ql-failed';
+    btns = `<button class="qa-btn qa-restore" onclick="event.stopPropagation();setPipeline('${id}',2,'active')">↺ Retry</button>
+            <button class="qa-btn qa-reject"  onclick="event.stopPropagation();setPipeline('${id}',2,'rejected')">⊗ Loại</button>`;
+
+  } else {
+    labelText = stageNames[pipeline]; labelCls = pipeline === 5 ? 'ql-done' : 'ql-active';
+    if (pipeline < 5) {
+      btns += `<button class="qa-btn qa-next" onclick="event.stopPropagation();setPipeline('${id}',${pipeline+1},'active')">${nextLabels[pipeline]}</button>`;
+    }
+    if (pipeline === 2) {
+      btns += `<button class="qa-btn qa-fail" onclick="event.stopPropagation();setPipeline('${id}',2,'failed-test')">✗ Fail</button>`;
+    }
+    btns += `<button class="qa-btn qa-reject" onclick="event.stopPropagation();setPipeline('${id}',${pipeline},'rejected')">⊗ Loại</button>`;
+  }
+
+  return `<div class="card-actions"><span class="qa-label ${labelCls}">${labelText}</span>${btns}</div>`;
+}
+
 function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes, 800); }
 
 // ─── RENDER CARDS ────────────────────────────────────────────────────────────
 function updatePipelineCounts() {
   const tierList = currentFilter === 'all' ? CV : CV.filter(c => c.tier === currentFilter);
-  const counts = { all: tierList.length, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, none: 0, rejected: 0 };
+  const counts = { all: tierList.length, 2: 0, 3: 0, 4: 0, 5: 0, none: 0, terminated: 0 };
   tierList.forEach(c => {
     const n = getNotes(c.id);
     const p = n.pipeline || 0;
     const s = n.pipelineStatus || '';
-    if (s === 'rejected') counts.rejected++;
-    else if (p === 0) counts.none++;
-    else if (p >= 1 && p <= 5) counts[p]++;
+    const isTerminated = (c.tier === 'REJECT' && p === 0 && s === '') || ['rejected','failed-test','failed-cv'].includes(s);
+    if (isTerminated)           counts.terminated++;
+    else if (p === 0)           counts.none++;
+    else if (p >= 2 && p <= 5) counts[p]++;
   });
-  const idMap = { all: 'pfc-all', 1: 'pfc-1', 2: 'pfc-2', 3: 'pfc-3', 4: 'pfc-4', 5: 'pfc-5', none: 'pfc-none', rejected: 'pfc-rej' };
+  const idMap = { all: 'pfc-all', 2: 'pfc-2', 3: 'pfc-3', 4: 'pfc-4', 5: 'pfc-5', none: 'pfc-none', terminated: 'pfc-rej' };
+  const statR = document.getElementById('stat-r');
+  if (statR) statR.textContent = counts.terminated;
   Object.entries(idMap).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (el) el.textContent = counts[k] ?? 0;
@@ -1959,13 +2367,24 @@ function renderCards(f) {
       const n = getNotes(c.id);
       const p = n.pipeline || 0;
       const s = n.pipelineStatus || '';
-      if (currentPipelineFilter === 'none')     return p === 0 && s !== 'rejected';
-      if (currentPipelineFilter === 'rejected') return s === 'rejected';
-      return p === +currentPipelineFilter && s !== 'rejected';
+      const isTerminated = (c.tier === 'REJECT' && p === 0 && s === '') || ['rejected','failed-test','failed-cv'].includes(s);
+      if (currentPipelineFilter === 'none')       return p === 0 && !isTerminated;
+      if (currentPipelineFilter === 'terminated') return isTerminated;
+      return p === +currentPipelineFilter && !isTerminated;
     });
   }
 
   updatePipelineCounts();
+
+  list.sort((a, b) => {
+    const na = getNotes(a.id), nb = getNotes(b.id);
+    const sa = na.pipelineStatus || '', sb = nb.pipelineStatus || '';
+    const pa = na.pipeline || 0,        pb = nb.pipeline || 0;
+    const termA = (a.tier === 'REJECT' && pa === 0 && sa === '') || ['rejected','failed-cv','failed-test'].includes(sa);
+    const termB = (b.tier === 'REJECT' && pb === 0 && sb === '') || ['rejected','failed-cv','failed-test'].includes(sb);
+    if (termA !== termB) return termA ? 1 : -1;
+    return pb - pa;
+  });
 
   list.forEach((c, idx) => {
     const notes = getNotes(c.id);
@@ -1979,7 +2398,11 @@ function renderCards(f) {
     const decisionPill = decisionPillMap[notes.decision] || '';
 
     const tierLabelMap = { B: 'Tier B', C: 'Tier C', REJECT: 'Reject' };
-    const tierLabel = tierLabelMap[c.tier];
+    const _pipS = (notes.pipelineStatus || '');
+    const _pipN = (notes.pipeline || 0);
+    const _isOverrideActive = c.tier === 'REJECT' && _pipN > 0 && !['rejected','failed-cv','failed-test'].includes(_pipS);
+    const tierLabel = _isOverrideActive ? 'Override' : tierLabelMap[c.tier];
+    const badgeCls  = _isOverrideActive ? 'badge-OVERRIDE' : `badge-${c.tier}`;
 
     let bars = '';
     if (c.score !== null) {
@@ -2009,10 +2432,22 @@ function renderCards(f) {
       reject:              'btn-reject'
     };
 
-    const miniStepper = c.tier !== 'REJECT' ? buildMiniStepper(c.id) : '';
+    const isRejectOverridden = c.tier === 'REJECT' && (notes.pipeline > 0 || ['rejected','failed-cv','failed-test'].includes(notes.pipelineStatus || ''));
+    const miniStepper  = (c.tier !== 'REJECT' || isRejectOverridden) ? buildMiniStepper(c.id) : '';
+    const overrideBtn  = (c.tier === 'REJECT' && !isRejectOverridden)
+      ? `<div class="card-actions"><span class="qa-label ql-failed">Auto-reject (HC-01)</span><button class="qa-btn qa-override" onclick="event.stopPropagation();setPipeline('${c.id}',2,'active')" title="Override: gửi bài test dù bị auto-reject">↗ Override</button></div>`
+      : '';
+    const cardActions  = (c.tier !== 'REJECT' || isRejectOverridden) ? buildCardActions(c.id) : '';
+
+    const pipStatus = notes.pipelineStatus || '';
+    const pipStage  = notes.pipeline || 0;
+    let pipClass = '';
+    if (['rejected','failed-cv','failed-test'].includes(pipStatus)) pipClass = 'pip-terminated';
+    else if (pipStage === 5) pipClass = 'pip-offer';
+    else if (pipStage >= 3) pipClass = 'pip-advancing';
 
     const card = document.createElement('div');
-    card.className = `card tier-${c.tier}`;
+    card.className = `card tier-${c.tier}${pipClass ? ' ' + pipClass : ''}`;
     card.onclick = () => openModal(c.id);
     card.innerHTML = `
       <div class="card-hdr">
@@ -2021,7 +2456,7 @@ function renderCards(f) {
           <div class="card-role">${c.role}</div>
         </div>
         <div class="card-badges">
-          <div class="tier-badge badge-${c.tier}">
+          <div class="tier-badge ${badgeCls}">
             <span class="badge-dot"></span>${tierLabel}
           </div>
           ${hasnotes ? '<span class="notes-badge">Notes</span>' : ''}
@@ -2040,7 +2475,7 @@ function renderCards(f) {
           ${actionMap[c.action]}
         </button>
       </div>
-      ${miniStepper}`;
+      ${miniStepper}${cardActions}${overrideBtn}`;
     grid.appendChild(card);
   });
 }
@@ -2096,7 +2531,7 @@ function buildScoreTab(c) {
   if (c.score === null) {
     el.innerHTML = `
       <div class="reject-overlay">
-        <strong>Auto-Reject</strong>
+        <strong>${c.d1 === null ? 'Không thể đánh giá' : 'Auto-Reject'}</strong>
         ${c.rejectReason}<br><br>
         Gửi rejection email trong 2 ngày làm việc.
       </div>
@@ -2105,13 +2540,14 @@ function buildScoreTab(c) {
   }
 
   const grp = IQ[c.iq];
-  const tierText = c.tier === 'B'
-    ? 'Tier B — Có thể phù hợp'
-    : 'Tier C — Chưa phù hợp';
+  const isReject = c.tier === 'REJECT';
+  const tierText = c.tier === 'B' ? 'Tier B — Có thể phù hợp'
+                 : c.tier === 'C' ? 'Tier C — Chưa phù hợp'
+                 : 'REJECT — HC-01 FAIL';
   const groupText = c.iq
     ? `Interview Group ${c.iq}: ${c.iq === 'B' ? 'QA tốt, thiếu domain CK' : 'Domain CK, QA cần train'}`
-    : 'Tier C — Không mời phỏng vấn';
-  const tnCls = 'tn-' + c.tier.toLowerCase();
+    : isReject ? 'HC-01 FAIL — Không mời phỏng vấn' : 'Tier C — Không mời phỏng vấn';
+  const tnCls = isReject ? 'tn-reject' : 'tn-' + c.tier.toLowerCase();
   const hcHtml = c.hc
     ? '<span class="hc-pass">Pass</span>'
     : '<span class="hc-fail">Fail</span>';
@@ -2138,7 +2574,7 @@ function buildScoreTab(c) {
     ${c.note ? `<div class="note-box">${c.note}</div>` : ''}
     ${grp
       ? `<div style="margin-top:18px">
-           <div class="sec-title">Câu hỏi phỏng vấn</div>
+           <div class="sec-title">${isReject ? 'Câu hỏi screening (nếu xét lại override)' : 'Câu hỏi phỏng vấn'}</div>
            <div class="q-wrap">
              <div class="q-hdr">
                ${grp.label}
@@ -2162,7 +2598,8 @@ function buildScoreTab(c) {
                </div>`).join('')}
            </div>
          </div>`
-      : `<div class="no-interviews">Ứng viên Tier C — Gửi rejection email trong 2 ngày làm việc.</div>`}`;
+      : `<div class="no-interviews">${isReject ? 'REJECT (HC-01 FAIL) — Gửi rejection email trong 2 ngày làm việc.' : 'Ứng viên Tier C — Gửi rejection email trong 2 ngày làm việc.'}</div>`}
+    ${isReject && c.rejectReason ? `<div class="reject-overlay" style="margin-top:12px"><strong>Lý do loại</strong>${c.rejectReason}</div>` : ''}`;
 }
 
 function pcHtml(c) {
@@ -2352,6 +2789,8 @@ function switchTab(name, btn) {
 }
 
 function closeOverlay() {
+  clearTimeout(saveTimer);
+  saveNotes(); // flush any pending unsaved changes before closing
   document.getElementById('overlay').classList.remove('open');
   currentId = null;
 }
@@ -2379,15 +2818,12 @@ function updateStats() {
   const total = CV.length;
   const b = CV.filter(c => c.tier === 'B').length;
   const c = CV.filter(c => c.tier === 'C').length;
-  const r = CV.filter(c => c.tier === 'REJECT').length;
   document.getElementById('stat-total').textContent = total;
   document.getElementById('stat-b').textContent = b;
   document.getElementById('stat-c').textContent = c;
-  document.getElementById('stat-r').textContent = r;
   document.getElementById('fc-all').textContent = total;
   document.getElementById('fc-b').textContent = b;
   document.getElementById('fc-c').textContent = c;
-  document.getElementById('fc-r').textContent = r;
 }
 
 const savedTheme = localStorage.getItem('qa-theme') || 'light';

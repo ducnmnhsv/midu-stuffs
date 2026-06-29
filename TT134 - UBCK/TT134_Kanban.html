@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TT134 — Kanban Board NHSV Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─── TOKENS ─────────────────────────────────────────────────────── */
+:root {
+  --bg:        #F1F5F9;
+  --surface:   #FFFFFF;
+  --surface2:  #F8FAFC;
+  --border:    #CBD5E1;
+  --border2:   #E2E8F0;
+  --text:      #0F172A;
+  --text-2:    #334155;
+  --text-3:    #64748B;
+
+  --p0:        #DC2626;
+  --p0-bg:     rgba(220,38,38,.07);
+  --p0-bd:     rgba(220,38,38,.22);
+  --p1:        #D97706;
+  --p1-bg:     rgba(217,119,6,.08);
+  --p1-bd:     rgba(217,119,6,.25);
+  --p2:        #2563EB;
+  --p2-bg:     rgba(37,99,235,.07);
+  --p2-bd:     rgba(37,99,235,.22);
+  --p3:        #64748B;
+  --p3-bg:     rgba(100,116,139,.07);
+  --p3-bd:     rgba(100,116,139,.2);
+
+  --gate:      #7C3AED;
+  --gate-bg:   rgba(124,58,237,.08);
+  --gate-bd:   rgba(124,58,237,.3);
+
+  --col-backlog:  #F8FAFC;
+  --col-ready:    #FFFBEB;
+  --col-progress: #EFF6FF;
+  --col-done:     #F0FDF4;
+
+  --col-backlog-bd:  #CBD5E1;
+  --col-ready-bd:    #FDE68A;
+  --col-progress-bd: #BFDBFE;
+  --col-done-bd:     #BBF7D0;
+
+  --green:  #059669;
+  --teal:   #0D9488;
+
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="dark"] {
+  --bg:        #070D1A;
+  --surface:   #0F1829;
+  --surface2:  #141F30;
+  --border:    #1E3050;
+  --border2:   #1A2840;
+  --text:      #E2E8F0;
+  --text-2:    #94A3B8;
+  --text-3:    #64748B;
+
+  --p0-bg:     rgba(220,38,38,.12);
+  --p0-bd:     rgba(220,38,38,.35);
+  --p1-bg:     rgba(217,119,6,.12);
+  --p1-bd:     rgba(217,119,6,.35);
+  --p2-bg:     rgba(37,99,235,.12);
+  --p2-bd:     rgba(37,99,235,.3);
+  --p3-bg:     rgba(100,116,139,.1);
+  --p3-bd:     rgba(100,116,139,.3);
+  --gate-bg:   rgba(124,58,237,.15);
+  --gate-bd:   rgba(124,58,237,.4);
+
+  --col-backlog:  #0F1829;
+  --col-ready:    #191508;
+  --col-progress: #0C1525;
+  --col-done:     #071811;
+
+  --col-backlog-bd:  #1E3050;
+  --col-ready-bd:    #3D2D00;
+  --col-progress-bd: #1E3A5F;
+  --col-done-bd:     #065F3A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+}
+
+/* ─── HEADER ─────────────────────────────────────────────────────── */
+.header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border2);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; }
+
+.header-logo {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #0D9488, #2563EB);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #fff;
+}
+
+.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.header-sub   { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+.header-right { display: flex; align-items: center; gap: 8px; }
+
+.stat-chip {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  display: flex; align-items: center; gap: 4px;
+}
+
+.chip-deadline { background: var(--p0-bg); color: var(--p0); border: 1px solid var(--p0-bd); }
+.chip-gate     { background: var(--gate-bg); color: var(--gate); border: 1px solid var(--gate-bd); }
+
+.btn-theme {
+  width: 30px; height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface2);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+  transition: background 150ms;
+}
+.btn-theme:hover { background: var(--border2); }
+
+/* ─── LEGEND ─────────────────────────────────────────────────────── */
+.legend-bar {
+  padding: 8px 24px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); }
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+}
+
+/* ─── BOARD ──────────────────────────────────────────────────────── */
+.board {
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  min-width: 900px;
+}
+
+@media (max-width: 1100px) {
+  .board { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .board { grid-template-columns: 1fr; padding: 12px; }
+  body { overflow-x: hidden; }
+}
+
+/* ─── COLUMN ─────────────────────────────────────────────────────── */
+.col {
+  border-radius: 12px;
+  border: 1px solid;
+  background: var(--col-bg);
+  display: flex;
+  flex-direction: column;
+  min-height: 400px;
+}
+
+.col-backlog   { --col-bg: var(--col-backlog);  border-color: var(--col-backlog-bd); }
+.col-ready     { --col-bg: var(--col-ready);    border-color: var(--col-ready-bd); }
+.col-progress  { --col-bg: var(--col-progress); border-color: var(--col-progress-bd); }
+.col-done      { --col-bg: var(--col-done);     border-color: var(--col-done-bd); }
+
+.col-header {
+  padding: 12px 14px 10px;
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.col-title {
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; gap: 6px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+
+.col-backlog  .col-title { color: #64748B; }
+.col-ready    .col-title { color: #B45309; }
+.col-progress .col-title { color: #1D4ED8; }
+.col-done     .col-title { color: #065F46; }
+
+.col-count {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 12px;
+  background: var(--border2); color: var(--text-3);
+}
+
+.col-body {
+  padding: 10px;
+  display: flex; flex-direction: column; gap: 8px;
+  flex: 1;
+}
+
+/* ─── CARDS ──────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: box-shadow 150ms var(--ease), transform 150ms var(--ease);
+  position: relative;
+}
+.card:hover {
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+
+.card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 6px; margin-bottom: 7px;
+}
+
+.card-stt {
+  font-size: 10px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+  letter-spacing: .3px;
+}
+
+.prio-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px;
+  white-space: nowrap; flex-shrink: 0;
+}
+.p0 { background: var(--p0-bg); color: var(--p0); border: 1px solid var(--p0-bd); }
+.p1 { background: var(--p1-bg); color: var(--p1); border: 1px solid var(--p1-bd); }
+.p2 { background: var(--p2-bg); color: var(--p2); border: 1px solid var(--p2-bd); }
+.p3 { background: var(--p3-bg); color: var(--p3); border: 1px solid var(--p3-bd); }
+.gate-badge { background: var(--gate-bg); color: var(--gate); border: 1px solid var(--gate-bd);
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+
+.card-title {
+  font-size: 12.5px; font-weight: 600;
+  line-height: 1.4; color: var(--text); margin-bottom: 6px;
+}
+
+.card-meta {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+}
+
+.tag {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 8px;
+  background: var(--surface2); color: var(--text-3);
+  border: 1px solid var(--border2);
+}
+
+.tag-deadline {
+  background: var(--p0-bg); color: var(--p0);
+  border-color: var(--p0-bd);
+}
+
+.tag-deadline.safe {
+  background: var(--p2-bg); color: var(--p2);
+  border-color: var(--p2-bd);
+}
+
+.tag-blocked {
+  background: var(--gate-bg); color: var(--gate);
+  border-color: var(--gate-bd);
+}
+
+.tag-done {
+  background: rgba(5,150,105,.08); color: #059669;
+  border-color: rgba(5,150,105,.25);
+}
+
+.card-subgroup {
+  font-size: 10px; color: var(--text-3);
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid var(--border2);
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* GATE card special */
+.gate-card {
+  border: 1.5px solid var(--gate-bd);
+  background: var(--gate-bg);
+}
+
+.card-blocker {
+  font-size: 10px; color: var(--gate);
+  background: var(--gate-bg);
+  border: 1px solid var(--gate-bd);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 7px;
+  line-height: 1.4;
+}
+
+/* DONE card dimmed */
+.col-done .card { opacity: .82; }
+.col-done .card:hover { opacity: 1; }
+
+/* ─── PROGRESS BAR ───────────────────────────────────────────────── */
+.progress-section {
+  padding: 12px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+}
+
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 11px; font-weight: 600; color: var(--text-2);
+  margin-bottom: 6px;
+}
+
+.progress-track {
+  height: 6px; background: var(--border2); border-radius: 10px; overflow: hidden;
+  display: flex;
+}
+
+.progress-fill-done     { background: #059669; transition: width 600ms var(--ease); }
+.progress-fill-progress { background: #2563EB; transition: width 600ms var(--ease); }
+.progress-fill-ready    { background: #D97706; transition: width 600ms var(--ease); }
+
+.progress-pills {
+  display: flex; gap: 12px; margin-top: 8px;
+}
+.progress-pill {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: var(--text-3);
+}
+.pill-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ─── MODAL ──────────────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.45); z-index: 1000;
+  align-items: center; justify-content: center; padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  max-width: 520px; width: 100%;
+  max-height: 85vh; overflow-y: auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  animation: modal-in 180ms var(--ease);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+
+.modal-title { font-size: 14px; font-weight: 700; line-height: 1.4; flex: 1; }
+.modal-close {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface2); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-2);
+}
+.modal-close:hover { background: var(--border2); }
+
+.modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+
+.modal-row { display: flex; flex-direction: column; gap: 4px; }
+.modal-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; }
+.modal-value { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.modal-tasks { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.modal-tasks li {
+  font-size: 12px; color: var(--text-2);
+  padding: 6px 8px; border-radius: 6px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
+}
+.task-icon { flex-shrink: 0; margin-top: 1px; }
+
+.modal-link {
+  font-size: 12px; color: #2563EB; text-decoration: none;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.modal-link:hover { text-decoration: underline; }
+
+/* ─── SCROLL WRAPPER ─────────────────────────────────────────────── */
+.board-scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─────────────────────────────────────── -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-logo">📋</div>
+    <div>
+      <div class="header-title">TT134 / UBCK — Kanban Board</div>
+      <div class="header-sub">NHSV Pro · Compliance 2026 · Cập nhật: 29/06/2026</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="stat-chip chip-gate">⭐ GATE: BOM 30/06</div>
+    <div class="stat-chip chip-deadline">🔴 P0 Deadline: 14/08 & 28/08</div>
+    <button class="btn-theme" id="themeBtn" title="Toggle dark mode">🌙</button>
+  </div>
+</div>
+
+<!-- ─── LEGEND ─────────────────────────────────────── -->
+<div class="legend-bar">
+  <span class="legend-item"><span class="legend-dot" style="background:var(--p0)"></span>P0 Bắt đầu ngay</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--p1)"></span>P1 Plan tháng 8</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--p2)"></span>P2 Chờ GATE</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--p3)"></span>P3 Research</span>
+  <span class="legend-item"><span class="legend-dot" style="background:var(--gate)"></span>GATE BOM Decision</span>
+  <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Done ✓</span>
+</div>
+
+<!-- ─── PROGRESS ───────────────────────────────────── -->
+<div class="progress-section">
+  <div class="progress-label">
+    <span>Tiến độ tổng thể (12 items)</span>
+    <span id="pct">8%</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill-done"     style="width:8%"></div>
+    <div class="progress-fill-progress" style="width:0%"></div>
+    <div class="progress-fill-ready"    style="width:17%"></div>
+  </div>
+  <div class="progress-pills">
+    <div class="progress-pill"><span class="pill-dot" style="background:#059669"></span>1 Done</div>
+    <div class="progress-pill"><span class="pill-dot" style="background:#2563EB"></span>0 In Progress</div>
+    <div class="progress-pill"><span class="pill-dot" style="background:#D97706"></span>3 Ready (P0 unblocked)</div>
+    <div class="progress-pill"><span class="pill-dot" style="background:#64748B"></span>8 Backlog</div>
+  </div>
+</div>
+
+<!-- ─── BOARD ──────────────────────────────────────── -->
+<div class="board-scroll">
+<div class="board">
+
+  <!-- ══ BACKLOG ══════════════════════════════════════ -->
+  <div class="col col-backlog">
+    <div class="col-header">
+      <div class="col-title">⏸ Backlog</div>
+      <span class="col-count">8</span>
+    </div>
+    <div class="col-body">
+
+      <!-- GATE -->
+      <div class="card gate-card" onclick="openModal('gate')">
+        <div class="card-top">
+          <span class="card-stt">★ GATE</span>
+          <span class="gate-badge">BOM Decision</span>
+        </div>
+        <div class="card-title">Phê duyệt C06 vs VNPT Vendor</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">★ 30/06/2026</span>
+          <span class="tag">BOM / Ms Nhai</span>
+        </div>
+        <div class="card-blocker">⚡ Blocks: STT 8, 10, 12, 14≥10M, 40</div>
+        <div class="card-subgroup">🏛️ BOM / IT Feasibility</div>
+      </div>
+
+      <!-- STT 5 P1 -->
+      <div class="card" onclick="openModal('stt5')">
+        <div class="card-top">
+          <span class="card-stt">STT 5</span>
+          <span class="prio-badge p1">P1</span>
+        </div>
+        <div class="card-title">Smart OTP giao dịch đầu/phiên + Verify S-OTP API</div>
+        <div class="card-meta">
+          <span class="tag tag-safe safe">16/10/2026</span>
+          <span class="tag">Order 2FA</span>
+        </div>
+        <div class="card-subgroup">📁 Order 2FA · Phụ thuộc: Smart OTP go-live</div>
+      </div>
+
+      <!-- STT 36 P1 -->
+      <div class="card" onclick="openModal('stt36')">
+        <div class="card-top">
+          <span class="card-stt">STT 36</span>
+          <span class="prio-badge p1">P1</span>
+        </div>
+        <div class="card-title">Mobile security: 1 device/TK, anti-tampering</div>
+        <div class="card-meta">
+          <span class="tag tag-safe safe">30/10/2026</span>
+          <span class="tag">Device Fingerprinting</span>
+        </div>
+        <div class="card-subgroup">📁 Device Fingerprinting · Internal</div>
+      </div>
+
+      <!-- STT 8 P2 -->
+      <div class="card" onclick="openModal('stt8')">
+        <div class="card-top">
+          <span class="card-stt">STT 8</span>
+          <span class="prio-badge p2">P2</span>
+        </div>
+        <div class="card-title">Sinh trắc học FIDO: FAR &lt;0.01%, FRR &lt;5%, PAD</div>
+        <div class="card-meta">
+          <span class="tag">30/10/2026</span>
+          <span class="tag tag-blocked">🔒 Blocked GATE</span>
+        </div>
+        <div class="card-subgroup">📁 Biometric System</div>
+      </div>
+
+      <!-- STT 10 P2 -->
+      <div class="card" onclick="openModal('stt10')">
+        <div class="card-top">
+          <span class="card-stt">STT 10</span>
+          <span class="prio-badge p2">P2</span>
+        </div>
+        <div class="card-title">Biometric rules: lock ≤10 lần, timeout 3p, verify CSDL QG</div>
+        <div class="card-meta">
+          <span class="tag">TBD</span>
+          <span class="tag tag-blocked">🔒 Blocked GATE</span>
+        </div>
+        <div class="card-subgroup">📁 Biometric System</div>
+      </div>
+
+      <!-- STT 12 P2 -->
+      <div class="card" onclick="openModal('stt12')">
+        <div class="card-top">
+          <span class="card-stt">STT 12</span>
+          <span class="prio-badge p2">P2</span>
+        </div>
+        <div class="card-title">GDCK online: sinh trắc học giao dịch đầu/phiên</div>
+        <div class="card-meta">
+          <span class="tag">30/10/2026</span>
+          <span class="tag tag-blocked">🔒 Blocked GATE</span>
+        </div>
+        <div class="card-subgroup">📁 Biometric System · Order 2FA</div>
+      </div>
+
+      <!-- STT 14 >=10M P2 -->
+      <div class="card" onclick="openModal('stt14b')">
+        <div class="card-top">
+          <span class="card-stt">STT 14 ≥10M</span>
+          <span class="prio-badge p2">P2</span>
+        </div>
+        <div class="card-title">Rút tiền ≥10M: sinh trắc học bắt buộc</div>
+        <div class="card-meta">
+          <span class="tag">TBD</span>
+          <span class="tag tag-blocked">🔒 Blocked GATE</span>
+        </div>
+        <div class="card-subgroup">📁 Biometric System · Order 2FA</div>
+      </div>
+
+      <!-- STT 40 P3 -->
+      <div class="card" onclick="openModal('stt40')">
+        <div class="card-top">
+          <span class="card-stt">STT 40</span>
+          <span class="prio-badge p3">P3</span>
+        </div>
+        <div class="card-title">Lưu trữ, bảo quản thông tin sinh trắc học KH</div>
+        <div class="card-meta">
+          <span class="tag">TBD</span>
+          <span class="tag tag-blocked">🔒 Blocked GATE</span>
+        </div>
+        <div class="card-subgroup">📁 Data Security</div>
+      </div>
+
+      <!-- STT 3 P3 -->
+      <div class="card" onclick="openModal('stt3')">
+        <div class="card-top">
+          <span class="card-stt">STT 3</span>
+          <span class="prio-badge p3">P3</span>
+        </div>
+        <div class="card-title">Xác minh SĐT thuộc quyền sử dụng hợp pháp của KH</div>
+        <div class="card-meta">
+          <span class="tag">TBD (no vendor)</span>
+          <span class="tag">C06 research</span>
+        </div>
+        <div class="card-subgroup">📁 Service Agreement · Research</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ READY (Unblocked) ═════════════════════════════ -->
+  <div class="col col-ready">
+    <div class="col-header">
+      <div class="col-title">▶ Ready — P0</div>
+      <span class="col-count">3</span>
+    </div>
+    <div class="col-body">
+
+      <!-- STT 7 P0 -->
+      <div class="card" onclick="openModal('stt7')">
+        <div class="card-top">
+          <span class="card-stt">STT 7 · TT134-P0-01</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">OTP TTL compliance — SMS / Thẻ ma trận / Soft OTP</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">🔴 14/08/2026</span>
+          <span class="tag">Order 2FA</span>
+        </div>
+        <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/OTP_TTL_Compliance_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
+      </div>
+
+      <!-- STT 35 P0 -->
+      <div class="card" onclick="openModal('stt35')">
+        <div class="card-top">
+          <span class="card-stt">STT 35 · TT134-P0-02</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">Device ID logging (deviceUniqueId) — GDCK & rút tiền</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">🔴 28/08/2026</span>
+          <span class="tag">Device Fingerprinting</span>
+        </div>
+        <div class="card-subgroup">📁 Device Fingerprinting · <a href="./Device%20Fingerprinting/Issues/Device_ID_Logging_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
+      </div>
+
+      <!-- STT 14 <10M P0 -->
+      <div class="card" onclick="openModal('stt14a')">
+        <div class="card-top">
+          <span class="card-stt">STT 14 &lt;10M · TT134-P0-03</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">Rút tiền &lt;10M: Smart OTP bắt buộc</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">🔴 28/08/2026</span>
+          <span class="tag">Order 2FA</span>
+        </div>
+        <div class="card-blocker">⚠️ Phụ thuộc: Smart OTP ETA cần confirm</div>
+        <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ IN PROGRESS ═══════════════════════════════════ -->
+  <div class="col col-progress">
+    <div class="col-header">
+      <div class="col-title">🔄 In Progress</div>
+      <span class="col-count">0</span>
+    </div>
+    <div class="col-body">
+      <div style="padding:20px 8px; text-align:center; color:var(--text-3); font-size:12px;">
+        Chưa có item đang thực hiện.<br>Kéo P0 items vào đây khi bắt đầu.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DONE ══════════════════════════════════════════ -->
+  <div class="col col-done">
+    <div class="col-header">
+      <div class="col-title">✅ Done</div>
+      <span class="col-count">1</span>
+    </div>
+    <div class="col-body">
+
+      <!-- STT 9 DONE -->
+      <div class="card" onclick="openModal('stt9')">
+        <div class="card-top">
+          <span class="card-stt">STT 9</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">PAD certification (FIDO Alliance)</div>
+        <div class="card-meta">
+          <span class="tag tag-done">✅ DONE</span>
+          <span class="tag">VNPT FaceID</span>
+        </div>
+        <div class="card-subgroup">📁 Biometric System · VNPT đã đạt FIDO cert</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ─── MODALS ─────────────────────────────────────── -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const DARK_KEY = 'tt134-theme';
+const btn = document.getElementById('themeBtn');
+
+function applyTheme(dark) {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  btn.textContent = dark ? '☀️' : '🌙';
+  localStorage.setItem(DARK_KEY, dark ? '1' : '0');
+}
+applyTheme(localStorage.getItem(DARK_KEY) === '1');
+btn.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+});
+
+const CARDS = {
+  gate: {
+    title: '★ GATE — BOM Decision: C06 vs VNPT Vendor',
+    prio: '★ GATE',
+    deadline: '30/06/2026 ⚠️',
+    owner: 'BOM / Ms Nhai + IT',
+    subgroup: 'BOM / IT Feasibility',
+    c06: 'Core decision',
+    tasks: [
+      'BOM phê duyệt chủ trương C06 (bao gồm chấp nhận risk admin credentials)',
+      'IT báo cáo feasibility hệ thống & nhân lực cho Ms Nhai',
+    ],
+    note: 'Block 5 tasks: STT 8, 10, 12, 14≥10M, 40. Mỗi ngày trễ = mỗi ngày trễ deadline 28/08.',
+    status: 'Pending'
+  },
+  stt7: {
+    title: '[TT134-P0-01] OTP TTL Compliance — SMS / Thẻ ma trận / Soft OTP',
+    prio: 'P0',
+    deadline: '14/08/2026 🔴',
+    owner: 'BE Lead + FE Lead',
+    subgroup: 'Order 2FA',
+    c06: 'Không — xử lý nội bộ',
+    tasks: [
+      'BE: Audit cấu hình SMS OTP TTL hiện tại trong Lotte Core',
+      'BE: Update SMS OTP TTL về ≤ 180s nếu khác',
+      'BE: Xác nhận Matrix card one-time (không reusable)',
+      'BE: Update SMS template — thêm "OTP có hiệu lực trong X phút"',
+      'FE: Hiển thị countdown timer trên màn hình nhập OTP',
+      'FE: Disable resend button trong TTL window',
+    ],
+    note: 'TTL tối đa: SMS OTP ≤ 180s, Matrix card = one-time, TOTP = 1 window 30s.',
+    status: 'Ready — bắt đầu ngay'
+  },
+  stt35: {
+    title: '[TT134-P0-02] Device ID Logging — GDCK & Rút tiền',
+    prio: 'P0',
+    deadline: '28/08/2026 🔴',
+    owner: 'BE Lead + FE Lead',
+    subgroup: 'Device Fingerprinting',
+    c06: 'Không — internal TradeX',
+    tasks: [
+      'BE: Thêm deviceUniqueId vào transaction log cho GDCK (đặt/hủy lệnh)',
+      'BE: Thêm deviceUniqueId vào transaction log cho rút tiền',
+      'BE: DB migration — thêm column device_unique_id, source_ip',
+      'FE: Đảm bảo X-Device-Id header được gửi trong tất cả API đặt lệnh',
+      'FE: Đảm bảo X-Device-Id header được gửi trong API rút tiền',
+    ],
+    note: 'TT134 Điều 7: ghi nhận thiết bị cho giao dịch quan trọng. deviceUniqueId = IDFV (iOS) / Android ID.',
+    status: 'Ready — bắt đầu ngay'
+  },
+  stt14a: {
+    title: '[TT134-P0-03] Rút tiền <10M — Bắt buộc Smart OTP',
+    prio: 'P0',
+    deadline: '28/08/2026 🔴',
+    owner: 'BE Lead + FE Lead + Smart OTP team',
+    subgroup: 'Order 2FA',
+    c06: 'Không — dùng Smart OTP (lotte-bridge)',
+    tasks: [
+      'Confirm ETA Smart OTP 3rd party go-live (CRITICAL blocker)',
+      'BE: Update /api/v1/cash/withdraw/confirm — enforce Smart OTP verify',
+      'BE: Return requireOtp: true, otpType: SMART_OTP trong initiate',
+      'BE: Rate limiting — max 5 lần sai → lock withdrawal 15 phút',
+      'FE: Navigate to Smart OTP screen sau bước nhập số tiền',
+      'FE: Reuse SmartOTPInput component (đã có từ Login flow)',
+      'FE: Handle SMART_OTP_NOT_ACTIVATED → redirect to enrollment',
+    ],
+    note: '⚠️ CRITICAL: Issue này phụ thuộc hoàn toàn vào Smart OTP 3rd party. Cần confirm ETA trước 05/07.',
+    status: 'Ready — nhưng cần confirm Smart OTP ETA'
+  },
+  stt5: {
+    title: 'STT 5 — Smart OTP giao dịch đầu/phiên + Verify S-OTP API',
+    prio: 'P1',
+    deadline: '16/10/2026',
+    owner: 'Smart OTP team + BE',
+    subgroup: 'Order 2FA',
+    c06: 'Không',
+    tasks: [
+      'Yêu cầu Smart OTP xác thực giao dịch đầu tiên mỗi phiên',
+      'Update Verify S-OTP API cho session-level auth',
+      'Implement session flag: firstOrderInSession',
+    ],
+    note: 'Phụ thuộc Smart OTP project go-live. Plan kickoff tháng 8 sau P0.',
+    status: 'Backlog — plan tháng 8'
+  },
+  stt36: {
+    title: 'STT 36 — Mobile security: 1 device/TK, anti-tampering',
+    prio: 'P1',
+    deadline: '30/10/2026',
+    owner: 'BE + FE Lead',
+    subgroup: 'Device Fingerprinting',
+    c06: 'Không (C06 SSO có thể bổ sung sau)',
+    tasks: [
+      'Implement device management: 1 thiết bị/TK',
+      'Xác thực thiết bị mới qua SMS OTP',
+      'Anti-tampering detection (jailbreak/root detection)',
+      'Alert khi đăng nhập từ thiết bị mới',
+    ],
+    note: 'Internal — có thể kickoff song song với P0 nếu có resource.',
+    status: 'Backlog — plan tháng 8'
+  },
+  stt8: {
+    title: 'STT 8 — Sinh trắc học FIDO: FAR <0.01%, FRR <5%, PAD',
+    prio: 'P2',
+    deadline: '30/10/2026',
+    owner: 'IT + BE + FE',
+    subgroup: 'Biometric System',
+    c06: '★ CẦN hoặc VNPT interim',
+    tasks: [
+      '[Sau GATE] Nếu VNPT: implement flow VNPT eKYC face verification',
+      '[Sau GATE] Nếu C06: setup AgentGW Zone, HSM, VPN S2S',
+      'Implement FIDO face verification trong app',
+      'Validate FAR < 0.01%, FRR < 5%',
+    ],
+    note: '🔒 BLOCKED — chờ BOM decision 30/06. Nếu VNPT: kịp 28/08. Nếu C06: KHÔNG kịp 28/08.',
+    status: 'Blocked — chờ GATE'
+  },
+  stt10: {
+    title: 'STT 10 — Biometric rules: lock ≤10 lần, timeout 3p, verify CSDL QG',
+    prio: 'P2',
+    deadline: 'TBD',
+    owner: 'BE + C06/VNPT',
+    subgroup: 'Biometric System',
+    c06: 'CẦN (nếu chọn C06)',
+    tasks: [
+      'Implement lock sau ≤10 lần verify fail',
+      'Timeout 3 phút mỗi session biometric',
+      'Verify sinh trắc vs CCCD chip hoặc CSDL quốc gia',
+    ],
+    note: '🔒 BLOCKED — phụ thuộc GATE. C06 đáp ứng tốt nhất (verify vs CSDL QG). VNPT verify vs ảnh lưu — cần xác nhận pháp lý.',
+    status: 'Blocked — chờ GATE'
+  },
+  stt12: {
+    title: 'STT 12 — GDCK online: sinh trắc học giao dịch đầu/phiên',
+    prio: 'P2',
+    deadline: '30/10/2026',
+    owner: 'BE + FE + C06/VNPT',
+    subgroup: 'Biometric System · Order 2FA',
+    c06: 'CẦN (nếu chọn C06)',
+    tasks: [
+      'Implement biometric check cho giao dịch GDCK đầu phiên',
+      'Same device requirement cho biometric verify',
+      'Integration với C06 Face Verification hoặc VNPT',
+    ],
+    note: '🔒 BLOCKED — phụ thuộc GATE. Phương án interim VNPT → C06 migrate sau Q4.',
+    status: 'Blocked — chờ GATE'
+  },
+  stt14b: {
+    title: 'STT 14 ≥10M — Rút tiền ≥10M: sinh trắc học bắt buộc',
+    prio: 'P2',
+    deadline: 'TBD (28/08 nếu VNPT)',
+    owner: 'BE + FE + C06/VNPT',
+    subgroup: 'Biometric System · Order 2FA',
+    c06: '★ CẦN hoặc VNPT interim',
+    tasks: [
+      'Enforce biometric verification trước khi rút ≥10M',
+      'Integration với Face Verification provider',
+      'Anti-replay: bind biometric token với withdrawal session',
+    ],
+    note: '🔒 BLOCKED — phụ thuộc GATE. Risk compliance cao nhất. Nếu VNPT: có thể kịp 28/08.',
+    status: 'Blocked — chờ GATE'
+  },
+  stt40: {
+    title: 'STT 40 — Lưu trữ, bảo quản thông tin sinh trắc học KH',
+    prio: 'P3',
+    deadline: 'TBD',
+    owner: 'IT + BE + C06',
+    subgroup: 'Data Security',
+    c06: 'CẦN (nếu chọn C06)',
+    tasks: [
+      'Nếu C06: không cần build DB riêng — C06 quản lý',
+      'Nếu VNPT: build & bảo quản biometric DB theo Điều 20',
+      'Encryption at rest cho biometric data',
+      'Data retention policy theo TT134',
+    ],
+    note: '★ Lợi thế lớn của C06: NHSV không cần tự xây dựng biometric DB. Nếu VNPT: NHSV phải build.',
+    status: 'Blocked — chờ GATE'
+  },
+  stt3: {
+    title: 'STT 3 — Xác minh SĐT thuộc quyền sử dụng hợp pháp của KH',
+    prio: 'P3',
+    deadline: 'TBD (no vendor)',
+    owner: 'PO + IT',
+    subgroup: 'Service Agreement · Research',
+    c06: 'Có thể dùng C06 (cần xác nhận)',
+    tasks: [
+      'Hỏi C06: TTXT có field SĐT trong 11 trường chia sẻ không?',
+      'Research: nhà mạng có API verify SĐT cho doanh nghiệp không?',
+      'Xác định vendor/solution phù hợp',
+    ],
+    note: 'Nhà mạng không share API cho doanh nghiệp. Hiện chỉ C06 hoặc Bộ TT&TT có thể giải quyết.',
+    status: 'Research'
+  },
+  stt9: {
+    title: 'STT 9 — PAD Certification (FIDO Alliance)',
+    prio: 'P0',
+    deadline: '✅ DONE',
+    owner: 'VNPT',
+    subgroup: 'Biometric System',
+    c06: 'Không cần',
+    tasks: [
+      '✅ VNPT FaceID đã đạt FIDO Alliance certification',
+      '✅ PAD (Presentation Attack Detection) đã được xác nhận',
+    ],
+    note: 'Confirmed: VNPT FaceID đạt FIDO cert. Không cần action thêm.',
+    status: '✅ Done'
+  },
+};
+
+function openModal(id) {
+  const d = CARDS[id];
+  if (!d) return;
+  document.getElementById('modalTitle').textContent = d.title;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-grid">
+      <div class="modal-row">
+        <div class="modal-label">Priority</div>
+        <div class="modal-value">${d.prio}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Deadline</div>
+        <div class="modal-value">${d.deadline}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Owner</div>
+        <div class="modal-value">${d.owner}</div>
+      </div>
+      <div class="modal-row">
+        <div class="modal-label">Sub-group</div>
+        <div class="modal-value">${d.subgroup}</div>
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">Phụ thuộc C06</div>
+      <div class="modal-value">${d.c06}</div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">Tasks</div>
+      <ul class="modal-tasks">
+        ${d.tasks.map(t => `<li><span class="task-icon">▸</span>${t}</li>`).join('')}
+      </ul>
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">Ghi chú</div>
+      <div class="modal-value">${d.note}</div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">Status</div>
+      <div class="modal-value">${d.status}</div>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModalDirect();
+});
+</script>
+</body>
+</html>
