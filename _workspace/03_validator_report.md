@@ -1,60 +1,63 @@
-# Validator Report — BE Market Quote Fields Enhancement
+# Validator Report
 
-## Result: PASS_WITH_WARNINGS
+## Top_Stock_Influence_Spec.md
 
-Draft validated against CLAUDE.md conventions and the authoritative `TradeX Knowledge/System/symbolinfo-api-fields-guide.md`. One correctness bug found and fixed; remaining items are open clarify-questions for BE grooming (not doc defects).
+- **Status:** PASS
+- **Path:** `/Users/ducnguyen/Documents/project/tradex-monitoring/New feature in NHSV Pro/Market_Watch/Top_Stock_Influence_Spec.md`
 
----
+### Checklist results
+- [x] File-level: tồn tại đúng path, PascalCase + underscore, không có brackets/prefix.
+- [x] Structure: H1 đúng (`# Nhóm dẫn dắt thị trường — Feature Specification`); đủ 6 sections (Overview, User Story, UI/UX Behavior, API Integration, Data Mapping, Edge Cases).
+- [x] User Story format `As an ... I want to ... so that ...` đúng chuẩn.
+- [x] Footer C5: `Document Status: 📋 Draft | For: FE Dev, BE Dev, QA | Next Steps: Review with tech lead` — present (line 148).
+- [x] Request params 4 fields (CatID, TradeDate, Top, Type) đầy đủ với valid values rõ ràng.
+- [x] Default call ghi rõ: `CatID=1 (HOSE), Top=20, Type=0` (section 4.2).
+- [x] Response fields đủ 12 fields: StockCode, ClosePrice, Change, PerChange, KLCPLH, MarketCap, Weight, BasicIndex, InfluencePercent, InfluenceIndex, OrderType, Row.
+- [x] Bar color rule: `OrderType=1` → green, `OrderType=2` → red (section 3.2 + Data Mapping).
+- [x] Y-axis hỗ trợ giá trị âm được note (section 3.2 + Edge Cases).
+- [x] Data Mapping table với UI Element → API Field (section 5, 10 rows).
+- [x] Edge cases: no data, market closed, single bar, negative bar, timeout, slow network, future date, null values, CatID switch — đầy đủ.
 
-## Checklist
+### Issues found
+- None.
 
-### Structure
-- [x] Issues/ template: Executive Summary present with all 5 subsections (Problem Statement, Current vs Target, Solution Approach, Timeline, Success Criteria)
-- [x] Executive Summary: NO code blocks (prose + tables only) — C3 PM-Readability Gate passed
-- [x] Technical sections marked "(PM CAN SKIP)" — both Technical Background and Detailed Requirements
-- [x] Footer present: `**Document Status:** | **For:** | **Next Steps:**`
-
-### Content
-- [x] Issue 1 (basis/`bs`): 41I1→VN30, 41I2→VN100 mapping present; ATO/ATC handling (expectedPrice vs currentPrice) covered; field name `bs` confirmed against guide
-- [x] Issue 2 (asv/abv): aggressor logic, session reset, REST+socket all covered
-- [x] Acceptance criteria present for both issues (Success Criteria 1–7)
-- [x] No Lotte internal terms exposed without explanation (raw `parts[24]` only in Technical section, explained)
-
-### Naming
-- [x] Filename PascalCase, no brackets, no special prefixes: `BE_Market_Quote_Fields_Enhancement.md`
-- [x] Field names verified against `symbolinfo-api-fields-guide.md`: `bs`=basis, `asv`=accumulatedSellVolume, `abv`=accumulatedBidVolume, `bc`=baseCode — all correct
-- [x] Brief's `asb` → correctly mapped to convention `abv` (flagged for FE)
-
----
-
-## Issues found and FIXED
-
-### 🔴 CRITICAL (fixed): Aggressor-side mapping was reversed
-- **Draft had:** `mb=ASK → mua chủ động → abv`, `mb=BID → bán chủ động → asv`
-- **Authoritative guide (line 94) says:** `ASK = bên bán chủ động`, `BID = bên mua chủ động`
-- **Correct mapping:** `mb=ASK → asv` (aggressive sell), `mb=BID → abv` (aggressive buy)
-- **Fix applied:** Corrected the aggressor-side table; added an inline warning noting the FE brief had it backwards and that the Knowledge guide is authoritative (C4 Knowledge-First).
-- **Follow-on:** Added a new clarify-question (#2) so FE is explicitly asked to confirm direction; renumbered subsequent questions (now 7 total); updated header count and Next Steps footer.
-
-### Minor (fixed): Status line
-- Changed footer status from "🟡 Draft — chờ validator review" to "✅ Validated — sẵn sàng cho BE grooming".
+### Fixes applied
+- None.
 
 ---
 
-## Warnings (no action — open questions for BE, correctly surfaced in doc)
+## Sector_Treemap_Spec.md
 
-These are legitimately unresolved and are listed as clarify-questions, not doc errors:
-1. `41I1`/`41I2` → VN30/VN100 prefix rule unverified in TradeX Knowledge (came from FE spec).
-2. `market.quote.dr` channel suffix not in Knowledge.
-3. VN100 futures existence unconfirmed.
-4. REST derivatives field-group exposure unconfirmed.
+- **Status:** PASS
+- **Path:** `/Users/ducnguyen/Documents/project/tradex-monitoring/New feature in NHSV Pro/Market_Watch/Sector_Treemap_Spec.md`
 
-FE codebase `nhsv-mts-rn` was not accessible during analysis — FE references unverified (already disclosed in the doc's source note).
+### Checklist results
+- [x] File-level: tồn tại đúng path, PascalCase + underscore, không có brackets/prefix.
+- [x] Structure: H1 đúng (`# Biến động ngành (Sector Treemap) — Feature Specification`); đủ 6 sections.
+- [x] User Story format đúng chuẩn.
+- [x] Footer C5 present (line 214).
+- [x] 2 API endpoints tách riêng — section 4.1 (sectorindex) và 4.2 (GetDetailSector).
+- [x] Join key ghi rõ: `sectorindex.ID = GetDetailSector.VSTSectorID` (section 4.3).
+- [x] Gọi song song được ghi trong Join strategy (section 4.3, gạch đầu dòng "Strategy").
+- [x] Tab → Cell Size Mapping đủ 5 rows: Giá trị GD/Val, Khối lượng GD/Vol, Vốn hóa/MarketCapital, KLNN mua/ForeignBuyVol, KLNN bán/ForeignSellVol.
+- [x] Cell color rule: green >0, red <0, grey =0; có 5 levels gradient (`> +2%`, `0..+2%`, `0`, `-2..0%`, `< -2%`).
+- [x] Nút "Toàn màn hình" được mention (section 3.1 header + section 3.4 Interactions + Acceptance criteria).
+- [x] Edge cases: no data, market closed, single sector, ID mismatch cả 2 chiều (API 1 thiếu trong API 2 và ngược lại), PerChange=0, metric=null, TradingDate mismatch, SectorLevel mix, timeout — đầy đủ.
 
-C2 (Order API response standards) correctly NOT applied — this is market data, not an Order API.
+### Convention compliance (cả 2 files)
+- [x] CommonMark strict, ATX headers, fenced code blocks (plain text với ngữ cảnh hợp lý).
+- [x] Folder placement đúng: `New feature in NHSV Pro/Market_Watch/`.
+- [x] Markdown tables render hợp lệ.
+- [x] Feature Spec — không áp tradex-api-conventions, naming Vietstock giữ nguyên (StockCode, CatID, VSTSectorID, ...).
+
+### Issues found
+- None.
+
+### Fixes applied
+- None.
 
 ---
 
-## Final file path
+## Overall: PASS
 
-`/Users/ducnguyen/Documents/project/tradex-monitoring/Derivatives/Planning documentation/Market data/Issues/BE_Market_Quote_Fields_Enhancement.md`
+Cả 2 files đều đạt 100% checklist của Task #3. Không có lỗi nhỏ cần sửa, không có lỗi lớn cần báo lại creator. Files đã sẵn sàng finalize tại `New feature in NHSV Pro/Market_Watch/`.

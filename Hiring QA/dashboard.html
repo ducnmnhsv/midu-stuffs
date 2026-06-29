@@ -1533,6 +1533,42 @@ textarea.form-input { resize: vertical; min-height: 72px; }
 .qa-override { background: rgba(124,58,237,.07); color: #7C3AED; border-color: rgba(124,58,237,.25); }
 .qa-override:hover { background: #7C3AED; color: #fff; border-color: #7C3AED; }
 
+/* ─── DATE DIVIDER ───────────────────────────────────────────────────────────── */
+.date-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 4px;
+  margin-top: 8px;
+}
+
+.date-divider-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .06em;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.date-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border2);
+}
+
+.date-divider-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  white-space: nowrap;
+}
+
 /* ─── RESPONSIVE ─────────────────────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .grid { grid-template-columns: 1fr; padding: 12px 14px; }
@@ -2334,6 +2370,16 @@ function buildCardActions(id) {
 
 function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes, 800); }
 
+// ─── DATE HELPERS ────────────────────────────────────────────────────────────
+function parseUpdateDate(updatedAt) {
+  if (!updatedAt) return null;
+  const datePart = updatedAt.split(',')[0].trim(); // e.g. "29/6/2026"
+  const parts = datePart.split('/');
+  if (parts.length !== 3) return null;
+  const [d, m, y] = parts;
+  return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
+}
+
 // ─── RENDER CARDS ────────────────────────────────────────────────────────────
 function updatePipelineCounts() {
   const tierList = currentFilter === 'all' ? CV : CV.filter(c => c.tier === currentFilter);
@@ -2382,12 +2428,41 @@ function renderCards(f) {
     const pa = na.pipeline || 0,        pb = nb.pipeline || 0;
     const termA = (a.tier === 'REJECT' && pa === 0 && sa === '') || ['rejected','failed-cv','failed-test'].includes(sa);
     const termB = (b.tier === 'REJECT' && pb === 0 && sb === '') || ['rejected','failed-cv','failed-test'].includes(sb);
+    // Primary: newest update date first, no-date last
+    const dateA = parseUpdateDate(na.updatedAt);
+    const dateB = parseUpdateDate(nb.updatedAt);
+    if (dateA !== dateB) {
+      if (!dateA) return 1;
+      if (!dateB) return -1;
+      const toMs = s => { const [d,m,y] = s.split('/'); return new Date(+y,+m-1,+d).getTime(); };
+      return toMs(dateB) - toMs(dateA);
+    }
+    // Secondary: terminated last, higher stage first
     if (termA !== termB) return termA ? 1 : -1;
     return pb - pa;
   });
 
+  // Pre-compute date group counts for divider badges
+  const _dateGroupCounts = {};
+  list.forEach(c => {
+    const dk = parseUpdateDate(getNotes(c.id).updatedAt) || 'Chưa cập nhật';
+    _dateGroupCounts[dk] = (_dateGroupCounts[dk] || 0) + 1;
+  });
+  let _lastDateKey;
+
   list.forEach((c, idx) => {
     const notes = getNotes(c.id);
+
+    // ── Date segment divider ──
+    const _dateKey = parseUpdateDate(notes.updatedAt) || 'Chưa cập nhật';
+    if (_dateKey !== _lastDateKey) {
+      const div = document.createElement('div');
+      div.className = 'date-divider';
+      div.innerHTML = `<span class="date-divider-label">Cập nhật ${_dateKey}</span><div class="date-divider-line"></div><span class="date-divider-count">${_dateGroupCounts[_dateKey]} CV</span>`;
+      grid.appendChild(div);
+      _lastDateKey = _dateKey;
+    }
+
     const hasnotes = hasNotes(c.id);
 
     const decisionPillMap = {

@@ -1,6 +1,6 @@
 # [TT134-P0-02] Device ID Logging — GDCK & Rút tiền
 
-**TT134 Reference:** Điều 7 — Xác thực & kiểm soát thiết bị  
+**TT134 Reference:** Điều 18 k3/4/5 — Yêu cầu phần mềm ứng dụng & nhật ký giao dịch  
 **Priority:** 🔴 P0  
 **Deadline:** 28/08/2026  
 **Sub-group:** Device Fingerprinting  
@@ -10,58 +10,82 @@
 
 ## 1. Bối cảnh
 
-TT134 Điều 7 yêu cầu hệ thống phải ghi nhận và lưu trữ thông tin định danh thiết bị (`deviceUniqueId`) cho các giao dịch quan trọng: giao dịch chứng khoán (GDCK) và rút tiền. Hiện tại, TradeX đã có `device_id` trong một số flow nhưng **chưa đảm bảo logging nhất quán** vào audit trail cho hai loại giao dịch này.
+TT134 **Điều 18 khoản 3, 4, 5** yêu cầu phần mềm ứng dụng phải lưu trữ thông tin định danh thiết bị và ghi nhật ký đầy đủ cho **giao dịch chứng khoán (GDCK)** và **giao dịch rút, chuyển tiền**. Hiện tại, TradeX đã có `device_id` trong một số flow nhưng **chưa đảm bảo logging đầy đủ theo đúng format Điều 18** vào transaction log.
 
 ---
 
-## 2. Current State
+## 2. Yêu cầu TT134 — Điều 18 (văn bản chính thức)
+
+**Điều 18 khoản 3a** — Phần mềm ứng dụng phải lưu trữ:
+> *"Thông tin định danh thiết bị di động là số IMEI hoặc Serial, hoặc WLAN MAC, hoặc Android ID hoặc thông tin định danh thiết bị di động khác. **Thông tin định danh máy tính là địa chỉ MAC hoặc kết hợp các thông tin liên quan đến máy tính để định danh máy tính**"*
+
+**Điều 18 khoản 4** — Nhật ký GDCK phải gồm đầy đủ:
+> tên KH, **loại hình KH**, số TK, **thời gian nhận lệnh (ngày, giờ phút)**, mã CK, **phương thức giao dịch**, **loại lệnh**, **số lượng và giá giao dịch**, **hình thức xác thực giao dịch**, **thời gian xác thực giao dịch**, **thông tin định danh thiết bị**, **địa chỉ IP mạng**
+
+**Điều 18 khoản 5** — Nhật ký rút, **chuyển tiền** ra khỏi tài khoản GDCK phải gồm:
+> tên KH, số TK, số tiền, **tài khoản ngân hàng nhận tiền**, thời gian giao dịch, **hình thức xác thực giao dịch**, **thông tin định danh thiết bị**, **địa chỉ IP mạng**
+
+## 3. Current State
 
 | Field | Status | Nguồn | Vấn đề |
 |---|---|---|---|
 | `device_id` | ✅ Có trong JWT/header | Client SDK | Client-controlled, không server-verified |
-| `deviceUniqueId` | ⚠️ Partial | `t_biometric`, `t_refresh_token` | Không log vào giao dịch GDCK / rút tiền |
+| `deviceUniqueId` (IMEI/Serial/AndroidID) | ⚠️ Partial | `t_biometric`, `t_refresh_token` | **Chưa log vào transaction log GDCK / rút tiền** |
 | `fingerprint_hash` | 📋 Planned | Device Fingerprinting spec | Chưa implement |
-| `sourceIp` | ✅ Có | Server (request IP) | Đã log nhưng chưa gắn vào transaction log |
+| `sourceIp` | ✅ Có | Server (request IP) | Có trong flow nhưng chưa log vào transaction log |
+| `authMethod` (hình thức xác thực) | ❓ Chưa confirm | N/A | Điều 18 k4/k5 yêu cầu log phương thức xác thực |
 
 ---
 
-## 3. Scope of Work
+## 4. Scope of Work
 
-### 3.1 BE Tasks
+### 4.1 BE Tasks
 
 | # | Task | Service | Ưu tiên |
 |---|---|---|---|
-| BE-1 | Thêm `deviceUniqueId` vào transaction log cho GDCK (đặt lệnh, hủy lệnh) | order-service / lotte-bridge | Cao |
-| BE-2 | Thêm `deviceUniqueId` vào transaction log cho rút tiền (cash withdrawal) | cash-service / lotte-bridge | Cao |
-| BE-3 | Thêm `sourceIp` vào transaction log (nếu chưa có) | order-service, cash-service | Cao |
-| BE-4 | Tạo/update schema: `t_transaction_log` thêm column `device_unique_id`, `source_ip` | DB migration | Cao |
-| BE-5 | Validate `deviceUniqueId` từ request header — reject nếu thiếu (với flag cấu hình) | API middleware | Trung bình |
-| BE-6 | Expose `deviceUniqueId` trong response audit API (nếu có) | AAA / audit service | Thấp |
+| BE-1 | Audit và enrich nhật ký GDCK: đảm bảo đủ tất cả fields Điều 18 k4 (loại hình KH, phương thức GD, loại lệnh, SL/giá, hình thức xác thực, **thời gian xác thực**, device ID, IP) | order-service / lotte-bridge | Cao |
+| BE-2 | Audit và enrich nhật ký rút tiền + **chuyển tiền**: đảm bảo đủ fields Điều 18 k5 (hình thức xác thực, device ID, IP, TK ngân hàng nhận) | cash-service / lotte-bridge | Cao |
+| BE-3 | DB migration: thêm `auth_method`, `auth_time`, `device_unique_id`, `source_ip` vào `t_order_log` và `t_withdrawal_log` | DBA | Cao |
+| BE-4 | Hỗ trợ device ID cho **WTS (web)**: ghi địa chỉ MAC máy tính hoặc fingerprint máy tính (Điều 18 k3a) | TradeX web service | Cao |
+| BE-5 | Validate `deviceUniqueId` từ request header — reject nếu thiếu (feature flag) | API middleware | Trung bình |
+| BE-6 | Expose transaction log qua audit API (nội bộ + UBCK khi có yêu cầu) | AAA / audit service | Thấp |
 
-### 3.2 FE Tasks
+### 4.2 FE Tasks
 
 | # | Task | Screen | Ưu tiên |
 |---|---|---|---|
-| FE-1 | Đảm bảo `deviceUniqueId` luôn được gửi trong header `X-Device-Id` cho các API đặt lệnh | Order screens | Cao |
-| FE-2 | Đảm bảo `deviceUniqueId` luôn được gửi trong header `X-Device-Id` cho API rút tiền | Withdrawal screen | Cao |
+| FE-1 | Đảm bảo `deviceUniqueId` (IMEI/Serial/AndroidID) luôn gửi trong `X-Device-Id` header cho API đặt lệnh GDCK | Order screens | Cao |
+| FE-2 | Đảm bảo `deviceUniqueId` luôn gửi trong `X-Device-Id` header cho API **rút tiền và chuyển tiền** | Withdrawal + Transfer screens | Cao |
 | FE-3 | Nếu không lấy được `deviceUniqueId` → show error, không cho thực hiện giao dịch | Both | Trung bình |
+| FE-4 | WTS (web): collect và gửi device fingerprint (MAC address hoặc browser fingerprint) cho API đặt lệnh + rút/chuyển tiền | WTS Order/Withdrawal | Cao |
 
 ---
 
-## 4. Data Schema
+## 5. Data Schema
 
-### 4.1 Transaction log enrichment
+### 5.1 Transaction log enrichment — per Điều 18 k3/4/5
 
 ```sql
--- Thêm columns vào t_transaction_log (hoặc bảng tương đương)
-ALTER TABLE t_transaction_log
-  ADD COLUMN device_unique_id VARCHAR(128),
-  ADD COLUMN source_ip        VARCHAR(45),
-  ADD COLUMN device_platform  VARCHAR(20),  -- ios | android | web
-  ADD COLUMN app_version      VARCHAR(20);
+-- Nhật ký GDCK (Điều 18 khoản 4) — full required fields
+ALTER TABLE t_order_log
+  ADD COLUMN customer_type    VARCHAR(20),   -- INDIVIDUAL | ORGANIZATION (loại hình KH)
+  ADD COLUMN trade_method     VARCHAR(20),   -- ONLINE | PHONE (phương thức GD)
+  ADD COLUMN order_type       VARCHAR(20),   -- LO | ATO | ATC | MP... (loại lệnh)
+  ADD COLUMN auth_method      VARCHAR(50),   -- SMS_OTP | SOFT_OTP | BIOMETRIC | FIDO
+  ADD COLUMN auth_time        TIMESTAMP,     -- thời gian xác thực giao dịch
+  ADD COLUMN device_unique_id VARCHAR(128),  -- IMEI / Serial / Android ID / WLAN MAC / PC fingerprint
+  ADD COLUMN source_ip        VARCHAR(45);   -- địa chỉ IP mạng
+
+-- Nhật ký rút, chuyển tiền (Điều 18 khoản 5) — full required fields
+ALTER TABLE t_withdrawal_log
+  ADD COLUMN dest_bank_account VARCHAR(64),  -- tài khoản ngân hàng nhận tiền
+  ADD COLUMN auth_method       VARCHAR(50),
+  ADD COLUMN device_unique_id  VARCHAR(128),
+  ADD COLUMN source_ip         VARCHAR(45);
+-- Lưu ý: auth_time không listed trong k5 nhưng nên thêm để consistency
 ```
 
-### 4.2 Request header convention
+### 5.2 Request header convention
 
 ```
 X-Device-Id: {deviceUniqueId}   -- required cho GDCK + withdrawal
@@ -71,20 +95,30 @@ X-App-Version: 2.x.x
 
 ---
 
-## 5. Acceptance Criteria
+## 6. Acceptance Criteria
 
 ```
-AC-1: Mọi request đặt lệnh GDCK đều có deviceUniqueId trong transaction log
-AC-2: Mọi request rút tiền đều có deviceUniqueId trong transaction log
-AC-3: deviceUniqueId và sourceIp được lưu cùng với transactionId, userId, timestamp
-AC-4: Audit query: có thể truy vấn "tất cả giao dịch từ deviceId X" trong 90 ngày
-AC-5: Nếu request thiếu X-Device-Id header và feature flag enabled → trả 400 MISSING_DEVICE_ID
-AC-6: FE không cho phép thực hiện GDCK/rút tiền khi không có deviceUniqueId
+-- Nhật ký GDCK (Điều 18 k4) --
+AC-1: Log GDCK gồm đủ: tên KH, loại hình KH, số TK, thời gian nhận lệnh (ngày+giờ+phút), mã CK, phương thức GD, loại lệnh, SL+giá, hình thức xác thực, thời gian xác thực, device ID, IP
+AC-2: authMethod và auth_time được log cho mọi GDCK online
+
+-- Nhật ký rút, chuyển tiền (Điều 18 k5) --
+AC-3: Log rút tiền gồm đủ: tên KH, số TK, số tiền, TK ngân hàng nhận, thời gian GD, hình thức xác thực, device ID, IP
+AC-4: Log chuyển tiền nội bộ (transfer ra khỏi TK GDCK) cũng áp dụng format Điều 18 k5
+
+-- Device ID (Điều 18 k3a) --
+AC-5: Mobile: deviceUniqueId = IMEI hoặc Serial hoặc WLAN MAC hoặc Android ID
+AC-6: Web (WTS): deviceId = MAC address hoặc server-computed PC fingerprint
+
+-- General --
+AC-7: Audit query: truy vấn được "tất cả giao dịch từ device X" trong 90 ngày
+AC-8: Nếu thiếu X-Device-Id header và feature flag enabled → trả 400 MISSING_DEVICE_ID
+AC-9: FE không cho phép thực hiện GDCK/rút/chuyển tiền khi không có deviceUniqueId
 ```
 
 ---
 
-## 6. API Impact
+## 7. API Impact
 
 ### Header mới (required)
 
@@ -105,7 +139,7 @@ AC-6: FE không cho phép thực hiện GDCK/rút tiền khi không có deviceUn
 
 ---
 
-## 7. Note — Phân biệt `deviceId` vs `deviceUniqueId`
+## 8. Note — Phân biệt `deviceId` vs `deviceUniqueId`
 
 | Field | Nguồn | Trust level | Dùng cho |
 |---|---|---|---|
@@ -117,7 +151,7 @@ AC-6: FE không cho phép thực hiện GDCK/rút tiền khi không có deviceUn
 
 ---
 
-## 8. Dependencies
+## 9. Dependencies
 
 | Dependency | Owner | Status |
 |---|---|---|

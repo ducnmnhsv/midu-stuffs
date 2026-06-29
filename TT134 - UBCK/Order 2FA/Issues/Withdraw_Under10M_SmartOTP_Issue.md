@@ -1,6 +1,6 @@
 # [TT134-P0-03] Rút tiền < 10M — Bắt buộc Smart OTP
 
-**TT134 Reference:** Điều 10 — Xử lý giao dịch & xác nhận  
+**TT134 Reference:** Điều 12 khoản 4a — Xác thực giao dịch rút, chuyển tiền < 10M  
 **Priority:** 🔴 P0  
 **Deadline:** 28/08/2026  
 **Sub-group:** Order 2FA  
@@ -11,19 +11,27 @@
 
 ## 1. Bối cảnh
 
-TT134 Điều 10 yêu cầu **tất cả giao dịch rút tiền** phải có xác thực lớp thứ hai, bất kể giá trị. Hiện tại, flow rút tiền < 10M **chưa yêu cầu Smart OTP** — chỉ dùng access token. Đây là gap compliance nghiêm trọng cần fix trước 28/08/2026.
+**Điều 12 khoản 4 TT134** quy định:
+- Rút tiền < 10M: áp dụng tối thiểu **một trong các hình thức xác thực Điều 7** (SMS OTP, Soft OTP/Smart OTP, Voice OTP, FIDO, v.v.)
+- Rút tiền ≥ 10M: áp dụng **Điều 9** (sinh trắc học khuôn mặt — blocked by C06 gate)
 
-> **Lưu ý:** Rút tiền ≥ 10M yêu cầu **sinh trắc học** (biometric) và bị block bởi quyết định C06. Issue này chỉ scope **< 10M với Smart OTP**.
+Hiện tại, flow rút tiền < 10M **chưa yêu cầu bất kỳ xác thực thứ hai nào** — chỉ dùng access token. Đây là gap compliance cần fix trước 28/08/2026.
+
+**Lựa chọn implementation:** Smart OTP (Soft OTP) là phương án chính. SMS OTP hợp lệ theo TT134 và là fallback khi Smart OTP chưa được activate.
+
+> **Lưu ý 1:** Rút tiền ≥ 10M yêu cầu Điều 9 (sinh trắc học) — bị block bởi quyết định C06. Issue này chỉ scope **< 10M**.
+> **Lưu ý 2:** Scope bao gồm cả **chuyển tiền** ra khỏi TK GDCK (Điều 12 k4: "rút, **chuyển tiền**").
 
 ---
 
 ## 2. Current vs Target State
 
-| Flow | Hiện tại | Target (TT134) |
-|---|---|---|
-| Rút tiền < 10M | ❌ Chỉ access token | ✅ Access token + Smart OTP |
-| Rút tiền ≥ 10M | ❌ Chỉ access token | 🔒 Blocked (C06 decision) → biometric |
-| Đặt lệnh GDCK | ✅ Đã có OTP (per Order 2FA spec) | ✅ Đúng rồi |
+| Flow | Hiện tại | Target (TT134) | Scope issue này |
+|---|---|---|---|
+| Rút tiền < 10M | ❌ Chỉ access token | ✅ Bất kỳ Điều 7 method (Smart OTP / SMS OTP) | ✅ IN SCOPE |
+| Chuyển tiền < 10M | ❌ Chỉ access token | ✅ Bất kỳ Điều 7 method | ✅ IN SCOPE |
+| Rút/chuyển tiền ≥ 10M | ❌ Chỉ access token | Điều 9 (biometric) | 🔒 Blocked GATE |
+| Đặt lệnh GDCK | ❌ Chưa có Điều 9 | Điều 9 (biometric) đầu phiên + same device | 🔒 Blocked GATE (STT 12) |
 
 ---
 
@@ -60,7 +68,7 @@ BE: Verify Smart OTP với Lotte Core
 | BE-2 | Tạo/update `requireSmartOtp` flag cho withdrawal transaction dưới ngưỡng | cash-service | Cao |
 | BE-3 | Proxy Smart OTP verify sang Lotte Core (nếu chưa có cho withdrawal) | lotte-bridge | Cao |
 | BE-4 | Return `requireOtp: true`, `otpType: "SMART_OTP"` trong initiate response | cash-service | Cao |
-| BE-5 | Rate limiting: max 5 lần verify sai → lock withdrawal session (15 phút) | cash-service | Trung bình |
+| BE-5 | **[Điều 8.5d]** Lockout: max N lần sai (N ≤ 10, NHSV định) → lock Smart OTP vĩnh viễn. Sau lock → response `SMART_OTP_LOCKED`, FE fallback sang SMS OTP | cash-service + Smart OTP service | Cao |
 | BE-6 | Audit log: ghi `smartOtpVerifiedAt`, `verificationMethod: SMART_OTP` | audit service | Trung bình |
 
 ### 4.2 FE Tasks
@@ -70,21 +78,34 @@ BE: Verify Smart OTP với Lotte Core
 | FE-1 | Sau bước nhập số tiền rút → navigate to Smart OTP screen | WithdrawalScreen | Cao |
 | FE-2 | Reuse `SmartOTPInput` component (đã có từ Login S-OTP) | SmartOTPInput | Cao |
 | FE-3 | Handle `OTP_INVALID`, `OTP_EXPIRED`, `MAX_RETRY_EXCEEDED` errors | WithdrawalOTPScreen | Cao |
-| FE-4 | Hiển thị countdown 30s cho TOTP, tự refresh | WithdrawalOTPScreen | Trung bình |
-| FE-5 | Nếu Smart OTP chưa active → redirect to Smart OTP enrollment screen với deep link back | WithdrawalScreen | Cao |
+| FE-4 | Hiển thị challenge session countdown 2 phút (TTL per Điều 8.5đ); code bên trong tự refresh mỗi 30s theo TOTP | WithdrawalOTPScreen | Trung bình |
+| FE-5 | Nếu Smart OTP chưa active → fallback sang SMS OTP tự động (không chặn giao dịch, không force redirect enrollment) | WithdrawalScreen | Cao |
+| FE-6 | Nếu Smart OTP bị locked → show locked screen + button "Dùng SMS OTP thay thế" | WithdrawalOTPScreen | Cao |
 
 ---
 
 ## 5. Acceptance Criteria
 
 ```
-AC-1: Rút tiền < 10M không thể hoàn thành nếu không có Smart OTP hợp lệ
-AC-2: Nhập sai OTP ≤ 5 lần: cho retry với error message rõ ràng
-AC-3: Nhập sai OTP > 5 lần: lock withdrawal session 15 phút, hiển thị countdown
-AC-4: Smart OTP expired (> 30s): hiển thị "Mã OTP đã hết hạn, vui lòng nhập mã mới"
-AC-5: User chưa activate Smart OTP: app redirect sang màn hình kích hoạt Smart OTP
-AC-6: Sau verify thành công: withdrawal được process ngay, không yêu cầu confirm thêm
-AC-7: Audit log ghi đủ: withdrawalId, userId, deviceId, smartOtpVerifiedAt, amount
+-- Xác thực (Điều 12 k4a) --
+AC-1: Rút tiền < 10M không thể hoàn thành nếu không có Điều 7 OTP hợp lệ (Smart OTP hoặc SMS OTP fallback)
+AC-2: Chuyển tiền ra khỏi TK GDCK < 10M cũng áp dụng cùng yêu cầu xác thực
+
+-- Lockout Soft OTP (Điều 8.5d) --
+AC-3: Nhập sai Smart OTP liên tiếp quá N lần (N ≤ 10, NHSV định) → Smart OTP bị khóa vĩnh viễn
+AC-4: Sau lock Smart OTP → tự động fallback sang SMS OTP để hoàn thành giao dịch
+AC-5: Smart OTP chỉ được mở khóa khi KH yêu cầu và CSH đã verify danh tính — không auto-unlock
+
+-- TTL (Điều 8.5đ) --
+AC-6: Smart OTP code có hiệu lực ≤ 2 phút kể từ lúc tạo; nhập sau 2 phút → OTP_EXPIRED
+AC-7: Fallback SMS OTP có hiệu lực ≤ 5 phút kể từ lúc gửi (Điều 8.1b)
+
+-- Enrollment (Điều 8.5b) --
+AC-8: User chưa activate Smart OTP → fallback sang SMS OTP (không chặn giao dịch)
+AC-9: User activate Smart OTP trên thiết bị mới → phải qua SMS OTP + biometric trước
+
+-- Audit Log (Điều 18 k5) --
+AC-10: Audit log ghi đủ: withdrawalId/transferId, userId, amount, destAccount, authMethod, authTime, deviceId, sourceIp
 ```
 
 ---
@@ -119,9 +140,11 @@ AC-7: Audit log ghi đủ: withdrawalId, userId, deviceId, smartOtpVerifiedAt, a
 
 | Code | HTTP | Mô tả |
 |---|---|---|
-| `SMART_OTP_REQUIRED` | 400 | Withdrawal yêu cầu Smart OTP, chưa cung cấp |
-| `SMART_OTP_NOT_ACTIVATED` | 403 | User chưa kích hoạt Smart OTP |
-| `WITHDRAWAL_SESSION_LOCKED` | 429 | Quá số lần sai OTP, session bị lock |
+| `OTP_REQUIRED` | 400 | Giao dịch yêu cầu OTP, chưa cung cấp |
+| `OTP_INVALID` | 400 | OTP không đúng |
+| `OTP_EXPIRED` | 400 | OTP đã quá 2 phút (Smart OTP) hoặc 5 phút (SMS OTP) |
+| `SMART_OTP_NOT_ACTIVATED` | 200 | User chưa kích hoạt Smart OTP → FE tự động fallback SMS OTP |
+| `SMART_OTP_LOCKED` | 200 | Smart OTP đã bị khóa → FE fallback SMS OTP |
 
 ---
 
@@ -130,9 +153,10 @@ AC-7: Audit log ghi đủ: withdrawalId, userId, deviceId, smartOtpVerifiedAt, a
 | Scenario | UX Behavior |
 |---|---|
 | Smart OTP chưa activate | Toast: "Vui lòng kích hoạt Smart OTP để rút tiền" → button "Kích hoạt ngay" |
-| OTP sai, còn < 3 lần | Shake animation, hiển thị "Mã OTP không đúng" |
-| OTP sai, còn 1 lần | Warning: "Bạn còn 1 lần thử. Nhập sai sẽ tạm khóa rút tiền 15 phút." |
-| Session locked | Screen lock: "Rút tiền tạm khóa. Thử lại sau: HH:MM:SS" |
+| OTP sai, còn lần thử | Shake animation, hiển thị "Mã OTP không đúng. Còn X lần thử." |
+| OTP sai, còn 1 lần | Warning: "Bạn còn 1 lần thử. Nhập sai sẽ khóa Smart OTP vĩnh viễn." |
+| Smart OTP locked | Màn hình: "Smart OTP đã bị khóa. Vui lòng liên hệ NHSV hỗ trợ để mở khóa." → **không có countdown** → button "Dùng SMS OTP thay thế" |
+| OTP expired (> 2 phút) | "Mã OTP đã hết hạn, vui lòng nhập mã mới" |
 
 ---
 

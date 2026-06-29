@@ -1,133 +1,247 @@
-# Analyst Findings — Basis (`bs`) + Aggressive Volume (`asv`/`abv`) Fields
+# Analyst Findings — Market Watch (Nhóm dẫn dắt & Biến động ngành)
 
-> **Scope:** Market quote API enhancement — basis for derivatives + accumulated active sell/buy volume.
-> **Sources:** TradeX Knowledge (authoritative, Knowledge-First). FE codebase (`nhsv-mts-rn`) access was **denied** in this session, so FE references are unverified — flagged below.
-
----
-
-## 0. TL;DR for the Creator
-
-The fields the brief asks BE to add are **already named and documented** in the TradeX SymbolInfo field convention — they just aren't implemented in the live realtime model yet. The creator should write the issue as **"implement already-spec'd fields"**, not "design new fields". There is one **important naming mismatch** to resolve (brief says `asb`; convention says `abv`).
+**Source:** Vietstock External API (api-demo.vietstock.vn)
+**Consumer:** NHSV Pro mobile app — Market Watch screen
+**Prepared for:** Creator (Task #2 — Feature Spec generation)
 
 ---
 
-## 1. Field naming — CRITICAL: align with existing convention
+## Feature 1 — Nhóm dẫn dắt thị trường (Top Stock Influence)
 
-Authoritative source: `TradeX Knowledge/System/symbolinfo-api-fields-guide.md` (§2.10, §3, §4).
+### 1.1 API
 
-| Brief term | Existing TradeX convention | Full name | Meaning | Status |
-|------------|---------------------------|-----------|---------|--------|
-| `bs` (basis) | **`bs`** | basis | Chênh lệch = Giá HĐTL − Spot (điểm) | ✅ name matches brief |
-| `asv` (active sell vol) | **`asv`** | accumulatedSellVolume | Tổng KL khớp với **bên bán chủ động** trong phiên (aggressive sell) | ✅ name matches brief |
-| `asb` (active buy vol) | **`abv`** | accumulatedBidVolume | Tổng KL khớp với **bên mua chủ động** trong phiên (aggressive buy) | ⚠️ **MISMATCH — brief calls it `asb`; convention calls it `abv`** |
-| underlying index code | **`bc`** | baseCode | Mã chỉ số cơ sở, e.g. `"VN30"` | ℹ️ brief didn't name this; convention already has it |
+| Attribute | Value |
+|---|---|
+| **Endpoint** | `GET https://api-demo.vietstock.vn/demo/topstockinfluence` |
+| **Method** | GET |
+| **Auth** | Demo endpoint (no auth in spec) |
+| **Refresh type** | On-demand (user mở screen / đổi filter); recommend polling 15–30s khi market open hoặc realtime via socket nếu Vietstock cung cấp |
+| **Use case** | Hiển thị top N cổ phiếu tác động mạnh nhất đến index của một sàn vào một ngày giao dịch |
 
-**Action for creator:** Use `bs`, `asv`, `abv`, `bc` (the documented names). Add a note in the issue explicitly mapping the brief's `asb` → `abv` so FE/BE don't drift. Do NOT introduce a new `asb` field — it would duplicate `abv`.
+### 1.2 Input parameters
 
-### 1.1 Semantic direction sanity-check (matches brief)
-The `mb` (matchedBy) field marks the **aggressor side**:
-- `mb = ASK` → buyer lifted the ask → **active BUY** → accumulate into **`abv`** (accumulatedBidVolume).
-- `mb = BID` → seller hit the bid → **active SELL** → accumulate into **`asv`** (accumulatedSellVolume).
+| Param | Type | Required | Valid values | Mô tả |
+|---|---|---|---|---|
+| `CatID` | int | Yes | `1`=HOSE, `2`=HNX, `3`=UPCOM, `4`=VN30, `5`=HNX30 | Sàn / rổ chỉ số → bind vào dropdown UI |
+| `TradeDate` | string (yyyy-MM-dd) | Yes | Ngày giao dịch hợp lệ (working day) | Default = current trading date |
+| `Top` | int | No | Default `10`; recommended 5–20 | Số lượng mã trả về |
+| `Type` | int | Yes | `0`=all, `1`=top tăng (đóng góp dương), `2`=top giảm (đóng góp âm) | Có thể bind vào filter chip "Tăng/Giảm/Tất cả" |
 
-This is consistent with the brief's logic. (Note the brief's prose labels are slightly tangled — "asv = active sell, aggressor is buyer" — but the `mb`→bucket mapping above is the correct, convention-aligned rule.)
+### 1.3 Output fields
 
----
+| Field | Type | Mô tả | Role trong UI |
+|---|---|---|---|
+| `StockCode` | string | Mã cổ phiếu | **X-axis label** (mỗi bar = 1 mã) |
+| `ClosePrice` | number | Giá đóng cửa hiện tại | Tooltip / detail row |
+| `Change` | number | Thay đổi giá tuyệt đối | Tooltip |
+| `PerChange` | number (%) | % thay đổi giá | Tooltip / detail row |
+| `KLCPLH` | number | Khối lượng CP lưu hành | Tooltip (optional) |
+| `MarketCap` | number | Vốn hóa thị trường | Tooltip (optional) |
+| `Weight` | number | Trọng số của mã trong chỉ số | Tooltip / debug |
+| `BasicIndex` | number | Index đóng cửa ngày trước (baseline) | Tính toán nội bộ |
+| `InfluencePercent` | number (%) | % ảnh hưởng đến index | Detail / tooltip phụ |
+| `InfluenceIndex` | number | **Số điểm đóng góp vào index** | **Y-axis value (bar height)** |
+| `OrderType` | int | `1`=tăng (đóng góp dương), `2`=giảm (đóng góp âm) | **Bar color rule** — 1 → xanh, 2 → đỏ |
+| `Row` | int | Số thứ tự / index hàng | Sort key (ascending) |
 
-## 2. Socket / data-source facts (`mb`, `mv`, `vo`, `ss`, `ep`, `c`)
+### 1.4 UI mapping (Bar Chart)
 
-Source: `market-data-channels.md` §3, §5; `symbolinfo-api-fields-guide.md` §6.
-
-| Field | Meaning | Source topic |
-|-------|---------|--------------|
-| `c` | current/last price | Quote (`quoteUpdate`) |
-| `mb` | matchedBy — aggressor side: `ASK`/`BID` | Quote (`quoteUpdate`) |
-| `mv` | matchingVolume — KL of the **last** matched trade | Quote (`quoteUpdate`) |
-| `vo` | volume — cumulative session traded volume | Quote (`quoteUpdate`) |
-| `ss` | session — `ATO`/`LO`/`ATC`/`PLO`/`CLOSED` | BidOffer (`bidOfferUpdate`) |
-| `ep` | expectedPrice — projected match price, ATO/ATC only | Extra (`extraUpdate`) |
-
-**Lotte raw `mb` mapping** (collector): Lotte `parts[24]` → `"83"` = ASK, `"66"` = BID. Already parsed by `market-collector-lotte`.
-
-**Pipeline:** `Lotte WS → market-collector-lotte (Java) → Kafka → realtime-v2 (Java, writes Redis) + ws-v2 (Node, compresses field names, publishes WS)`.
-- REST `/api/v2/market/symbol/{code}/quote` (a.k.a. `/symbol/latest`) reads from Redis populated by `realtime-v2`.
-- Socket `market.quote.{code}` is published by `ws-v2`, which **renames fields to the short form** in `ws-v2-main/parser.js` (`convertDataPublishV2Quote()`).
-
-**Key consequence for both issues:** Adding `bs`/`asv`/`abv` requires changes in **two places** — (a) `realtime-v2` to compute & persist into the Redis SymbolInfo model, and (b) `ws-v2/parser.js` to include the short field name in the published payload. REST and socket both read the same realtime model, so doing it in `realtime-v2` gets both surfaces.
-
-### 2.1 `market.quote.dr` (brief mentions this channel)
-The brief references socket `market.quote.dr`. The Knowledge base documents the channel as `market.quote.{symbol}` (the `{symbol}` being e.g. `41I1G6000`); a literal `.dr` suffix is **not documented** in Knowledge. Likely the brief means the derivatives symbol channel (the `dr` may be a typo or an env/instance suffix). **Creator should flag this as a clarify-question to BE**, not assume.
-
----
-
-## 3. Derivative symbol → underlying index mapping
-
-Brief states:
-| Prefix | Underlying |
-|--------|-----------|
-| `41I1xxxxx` | VN30 |
-| `41I2xxxxx` | VN100 |
-
-**Knowledge-base status:**
-- The `bc` (baseCode) field is **already defined** to carry the underlying index code (example value `"VN30"`). So the mapping output already has a home field.
-- The prefix→index rule (`41I1`→VN30, `41I2`→VN100) is **NOT documented anywhere in TradeX Knowledge**. `init-job.md` confirms futures examples as `VN30F2401` etc., and that VN30 constituent lists come from `lotte-bridge` job (Kafka `indexStockListUpdate`) into `realtime-v2` `IndexStockListRepository`. But the specific `41Ix` numeric-prefix convention is **new information from the brief / FE spec** and is unverified against Knowledge or live code.
-
-**Action for creator:** Treat the `41I1`/`41I2` prefix mapping as a **requirement input from the FE spec** that BE must confirm against the actual Lotte symbol scheme. Add as a clarify-question: "Is futures→underlying resolved by `41Ix` prefix, or should BE use an existing symbol-metadata field?" Note: VN100 as a derivative underlying is itself worth confirming — Knowledge only references VN30 futures.
+```
+X-axis  ← StockCode
+Y-axis  ← InfluenceIndex (điểm đóng góp; có thể âm/dương)
+Bar color:
+  OrderType == 1  → Green (UP_COLOR)
+  OrderType == 2  → Red   (DOWN_COLOR)
+Sort order ← Row (ascending) → backend đã sort theo độ ảnh hưởng giảm dần
+Bar label / tooltip:
+  Header: StockCode
+  Line 1: InfluenceIndex (đóng góp X.XX điểm)
+  Line 2: ClosePrice · Change · PerChange%
+  Line 3 (optional): MarketCap, Weight
+Filter UI:
+  Dropdown sàn      → CatID
+  Date picker       → TradeDate
+  Toggle Top N      → Top
+  Chip Tăng/Giảm/All → Type
+```
 
 ---
 
-## 4. Basis calculation during ATO/ATC
+## Feature 2 — Biến động ngành (Sector Treemap)
 
-Brief's acceptance criterion: "Calculated correctly during ATO/ATC sessions (use correct reference price per session)."
+Treemap chart, kích thước ô = metric của tab đang chọn, màu = `PerChange` (xanh/đỏ).
 
-**Knowledge facts relevant to the price-selection question:**
-- During `ATO`/`ATC`, the futures **last/current price `c` is not the live matched price** — the meaningful price is the **`ep` (expectedPrice)** projected match price (`extraUpdate` topic). Outside ATO/ATC, `ep` is null and `c` is the live matched price.
-- Session impact table (`market-data-channels.md` §5.3): `ep`/`exv`/`exc`/`exr` are populated only in ATO & ATC; null in LO/PLO/CLOSED.
+### 2.1 API 1 — sectorindex (danh sách ngành + KL/GT giao dịch + KLNN)
 
-**Recommended logic to put in the issue (as a proposed answer + clarify-question):**
-- Continuous (LO): `basis = futures.c − underlying.c`
-- ATO/ATC: `basis = futures.ep − underlying.ep` (use expected/projected price for **both legs** so they're consistent), falling back to `c` if `ep` unavailable.
-- This directly answers the brief's open question "ATO/ATC: dùng `expectedPrice` hay `currentPrice`?" → **`expectedPrice` during ATO/ATC, `currentPrice` otherwise** — but mark it as needs-BE-confirmation since it's a design decision.
+| Attribute | Value |
+|---|---|
+| **Endpoint** | `GET https://api-demo.vietstock.vn/demo/sectorindex` |
+| **Method** | GET |
+| **Refresh** | On-demand + polling 15–30s khi market open |
+| **Use case** | List ngành cùng các metric giao dịch trong ngày |
+
+**Input:**
+
+| Param | Type | Required | Valid values | Mô tả |
+|---|---|---|---|---|
+| `Type` | int | Yes | `0`=sort Vstock tăng, `1`=sort Vstock giảm, `2`=sort thay đổi tăng, `3`=sort thay đổi giảm | Sort order do BE thực hiện |
+| `LanguageID` | int | Yes | `1`=VI, `2`=EN | NHSV Pro mặc định `1` |
+| `TradingDate` | datetime | Yes | Ngày giao dịch hợp lệ | Default = current trading date |
+
+**Output:**
+
+| Field | Type | Mô tả | Role |
+|---|---|---|---|
+| `ID` | int | **Mã ngành (VSTSectorID)** | **Join key** với API 2 |
+| `Name` | string | Tên ngành | Cell label |
+| `Close` | number | Index đóng cửa của ngành | Tooltip |
+| `Change` | number | Thay đổi tuyệt đối | Tooltip |
+| `PerChange` | number (%) | % thay đổi | **Cell color** (green/red gradient theo magnitude) |
+| `TradingDate` | datetime | Ngày dữ liệu | Meta |
+| `Vol` | number | Khối lượng khớp | Cell size — tab **Khối lượng GD** |
+| `Val` | number | Giá trị khớp (VND) | Cell size — tab **Giá trị GD** |
+| `ForeignBuyVol` | number | KL nước ngoài mua | Cell size — tab **KLNN mua** |
+| `ForeignSellVol` | number | KL nước ngoài bán | Cell size — tab **KLNN bán** |
+| `Row` | int | Sort index | Sort |
+
+### 2.2 API 2 — GetDetailSector (vốn hóa + định giá + lịch sử)
+
+| Attribute | Value |
+|---|---|
+| **Endpoint** | `GET https://api-demo.vietstock.vn/demo/GetDetailSector` |
+| **Method** | GET |
+| **Refresh** | Có thể cache lâu hơn (vốn hóa & định giá ít thay đổi intraday) |
+| **Use case** | Cung cấp `MarketCapital` cho tab Vốn hóa + chỉ số định giá cho tooltip mở rộng |
+
+**Input:**
+
+| Param | Type | Required | Valid values | Mô tả |
+|---|---|---|---|---|
+| `languageID` | int | Yes | `1`=VI, `2`=EN | NHSV Pro mặc định `1` |
+
+**Output:**
+
+| Field | Type | Mô tả | Role |
+|---|---|---|---|
+| `VSTSectorID` | int | **Mã ngành** | **Join key** với API 1 (`sectorindex.ID`) |
+| `SectorName` | string | Tên ngành | Fallback label |
+| `SectorLevel` | int | Cấp ngành | Filter (chọn cấp 1 / cấp 2…) |
+| `TradingDate` | datetime | Ngày dữ liệu | Meta |
+| `MarketCapital` | number | Vốn hóa ngành | Cell size — tab **Vốn hóa** |
+| `PE` | number | P/E ngành | Tooltip mở rộng |
+| `PB` | number | P/B ngành | Tooltip mở rộng |
+| `EPS` | number | EPS ngành | Tooltip mở rộng |
+| `ROA` | number (%) | ROA ngành | Tooltip mở rộng |
+| `ROE` | number (%) | ROE ngành | Tooltip mở rộng |
+| `PerChange1W` | number (%) | % đổi 1 tuần | Tooltip / detail |
+| `PerChange1M` | number (%) | % đổi 1 tháng | Tooltip / detail |
+| `PerChange3M` | number (%) | % đổi 3 tháng | Tooltip / detail |
+| `PerChange6M` | number (%) | % đổi 6 tháng | Tooltip / detail |
+| `PerChange52W` | number (%) | % đổi 52 tuần | Tooltip / detail |
+| `Max52WCloseIndex` | number | Đỉnh 52 tuần | Tooltip mở rộng |
+| `Min52WCloseIndex` | number | Đáy 52 tuần | Tooltip mở rộng |
+
+### 2.3 Join logic
+
+```
+sectors = sectorindex.list                              // ID, Name, PerChange, Vol, Val, ForeignBuyVol, ForeignSellVol
+details = GetDetailSector.list keyed by VSTSectorID     // MarketCapital, PE, PB, EPS, ROA, ROE, lịch sử
+
+For each s in sectors:
+    d = details[s.ID]                                   // join: sectorindex.ID == GetDetailSector.VSTSectorID
+    cell = {
+        id:        s.ID,
+        label:     s.Name (fallback d.SectorName),
+        color:     colorByPerChange(s.PerChange),       // gradient red↔green
+        sizeMetric: pickByTab(currentTab, s, d),        // see mapping below
+        meta:      { ...s, ...d }
+    }
+```
+
+Edge case: nếu `details[s.ID]` không tồn tại → vẫn render cell với `MarketCapital = null`; tab **Vốn hóa** sẽ exclude hoặc hiển thị placeholder.
+
+### 2.4 Tab → field mapping
+
+| Tab UI | Source API | Field → Cell size | Ghi chú |
+|---|---|---|---|
+| **Giá trị GD** | sectorindex | `Val` | Default tab; đơn vị VND |
+| **Khối lượng GD** | sectorindex | `Vol` | Đơn vị: cổ phiếu |
+| **Vốn hóa** | GetDetailSector | `MarketCapital` | Cần join; cache lâu hơn |
+| **KLNN mua** *(mode mở rộng)* | sectorindex | `ForeignBuyVol` | |
+| **KLNN bán** *(mode mở rộng)* | sectorindex | `ForeignSellVol` | |
+| **GTGD** *(mode mở rộng)* | sectorindex | `Val` | Alias của tab Giá trị GD |
+| **KLGD** *(mode mở rộng)* | sectorindex | `Vol` | Alias của tab Khối lượng GD |
+| **Vốn hoá** *(mode mở rộng)* | GetDetailSector | `MarketCapital` | Alias của tab Vốn hóa |
+
+### 2.5 UI mapping (Treemap)
+
+```
+Cell size  ← metric chọn theo tab (xem bảng 2.4)
+Cell color ← PerChange:
+   >  +2%   → green đậm
+   0..+2%   → green nhạt
+   0        → grey
+  -2..0%    → red nhạt
+   < -2%    → red đậm
+Cell label:
+  Line 1: Name (s.Name)
+  Line 2: PerChange % (color-coded)
+  Line 3 (nếu cell đủ rộng): giá trị metric đang chọn (formatted)
+Tooltip (tap cell):
+  Header:  Name · Close · Change · PerChange%
+  Block 1: Vol, Val, ForeignBuyVol, ForeignSellVol
+  Block 2: MarketCapital, PE, PB, EPS, ROA, ROE
+  Block 3: PerChange 1W/1M/3M/6M/52W · Max52W / Min52W
+Controls:
+  Tabs ngang (sticky)              → switch sizeMetric
+  Sort hint (mặc định bê BE sort)  → có thể bind Type param khi user đổi sort
+  Fullscreen toggle                → render lại treemap chiếm toàn màn hình (horizontal layout)
+```
 
 ---
 
-## 5. Answers to the brief's open questions
+## 3. Notes — Data types & Edge cases
 
-| Brief question | Finding |
-|----------------|---------|
-| Field name `bs` vs `basis`? | Short form **`bs`** in socket/compressed payload (full name `basis`). Convention already fixed this — §3 of fields guide. |
-| Is `bs` in REST `/symbol/{code}/quote` or socket-only? | Both should carry it: REST and socket read the same `realtime-v2` Redis model. `bs` belongs in the SymbolInfo model → appears in both. Confirm REST currently exposes the derivatives field group. |
-| ATO/ATC: `expectedPrice` or `currentPrice`? | Use **`expectedPrice` (`ep`) during ATO/ATC**, `currentPrice` (`c`) otherwise — see §4. Needs BE confirmation. |
-| `asv`/`asb` field names? | `asv` correct; **`asb` should be `abv`** (accumulatedBidVolume) — see §1. |
-| Source for asv/abv accumulation? | `mb` (aggressor) + `mv` (last-match volume), accumulated per session; reset at session start. Field guide §2.10 explicitly says these "có thể suy từ `mb` + `mv` tích lũy". |
+### 3.1 Data type notes
+
+- Tất cả số liệu giá/khối lượng nên parse `number` (có thể là `decimal`); FE format theo locale `vi-VN` (dấu `.` ngăn cách hàng nghìn).
+- `PerChange*` là **đơn vị %** (đã nhân 100), không phải tỉ lệ thập phân.
+- `TradingDate` từ API có thể là ISO datetime hoặc `yyyy-MM-dd HH:mm:ss` — FE chuẩn hóa về `Date` object trước khi format.
+- `MarketCap` / `MarketCapital`: đơn vị VND (giá trị lớn → format `tỷ` / `nghìn tỷ`).
+- `CatID`, `Type`, `OrderType`, `LanguageID`, `SectorLevel`: enum integer — FE define constants.
+- Vietstock demo endpoint có thể trả `null` cho field thiếu dữ liệu → FE phải null-safe.
+
+### 3.2 Edge cases cần cover trong spec
+
+**Chung:**
+- **Ngoài giờ giao dịch / weekend / holiday:** API có thể trả data của phiên gần nhất hoặc empty. FE cần hiển thị banner "Dữ liệu phiên gần nhất: dd/MM/yyyy".
+- **Empty array:** Treemap / bar chart phải có empty state ("Chưa có dữ liệu cho ngày này").
+- **API timeout / 5xx:** Hiển thị retry button, giữ snapshot data cũ nếu có.
+- **Slow network:** Skeleton loading; tránh layout shift khi data update polling.
+
+**Feature 1 (Top Influence):**
+- `Type=1` (top tăng) nhưng thị trường giảm toàn diện → có thể trả ít hơn `Top` records (hoặc rỗng).
+- `TradeDate` ngày tương lai / không hợp lệ → BE trả empty; FE disable date picker cho future dates.
+- `InfluenceIndex` có thể âm (đặc biệt khi `Type=0` mix tăng/giảm) → trục Y phải support giá trị âm (hoặc render bar đi xuống từ baseline 0).
+- Khi đổi `CatID` (sàn), `Weight` / `BasicIndex` reset theo rổ mới → FE phải invalidate cache theo `(CatID, TradeDate)`.
+
+**Feature 2 (Sector Treemap):**
+- **Sector trong API 1 không có trong API 2** (mismatched ID): cell vẫn hiển thị từ sectorindex; ẩn tab Vốn hóa cho cell đó hoặc fallback `null`.
+- **Sector trong API 2 không có trong API 1**: bỏ qua (không hiển thị cell vì không có `PerChange` để color).
+- **PerChange = 0**: cell màu trung tính (grey), không green/red.
+- **Metric = 0 hoặc null** (vd `ForeignBuyVol = 0` cho ngành không có giao dịch NN): treemap algorithm sẽ render cell rất nhỏ / ẩn → cần min cell size threshold hoặc placeholder.
+- **`MarketCapital = null`** ở tab Vốn hóa: exclude cell hoặc hiển thị overlay "—".
+- **Hai API trả về với `TradingDate` khác nhau** (vd API 2 cache cũ): hiển thị `TradingDate` nhỏ nhất + warning nhẹ.
+- **`SectorLevel`**: nếu mix nhiều cấp, treemap có thể bị double-count. Recommend filter mặc định ở 1 cấp duy nhất (vd `SectorLevel = 1`) hoặc dùng tham số filter từ FE.
+- **Số lượng ngành lớn (>30)**: cell quá nhỏ → label không đọc được. Cân nhắc giới hạn top N hoặc cho zoom.
+
+### 3.3 Performance & caching gợi ý cho Creator
+
+- `topstockinfluence`: cache theo key `(CatID, TradeDate, Top, Type)`, TTL 15–30s trong giờ giao dịch.
+- `sectorindex`: cache theo `(Type, LanguageID, TradingDate)`, TTL 15–30s.
+- `GetDetailSector`: cache theo `languageID`, TTL 5–15 phút (data ít biến động intraday).
+- Cân nhắc gọi song song API 1 + API 2 cho treemap; render khi cả 2 hoàn tất hoặc render API 1 trước rồi enrich từ API 2.
 
 ---
 
-## 6. Implementation surface (where BE changes land) — for Technical Details section
-
-| Layer | Component (from Knowledge appendix) | Change |
-|-------|-------------------------------------|--------|
-| Collector | `market-collector-lotte` `WsConnection.java` `handleStockQuote()` | Already provides `mb`, `mv` — likely no change |
-| Realtime | `realtime-v2` `QuoteUpdateHandler` / `QuoteService.updateQuote()` | Accumulate `asv`/`abv` per session from `mb`+`mv`; compute `bs` from futures vs `bc` underlying; persist to Redis SymbolInfo |
-| Realtime | `realtime-v2` session/reset path (`MarketStatusService`) | Reset `asv`/`abv` to 0 at session start |
-| Underlying lookup | `realtime-v2` `IndexStockListRepository` / symbol metadata | Resolve futures → underlying index (`bc`); fetch underlying live/expected price |
-| WS publish | `ws-v2` `parser.js` `convertDataPublishV2Quote()` | Add short keys `bs`, `asv`, `abv` to published quote payload |
-| REST | `market-query-v2` (`/symbol/{code}/quote`) | Ensure derivatives field group incl. `bs`, `asv`, `abv` is returned |
-
-**Performance note (brief AC "no perf degradation"):** Both calcs are O(1) per quote tick (basis = one subtraction needing the cached underlying price; asv/abv = one accumulator add keyed off `mb`). The only cross-symbol dependency is basis needing the underlying index's latest price already cached in Redis — cheap. Session-reset is a one-time clear per session boundary.
-
----
-
-## 7. Gaps / unverified — creator must surface as clarify-questions
-
-1. **`asb` vs `abv` naming** — must be reconciled (recommend `abv`).
-2. **`market.quote.dr` channel suffix** — not in Knowledge; confirm exact channel name.
-3. **`41I1`/`41I2` → VN30/VN100 prefix rule** — FE-spec input, not verified against Lotte symbol scheme or live code.
-4. **VN100 futures existence** — Knowledge only documents VN30 futures.
-5. **FE codebase not inspected** — tool access to `nhsv-mts-rn` was denied this session; any claim about existing FE basis-calc code is unverified. The brief states FE currently self-calculates basis, which is plausible but unconfirmed.
-6. **ATO/ATC price source for basis** — recommended `ep`, but it's a design decision for BE.
-
----
-
-**Document Status:** ✅ Analysis complete (Knowledge-based; FE unverified)
-**For:** creator (BE issue authoring), team-lead
-**Next Steps:** Creator drafts `BE_Market_Quote_Fields_Enhancement.md` using §1 naming, §5 answers, §6 implementation surface, §7 clarify-questions.
+Document Status: ✅ Ready | For: Creator (Task #2) | Next Steps: Tạo 2 file Feature Spec tại `New feature in NHSV Pro/Market_Watch/`
