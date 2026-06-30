@@ -21,13 +21,16 @@
   --bio: #7C3AED; --bio-bg: rgba(124,58,237,.08); --bio-bd: rgba(124,58,237,.3);
   --done: #059669; --done-bg: rgba(5,150,105,.07); --done-bd: rgba(5,150,105,.22);
   --warn: #D97706; --warn-bg: rgba(217,119,6,.08); --warn-bd: rgba(217,119,6,.25);
+  --teal: #0D9488;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; }
 
+/* ── HEADER ────────────────────────────────────────────── */
 .header {
   background: var(--surface); border-bottom: 1px solid var(--border);
   padding: 20px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  position: sticky; top: 0; z-index: 10;
 }
 .header-title { font-size: 17px; font-weight: 700; }
 .header-sub { font-size: 12px; color: var(--text-3); margin-top: 3px; }
@@ -35,31 +38,156 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .chip-p0 { background: var(--p0-bg); color: var(--p0); border: 1px solid var(--p0-bd); }
 .chip-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-bd); }
 
-.body { padding: 24px 28px; max-width: 1100px; margin: 0 auto; }
+.body { padding: 24px 28px; max-width: 1200px; margin: 0 auto; }
 
-/* MODEL SUMMARY */
+/* ── MODEL SUMMARY ─────────────────────────────────────── */
 .model-box {
   background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
-  padding: 20px 24px; margin-bottom: 24px;
+  padding: 20px 24px; margin-bottom: 20px;
 }
-.model-box h2 { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+.box-title { font-size: 13px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
 .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-@media (max-width: 700px) { .model-grid { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .model-grid { grid-template-columns: 1fr; } }
 .model-card {
   border-radius: 10px; padding: 14px 16px; border: 1px solid;
 }
 .model-card.session { background: var(--be-bg); border-color: var(--be-bd); }
 .model-card.gdck    { background: var(--fe-bg); border-color: var(--fe-bd); }
 .model-card.bio     { background: var(--bio-bg); border-color: var(--bio-bd); }
-.model-card .label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-.model-card.session .label { color: var(--be); }
-.model-card.gdck    .label { color: var(--fe); }
-.model-card.bio     .label { color: var(--bio); }
-.model-card .value { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
-.model-card .sub   { font-size: 11px; color: var(--text-3); line-height: 1.5; }
-.model-card .fallback { font-size: 10px; margin-top: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,.6); color: var(--text-2); }
+.model-card .mc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.model-card.session .mc-label { color: var(--be); }
+.model-card.gdck    .mc-label { color: var(--fe); }
+.model-card.bio     .mc-label { color: var(--bio); }
+.model-card .mc-value { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
+.model-card .mc-sub   { font-size: 11px; color: var(--text-3); line-height: 1.5; }
+.model-card .mc-fallback { font-size: 10px; margin-top: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(255,255,255,.6); color: var(--text-2); }
 
-/* SECTIONS */
+/* ── FLOW DIAGRAM ──────────────────────────────────────── */
+.flow-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 24px; margin-bottom: 20px;
+}
+.flow-header { font-size: 13px; font-weight: 700; margin-bottom: 16px; }
+.flow-row { display: flex; align-items: flex-start; gap: 0; }
+.flow-start-node {
+  background: var(--be-bg); border: 1.5px solid var(--be-bd); color: var(--be);
+  font-size: 12px; font-weight: 700; border-radius: 8px;
+  padding: 10px 14px; flex-shrink: 0; align-self: center;
+}
+.flow-connector { display: flex; align-items: center; color: var(--text-3); padding: 0 10px; font-size: 18px; align-self: center; }
+.flow-cases { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.flow-case {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 12px; border-radius: 8px; border: 1px solid;
+}
+.flow-case.ca { background: var(--done-bg); border-color: var(--done-bd); }
+.flow-case.cb { background: var(--warn-bg); border-color: var(--warn-bd); }
+.flow-case.cc { background: var(--p0-bg); border-color: var(--p0-bd); }
+.case-badge {
+  font-size: 10px; font-weight: 700; border-radius: 5px; padding: 2px 7px;
+  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+}
+.ca .case-badge { background: var(--done); color: #fff; }
+.cb .case-badge { background: var(--warn); color: #fff; }
+.cc .case-badge { background: var(--p0); color: #fff; }
+.case-flow { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; flex: 1; font-size: 11px; }
+.case-node {
+  padding: 2px 8px; border-radius: 5px; border: 1px solid;
+  font-size: 11px; font-weight: 500;
+}
+.ca .case-node { background: var(--done-bg); border-color: var(--done-bd); color: var(--done); }
+.cb .case-node { background: var(--warn-bg); border-color: var(--warn-bd); color: var(--warn); }
+.cc .case-node { background: var(--p0-bg); border-color: var(--p0-bd); color: var(--p0); }
+.case-arrow { color: var(--text-3); font-size: 11px; }
+.case-outcome {
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+}
+.outcome-ok { background: var(--done); color: #fff; }
+.outcome-gate { background: var(--warn); color: #fff; }
+
+/* ── PHASE TIMELINE ────────────────────────────────────── */
+.phase-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px 24px; margin-bottom: 20px;
+}
+.phase-track {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 0; position: relative;
+}
+@media (max-width: 800px) { .phase-track { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
+.phase-step {
+  padding: 14px 16px 14px 12px;
+  position: relative;
+}
+.phase-step:not(:last-child)::after {
+  content: '→';
+  position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); font-size: 16px; z-index: 1;
+}
+@media (max-width: 800px) {
+  .phase-step:not(:last-child)::after { display: none; }
+}
+.phase-num {
+  width: 26px; height: 26px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.phase-0 .phase-num { background: var(--warn-bg); color: var(--warn); border: 1.5px solid var(--warn-bd); }
+.phase-1 .phase-num { background: var(--be-bg); color: var(--be); border: 1.5px solid var(--be-bd); }
+.phase-2 .phase-num { background: var(--fe-bg); color: var(--fe); border: 1.5px solid var(--fe-bd); }
+.phase-3 .phase-num { background: var(--done-bg); color: var(--done); border: 1.5px solid var(--done-bd); }
+.phase-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.phase-detail { font-size: 11px; color: var(--text-3); line-height: 1.5; }
+.phase-tasks { margin-top: 6px; display: flex; flex-direction: column; gap: 2px; }
+.phase-task-chip {
+  font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 5px; border: 1px solid;
+  display: inline-block; margin-top: 2px;
+}
+.phase-0 .phase-task-chip { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-bd); }
+.phase-1 .phase-task-chip { background: var(--be-bg); color: var(--be); border-color: var(--be-bd); }
+.phase-2 .phase-task-chip { background: var(--fe-bg); color: var(--fe); border-color: var(--fe-bd); }
+.phase-3 .phase-task-chip { background: var(--done-bg); color: var(--done); border-color: var(--done-bd); }
+
+/* ── IMPACT + OVERLAP ──────────────────────────────────── */
+.analysis-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+}
+@media (max-width: 700px) { .analysis-grid { grid-template-columns: 1fr; } }
+.analysis-box {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  overflow: hidden;
+}
+.analysis-header {
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;
+}
+.analysis-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+.impact-item {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 8px 10px; border-radius: 8px; border: 1px solid;
+}
+.impact-item.resolved  { background: var(--done-bg); border-color: var(--done-bd); }
+.impact-item.unblocked { background: var(--fe-bg); border-color: var(--fe-bd); }
+.impact-icon { font-size: 13px; flex-shrink: 0; line-height: 1.6; }
+.impact-content { flex: 1; }
+.impact-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.impact-desc  { font-size: 11px; color: var(--text-3); line-height: 1.4; }
+
+.overlap-item {
+  padding: 8px 10px; border-radius: 8px;
+  background: var(--warn-bg); border: 1px solid var(--warn-bd);
+}
+.overlap-header { font-size: 11px; font-weight: 700; color: var(--warn); margin-bottom: 4px; }
+.overlap-body { font-size: 11px; color: var(--text-2); line-height: 1.5; }
+.overlap-body code { font-family: monospace; font-size: 10px; background: rgba(255,255,255,.5); padding: 1px 4px; border-radius: 3px; }
+.action-chip {
+  display: inline-block; margin-top: 4px;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+  background: var(--warn); color: #fff;
+}
+
+/* ── SECTIONS ──────────────────────────────────────────── */
 .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; }
 .section-header {
   padding: 14px 20px; border-bottom: 1px solid var(--border);
@@ -75,26 +203,31 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 .badge-warn{ background: var(--warn-bg); color: var(--warn); border: 1px solid var(--warn-bd); }
 .section-meta { font-size: 11px; color: var(--text-3); }
 
-.task-group { padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.task-group:last-child { border-bottom: none; }
-.task-group-label {
+/* ── 2-COL TASK LAYOUT ────────────────────────────────── */
+.task-2col {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; background: var(--border);
+}
+@media (max-width: 700px) { .task-2col { grid-template-columns: 1fr; gap: 1px; } }
+.task-col { background: var(--surface); padding: 16px 20px; }
+.task-col-header {
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
   margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
 }
-.label-be  { color: var(--be); }
-.label-fe  { color: var(--fe); }
-.label-bio { color: var(--bio); }
-
+.tch-be   { color: var(--be); }
+.tch-fe   { color: var(--fe); }
+.tch-bio  { color: var(--bio); }
+.tch-core { color: var(--warn); }
 .task-list { display: flex; flex-direction: column; gap: 6px; }
 .task-item {
-  display: flex; align-items: flex-start; gap: 10px;
+  display: flex; align-items: flex-start; gap: 8px;
   padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--surface2);
 }
 .task-item.critical { background: var(--p0-bg); border-color: var(--p0-bd); }
 .task-num {
-  font-size: 10px; font-weight: 700; color: var(--text-3); min-width: 44px;
-  font-variant-numeric: tabular-nums; padding-top: 1px;
+  font-size: 10px; font-weight: 700; color: var(--text-3); min-width: 48px;
+  font-variant-numeric: tabular-nums; padding-top: 1px; flex-shrink: 0;
 }
 .task-item.critical .task-num { color: var(--p0); }
 .task-text { font-size: 12px; color: var(--text-2); line-height: 1.5; flex: 1; }
@@ -105,15 +238,13 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
   background: var(--p0); color: #fff; white-space: nowrap; flex-shrink: 0; margin-top: 2px;
 }
 
-/* NOTE BOX */
+/* ── CHANGE / NOTE BOXES ───────────────────────────────── */
 .note-box {
-  margin: 16px 20px; padding: 12px 14px; border-radius: 8px;
+  margin: 14px 20px; padding: 12px 14px; border-radius: 8px;
   background: var(--warn-bg); border: 1px solid var(--warn-bd);
   font-size: 12px; color: var(--text-2); line-height: 1.6;
 }
 .note-box strong { color: var(--warn); }
-
-/* CHANGE BOX */
 .change-box {
   margin: 12px 20px; padding: 10px 14px; border-radius: 8px;
   background: var(--done-bg); border: 1px solid var(--done-bd);
@@ -121,7 +252,7 @@ body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color
 }
 .change-box strong { color: var(--done); }
 
-/* API TABLE */
+/* ── API TABLE ────────────────────────────────────────── */
 .api-table-wrap { padding: 16px 20px; }
 table { width: 100%; border-collapse: collapse; font-size: 12px; }
 th { text-align: left; font-weight: 600; color: var(--text-3); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; padding: 6px 10px; border-bottom: 2px solid var(--border); }
@@ -131,10 +262,7 @@ td code { font-family: monospace; font-size: 11px; background: var(--surface2); 
 td.new-tag::after { content: 'NEW'; font-size: 9px; font-weight: 700; background: var(--be); color: #fff; padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 td.changed-tag::after { content: 'CHANGED'; font-size: 9px; font-weight: 700; background: var(--warn); color: #fff; padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
 
-/* LOG TABLE */
-.log-table-wrap { padding: 16px 20px; }
-
-/* FOOTER */
+/* ── FOOTER ────────────────────────────────────────────── */
 .footer {
   padding: 16px 28px; border-top: 1px solid var(--border);
   background: var(--surface2); font-size: 11px; color: var(--text-3);
@@ -158,279 +286,501 @@ td.changed-tag::after { content: 'CHANGED'; font-size: 9px; font-weight: 700; ba
 
 <div class="body">
 
-<!-- MODEL SUMMARY -->
+<!-- ══ AUTH MODEL v1.3 ══════════════════════════════════ -->
 <div class="model-box">
-  <h2>Auth Model v1.3 — Login Smart OTP = Session Auth</h2>
+  <div class="box-title">Auth Model v1.3 — Login Smart OTP = Session Auth</div>
   <div class="model-grid">
     <div class="model-card session">
-      <div class="label">Login với Smart OTP</div>
-      <div class="value">sAm/sAt embedded trong JWT</div>
-      <div class="sub">verifyOTP với otpType=SMART_OTP → JWT final embed sAm=SOFT_OTP, sAt=login_time. Không màn hình Session Auth riêng.</div>
-      <div class="fallback">Chưa có Smart OTP → Hard gate activation (bắt buộc kích hoạt, không vào app)</div>
+      <div class="mc-label">Login với Smart OTP</div>
+      <div class="mc-value">sAm/sAt embedded trong JWT</div>
+      <div class="mc-sub">verifyOTP với otpType=SMART_OTP → JWT final embed sAm=SOFT_OTP, sAt=login_time. Không màn hình Session Auth riêng.</div>
+      <div class="mc-fallback">Chưa có Smart OTP → Hard gate activation (bắt buộc kích hoạt, không vào app)</div>
     </div>
     <div class="model-card gdck">
-      <div class="label">GDCK + Rút tiền &lt;10M</div>
-      <div class="value">JWT carry sAm/sAt</div>
-      <div class="sub">Không OTP trong order flow. BE middleware đọc sAm/sAt từ JWT → log auth_method + auth_time tự động.</div>
-      <div class="fallback">sAm/sAt carry qua refresh token trong cùng ngày giao dịch</div>
+      <div class="mc-label">GDCK + Rút tiền &lt;10M</div>
+      <div class="mc-value">JWT carry sAm/sAt</div>
+      <div class="mc-sub">Không OTP trong order flow. BE middleware đọc sAm/sAt từ JWT → log auth_method + auth_time tự động.</div>
+      <div class="mc-fallback">sAm/sAt carry qua refresh token trong cùng ngày giao dịch</div>
     </div>
     <div class="model-card bio">
-      <div class="label">Rút tiền ≥10M — Per-transaction</div>
-      <div class="value">Biometric bắt buộc</div>
-      <div class="sub">Điều 12k4a. Verify qua kbfinance/verifyPassword (pinType=BIOMETRIC). Không cho fallback Smart OTP.</div>
-      <div class="fallback">Không biometric enrollment → BLOCK giao dịch</div>
+      <div class="mc-label">Rút tiền ≥10M — Per-transaction</div>
+      <div class="mc-value">Biometric bắt buộc</div>
+      <div class="mc-sub">Điều 12k4a. Verify qua kbfinance/verifyPassword (pinType=BIOMETRIC). Không cho fallback Smart OTP.</div>
+      <div class="mc-fallback">Không biometric enrollment → BLOCK giao dịch</div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 1: SESSION AUTH (NEW) -->
+<!-- ══ LOGIN FLOW DIAGRAM ════════════════════════════════ -->
+<div class="flow-box">
+  <div class="flow-header">Login Flow — 3 Cases</div>
+  <div class="flow-row">
+    <div class="flow-start-node">Password<br>Login</div>
+    <div class="flow-connector">→</div>
+    <div class="flow-cases">
+
+      <div class="flow-case ca">
+        <span class="case-badge">Case A</span>
+        <div class="case-flow">
+          <span class="case-node">sotpStatus=Y<br>+ sotpKey cached</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">verifyOTP<br>otpType=SMART_OTP</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">JWT embed<br>sAm + sAt</span>
+          <span class="case-arrow">→</span>
+          <span class="case-outcome outcome-ok">✅ Home</span>
+          <span style="font-size:11px;color:var(--text-3);margin-left:4px">No OTP in order flow</span>
+        </div>
+      </div>
+
+      <div class="flow-case cb">
+        <span class="case-badge">Case B</span>
+        <div class="case-flow">
+          <span class="case-node">sotpStatus=N<br>(chưa đăng ký)</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">Hard Gate Block</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">Activation Screen<br>(SMS OTP → PIN → Register)</span>
+          <span class="case-arrow">→</span>
+          <span class="case-outcome outcome-gate">Đăng nhập lại<br>với Smart OTP</span>
+        </div>
+      </div>
+
+      <div class="flow-case cc">
+        <span class="case-badge">Case C</span>
+        <div class="case-flow">
+          <span class="case-node">sotpStatus=Y<br>no local key (reinstall)</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">Reinstall Screen</span>
+          <span class="case-arrow">→</span>
+          <span class="case-node">Re-register Device</span>
+          <span class="case-arrow">→</span>
+          <span class="case-outcome outcome-gate">Đăng nhập lại<br>với Smart OTP</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPLEMENTATION PHASES ════════════════════════════= -->
+<div class="phase-box">
+  <div class="box-title">Implementation Phases — Thứ tự triển khai</div>
+  <div class="phase-track">
+
+    <div class="phase-step phase-0">
+      <div class="phase-num">0</div>
+      <div class="phase-name">Prerequisite</div>
+      <div class="phase-detail">Smart OTP Login<br><em>Phải có trước khi bắt đầu STT5</em></div>
+      <div class="phase-tasks">
+        <span class="phase-task-chip">07_BE_Task (Task 3+4)</span>
+        <span class="phase-task-chip">08_FE_Issue</span>
+      </div>
+    </div>
+
+    <div class="phase-step phase-1">
+      <div class="phase-num">1</div>
+      <div class="phase-name">JWT Core — aaa service</div>
+      <div class="phase-detail">Embed sAm/sAt vào JWT<br><em>Foundation cho toàn bộ STT5</em></div>
+      <div class="phase-tasks">
+        <span class="phase-task-chip">BE-SA-1 (merge với 07 Task 4)</span>
+        <span class="phase-task-chip">BE-SA-2 (IAccessToken)</span>
+      </div>
+    </div>
+
+    <div class="phase-step phase-2">
+      <div class="phase-num">2</div>
+      <div class="phase-name">Guard + FE Hard Gate</div>
+      <div class="phase-detail">Block access không có sAm<br><em>Cần Phase 1 hoàn thành</em></div>
+      <div class="phase-tasks">
+        <span class="phase-task-chip">BE-SA-5 (Guard)</span>
+        <span class="phase-task-chip">FE-SA-1 (JWT check)</span>
+        <span class="phase-task-chip">FE-SA-2 (Activation screen)</span>
+      </div>
+    </div>
+
+    <div class="phase-step phase-3">
+      <div class="phase-num">3</div>
+      <div class="phase-name">Logging + Device ID</div>
+      <div class="phase-detail">Auth log + Device tracking<br><em>STT5 + STT35 cùng lúc</em></div>
+      <div class="phase-tasks">
+        <span class="phase-task-chip">BE-SA-3/4 + STT35 → 1 migration</span>
+        <span class="phase-task-chip">FE-SA-3/4 + STT35 FE-1/2</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ IMPACT + OVERLAP ANALYSIS ════════════════════════= -->
+<div class="analysis-grid">
+
+  <!-- IMPACT -->
+  <div class="analysis-box">
+    <div class="analysis-header">
+      🎯 Impact Analysis — Những issue được giải quyết cùng
+    </div>
+    <div class="analysis-body">
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--done);margin-bottom:2px">Resolved — Không cần implement riêng</div>
+
+      <div class="impact-item resolved">
+        <div class="impact-icon">✅</div>
+        <div class="impact-content">
+          <div class="impact-title">STT14a — Rút tiền &lt;10M</div>
+          <div class="impact-desc">Scope merged 100% vào STT5. BE-SA-4 tự log auth_method/auth_time cho withdrawal &lt;10M. Không cần card riêng.</div>
+        </div>
+      </div>
+
+      <div class="impact-item resolved">
+        <div class="impact-icon">✅</div>
+        <div class="impact-content">
+          <div class="impact-title">Double OTP Problem (UX)</div>
+          <div class="impact-desc">FE-SA-4 xóa SmartOTPInput khỏi ConfirmOrdersScreen. User không phải nhập OTP 2 lần nữa.</div>
+        </div>
+      </div>
+
+      <div class="impact-item resolved">
+        <div class="impact-icon">✅</div>
+        <div class="impact-content">
+          <div class="impact-title">POST /api/v1/session/auth endpoint</div>
+          <div class="impact-desc">Endpoint bị loại bỏ. verifyOTP đóng vai trò session auth. Tiết kiệm 1 API implementation.</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--fe);margin:8px 0 2px">Unblocked — Có thể bắt đầu khi Phase 3 xong</div>
+
+      <div class="impact-item unblocked">
+        <div class="impact-icon">🔓</div>
+        <div class="impact-content">
+          <div class="impact-title">Audit Log (P1, Điều 5/10)</div>
+          <div class="impact-desc">Cần auth_method + auth_time + device_unique_id + source_ip trong logs — STT5 + STT35 cung cấp đủ.</div>
+        </div>
+      </div>
+
+      <div class="impact-item unblocked">
+        <div class="impact-icon">🔓</div>
+        <div class="impact-content">
+          <div class="impact-title">Alert System (P1, Điều 8)</div>
+          <div class="impact-desc">device_unique_id (STT35) cho phép anomaly detection per-device.</div>
+        </div>
+      </div>
+
+      <div class="impact-item unblocked">
+        <div class="impact-icon">🔓</div>
+        <div class="impact-content">
+          <div class="impact-title">Compliance Reporting (P2, Điều 13)</div>
+          <div class="impact-desc">Full audit trail (auth + device) → UBCK có thể query. Phụ thuộc cả STT5 + STT35.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- OVERLAP WARNINGS -->
+  <div class="analysis-box">
+    <div class="analysis-header">
+      ⚠️ Overlap Warnings — Phối hợp giữa STT5 + STT35
+    </div>
+    <div class="analysis-body">
+
+      <div class="overlap-item">
+        <div class="overlap-header">DB Migration — Gộp thành 1 script</div>
+        <div class="overlap-body">
+          STT5 thêm <code>auth_method</code>, <code>auth_time</code>.<br>
+          STT35 thêm <code>device_unique_id</code>, <code>source_ip</code>.<br>
+          Cả hai đều modify <code>t_order_log</code> + <code>t_withdrawal_log</code>.<br>
+          <span class="action-chip">→ 1 migration script duy nhất</span>
+        </div>
+      </div>
+
+      <div class="overlap-item">
+        <div class="overlap-header">Order Logging Middleware — Không tạo 2 cái</div>
+        <div class="overlap-body">
+          STT5 BE-SA-3: write <code>auth_method</code> + <code>auth_time</code>.<br>
+          STT35 BE-1: write <code>device_unique_id</code> + <code>source_ip</code>.<br>
+          Cùng pipeline, cùng table, cùng endpoints.<br>
+          <span class="action-chip">→ 1 middleware xử lý tất cả 4 fields</span>
+        </div>
+      </div>
+
+      <div class="overlap-item">
+        <div class="overlap-header">Withdrawal Logging — Tương tự</div>
+        <div class="overlap-body">
+          STT5 BE-SA-4 + STT35 BE-2 → cùng modify <code>t_withdrawal_log</code>.<br>
+          <span class="action-chip">→ Implement cùng nhau</span>
+        </div>
+      </div>
+
+      <div class="overlap-item">
+        <div class="overlap-header">BE-SA-1 = 07_BE_Task Task 4</div>
+        <div class="overlap-body">
+          Embed sAm/sAt tại verifyOTP là phần mở rộng của Smart OTP Login Task 4.<br>
+          Coordinate với Smart OTP team để không duplicate code.<br>
+          <span class="action-chip">→ Merge vào 1 PR của 07_BE_Task</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ SECTION 1: SESSION AUTH ════════════════════════════ -->
 <div class="section">
   <div class="section-header">
     <div class="section-title">
-      <span>Tính năng mới: Session Auth</span>
+      <span>STT5 — Session Auth</span>
       <span class="badge badge-p0">P0</span>
-      <span class="badge badge-ok">NEW</span>
+      <span class="badge badge-ok">v1.3</span>
     </div>
-    <div class="section-meta">Deadline 28/08/2026 · Smart OTP team + BE + FE</div>
+    <div class="section-meta">Deadline 28/08/2026 · Smart OTP team + BE + FE · aaa service</div>
   </div>
 
   <div class="change-box">
-    <strong>v1.3 — Simplified:</strong> Không có Session Auth screen / endpoint riêng. Login Smart OTP = session auth. <code>sAm</code>/<code>sAt</code> embedded trong JWT tại bước <code>verifyOTP</code>. Hard gate thay thế SMS OTP fallback. <strong>Smart OTP Login (07_BE_Task) là prerequisite trực tiếp.</strong>
+    <strong>v1.3 — Simplified:</strong> Không có Session Auth screen / endpoint riêng. Login Smart OTP = session auth. <code>sAm</code>/<code>sAt</code> embedded trong JWT tại bước <code>verifyOTP</code>. Hard gate thay thế SMS OTP fallback. <strong>Prerequisite: Smart OTP Login (07_BE_Task).</strong>
   </div>
 
-  <!-- BE -->
-  <div class="task-group">
-    <div class="task-group-label label-be">BE Tasks</div>
-    <div class="task-list">
-      <div class="task-item critical">
-        <span class="task-num">BE-SA-1</span>
-        <div>
-          <div class="task-text">Embed <code>sAm=SOFT_OTP</code> + <code>sAt=&lt;login_time&gt;</code> vào JWT trong <code>generateToken()</code> khi <code>otpType=SMART_OTP</code> tại bước <code>verifyOTP</code>. Không embed khi SMS OTP.</div>
-          <div class="task-note">File: aaa-main/src/services/VerifyOtp.ts + authen/loginOtp.ts · merge với Smart OTP Login task 07 (Task 4)</div>
+  <div class="task-2col">
+    <!-- BE -->
+    <div class="task-col">
+      <div class="task-col-header tch-be">BE Tasks — aaa service</div>
+      <div class="task-list">
+        <div class="task-item critical">
+          <span class="task-num">BE-SA-1</span>
+          <div>
+            <div class="task-text">Embed <code>sAm=SOFT_OTP</code> + <code>sAt=&lt;login_time&gt;</code> vào JWT trong <code>generateToken()</code> khi <code>otpType=SMART_OTP</code>. Không embed khi SMS OTP.</div>
+            <div class="task-note">File: aaa-main/src/services/VerifyOtp.ts · Merge với Smart OTP Login 07 Task 4</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
+        <div class="task-item critical">
+          <span class="task-num">BE-SA-2</span>
+          <div>
+            <div class="task-text">Thêm <code>sAm?: string</code> + <code>sAt?: number</code> vào <code>IAccessToken</code>. Carry qua refresh token trong cùng ngày giao dịch.</div>
+            <div class="task-note">File: aaa-main/src/models/IAccessToken.ts · Không cần Redis, lưu trong JWT</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-SA-3</span>
+          <div>
+            <div class="task-text">Middleware đọc <code>sAm</code> + <code>sAt</code> từ JWT → ghi <code>t_order_log.auth_method</code> + <code>auth_time</code> cho mọi GDCK</div>
+            <div class="task-note">Endpoints: POST /lotte/equity/order, POST /derivatives/order, POST /orders/cancel · <strong>Combine với STT35 BE-1 vào 1 middleware</strong></div>
+          </div>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-SA-4</span>
+          <div>
+            <div class="task-text">Middleware log <code>t_withdrawal_log.auth_method</code> + <code>auth_time</code> từ session cho rút tiền &lt;10M</div>
+            <div class="task-note">Endpoint: POST /cash/withdraw/confirm (khi amount &lt; 10,000,000) · <strong>Combine với STT35 BE-2</strong></div>
+          </div>
+        </div>
+        <div class="task-item critical">
+          <span class="task-num">BE-SA-5</span>
+          <div>
+            <div class="task-text">Guard middleware: JWT không có <code>sAm</code> → reject <code>SESSION_AUTH_REQUIRED</code> (401). FE xử lý bằng hard gate, không redirect về auth screen.</div>
+            <div class="task-note">Exceptions: login flow, OTP send/verify, smartOtp/register endpoints</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
+        </div>
       </div>
-      <div class="task-item critical">
-        <span class="task-num">BE-SA-2</span>
-        <div>
-          <div class="task-text">Thêm 2 field vào <code>IAccessToken</code>: <code>sAm?: string</code> ("SOFT_OTP") và <code>sAt?: number</code> (Unix timestamp). Carry qua refresh token trong cùng ngày giao dịch.</div>
-          <div class="task-note">File: aaa-main/src/models/IAccessToken.ts · lưu trong JWT (không cần Redis)</div>
+    </div>
+
+    <!-- FE -->
+    <div class="task-col">
+      <div class="task-col-header tch-fe">FE Tasks — NHSV Pro (RN)</div>
+      <div class="task-list">
+        <div class="task-item critical">
+          <span class="task-num">FE-SA-1</span>
+          <div>
+            <div class="task-text">Sau login success → parse JWT, check <code>sAm</code>. Nếu <code>sAm=SOFT_OTP</code> → Home. Nếu không có <code>sAm</code> → Hard gate: navigate Smart OTP activation, không cho vào Home.</div>
+            <div class="task-note">Modify login saga: sau nhận accessToken từ verifyOTP → decode JWT check sAm field</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-SA-3</span>
-        <div>
-          <div class="task-text">Middleware tự động đọc <code>sAm</code> + <code>sAt</code> từ JWT, ghi vào <code>t_order_log.auth_method</code> + <code>auth_time</code> cho mọi GDCK</div>
-          <div class="task-note">Apply trên: POST /lotte/equity/order, POST /derivatives/order, POST /orders/cancel</div>
+        <div class="task-item critical">
+          <span class="task-num">FE-SA-2</span>
+          <div>
+            <div class="task-text">Hard gate activation screen: "Kích hoạt Smart OTP để giao dịch theo quy định TT134". Flow: SMS OTP → PIN → /smartOtp/register → sotpKey saved → <strong>hiển thị màn hình yêu cầu đăng nhập lại bằng Smart OTP</strong>. Không có nút skip/cancel.</div>
+            <div class="task-note">Reuse Smart OTP activation flow. Áp dụng cho cả Case B (chưa đăng ký) và Case C (reinstall/no local key). Sau activation: prompt "Vui lòng đăng nhập lại để bắt đầu giao dịch" → navigate Login.</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-SA-4</span>
-        <div>
-          <div class="task-text">Middleware tương tự cho <code>t_withdrawal_log</code>: ghi <code>auth_method</code> + <code>auth_time</code> từ session cho rút tiền &lt;10M</div>
-          <div class="task-note">Apply trên: POST /cash/withdraw/confirm (khi amount &lt; 10,000,000)</div>
+        <div class="task-item">
+          <span class="task-num">FE-SA-3</span>
+          <div>
+            <div class="task-text">Handle <code>SESSION_AUTH_REQUIRED</code> (401) từ BE → redirect về hard gate activation (không logout, giữ nguyên session)</div>
+            <div class="task-note">Edge case: deeplink vào order flow sau khi token refreshed nhưng sAm bị mất</div>
+          </div>
         </div>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">BE-SA-5</span>
-        <div>
-          <div class="task-text">Guard middleware: nếu JWT không có <code>sAm</code> → trả lỗi <code>SESSION_AUTH_REQUIRED</code> (401) trước khi xử lý GDCK hoặc rút tiền</div>
-          <div class="task-note">Exceptions: login flow, OTP send/verify, smartOtp/register endpoints · FE sẽ xử lý bằng hard gate activation</div>
+        <div class="task-item">
+          <span class="task-num">FE-SA-4</span>
+          <div>
+            <div class="task-text"><strong>Bỏ OTP input</strong> khỏi ConfirmOrdersScreen. Gọi thẳng order API — không cần TwoFAChallengeModal, không cần SmartOTPInput trong order flow.</div>
+            <div class="task-note">src/screens/ConfirmOrdersScreen: remove OTP saga steps + modal</div>
+          </div>
         </div>
-        <span class="crit-flag">CRITICAL</span>
       </div>
     </div>
   </div>
 
-  <!-- FE -->
-  <div class="task-group">
-    <div class="task-group-label label-fe">FE Tasks</div>
-    <div class="task-list">
-      <div class="task-item critical">
-        <span class="task-num">FE-SA-1</span>
-        <div>
-          <div class="task-text">Sau login success → parse JWT, check <code>sAm</code>. Nếu có <code>sAm</code> → vào app trực tiếp. Nếu không có → Hard gate: navigate màn hình kích hoạt Smart OTP, không cho vào home.</div>
-          <div class="task-note">Modify login saga: sau nhận accessToken từ verifyOTP → check decoded JWT · sAm=SOFT_OTP = goto home, sAm absent = goto activation</div>
-        </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">FE-SA-2</span>
-        <div>
-          <div class="task-text">Hard gate activation screen: "Kích hoạt Smart OTP để giao dịch theo quy định TT134". Lý do rõ ràng, không cho skip. Flow: SMS OTP → PIN → register → sotpKey saved → "Đăng nhập lại với Smart OTP".</div>
-          <div class="task-note">Reuse flow từ Smart OTP activation đã có. Điểm khác: không có nút skip/cancel.</div>
-        </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item">
-        <span class="task-num">FE-SA-3</span>
-        <div>
-          <div class="task-text">Handle <code>SESSION_AUTH_REQUIRED</code> error (401) từ BE — redirect về hard gate activation (không logout, giữ nguyên session)</div>
-          <div class="task-note">Edge case: deeplink vào order flow sau khi token refreshed nhưng sAm bị mất</div>
-        </div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">FE-SA-4</span>
-        <div>
-          <div class="task-text">Order confirm flow: <strong>bỏ OTP input</strong> khỏi ConfirmOrdersScreen. Gọi thẳng order API — không cần 2FA modal, không cần SmartOTPInput trong order flow.</div>
-          <div class="task-note">Simplify ConfirmOrdersScreen: remove TwoFAChallengeModal, remove OTP saga steps</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="change-box">
+  <div class="change-box" style="margin-top:0;">
     <strong>Open Questions — đã resolved v1.3:</strong> OQ-1 (auth_time = login time, hợp lệ toàn phiên ✅) · OQ-2 (sAm/sAt carry qua refresh token ✅) · OQ-3 (SMS locked → hard gate activation, không có fallback mid-session ✅)
   </div>
 </div>
 
-<!-- SECTION 2: DEVICE ID LOGGING -->
+<!-- ══ SECTION 2: DEVICE ID LOGGING ══════════════════════ -->
 <div class="section">
   <div class="section-header">
     <div class="section-title">
-      <span>TT134-P0-02 · Device ID Logging — GDCK & Rút tiền</span>
+      <span>STT35 — Device ID Logging (GDCK & Rút tiền)</span>
       <span class="badge badge-p0">P0</span>
     </div>
     <div class="section-meta">Deadline 28/08/2026 · BE Lead + FE Lead + DBA · Điều 18 k3/4/5</div>
   </div>
 
   <div class="change-box">
-    <strong>Update:</strong> <code>deviceUniqueId</code> đã available trên FE SDK. FE-1/FE-2 có thể bắt đầu ngay.
+    <strong>Dependency note:</strong> <code>deviceUniqueId</code> đã available trên FE SDK. FE-1/FE-2 có thể bắt đầu ngay. DB migration nên gộp với STT5 migration thành 1 script.
   </div>
 
-  <div class="task-group">
-    <div class="task-group-label label-be">BE Tasks</div>
-    <div class="task-list">
-      <div class="task-item">
-        <span class="task-num">BE-1</span>
-        <div class="task-text">Enrich nhật ký GDCK (<code>t_order_log</code>): đảm bảo đủ tất cả fields Điều 18 k4: loại hình KH, phương thức GD, loại lệnh, auth_method, auth_time, device_unique_id, source_ip</div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-2</span>
-        <div class="task-text">Enrich nhật ký rút tiền + chuyển tiền (<code>t_withdrawal_log</code>): đủ fields Điều 18 k5: auth_method, device_unique_id, source_ip, dest_bank_account</div>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">BE-3</span>
-        <div>
-          <div class="task-text">DB migration: <code>t_order_log</code> thêm <code>customer_type</code>, <code>trade_method</code>, <code>order_type</code>, <code>auth_method</code>, <code>auth_time</code>, <code>device_unique_id</code>, <code>source_ip</code>. <code>t_withdrawal_log</code> thêm <code>dest_bank_account</code>, <code>auth_method</code>, <code>device_unique_id</code>, <code>source_ip</code></div>
-          <div class="task-note">Owner: DBA — cần migration script review trước khi deploy</div>
+  <div class="task-2col">
+    <!-- BE -->
+    <div class="task-col">
+      <div class="task-col-header tch-be">BE Tasks</div>
+      <div class="task-list">
+        <div class="task-item">
+          <span class="task-num">BE-1</span>
+          <div class="task-text">Enrich nhật ký GDCK (<code>t_order_log</code>): đủ fields Điều 18 k4: loại KH, phương thức GD, loại lệnh, auth_method, auth_time, device_unique_id, source_ip</div>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-4</span>
-        <div class="task-text">WTS (web): collect và log MAC address máy tính hoặc browser fingerprint làm device identifier (Điều 18 k3a)</div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-5</span>
-        <div class="task-text">API middleware: validate <code>X-Device-Id</code> header — reject <code>400 MISSING_DEVICE_ID</code> khi thiếu (feature flag để enable dần)</div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-6</span>
-        <div class="task-text">Expose transaction log qua audit API nội bộ — UBCK có thể yêu cầu query (audit trail 90 ngày)</div>
+        <div class="task-item">
+          <span class="task-num">BE-2</span>
+          <div class="task-text">Enrich nhật ký rút tiền + chuyển tiền (<code>t_withdrawal_log</code>): đủ fields Điều 18 k5: auth_method, device_unique_id, source_ip, dest_bank_account</div>
+        </div>
+        <div class="task-item critical">
+          <span class="task-num">BE-3</span>
+          <div>
+            <div class="task-text">DB migration: <code>t_order_log</code> + <code>t_withdrawal_log</code> — thêm tất cả fields từ STT5 + STT35 cùng lúc vào 1 script</div>
+            <div class="task-note">Owner: DBA · Fields: customer_type, trade_method, order_type, auth_method, auth_time, device_unique_id, source_ip, dest_bank_account</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-4</span>
+          <div class="task-text">WTS (web): collect và log MAC address máy tính hoặc browser fingerprint làm device identifier (Điều 18 k3a)</div>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-5</span>
+          <div class="task-text">API middleware: validate <code>X-Device-Id</code> header — reject <code>400 MISSING_DEVICE_ID</code> khi thiếu (feature flag để enable dần)</div>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-6</span>
+          <div class="task-text">Expose transaction log qua audit API nội bộ — UBCK có thể query (audit trail 90 ngày)</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="task-group">
-    <div class="task-group-label label-fe">FE Tasks</div>
-    <div class="task-list">
-      <div class="task-item critical">
-        <span class="task-num">FE-1</span>
-        <div>
-          <div class="task-text">Luôn gửi <code>deviceUniqueId</code> (IMEI/Serial/Android ID/IDFV) trong header <code>X-Device-Id</code> cho mọi API đặt lệnh GDCK</div>
-          <div class="task-note">deviceUniqueId đã available — bắt đầu ngay</div>
+    <!-- FE -->
+    <div class="task-col">
+      <div class="task-col-header tch-fe">FE Tasks</div>
+      <div class="task-list">
+        <div class="task-item critical">
+          <span class="task-num">FE-1</span>
+          <div>
+            <div class="task-text">Luôn gửi <code>deviceUniqueId</code> (IMEI/Serial/Android ID/IDFV) trong header <code>X-Device-Id</code> cho mọi API đặt lệnh GDCK</div>
+            <div class="task-note">deviceUniqueId đã available — bắt đầu ngay</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">FE-2</span>
-        <div>
-          <div class="task-text">Luôn gửi <code>deviceUniqueId</code> trong header <code>X-Device-Id</code> cho mọi API rút tiền và chuyển tiền</div>
-          <div class="task-note">Screens: Withdrawal + Transfer</div>
+        <div class="task-item critical">
+          <span class="task-num">FE-2</span>
+          <div>
+            <div class="task-text">Luôn gửi <code>deviceUniqueId</code> trong <code>X-Device-Id</code> cho mọi API rút tiền + chuyển tiền</div>
+            <div class="task-note">Screens: WithdrawalScreen + TransferScreen</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item">
-        <span class="task-num">FE-3</span>
-        <div class="task-text">Không lấy được <code>deviceUniqueId</code> → hiển thị error, block giao dịch, không cho phép tiếp tục</div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">FE-4</span>
-        <div class="task-text">WTS (web): collect và gửi device fingerprint (MAC/browser fingerprint) trong <code>X-Device-Id</code> header khi đặt lệnh + rút/chuyển tiền</div>
+        <div class="task-item">
+          <span class="task-num">FE-3</span>
+          <div class="task-text">Không lấy được <code>deviceUniqueId</code> → hiển thị error, block giao dịch, không cho tiếp tục</div>
+        </div>
+        <div class="task-item">
+          <span class="task-num">FE-4</span>
+          <div class="task-text">WTS (web): collect và gửi device fingerprint (MAC/browser fingerprint) trong <code>X-Device-Id</code> khi đặt lệnh + rút/chuyển tiền</div>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 3: BIOMETRIC ≥10M -->
+<!-- ══ SECTION 3: BIOMETRIC ≥10M ════════════════════════= -->
 <div class="section">
   <div class="section-header">
     <div class="section-title">
-      <span>Rút tiền ≥10M — Biometric Per-transaction</span>
+      <span>STT14b — Rút tiền ≥10M (Biometric Per-transaction)</span>
       <span class="badge badge-bio">P2</span>
     </div>
-    <div class="section-meta">Điều 12k4a · BLOCKED chờ GATE · stt14b</div>
+    <div class="section-meta">Điều 12k4a · BLOCKED chờ GATE (C06 vs VNPT) · stt14b</div>
   </div>
 
   <div class="note-box">
-    <strong>Giữ nguyên model cũ.</strong> Biometric server-side per-transaction, verify qua <code>kbfinance/verifyPassword (pinType=BIOMETRIC)</code>. <strong>Không cho fallback Smart OTP.</strong> Nếu chưa enroll biometric → block giao dịch. Blocked chờ GATE decision (C06 vs VNPT).
+    <strong>Giữ nguyên model cũ.</strong> Biometric server-side per-transaction, verify qua <code>kbfinance/verifyPassword (pinType=BIOMETRIC)</code>. <strong>Không cho fallback Smart OTP.</strong> Nếu chưa enroll biometric → block giao dịch. <strong>Blocked chờ GATE decision (C06 vs VNPT).</strong>
   </div>
 
-  <div class="task-group">
-    <div class="task-group-label label-be">BE Tasks</div>
-    <div class="task-list">
-      <div class="task-item critical">
-        <span class="task-num">BE-1</span>
-        <div>
-          <div class="task-text"><code>POST /api/v1/transactions/2fa/challenge</code>: tạo challenge cho rút tiền ≥10M với <code>transactionType: WITHDRAWAL</code>, trả <code>challengeId</code> + <code>transactionHash</code></div>
-          <div class="task-note">challengeId TTL: 5 phút. 1 challenge active per user tại 1 thời điểm.</div>
+  <div class="task-2col">
+    <div class="task-col">
+      <div class="task-col-header tch-bio">BE Tasks</div>
+      <div class="task-list">
+        <div class="task-item critical">
+          <span class="task-num">BE-1</span>
+          <div>
+            <div class="task-text"><code>POST /api/v1/transactions/2fa/challenge</code>: tạo challenge cho rút tiền ≥10M với <code>transactionType: WITHDRAWAL</code>, trả <code>challengeId</code> + <code>transactionHash</code></div>
+            <div class="task-note">challengeId TTL: 5 phút. 1 challenge active per user tại 1 thời điểm.</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">BE-2</span>
-        <div>
-          <div class="task-text"><code>POST /api/v1/transactions/2fa/verify</code>: nhận RSA signature từ FE → verify signature → gọi <code>kbfinance/verifyPassword (pinType=BIOMETRIC)</code> → trả proof token (JWT 60s, 1-time)</div>
-          <div class="task-note">Verify flow dùng <code>verifyPwdBiometric()</code> đã có trong BiometricService.ts</div>
+        <div class="task-item critical">
+          <span class="task-num">BE-2</span>
+          <div>
+            <div class="task-text"><code>POST /api/v1/transactions/2fa/verify</code>: nhận RSA signature từ FE → verify → gọi <code>kbfinance/verifyPassword (pinType=BIOMETRIC)</code> → trả proof token (JWT 60s, 1-time)</div>
+            <div class="task-note">Dùng verifyPwdBiometric() đã có trong BiometricService.ts</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
         </div>
-        <span class="crit-flag">CRITICAL</span>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-3</span>
-        <div class="task-text">Middleware <code>X-2FA-Token</code> cho <code>/cash/withdraw/confirm</code>: verify proof token → match transactionHash → revoke → process withdrawal. Log <code>auth_method=BIOMETRIC</code>, <code>auth_time=thời điểm biometric verify</code></div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">BE-4</span>
-        <div class="task-text">Guard: amount-based routing — nếu withdrawal ≥10M và không có <code>X-2FA-Token</code> → reject <code>BIOMETRIC_AUTH_REQUIRED</code></div>
+        <div class="task-item">
+          <span class="task-num">BE-3</span>
+          <div class="task-text">Middleware <code>X-2FA-Token</code> cho <code>/cash/withdraw/confirm</code>: verify proof token → match transactionHash → revoke → process. Log <code>auth_method=BIOMETRIC</code>, <code>auth_time</code></div>
+        </div>
+        <div class="task-item">
+          <span class="task-num">BE-4</span>
+          <div class="task-text">Guard: withdrawal ≥10M và không có <code>X-2FA-Token</code> → reject <code>BIOMETRIC_AUTH_REQUIRED</code></div>
+        </div>
       </div>
     </div>
-  </div>
-
-  <div class="task-group">
-    <div class="task-group-label label-fe">FE Tasks</div>
-    <div class="task-list">
-      <div class="task-item">
-        <span class="task-num">FE-1</span>
-        <div class="task-text">Detect withdrawal amount ≥10M → gọi challenge API, trigger <code>BiometricPromptHandler</code> (Face ID/Touch ID)</div>
-      </div>
-      <div class="task-item">
-        <span class="task-num">FE-2</span>
-        <div class="task-text">Ký <code>challengeId + transactionHash</code> bằng RSA private key từ biometric enrollment → gửi lên verify API → nhận proof token → gọi withdraw/confirm kèm <code>X-2FA-Token</code></div>
-      </div>
-      <div class="task-item critical">
-        <span class="task-num">FE-3</span>
-        <div>
-          <div class="task-text">Chưa enroll biometric + withdrawal ≥10M → show error rõ ràng yêu cầu enroll biometric. Không show OTP fallback.</div>
+    <div class="task-col">
+      <div class="task-col-header tch-bio">FE Tasks</div>
+      <div class="task-list">
+        <div class="task-item">
+          <span class="task-num">FE-1</span>
+          <div class="task-text">Detect withdrawal amount ≥10M → gọi challenge API, trigger <code>BiometricPromptHandler</code> (Face ID/Touch ID)</div>
         </div>
-        <span class="crit-flag">CRITICAL</span>
+        <div class="task-item">
+          <span class="task-num">FE-2</span>
+          <div class="task-text">Ký <code>challengeId + transactionHash</code> bằng RSA private key từ biometric enrollment → gửi lên verify API → nhận proof token → gọi withdraw/confirm kèm <code>X-2FA-Token</code></div>
+        </div>
+        <div class="task-item critical">
+          <span class="task-num">FE-3</span>
+          <div>
+            <div class="task-text">Chưa enroll biometric + withdrawal ≥10M → show error rõ ràng yêu cầu enroll biometric. Không show OTP fallback.</div>
+          </div>
+          <span class="crit-flag">CRITICAL</span>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- SECTION 4: API + LOG SUMMARY -->
+<!-- ══ SECTION 4: API + LOG SUMMARY ══════════════════════ -->
 <div class="section">
   <div class="section-header">
     <div class="section-title">API Endpoints bị ảnh hưởng</div>
@@ -449,13 +799,13 @@ td.changed-tag::after { content: 'CHANGED'; font-size: 9px; font-weight: 700; ba
       <tr>
         <td class="changed-tag"><code>POST</code></td>
         <td><code>/rest/api/v1/lotte/equity/order</code></td>
-        <td>Bỏ OTP field nếu có. BE middleware đọc sAm/sAt từ JWT.</td>
+        <td>Bỏ OTP field. BE middleware đọc sAm/sAt từ JWT → log auth_method/auth_time.</td>
         <td>JWT có sAm+sAt</td>
       </tr>
       <tr>
         <td><code>POST</code></td>
         <td><code>/api/v1/orders/cancel</code></td>
-        <td>Tương tự — log auth_method/auth_time từ session</td>
+        <td>Log auth_method/auth_time từ session</td>
         <td>JWT có sAm+sAt</td>
       </tr>
       <tr>
@@ -479,7 +829,9 @@ td.changed-tag::after { content: 'CHANGED'; font-size: 9px; font-weight: 700; ba
     </table>
   </div>
 
-  <div class="log-table-wrap">
+  <div style="height:1px;background:var(--border);margin:0 20px;"></div>
+
+  <div class="api-table-wrap">
     <table>
       <tr><th colspan="4">Log fields — t_order_log + t_withdrawal_log (Điều 18)</th></tr>
       <tr>
@@ -519,14 +871,14 @@ td.changed-tag::after { content: 'CHANGED'; font-size: 9px; font-weight: 700; ba
   </div>
 </div>
 
-<!-- SECTION 5: OPEN ITEMS -->
+<!-- ══ SECTION 5: OPEN ITEMS ════════════════════════════= -->
 <div class="section">
   <div class="section-header">
-    <div class="section-title">Open Items — Decisions</div>
+    <div class="section-title">Open Questions</div>
     <span class="badge badge-ok">All resolved v1.3</span>
   </div>
-  <div class="task-group">
-    <div class="task-list">
+  <div style="padding: 0 20px 16px;">
+    <div class="task-list" style="margin-top:16px;">
       <div class="task-item">
         <span class="task-num">OQ-1 ✅</span>
         <div>

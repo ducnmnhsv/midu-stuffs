@@ -72,6 +72,15 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 - **Derivatives doc naming:** PascalCase + underscore (vd: `Chart_API_Spec.md`) · `README.md` là entry point · không dùng brackets `[ISSUE]` hay prefix đặc biệt.
 - **Folder structure:** `Planning/` (no code) · `Specs/` · `Issues/` · `Archive/` — tách biệt rõ ràng.
 
+### TT134 Compliance — Overlap Prevention
+- **C6 — Overlap check trước:** Khi thảo luận bất kỳ issue/spec/task TT134, đọc `TT134 - UBCK/README.md` Section 7 "Cross-issue Implementation Rules" trước. Tránh tạo duplicate middleware, duplicate migration, hoặc task đã merged.
+- **C6 — STT14a closed:** STT14a (Rút tiền <10M) đã merged vào STT5 Session Auth. Không assign developer riêng, không tạo implementation task mới.
+- **C6 — 1 DB migration:** STT5 + STT35 phải dùng 1 script migration duy nhất cho `t_order_log` + `t_withdrawal_log`. Không tách 2 PR.
+- **C6 — 1 logging middleware:** BE-SA-3 (STT5) + BE-1 (STT35) = cùng middleware. BE-SA-4 (STT5) + BE-2 (STT35) = cùng middleware. Không tạo 2 middleware riêng.
+- **C6 — BE-SA-1 merge:** STT5 BE-SA-1 = Smart OTP Login 07_BE_Task Task 4. Coordinate với Smart OTP team, merge vào cùng 1 PR.
+- **C6 — Unblocking sequence:** Không viết spec chi tiết Audit Log / Alert System / Session Management (P1) trước khi STT5 + STT35 Phase 3 xong. Xem Section 7.5 trong README.
+- **C6 — Checklist:** Mỗi issue TT134 mới → chạy qua checklist 7.6 trong `TT134 - UBCK/README.md`.
+
 ### Tooling
 - **Analytics MCP:** Chỉ dùng NHSV Pro property (`properties/478227972`, account `accounts/345830035`). Không reference property khác (BES, NHSV BES).
 - **Postman:** Test requests → chỉ tạo trong collection **"TradeX QA session"**. Collection **"TradeX API v2"** là reference only — không tạo test request ở đây.
