@@ -1,0 +1,39 @@
+{
+  "applications": ["NHSVAdmin"],
+  "changelogDate": "20230705065519",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "t_copy_portfolio_detail_history",
+  "fields": [
+    {
+      "fieldName": "symbol",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "weight",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "fluentMethods": true,
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "CopyPortfolioDetailHistory",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "copyPortfolioHistory",
+      "relationshipName": "copyPortfolioHistoryId",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceImpl"
+}

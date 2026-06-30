@@ -1,5 +1,5 @@
 # Multi-stage build for Market Collector Lotte (Java Spring Boot Application)
-FROM maven:3.9.5-eclipse-temurin-17 AS builder
+FROM uat-harbor.nhsv.vn/library/maven:3.9.5-eclipse-temurin-17 AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Production stage
-FROM eclipse-temurin:17-jdk AS production
+FROM uat-harbor.nhsv.vn/library/eclipse-temurin:17-jdk AS production
 
 # Install necessary packages for production
 RUN apt-get update && apt-get install -y \

@@ -1,0 +1,1 @@
+KIS: Your OTP is ${otp}. Please don't share your OTP number of any kind.

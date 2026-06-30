@@ -1,0 +1,39 @@
+{
+  "settings": {
+    "title": "<strong> My Profile </strong>",
+    "form": {
+      "login": "Username",
+      "lastname": "Last Name",
+      "lastname.placeholder": "Your last name",
+      "fullName": "Full Name",
+      "fullName.placeholder": "Your full name",
+      "language": "Language",
+      "button": " Save",
+      "role":"Role"
+    },
+    "messages": {
+      "error": {
+        "fail": "<strong>An error has occurred!</strong> Settings could not be saved.",
+        "emailexists": "<strong>Email is already in use!</strong> Please choose another one."
+      },
+      "success": "<strong>Settings saved!</strong>",
+      "validate": {
+        "firstname": {
+          "required": "Your first name is required.",
+          "minlength": "Your first name is required to be at least 1 character",
+          "maxlength": "Your first name cannot be longer than 50 characters"
+        },
+        "lastname": {
+          "required": "Your last name is required.",
+          "minlength": "Your last name is required to be at least 1 character",
+          "maxlength": "Your last name cannot be longer than 50 characters"
+        },
+        "fullName": {
+          "required": "Your full name is required.",
+          "minlength": "Your full name is required to be at least 1 character",
+          "maxlength": "Your full name cannot be longer than 50 characters"
+        }
+      }
+    }
+  }
+}

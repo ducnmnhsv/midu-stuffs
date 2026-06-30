@@ -1,0 +1,1 @@
+<OneSignalTitle>Thông báo nhận cổ phiếu thưởng</OneSignalTitle>Cổ phiếu thưởng đã về đến TK ${acnt_no}-${sub_no} ${stk_cd}: ${stk_qty}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added columns to the entity Broker.
+    -->
+    <changeSet id="20230703062136-1-add-columns" author="jhipster">
+        <addColumn tableName="t_broker">
+            <column name="email" type="varchar(255)" />
+            <column name="created_at" type="${datetimeType}" />
+            <column name="updated_at" type="${datetimeType}" />
+            <column name="deactivated_at" type="${datetimeType}" />
+            <column name="deactivated_by" type="varchar(255)" />
+            <column name="invited_by" type="varchar(255)" />
+        </addColumn>
+        <dropDefaultValue tableName="t_broker" columnName="created_at" columnDataType="datetime" />
+        <dropDefaultValue tableName="t_broker" columnName="updated_at" columnDataType="datetime" />
+        <dropDefaultValue tableName="t_broker" columnName="deactivated_at" columnDataType="datetime" />
+    </changeSet>
+
+    <changeSet id="20230703062136-2-add-columns" author="jhipster">
+        <addColumn tableName="t_broker">
+            <column name="total_viewed_chat_room" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20230703062136-3-add-columns" author="jhipster">
+        <addColumn tableName="t_broker">
+            <column name="introduction" type="TEXT" afterColumn="fullname">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20230703062136-4-add-columns" author="jhipster">
+        <addColumn tableName="t_broker">
+            <column name="photo" type="TEXT">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+</databaseChangeLog>

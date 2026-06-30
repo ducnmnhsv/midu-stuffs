@@ -264,8 +264,8 @@ public class WsConnection2 implements WebSocketHandler {
         quoteUpdate.setForeignerSellVolume(getLong(parts[26], null));
 
         if (parts.length >= 35) {
-            quoteUpdate.setTotalOfferVolume(getLong(parts[33], null));
-            quoteUpdate.setTotalBidVolume(getLong(parts[34], null));
+            quoteUpdate.setActiveSellVolume(getLong(parts[33], null));
+            quoteUpdate.setActiveBuyVolume(getLong(parts[34], null));
         }
 
         outputConsumer.accept(quoteUpdate);

@@ -59,7 +59,7 @@ let config: any = {
     scope: '/data/scopeData.json',
     openApi: '/data/openApi.json',
   },
-  cors: {},
+  corsAllowedOrigins: Utils.getEnvArr('TRADEX_ENV_CORS_ALLOWED_ORIGINS'),
   key: "",
   clusterId: 'rest-proxy',
   clientId: nodeId,
@@ -71,19 +71,29 @@ let config: any = {
   logger: {
     config: {
       appenders: {
-        application: { type: 'console' },
+        application: { 
+          type: 'console',
+          layout: { type: 'json' }
+        },
         file: {
           type: 'file',
           filename: '/logs/application.log',
           compression: true,
           maxLogSize: 104857600,
           backups: 10,
+          layout: { type: 'json' }
         },
       },
       categories: {
         default: { appenders: ['application', 'file'], level: 'info' },
       },
     },
+  },
+  log: {
+    serviceName: "rest-proxy",
+    format: "JSON", // 'FLAT' or 'JSON'
+    transport: [],
+
   },
   enableEncryptPassword:
     process.env.TRADEX_ENV_ENABLE_ENCRYPT_PASSWORD === 'true',

@@ -1,14 +1,5 @@
 # Multi-stage build for TradeX REST Proxy
-FROM node:10-alpine3.11 AS base
-
-# Install dependencies for native modules
-RUN apk add --no-cache \
-    bash \
-    git \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/cache/apk/*
+FROM uat-harbor.nhsv.vn/library/node-builder:10-alpine3.11 AS base
 
 # Set working directory
 WORKDIR /app
@@ -16,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY package-lock.json ./
+
+RUN npm config set disturl https://nodejs.org/dist/ && \
+    npm config set strict-ssl false
 
 # Install dependencies
 RUN npm install --frozen-lockfile --production=true
@@ -42,15 +36,15 @@ WORKDIR /app
 
 # Copy built application from builder stage
 COPY --from=builder /app/build ./build
-COPY --from=builder /app/node_modules ./node_modules
+# COPY --from=builder /app/node_modules ./node_modules
 
 COPY entrypoint.sh ./entrypoint.sh
 
-# Expose port
-EXPOSE 3000
+# # Expose port
+# EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000/currentTime', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+# # Health check
+# HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+#     CMD node -e "require('http').get('http://localhost:3000/currentTime', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
 
 ENTRYPOINT ["/bin/bash", "/app/entrypoint.sh", "node build/src/index.js"]

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity CopySubscriber.
+    -->
+    <changeSet id="20230705064543-1" author="jhipster">
+        <createTable tableName="t_copy_subscriber">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="account_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="sub_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_name" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="allocated_ratio" type="double">
+                <constraints nullable="false" />
+            </column>
+            <column name="order_set_type" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="ml_user_id_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="t_copy_subscriber" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="t_copy_subscriber" columnName="updated_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20230705064543-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/20230705064543_entity_copy_subscriber.csv"
+                  separator=";"
+                  tableName="t_copy_subscriber"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="account_number" type="string"/>
+            <column name="sub_number" type="string"/>
+            <column name="user_name" type="string"/>
+            <column name="allocated_ratio" type="numeric"/>
+            <column name="order_set_type" type="string"/>
+            <column name="created_at" type="date"/>
+            <column name="updated_at" type="date"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+
+    <changeSet id="20230705064543-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="ml_user_id_id"
+                                 baseTableName="t_copy_subscriber"
+                                 constraintName="fk_copy_subscriber__ml_user_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="t_user"/>
+    </changeSet>
+    <changeSet author="manh"  id="20230705064543-3">  
+    <addUniqueConstraint 
+            columnNames="account_number, sub_number, user_name"  
+            constraintName="unique_account_number_sub_number_user_name"  
+            tableName="t_copy_subscriber"  
+            validate="true"/>  
+</changeSet>
+</databaseChangeLog>

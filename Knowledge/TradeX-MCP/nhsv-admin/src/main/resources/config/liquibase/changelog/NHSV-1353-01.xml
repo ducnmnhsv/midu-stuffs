@@ -1,0 +1,76 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="ADMIN" id="NHSV-1353-01-01">
+        <!-- Insert into t_scope table -->
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('COPY_TRADING_CHECK_SUB_STATUS',
+                'get:/api/v1/copyTrading/subAccountStatus',
+                null, null, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+                'CONNECTION', '{
+                                "uri": "get:/api/v1/copyTrading/subAccountStatus",
+                                "service": "nhsv-admin",
+                                "forwardType": "SERVICE"
+                              }');
+        </sql>
+        <!-- Insert into t_open_api table -->
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_open_api (id, operation_id, tags, uri_pattern, summary, security,
+                                                           parameters,
+                                                           request_body, responses, description, version, created_at,
+                                                           updated_at)
+            SELECT id,
+                   name,
+                   '["NHSV_ADMIN"]',
+                   uri_pattern,
+                   'Check Sub Account Status for Copy Trading',
+                   '[{"jwt": []}]',
+                   '[{"in":"query","name":"subNumber","schema":{"type":"string"},"required":true,"description":"Sub Account Number"}]',
+                   NULL,
+                   '{"200":{"content":{"application/json":{"schema":{"type":"object","properties":{"isApproved":{"type":"boolean"}}}}},"description":"OK"},"400":{"description":"Bad Request"}}',
+                   'Check Sub Account Status for Copy Trading',
+                   '/api/v1',
+                   CURRENT_TIMESTAMP(),
+                   CURRENT_TIMESTAMP()
+            FROM `tradex-configuration`.t_scope
+            WHERE name = 'COPY_TRADING_CHECK_SUB_STATUS';
+        </sql>
+        <!-- Insert into t_scope_scope_group_map table -->
+        <sql splitStatements="false">
+            INSERT IGNORE INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                 `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'COPY_TRADING_CHECK_SUB_STATUS'
+              AND tsg.scope_group_name = 'PUBLIC';
+        </sql>
+    </changeSet>
+    <changeSet author="ADMIN" id="NHSV-1353-01-02">
+        <sql splitStatements="false">
+            DELETE FROM `tradex-configuration`.t_scope_scope_group_map
+            WHERE scope_id = (
+                SELECT ts.id
+                FROM `tradex-configuration`.t_scope ts
+                WHERE ts.name = 'COPY_TRADING_CHECK_SUB_STATUS'
+            )
+              AND scope_group_id = (
+                SELECT tsg.id
+                FROM `tradex-configuration`.t_scope_group tsg
+                WHERE tsg.scope_group_name = 'PUBLIC'
+            );
+        </sql>
+    </changeSet>
+    <changeSet author="ADMIN" id="NHSV-1353-01-03">
+        <sql splitStatements="false">
+            INSERT IGNORE INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                 `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'COPY_TRADING_CHECK_SUB_STATUS'
+              AND tsg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

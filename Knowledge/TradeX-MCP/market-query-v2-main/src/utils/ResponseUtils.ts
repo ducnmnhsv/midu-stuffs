@@ -469,8 +469,8 @@ const toSymbolQuoteResponse = (symbolQuote: ISymbolQuote): SymbolQuoteResponse =
   response.va = Utils.round(symbolQuote.tradingValue);
   response.vo = Utils.round(symbolQuote.tradingVolume);
   response.cf = symbolQuote.ceilingFloorEqual;
-  response.to = symbolQuote.totalOfferVolume;
-  response.tb = symbolQuote.totalBidVolume;
+  response.asv = symbolQuote.activeSellVolume;
+  response.abv = symbolQuote.activeBuyVolume;
   return response;
 };
 

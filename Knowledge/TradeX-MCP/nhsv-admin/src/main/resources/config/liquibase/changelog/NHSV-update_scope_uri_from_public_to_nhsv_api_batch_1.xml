@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-update-scope-uri-from-public-to-nhsv-api">
+        <sql splitStatements="false">
+            delete
+            from `tradex-configuration`.t_scope_scope_group_map
+            where scope_id in (select id
+                               from `tradex-configuration`.t_scope
+                               where uri_pattern IN ('get:/api/v1/copyTrading/marketLeader/marketLeaderList',
+                                                     'get:/api/v1/copyTrading/marketLeader/profile/{marketLeaderId}',
+                                                     'get:/api/v1/copyTrading/marketLeader/dailyProfitLossRatio',
+                                                     'get:/api/v1/copyTrading/marketLeader/periodicProfitLossRatio',
+                                                     'get:/api/v1/copyTrading/marketLeader/subscriberGrowthRate'));
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope_scope_group_map(scope_id, scope_group_id)
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/marketLeaderList'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/profile/{marketLeaderId}'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/periodicProfitLossRatio'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/dailyProfitLossRatio'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/subscriberGrowthRate'
+              and sg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -137,6 +137,24 @@ let conf: any = {
     MAX_DAILY_SENT: 5,
     TRIGGER_TIME_INTERVAL: 30
   },
+  otpStrategy: {
+    REGISTER_BANK_ACCOUNT: {
+      otpLength: 6,
+      ttlSeconds: 120,
+      maxResendPerSession: 3,
+      maxFailAttempts: 5,
+      lockDurationSeconds: 1800,
+      minIntervalSeconds: 5,
+    },
+    SMART_OTP: {
+      otpLength: 6,
+      ttlSeconds: 120,
+      maxResendPerSession: 3,
+      maxFailAttempts: 5,
+      lockDurationSeconds: 1800,
+      minIntervalSeconds: 5,
+    },
+  },
   enableForcePartnerClientId: true,
 };
 conf.checkMobileAppVersion = null;

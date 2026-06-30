@@ -30,6 +30,24 @@ import { IAdvancePaymentSecuritiesSalesRequest } from '../model/request/IAdvance
 import AdvancePaymentSecuritiesSales from '../model/notification/AdvancePaymentSecuritiesSales';
 import { IMarginDisbursementRequest } from '../model/request/IMarginDisbursementRequest';
 import MarginDisbursement from '../model/notification/MarginDisbursement';
+import { IDerivativesPositionWarningLevel1Request } from '../model/request/IDerivativesPositionWarningLevel1Request';
+import DerivativesPositionWarningLevel1 from '../model/notification/DerivativesPositionWarningLevel1';
+import { IDerivativesPositionWarningLevel2Request } from '../model/request/IDerivativesPositionWarningLevel2Request';
+import DerivativesPositionWarningLevel2 from '../model/notification/DerivativesPositionWarningLevel2';
+import { IDerivativesOrderMatchingRequest } from '../model/request/IDerivativesOrderMatchingRequest';
+import DerivativesOrderMatching from '../model/notification/DerivativesOrderMatching';
+import { IDerivativesVmProfitPaymentRequest } from '../model/request/IDerivativesVmProfitPaymentRequest';
+import DerivativesVmProfitPayment from '../model/notification/DerivativesVmProfitPayment';
+import { IDerivativesVmLossPaymentRequest } from '../model/request/IDerivativesVmLossPaymentRequest';
+import DerivativesVmLossPayment from '../model/notification/DerivativesVmLossPayment';
+import { IDerivativesMarginCallLevel2Request } from '../model/request/IDerivativesMarginCallLevel2Request';
+import DerivativesMarginCallLevel2 from '../model/notification/DerivativesMarginCallLevel2';
+import { IDerivativesMarginCallLevel3Request } from '../model/request/IDerivativesMarginCallLevel3Request';
+import DerivativesMarginCallLevel3 from '../model/notification/DerivativesMarginCallLevel3';
+import { IDerivativesMarginDepositRequest } from '../model/request/IDerivativesMarginDepositRequest';
+import DerivativesMarginDeposit from '../model/notification/DerivativesMarginDeposit';
+import { IDerivativesMarginWithdrawalRequest } from '../model/request/IDerivativesMarginWithdrawalRequest';
+import DerivativesMarginWithdrawal from '../model/notification/DerivativesMarginWithdrawal';
 
 let sendNotification: TradexNotification.SendNotification = TradexNotification.getInstance();
 
@@ -204,4 +222,129 @@ export function sendOneSignalMarginDisbursement(request: IMarginDisbursementRequ
   marginDisbursement.lnd_amt = request.lnd_amt;
   marginDisbursement.tot_lnd_amt = request.tot_lnd_amt;
   notifyOneSignal(marginDisbursement, request.acnt_no);
+}
+
+function formatDisplayDate(input?: string): string | undefined {
+  if (input == null || input === '') {
+    return input;
+  }
+  if (input.indexOf('/') >= 0) {
+    return input;
+  }
+  if (/^\d{8}$/.test(input)) {
+    return `${input.substring(6, 8)}/${input.substring(4, 6)}/${input.substring(0, 4)}`;
+  }
+  return input;
+}
+
+function translateSideEn(input?: string): string | undefined {
+  if (input == null || input === '') {
+    return input;
+  }
+  switch (input.toUpperCase()) {
+    case 'MUA':
+      return 'BUY';
+    case 'B\u00C1N':
+    case 'BAN':
+      return 'SELL';
+    default:
+      return input;
+  }
+}
+
+function withDefaultDerivativesSubNo(sub_no?: string): string {
+  if (sub_no == null || sub_no === '') {
+    return '80';
+  }
+  return sub_no;
+}
+
+export function sendOneSignalDerivativesOrderMatching(request: IDerivativesOrderMatchingRequest): void {
+  const derivativesOrderMatching: DerivativesOrderMatching = new DerivativesOrderMatching();
+  derivativesOrderMatching.acnt_no = request.acnt_no;
+  derivativesOrderMatching.sub_no = withDefaultDerivativesSubNo();
+  derivativesOrderMatching.series = request.series;
+  derivativesOrderMatching.sb_tp = request.sb_tp;
+  derivativesOrderMatching.sb_tp_en = translateSideEn(request.sb_tp);
+  derivativesOrderMatching.mth_qty = request.mth_qty;
+  derivativesOrderMatching.mth_pri = request.mth_pri;
+  derivativesOrderMatching.mth_time = request.mth_time;
+  derivativesOrderMatching.date_fmt = formatDisplayDate(request.date);
+  notifyOneSignal(derivativesOrderMatching, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesPositionWarningLevel1(request: IDerivativesPositionWarningLevel1Request): void {
+  const derivativesPositionWarningLevel1: DerivativesPositionWarningLevel1 = new DerivativesPositionWarningLevel1();
+  derivativesPositionWarningLevel1.acnt_no = request.acnt_no;
+  derivativesPositionWarningLevel1.sub_no = withDefaultDerivativesSubNo();
+  derivativesPositionWarningLevel1.W1 = request.W1;
+  derivativesPositionWarningLevel1.commd_cd = request.commd_cd;
+  derivativesPositionWarningLevel1.date_fmt = formatDisplayDate(request.date);
+  notifyOneSignal(derivativesPositionWarningLevel1, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesPositionWarningLevel2(request: IDerivativesPositionWarningLevel2Request): void {
+  const derivativesPositionWarningLevel2: DerivativesPositionWarningLevel2 = new DerivativesPositionWarningLevel2();
+  derivativesPositionWarningLevel2.acnt_no = request.acnt_no;
+  derivativesPositionWarningLevel2.sub_no = withDefaultDerivativesSubNo();
+  derivativesPositionWarningLevel2.W2 = request.W2;
+  derivativesPositionWarningLevel2.commd_cd = request.commd_cd;
+  derivativesPositionWarningLevel2.date_fmt = formatDisplayDate(request.date);
+  notifyOneSignal(derivativesPositionWarningLevel2, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesVmProfitPayment(request: IDerivativesVmProfitPaymentRequest): void {
+  const derivativesVmProfitPayment: DerivativesVmProfitPayment = new DerivativesVmProfitPayment();
+  derivativesVmProfitPayment.acnt_no = request.acnt_no;
+  derivativesVmProfitPayment.sub_no = withDefaultDerivativesSubNo();
+  derivativesVmProfitPayment.trd_amt = request.trd_amt;
+  derivativesVmProfitPayment.trd_dt_fmt = formatDisplayDate(request.trd_dt);
+  notifyOneSignal(derivativesVmProfitPayment, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesVmLossPayment(request: IDerivativesVmLossPaymentRequest): void {
+  const derivativesVmLossPayment: DerivativesVmLossPayment = new DerivativesVmLossPayment();
+  derivativesVmLossPayment.acnt_no = request.acnt_no;
+  derivativesVmLossPayment.sub_no = withDefaultDerivativesSubNo();
+  derivativesVmLossPayment.trd_amt = request.trd_amt;
+  derivativesVmLossPayment.trd_dt_fmt = formatDisplayDate(request.trd_dt);
+  notifyOneSignal(derivativesVmLossPayment, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesMarginCallLevel2(request: IDerivativesMarginCallLevel2Request): void {
+  const derivativesMarginCallLevel2: DerivativesMarginCallLevel2 = new DerivativesMarginCallLevel2();
+  derivativesMarginCallLevel2.acnt_no = request.acnt_no;
+  derivativesMarginCallLevel2.sub_no = withDefaultDerivativesSubNo();
+  derivativesMarginCallLevel2.CU = request.CU;
+  derivativesMarginCallLevel2.W2 = request.W2;
+  derivativesMarginCallLevel2.W3 = request.W3;
+  notifyOneSignal(derivativesMarginCallLevel2, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesMarginCallLevel3(request: IDerivativesMarginCallLevel3Request): void {
+  const derivativesMarginCallLevel3: DerivativesMarginCallLevel3 = new DerivativesMarginCallLevel3();
+  derivativesMarginCallLevel3.acnt_no = request.acnt_no;
+  derivativesMarginCallLevel3.sub_no = withDefaultDerivativesSubNo();
+  derivativesMarginCallLevel3.CU = request.CU;
+  notifyOneSignal(derivativesMarginCallLevel3, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesMarginDeposit(request: IDerivativesMarginDepositRequest): void {
+  const derivativesMarginDeposit: DerivativesMarginDeposit = new DerivativesMarginDeposit();
+  derivativesMarginDeposit.acnt_no = request.acnt_no;
+  derivativesMarginDeposit.sub_no = withDefaultDerivativesSubNo();
+  derivativesMarginDeposit.trd_amt = request.trd_amt;
+  derivativesMarginDeposit.trd_dt_fmt = formatDisplayDate(request.trd_dt);
+  derivativesMarginDeposit.new_vsd_dpo = request.new_vsd_dpo;
+  notifyOneSignal(derivativesMarginDeposit, request.acnt_no);
+}
+
+export function sendOneSignalDerivativesMarginWithdrawal(request: IDerivativesMarginWithdrawalRequest): void {
+  const derivativesMarginWithdrawal: DerivativesMarginWithdrawal = new DerivativesMarginWithdrawal();
+  derivativesMarginWithdrawal.acnt_no = request.acnt_no;
+  derivativesMarginWithdrawal.sub_no = withDefaultDerivativesSubNo();
+  derivativesMarginWithdrawal.trd_amt = request.trd_amt;
+  derivativesMarginWithdrawal.trd_dt_fmt = formatDisplayDate(request.trd_dt);
+  derivativesMarginWithdrawal.new_vsd_dpo = request.new_vsd_dpo;
+  notifyOneSignal(derivativesMarginWithdrawal, request.acnt_no);
 }

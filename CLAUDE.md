@@ -110,10 +110,42 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 
 ---
 
+## TradeX Services — hot cache (tránh scan lại code)
+
+> Snapshot source đồng bộ tại `Knowledge/TradeX-MCP/` (verified 2026-06-30). Kafka topic = `clusterId` / `spring.application.name` lấy từ config. **Canonical đầy đủ:** `Knowledge/TradeX/_index.md` (Core Services).
+
+| Service (folder TradeX-MCP) | Tech | Kafka Topic | Role |
+|---|---|---|---|
+| `rest-proxy` | Node.js | `rest-proxy` (route theo scope) | API Gateway |
+| `aaa` | Node.js | `aaa` | Auth, OTP, Smart OTP |
+| `lotte-bridge` | Node.js | `lotte-bridge` | Lotte: order/account/balance/transfer/change-broker/smart-OTP |
+| `lotte-ws-bridge` | Node.js | `lotte-ws-bridge` | Notification (gồm Derivatives margin/VM/position) |
+| `market-query-v2` | Node.js | `market-v2` | Market data queries (pkg `tradex-market`) |
+| `ws-v2` | Node.js | — (WebSocket) | WS server cho client |
+| `configuration` | Node.js | `configuration` | Config service |
+| `order-v2` | Java 17 / Spring Boot 3.1 | `order` | Conditional orders: Stop/OCO/Trailing/Bull-Bear |
+| `realtime-v2` | Java | `realtime-v2` | Real-time + EOD snapshot/backfill |
+| `market-collector-lotte` | Java | `market-collector-lotte` | Collect market data từ Lotte WS |
+| `notification` | Java | `notification` | Push/SMS/email + templates |
+| `ekyc-admin` | Java (JHipster) | `ekyc-admin` | eKYC admin: Lotte upload + FPT eContract + OTP |
+| `nhsv-admin` | Java (JHipster) | `nhsv-admin` | Admin web tool |
+| `tradex-common-java` | Java lib | — | Shared models/enums/kafka utils |
+| `documents` | docs only | — | API specs / BA / QA / DB docs |
+
+⚠️ Topic cũ hay nhầm: `lotte-bridge` KHÔNG phải `paave-real-trading`; `market-query-v2` topic là `market-v2` (không phải `market-query-v2`); `order-v2` topic là `order`.
+
+**Order domain:**
+- Lệnh thường (Buy/Sell/Cancel/Modify) → `lotte-bridge` (equity) / `rest-proxy→tuxedo` (derivatives) → spec `Knowledge/TradeX/Planning/regular-order-api-mapping.md`
+- Lệnh điều kiện (Stop/OCO/Trailing/Bull-Bear) → service `order-v2` (tradex-native, response `{id}`) → spec `Knowledge/TradeX/Planning/conditional-order-api-mapping.md`
+
+---
+
 ## Key References
 
 @Knowledge/TradeX/API Standards/tradex-api-conventions.md
 @Knowledge/TradeX/API Standards/tradex-api-spec-template.md
+@Knowledge/TradeX/Planning/regular-order-api-mapping.md
+@Knowledge/TradeX/Planning/conditional-order-api-mapping.md
 
 ---
 
@@ -125,4 +157,4 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 
 ---
 
-*Last updated: 2026-06* · *Repo: tradex-monitoring* · *Owner: Midu*
+*Last updated: 2026-06-30* · *Repo: tradex-monitoring* · *Owner: Midu* · *Knowledge/TradeX-MCP synced từ source mới nhất 2026-06-30*

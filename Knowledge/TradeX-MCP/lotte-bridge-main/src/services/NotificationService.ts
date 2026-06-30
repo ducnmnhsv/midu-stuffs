@@ -18,6 +18,7 @@ import { ILotteotificationResponse } from '../models/response/lotte/ILotteotific
 import { IParam } from '../models/request/lotte/ILotteRequest';
 import { parseMessages, setDefault } from '../utils/lotte';
 import { GeneralError } from 'tradex-common/build/src/modules/errors';
+import { NOTIFICATION_TYPE } from '../constants/enum';
 
 const { InvalidParameterError } = Errors;
 const { validate } = Utils;
@@ -34,11 +35,15 @@ export class NotificationService {
       .throwValid(error);
     error.throwErr();
     const accountNumber = request.headers.token.userData.username.toUpperCase();
+    const notificationType = request.type == null || NOTIFICATION_TYPE[request.type as keyof typeof NOTIFICATION_TYPE] == null
+      ? NOTIFICATION_TYPE.ALL
+      : NOTIFICATION_TYPE[request.type as keyof typeof NOTIFICATION_TYPE];
     const notificationRequest: ILotteNotificationRequest = {
       acnt_no: accountNumber ? accountNumber : '',
       sub_no: request.subAccount ? request.subAccount : '',
       from_dt: request.fromDate ? request.fromDate : '',
       to_dt: request.toDate ? request.toDate : '',
+      type: notificationType,
       next_key: request.nextKey ? request.nextKey : '',
       lang_code: 'V',
     };

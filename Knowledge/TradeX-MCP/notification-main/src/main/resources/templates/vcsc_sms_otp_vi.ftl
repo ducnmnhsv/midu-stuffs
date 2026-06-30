@@ -1,0 +1,1 @@
+VCSC: So OTP cua quy khach la ${otp}. Chuc quy KH dau tu hieu qua.

@@ -18,6 +18,7 @@ export const Category = {
   OTP: 'catOtp',
   SYMBOL_INFO: 'realtime_mapSymbolInfo',
   SYMBOL_INFO_ODD_LOT: 'realtime_mapSymbolInfoOddLot',
+  SOTP_REGISTER_TOKEN: 'catSotpRegisterToken',
 };
 
 @Service()
@@ -39,8 +40,8 @@ export default class Redis {
     return this.core.get(category, key, isNotSetCluster);
   }
 
-  async del(category: string, key: string): Promise<boolean> {
-    return this.core.del(category, key);
+  async del(category: string, key: string, isNotSetCluster?: boolean): Promise<boolean> {
+    return this.core.del(category, key, isNotSetCluster);
   }
 
   getRedisKey(category: string, key: string): string {

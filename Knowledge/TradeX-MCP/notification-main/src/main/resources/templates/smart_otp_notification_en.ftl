@@ -1,0 +1,1 @@
+Your smart OTP is: ${smartOtp}

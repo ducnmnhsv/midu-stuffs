@@ -1,0 +1,1 @@
+NHSV: Ma OTP xac thuc la ${otp}. Không chia se ma OTP cho ai duoi bat ky hinh thuc nao.

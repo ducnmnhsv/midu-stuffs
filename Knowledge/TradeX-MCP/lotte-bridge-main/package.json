@@ -45,7 +45,7 @@
     "r2curl": "^0.2.4",
     "redis": "^3.0.2",
     "reflect-metadata": "^0.1.13",
-    "tradex-common": "git+https://github.com/difisoft/tradex-common-10.16.3.git",
+    "tradex-common": "git+https://bitbucket.org/nhsv-dev/tradex-common-16.16.0.git",
     "typedi": "^0.8.0",
     "typeorm": "^0.2.29",
     "typeorm-typedi-extensions": "^0.2.3",

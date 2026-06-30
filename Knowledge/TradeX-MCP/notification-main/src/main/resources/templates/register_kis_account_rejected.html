@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>Email Template</title>
+  <style>
+    /* -------------------------------------
+          GLOBAL RESETS
+      ------------------------------------- */
+
+    /*All the styling*/
+
+    body {
+      background-color: #ffffff;
+      font-family: sans-serif;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+      line-height: 22px;
+      margin: 0;
+      padding: 0;
+      -ms-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    table {
+      border-collapse: separate;
+      width: 100%;
+    }
+
+    table td {
+      font-family: sans-serif;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    /* -------------------------------------
+          BODY & CONTAINER
+      ------------------------------------- */
+
+    .body {
+      background-color: #ffffff;
+      width: 100%;
+    }
+
+    .container {
+      display: block;
+      margin: 0 auto !important;
+      max-width: 600px;
+      width: 600px;
+      box-shadow: 0px 0px 35px rgba(0, 0, 0, 0.08);
+    }
+
+    .content {
+      box-sizing: border-box;
+      display: block;
+      margin: 0 auto;
+      max-width: 600px;
+    }
+
+    /* -------------------------------------
+          HEADER, FOOTER, MAIN
+      ------------------------------------- */
+    .main {
+      background: #ffffff;
+      border-radius: 3px;
+      width: 100%;
+    }
+
+    .wrapper {
+      box-sizing: border-box;
+      padding: 15px;
+      background-color: #FAFAFA;
+      border-radius: 10px;
+    }
+
+    .content-block {
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .header-footer {
+      clear: both;
+      text-align: center;
+      width: 100%;
+    }
+
+    .header-footer td,
+    .header-footer p,
+    .header-footer span,
+    .header-footer a {
+      color: #999999;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* -------------------------------------
+          TYPOGRAPHY
+      ------------------------------------- */
+    h1,
+    h2,
+    h3,
+    h4 {
+      color: #000000;
+      font-family: sans-serif;
+      font-weight: 400;
+      line-height: 22px;
+      margin: 0;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 35px;
+      font-weight: 300;
+      text-align: center;
+      text-transform: capitalize;
+    }
+
+    p,
+    ul,
+    ol {
+      font-family: sans-serif;
+      font-size: 14px;
+      font-weight: normal;
+      margin: 0;
+      margin-bottom: 15px;
+    }
+
+    p li,
+    ul li,
+    ol li {
+      list-style-position: inside;
+      margin-left: 5px;
+    }
+
+    /* -------------------------------------
+          OTHER STYLES
+      ------------------------------------- */
+
+    .clear {
+      clear: both;
+    }
+
+    .preheader {
+      color: transparent;
+      display: none;
+      height: 0;
+      max-height: 0;
+      max-width: 0;
+      opacity: 0;
+      overflow: hidden;
+      visibility: hidden;
+      width: 0;
+    }
+
+    .banner-header {
+      background-image: url(images/banner-header.png);
+      height: 231px;
+      width: 100%;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+    }
+
+    .main-content {
+      margin: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .content-email {
+      background: #FAFAFA;
+      border-radius: 10px;
+      padding: 15px;
+    }
+
+    .header-text {
+      height: 91px;
+      position: relative;
+      top: 91px;
+      padding-left: 10px;
+    }
+
+    .welcome-text {
+      color: #ffffff !important;
+      font-size: 24px !important;
+      font-weight: 600;
+      line-height: 18px !important;
+    }
+
+    .blue-text {
+      color: #3B56A4;
+      font-weight: bold;
+      line-height: 18px !important;
+    }
+
+    .big-blue-text {
+      color: #506CE1;
+      font-weight: 500;
+      font-size: 24px !important;
+      line-height: 30px !important;
+    }
+
+    /* -------------------------------------
+          RESPONSIVE
+      ------------------------------------- */
+    @media only screen and (max-width: 620px) {
+      table.body h1 {
+        font-size: 28px !important;
+        margin-bottom: 10px !important;
+      }
+
+      table.body p,
+      table.body ul,
+      table.body ol,
+      table.body td,
+      table.body span,
+      table.body a {
+        font-size: 16px;
+      }
+
+      table.body .wrapper,
+      table.body .article {
+        padding: 10px !important;
+      }
+
+      table.body .content {
+        padding: 0 !important;
+      }
+
+      table.body .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      table.body .main {
+        border-left-width: 0 !important;
+        border-radius: 0 !important;
+        border-right-width: 0 !important;
+      }
+
+      .welcome-text {
+        font-size: 20px !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="body">
+    <tr>
+      <td>&nbsp;</td>
+      <td class="container">
+        <div class="content">
+          <!-- HEADER -->
+          <div class="header-footer">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td valign="middle" class="banner-header">
+                  <table>
+                    <tr>
+                      <td valign="middle" width="25%">
+                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%"
+                          class="header-text">
+                          <tbody
+                            style="display: flex; flex-direction:column; justify-content:space-between; height: 100%">
+                            <tr>
+                              <td style="text-align: left; display: none;">
+                                <span class="welcome-text">
+                                  Welcome to Paave
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="text-align: left;">
+                                <div style="display: flex; gap: 10px">
+                                  <a href="https://www.facebook.com/paave.io" target="_blank">
+                                    <img srcset="images/facebook-icon.png 2x" alt="">
+                                  </a>
+                                  <a href="https://www.youtube.com/channel/UCIcUELAt7uhXVKkt4TJUtDA" target="_blank">
+                                    <img srcset="images/youtube-icon.png 2x" alt="">
+                                  </a>
+                                  <a href="https://www.instagram.com/paave.io/" target="_blank">
+                                    <img srcset="images/instagram-icon.png 2x" alt="">
+                                  </a>
+                                  <a href="https://www.linkedin.com/company/difisoft" target="_blank">
+                                    <img srcset="images/linkedin-icon.png 2x" alt="">
+                                  </a>
+                                  <a href="https://www.tiktok.com/@paave.io" target="_blank">
+                                    <img srcset="images/tiktok-icon.png 2x" alt="">
+                                  </a>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- END HEADER -->
+
+          <!-- CONTENT EMAIL -->
+          <div class="main-content">
+            <div class="content-email">
+              <p>Bạn thân mến,</p>
+              <p>Hồ sơ đăng ký mở tài khoản KIS qua Paave của bạn đã bị từ chối do (các) lý do sau:</p>
+              <p>Lý do: <a class="blue-text">${reason}</a></p>
+              <p>Bạn vẫn có thể trải nghiệm tính năng Giao dịch ảo của chúng tôi bằng tài khoản Paave đã được tạo trước
+                đó.</p>
+              <p>Nếu bạn có bất kỳ câu hỏi nào hoặc gặp sự cố khi đăng nhập, vui lòng liên hệ&nbsp;<a
+                  href="mailto:support@paave.io">support@paave.io</a> để được hỗ trợ!</p>
+              <p>Cảm ơn bạn đã chọn Paave!</p>
+              <p>Đội ngũ Paave</p>
+            </div>
+
+            <div class="content-email">
+              <p>Dear Customer,</p>
+              <p>Your enrollment to open KIS account via Paave has been rejected due to the following reason(s):</p>
+              <p>Reason(s): <a class="blue-text">${reason}</a></p>
+              <p>You still can experience our Virtual Trading with your Paave account.&nbsp;</p>
+              <p>If you have any questions or trouble logging in, please contact&nbsp;<a
+                  href="mailto:support@paave.io">support@paave.io</a> for support!</p>
+              <p>Thank you for choosing Paave!</p>
+              <p>Paave Team</p>
+            </div>
+          </div>
+          <!-- END CONTENT EMAIL -->
+
+          <!-- FOOTER -->
+          <div class="header-footer">
+            <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+              <tr>
+                <td>
+                  <img src="images/border-bottom.png" alt="">
+                </td>
+              </tr>
+            </table>
+          </div>
+          <!-- END FOOTER -->
+
+        </div>
+      </td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+</body>
+
+</html>

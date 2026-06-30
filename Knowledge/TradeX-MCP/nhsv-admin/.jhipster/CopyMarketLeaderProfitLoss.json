@@ -1,0 +1,52 @@
+{
+  "applications": ["NHSVAdmin"],
+  "changelogDate": "20230720074200",
+  "dto": "mapstruct",
+  "embedded": false,
+  "entityTableName": "t_copy_market_leader_profit_loss",
+  "fields": [
+    {
+      "fieldName": "reportDate",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "netAssetsValue",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "profitLossRatio",
+      "fieldType": "Double",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "type",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    }
+  ],
+  "fluentMethods": true,
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": false,
+  "name": "CopyMarketLeaderProfitLoss",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "user",
+      "relationshipName": "mlUserId",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceImpl"
+}

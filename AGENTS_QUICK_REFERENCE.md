@@ -1,74 +1,41 @@
 # TradeX Monitoring - Agent Quick Reference
 
-## Current Agents (3)
+> Tool: **Claude Code**. Skills tự động kích hoạt — không cần gọi tay.
 
-| Agent | Activation | Purpose |
-|-------|-----------|---------|
-| **TradeX Analyst** | `@tradex-analyst` | API analysis, securities domain, system tracing |
-| **Agile Developer** | `@agile-developer` | Agile workflows, BMAD framework, story development |
-| **TradeX QA Postman** | `@tradex-qa-postman` | Test TradeX API via Postman MCP; requests in "TradeX QA session", docs in `QA sessions/` |
+## Skills (4)
 
----
+| Skill | Khi nào Claude Code tự dùng |
+|-------|-----------------------------|
+| **tradex-orchestrator** | Tạo spec/doc/issue, phân tích API, cập nhật tài liệu → entry point chính |
+| **tradex-analyst** | Hỏi về API/service/Kafka flow, trace hệ thống |
+| **tradex-creator** | Được orchestrator gọi — tạo API Spec, PM doc, FE Issue |
+| **tradex-validator** | Được orchestrator gọi — validate convention sau khi tạo |
 
-## Proposed New Agents (3)
+## Luồng pipeline điển hình
 
-| Agent | Activation | Primary Responsibility |
-|-------|-----------|----------------------|
-| **Orchestrator** | `@orchestrator` | Coordinate all agents, route tasks, manage workflows |
-| **Documentation** | `@documentation-agent` | Technical docs, runbooks, guides |
-| **Test** | `@test-agent` | Testing, QA automation, validation |
-
----
-
-## Agent Interaction Examples
-
-### Example 1: Create Documentation
 ```
-User: "Create runbook for Kafka monitoring"
-→ Orchestrator routes to:
-  1. TradeX Analyst: Analyze Kafka monitoring requirements
-  2. Documentation Agent: Create runbook
-  3. Test Agent: Validate examples in runbook
+"Tạo spec cho API X"
+→ orchestrator tạo team: analyst → creator → validator
+→ output: Derivatives/Planning documentation/.../Specifications/X_API_Spec.md
 ```
 
-### Example 2: Test New Feature
-```
-User: "Test new monitoring dashboard"
-→ Orchestrator routes to:
-  1. Test Agent: Create test cases
-  2. Test Agent: Execute tests
-  3. Documentation Agent: Document test results
-```
+## Knowledge-First Rule
 
-### Example 3: Complete Feature Development
-```
-User: "Implement and document new monitoring feature"
-→ Orchestrator routes in parallel:
-  1. TradeX Analyst: Analyze requirements
-  2. Agile Developer: Create stories
-  3. Documentation Agent: Create initial docs
-  4. Test Agent: Create test plan
-```
+Đọc theo thứ tự trước khi scan code:
+1. `CLAUDE.md` → hot cache services, Kafka topics
+2. `Knowledge/TradeX/API Standards/tradex-api-conventions.md` → naming, response format
+3. `Knowledge/TradeX/Planning/` → order API mapping
 
----
+## TradeX Services Quick Lookup
 
-## Implementation Priority
+| Cần gì | Service |
+|--------|---------|
+| Auth / OTP / Smart OTP | `aaa` |
+| Lệnh equity thường | `lotte-bridge` |
+| Lệnh Derivatives thường | `rest-proxy` → tuxedo |
+| Lệnh điều kiện (Stop/OCO/Trailing/Bull-Bear) | `order-v2` |
+| Market data | `market-query-v2` (topic: `market-v2`) |
+| Notification push | `notification` |
+| eKYC | `ekyc-admin` |
 
-### Phase 1 (Week 1) - Critical
-- ✅ Orchestrator Agent
-
-### Phase 2 (Week 2) - High Priority
-- ✅ Documentation Agent
-
-### Phase 3 (Week 3) - High Priority
-- ✅ Test Agent
-
----
-
-## Full Documentation
-
-Xem chi tiết tại: `.cursor/rules/agent-architecture-proposal.md`
-
----
-
-**Last Updated**: January 26, 2026
+*Last Updated: 2026-06-30*

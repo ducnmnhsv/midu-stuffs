@@ -1,0 +1,1 @@
+<OneSignalTitle>Congratulations! You have successfully opened a KBSV account.</OneSignalTitle>KB Fina gives you a ticket to play KB Crush promotion.  Click now and get a chance to receive 10 shares in VN30 basket.

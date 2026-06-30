@@ -1,0 +1,1 @@
+Did you receive reward points? Login KB FINA now!

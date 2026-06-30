@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Thông báo yêu cầu đổi người chăm sóc tài khoản</title>
+</head>
+<body style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; line-height: 1.8; color: #333333; margin: 0; padding: 20px; background-color: #f5f7f9;">
+<table style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" cellspacing="0" cellpadding="0">
+    <tr>
+        <td style="padding: 30px 40px; border-bottom: 3px solid #1a73e8;">
+            <h2 style="margin: 0; color: #1a73e8; font-size: 20px;">NHSV - Thông báo yêu cầu đổi người chăm sóc tài khoản</h2>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 30px 40px;">
+            <p style="margin: 0 0 20px 0;">Kính gửi anh/chị,</p>
+            
+            <p style="margin: 0 0 20px 0;">Hệ thống ghi nhận một yêu cầu thay đổi người chăm sóc tài khoản từ khách hàng với thông tin như sau:</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold; width: 40%;">Số tài khoản:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${accountNumber}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Tên khách hàng:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${accountName}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Người chăm sóc đề nghị chuyển sang:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${newBrokerName}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Lý do khách hàng cung cấp:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${reasonLabel}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Thời gian tạo yêu cầu:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${createdAt}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Mã yêu cầu:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${sequence}</td>
+                </tr>
+            </table>
+            
+            <p style="margin: 30px 0 0 0;">Trân trọng,</p>
+            <p style="margin: 5px 0 0 0; color: #666666;"><em>NHSV</em></p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

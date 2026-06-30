@@ -1,0 +1,1 @@
+<OneSignalTitle>Lưu ký chứng khoán</OneSignalTitle>TK ${acnt_no}-${sub_no} của quý khách đã lưu ký thành công ${stk_qty} CP ${stk_cd}

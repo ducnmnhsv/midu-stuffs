@@ -1,0 +1,1 @@
+<OneSignalTitle>Congratulations, you have successfully opened a KBSV account.</OneSignalTitle>KB Fina gives you ${point} points, login KB Fina now!

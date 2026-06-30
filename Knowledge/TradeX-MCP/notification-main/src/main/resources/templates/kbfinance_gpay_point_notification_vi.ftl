@@ -1,0 +1,1 @@
+Bạn vừa đổi thành công ${point} điểm sang tiền về ví GPAY.

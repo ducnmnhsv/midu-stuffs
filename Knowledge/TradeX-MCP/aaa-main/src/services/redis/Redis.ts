@@ -11,6 +11,8 @@ export const Category = {
   OTP_VALIDATE: 'catOtpValidate',
   OTP: 'catOtp',
   SYMBOL_INFO: 'realtime_mapSymbolInfo',
+  OTP_STRATEGY: 'catOtpStrategy',
+  SOTP_REGISTER_TOKEN: 'catSotpRegisterToken',
 };
 
 export async function set<T>(

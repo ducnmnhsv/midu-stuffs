@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!--
+        Added the constraints for entity CopyMarketLeaderProfitLoss.
+    -->
+    <changeSet id="20230720074200-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="ml_user_id_id"
+                                 baseTableName="t_copy_market_leader_profit_loss"
+                                 constraintName="fk_t_copy_market_leader_profit_loss__ml_user_id_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="t_user"/>
+    </changeSet>
+</databaseChangeLog>

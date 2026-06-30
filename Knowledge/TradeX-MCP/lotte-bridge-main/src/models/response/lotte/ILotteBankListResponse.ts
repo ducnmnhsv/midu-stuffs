@@ -8,5 +8,6 @@ export interface ILotteBankListResponseData {
   bank_code: string;
   bank_name: string;
   bank_account: string;
+  bank_branch: string;
   bank_accountname: string;
 }

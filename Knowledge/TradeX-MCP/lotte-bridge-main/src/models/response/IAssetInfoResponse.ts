@@ -57,6 +57,7 @@ export interface IAssetInfoResponse {
   evaluationAwaitingStockValue?: number;
   cmrb?: number;
   unusedVirtualDeposit?: number;
+  requiredDepositToInitialMargin?: number;
 }
 
 export function toAssetInfoResponse(lotteResDataList: ILotteAssetInfoData): IAssetInfoResponse {
@@ -113,6 +114,7 @@ export function toAssetInfoResponse(lotteResDataList: ILotteAssetInfoData): IAss
     evaluationAwaitingStockValue: Number(lotteResDataList.cdr_bp_acnt),
     cmrb: Number(lotteResDataList.mrgn_now_mntn_bp_rt.replace('%', '').trim()),
     unusedVirtualDeposit: Number(lotteResDataList.unused_grt_mn),
+    requiredDepositToInitialMargin: Number(lotteResDataList.payable_amount),
   };
   return response;
 }

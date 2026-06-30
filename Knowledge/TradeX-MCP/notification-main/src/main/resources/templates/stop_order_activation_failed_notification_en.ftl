@@ -1,0 +1,1 @@
+${sellBuyType} stop order just activated failed for ${code} because of ${failedReason}

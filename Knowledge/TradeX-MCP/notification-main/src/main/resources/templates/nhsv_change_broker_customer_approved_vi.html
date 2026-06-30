@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Yêu cầu đổi người chăm sóc tài khoản được chấp thuận</title>
+</head>
+<body style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; line-height: 1.8; color: #333333; margin: 0; padding: 20px; background-color: #f5f7f9;">
+<table style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" cellspacing="0" cellpadding="0">
+    <tr>
+        <td style="padding: 30px 40px; border-bottom: 3px solid #28a745;">
+            <h2 style="margin: 0; color: #28a745; font-size: 20px;">NHSV - Yêu cầu được chấp thuận</h2>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding: 30px 40px;">
+            <p style="margin: 0 0 20px 0;">Kính gửi Quý khách <strong>${accountName}</strong>,</p>
+            
+            <p style="margin: 0 0 20px 0;">Yêu cầu thay đổi người chăm sóc tài khoản <strong>${accountNumber}</strong> của Quý khách đã được <strong style="color: #28a745;">chấp thuận</strong>.</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;" cellspacing="0" cellpadding="0">
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold; width: 45%;">Người chăm sóc trước đây:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${previousBrokerName}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Người chăm sóc mới:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;"><strong style="color: #28a745;">${newBrokerName}</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px 15px; background-color: #f8f9fa; border: 1px solid #e9ecef; font-weight: bold;">Thời gian phê duyệt:</td>
+                    <td style="padding: 12px 15px; border: 1px solid #e9ecef;">${approvedAt}</td>
+                </tr>
+            </table>
+            
+            <p style="margin: 20px 0;">Quý khách có thể xem lại thông tin này trong mục <strong>"Lịch sử yêu cầu"</strong> trên ứng dụng NHSV Pro.</p>
+            
+            <p style="margin: 30px 0 0 0;">Trân trọng,</p>
+            <p style="margin: 5px 0 0 0; color: #666666; font-weight: bold;">Công ty TNHH Chứng khoán NH Việt Nam</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
+

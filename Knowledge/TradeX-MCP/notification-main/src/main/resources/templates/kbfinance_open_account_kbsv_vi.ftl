@@ -1,0 +1,1 @@
+<OneSignalTitle>Chúc mừng bạn đã mở tài khoản KBSV thành công.</OneSignalTitle>KB Fina dành tặng bạn ${point} điểm, truy cập KB Fina ngay bạn nhé!

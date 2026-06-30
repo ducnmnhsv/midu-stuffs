@@ -7,6 +7,7 @@ import RequestHandler from './consumers/RequestHandler';
 // import { OddLotService } from './services/OddLotService';
 import connection from './init/dbConnection';
 import { IndexService } from './services/IndexService';
+import { BrokerChangeStatusSyncJob } from './jobs/BrokerChangeStatusSyncJob';
 
 Logger.create(config.logger.config, true);
 Logger.info('Staring...');
@@ -29,6 +30,10 @@ async function init() {
   // await oddLotService.queryOddLot();
   const indexService = Container.get(IndexService);
   await indexService.getIndexList();
+
+  // Initialize broker change status sync job
+  const brokerChangeStatusSyncJob = Container.get(BrokerChangeStatusSyncJob);
+  await brokerChangeStatusSyncJob.init();
 }
 
 init()

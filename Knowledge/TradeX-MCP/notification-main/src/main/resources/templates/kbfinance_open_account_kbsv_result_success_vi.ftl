@@ -1,0 +1,1 @@
+<OneSignalTitle>Chúc mừng bạn đã mở tài khoản KBSV thành công.</OneSignalTitle>KB Fina tặng bạn vé tham gia chương trình KB Crush. Tham gia ngay để có cơ hội sở hữu 10 cổ phiếu trong rổ VN30 nào!

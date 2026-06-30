@@ -1,0 +1,1 @@
+<OneSignalTitle>Thông báo khớp lệnh</OneSignalTitle>TK ${acnt_no}-${sub_no} mua ${stk_cd} KL ${mth_qty} giá (TB) ${mth_pri} khớp lúc ${mth_time}. Trân trọng.

@@ -1,0 +1,9 @@
+export enum InviteStatusEnum {
+  PENDING = 'PENDING',
+
+  EXPIRED = 'EXPIRED',
+
+  ACCOUNT_CREATED = 'ACCOUNT_CREATED',
+
+  DEACTIVATED = 'DEACTIVATED',
+}

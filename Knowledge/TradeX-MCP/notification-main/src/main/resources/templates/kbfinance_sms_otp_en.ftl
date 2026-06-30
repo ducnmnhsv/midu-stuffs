@@ -1,0 +1,1 @@
+(KB FINA) Verification code <#if action == "REGISTER">for signup<#elseif action == "RESET_PASSWORD">for reset password<#elseif action == "KBSV_EKYC">for signup securities account<#elseif action == "NEW_DEVICE">for signin<#elseif action == "VERIFY">for verify<#else>${action}</#if> is ${otp}. It is available in 0${expiredInMinute} minutes. Please do not share with anyone.

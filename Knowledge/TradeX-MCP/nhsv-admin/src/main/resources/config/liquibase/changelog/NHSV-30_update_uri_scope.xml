@@ -1,0 +1,23 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-30-01">
+        <sql splitStatements="false">
+            UPDATE `tradex-configuration`.t_scope
+            SET uri_pattern='get:/api/v1/copyTrading/marketLeader/marketLeaderList',
+                forward_data='{
+                              "uri": "get:/api/v1/copyTrading/marketLeader/marketLeaderList",
+                              "service": "nhsv-admin",
+                              "forwardType": "SERVICE"
+                            }'
+            where uri_pattern = 'get:/api/v1/copyTrading/marketLeaderList';
+        </sql>
+        <sql splitStatements="false">
+            UPDATE `tradex-configuration`.t_open_api
+            SET uri_pattern='get:/api/v1/copyTrading/marketLeader/marketLeaderList'
+            where operation_id = 'NHSV_MTS_COPY_TRADING_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

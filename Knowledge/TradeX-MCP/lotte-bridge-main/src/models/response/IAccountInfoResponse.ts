@@ -1,10 +1,13 @@
+import { AccountType } from '../../constants/enum';
+
 export interface IAccountInfoResponse {
   email?: string;
   address?: string;
   groupType?: string;
   agencyCode?: string;
   agencyName?: string;
-  accountType?: string;
+  agencyId?: string;
+  accountType?: AccountType;
   dateOfBirth?: string;
   phoneNumber?: string;
   agencyBranch?: string;
@@ -12,9 +15,12 @@ export interface IAccountInfoResponse {
   identifierNumber?: string;
   representativeName?: string;
   identifierIssueDate?: string;
+  identifierExpireDate?: string;
   representativeEmail?: string;
-  identifierIssuePlace?: string;
+  issuePlace?: string;
+  isForeignCustomer?: boolean | null;
   representativePhoneNumber?: string;
   representativeIdentifierNumber?: string;
+  taxCode?: string;
   username?: string;
 }

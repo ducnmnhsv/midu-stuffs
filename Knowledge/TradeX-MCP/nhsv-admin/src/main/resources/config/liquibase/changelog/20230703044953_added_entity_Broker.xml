@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity Broker.
+    -->
+    <changeSet id="20230703044953-1" author="jhipster">
+        <createTable tableName="t_broker">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="fullname" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <column name="total_chat_room" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <column name="current_rank" type="integer">
+                <constraints nullable="true" />
+            </column>
+            <column name="is_dynamic" type="boolean">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

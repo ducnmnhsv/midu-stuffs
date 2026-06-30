@@ -59,6 +59,8 @@ export interface IEKyc {
   contractId?: string | null;
   contractStatus?: string | null;
   fatca?: boolean | null;
+  job?: string | null;
+  derivativesIncluded?: boolean | null;
   contractNo?: string | null;
   accountNumber?: string | null;
   ocrLogId?: string | null;
@@ -76,4 +78,5 @@ export const defaultValue: Readonly<IEKyc> = {
   emailNotification: false,
   customerSupport: false,
   fatca: false,
+  derivativesIncluded: false,
 };

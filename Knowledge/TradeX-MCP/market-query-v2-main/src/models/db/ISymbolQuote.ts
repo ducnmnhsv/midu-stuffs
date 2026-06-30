@@ -15,6 +15,6 @@ export interface ISymbolQuote {
   sequence?: number;
   matchedBy?: string;
   ceilingFloorEqual?: string;
-	totalOfferVolume?: number;
-	totalBidVolume?: number;
+	activeSellVolume?: number;
+	activeBuyVolume?: number;
 }

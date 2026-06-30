@@ -1,0 +1,1 @@
+<OneSignalTitle>Trả cổ tức bằng cổ phiếu</OneSignalTitle>Cổ tức bằng cổ phiếu đã về đến TK ${acnt_no}-${sub_no} ${stk_cd}: ${stk_qty}

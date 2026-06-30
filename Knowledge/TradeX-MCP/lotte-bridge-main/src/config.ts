@@ -30,12 +30,16 @@ const config = {
   logger: {
     config: {
       appenders: {
-        application: { type: 'console' },
+        application: { 
+          type: 'console',
+          layout: { type: 'json' }
+        },
         file: {
           type: 'file',
           filename: '/logs/application.log',
           compression: true,
           maxLogSize: 10485760,
+          layout: { type: 'json' }
         },
       },
       categories: {
@@ -48,7 +52,7 @@ const config = {
   },
   log: {
     serviceName: 'lotte-bridge',
-    format: 'FLAT', // 'FLAT' or 'JSON'
+    format: "JSON", // 'FLAT' or 'JSON'
     transport: [],
   },
   turnOnTrimPassword: true,
@@ -136,6 +140,7 @@ const config = {
   schedule: {
     queryOddLot: '* 2,3,4,6,7,8 * * MON-FRI',
     getIndexList: '0,15,30,55 1 * * MON-FRI',
+    syncBrokerStatus: '*/5 * * * *',
   },
   enableQueryOddLot: true,
   lotte: {
@@ -148,6 +153,7 @@ const config = {
       [LOTTE_API_CATEGORIES.NOTIFICATION]: 'http://172.31.224.7:30595',
       [LOTTE_API_CATEGORIES.EKYC]: 'http://172.33.30.23:8100',
       [LOTTE_API_CATEGORIES.MARKET]: 'http://172.33.30.23:8100',
+      [LOTTE_API_CATEGORIES.SOTP]: 'http://172.33.30.23:8100',
     },
     errorCodeSuccess: {
       equity: '0000',
@@ -187,6 +193,9 @@ const config = {
     'get:/api/v2/market/stock/ranking/period',
     'get:/api/v2/market/symbol/{symbol}/right',
     'get:/api/v2/market/cw/{symbol}/detail',
+    'post:/api/v1/smartOtp/register',
+    'post:/api/v1/smartOtp/verify',
+
   ],
   forwards: [
     {

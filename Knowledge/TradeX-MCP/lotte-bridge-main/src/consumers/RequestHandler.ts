@@ -70,6 +70,7 @@ export default class RequestHandler {
       orgMsg: message,
     };
     await this.addHeadersForClientCredentials(message, ctx);
+    console.log('Received message.uri:', message.uri);
     if (message.uri === 'post:/api/v1/lotte/login') {
       return this.authenticationService.authenticate(message.data, ctx);
     } else if (message.uri === 'post:/api/v1/login/otp') {
@@ -92,6 +93,10 @@ export default class RequestHandler {
       return this.authenticationService.resetPasswordVerifyOtp(message.data, ctx);
     } else if (message.uri === 'post:/api/v1/lotte/account/resetPassword') {
       return this.authenticationService.resetPassword(message.data, ctx);
+    } else if (message.uri === 'post:/api/v1/smartOtp/register') {
+      return this.authenticationService.registerSmartOtp(message.data, ctx);
+    } else if (message.uri === 'post:/api/v1/smartOtp/verify') {
+      return this.authenticationService.verifySmartOtp(message.data, ctx);
     } else if (message.uri === 'get:/api/v1/lotte/equity/account/info') {
       return this.accountService.getAccountInfo(message.data, ctx);
     } else if (message.uri === 'get:/api/v1/lotte/equity/account/assetInfo') {
@@ -237,6 +242,14 @@ export default class RequestHandler {
       return this.marketService.getMarketStockBidOffer(message.data, ctx);
     } else if (message.uri === 'get:/api/v1/lotte/equity/cash/deposit/history') {
       return this.accountService.getCashDepositHistory(message.data, ctx);
+    } else if (message.uri === 'post:/api/v1/account/changeBroker/init') {
+      return this.accountService.initChangeBroker(message.data, ctx);
+    } else if (message.uri === 'get:/api/v1/account/changeBroker/history') {
+      return this.accountService.getChangeBrokerHistory(message.data, ctx);
+    } else if (message.uri === 'post:/api/v1/account/bankAccount') {
+      return this.accountService.registerBankAccount(message.data, ctx);
+    } else if (message.uri === 'delete:/api/v1/account/bankAccount') {
+      return this.accountService.deleteBankAccount(message.data, ctx);
     } else if (new RegExp(/tradexStopOrderForward/g).test(message.uri)) {
       return this.forwardRequest(message, ctx);
     }

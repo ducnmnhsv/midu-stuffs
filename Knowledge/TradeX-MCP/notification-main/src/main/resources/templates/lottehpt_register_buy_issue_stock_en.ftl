@@ -1,0 +1,1 @@
+<OneSignalTitle>Đăng ký mua chứng khoán PHT</OneSignalTitle>TK ${acnt_no}-${sub_no} của quý khách đã thay đổi: -${trd_amt}VND. Mua ${trd_qty}CP phát hành thêm ${stk_cd}. Số dư hiện tại là: ${dpo}VND

@@ -380,7 +380,7 @@ body {
   background: var(--surface);
   border-radius: 14px;
   max-width: min(1200px, 96vw); width: 100%;
-  max-height: 88vh;
+  max-height: 95vh;
   border: 1px solid var(--border);
   box-shadow: 0 24px 72px rgba(0,0,0,.25);
   animation: modal-in 180ms var(--ease);
@@ -659,7 +659,7 @@ body {
   <div class="col col-backlog">
     <div class="col-header">
       <div class="col-title">⏸ Backlog</div>
-      <span class="col-count">9</span>
+      <span class="col-count">8</span>
     </div>
     <div class="col-body">
 
@@ -676,20 +676,6 @@ body {
         </div>
         <div class="card-blocker">⚡ Blocks: STT 8, 10, 12, 14≥10M, 40</div>
         <div class="card-subgroup">🏛️ BOM / IT Feasibility</div>
-      </div>
-
-      <!-- STT 5 P1 -->
-      <div class="card" onclick="openModal('stt5')">
-        <div class="card-top">
-          <span class="card-stt">STT 5</span>
-          <span class="prio-badge p1">P1</span>
-        </div>
-        <div class="card-title">Smart OTP giao dịch đầu/phiên + Verify S-OTP API</div>
-        <div class="card-meta">
-          <span class="tag tag-safe safe">16/10/2026</span>
-          <span class="tag">Order 2FA</span>
-        </div>
-        <div class="card-subgroup">📁 Order 2FA · Phụ thuộc: Smart OTP go-live</div>
       </div>
 
       <!-- STT 36 P1 -->
@@ -797,9 +783,31 @@ body {
   <div class="col col-ready">
     <div class="col-header">
       <div class="col-title">▶ Ready — P0</div>
-      <span class="col-count">4</span>
+      <span class="col-count">5</span>
     </div>
     <div class="col-body">
+
+      <!-- STT 5 P0 — Session Auth (nâng cấp từ Backlog P1) -->
+      <div class="card" onclick="openModal('stt5')">
+        <div class="card-top">
+          <span class="card-stt">STT 5 · TT134-P0-04</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">Session Auth — Login Smart OTP = sAm/sAt embedded; Hard gate activation cho user chưa kích hoạt</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">🔴 28/08/2026</span>
+          <span class="tag">Điều 10 · Điều 18 k4</span>
+        </div>
+        <div class="card-task-count">
+          <span class="task-count-chip tc-be">BE 6 tasks</span>
+          <span class="task-count-chip tc-fe">FE 6 tasks</span>
+        </div>
+        <div class="card-deps">
+          <span class="dep-tag dep-ext">🔌 Smart OTP go-live</span>
+          <span class="dep-tag dep-needs">⚠ Confirm pháp chế auth_time</span>
+        </div>
+        <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Session_Auth_Task_Report.html" style="color:#2563EB;font-size:10px">Task Report ↗</a></div>
+      </div>
 
       <!-- STT 7 P0 -->
       <div class="card" onclick="openModal('stt7')">
@@ -852,22 +860,19 @@ body {
           <span class="card-stt">STT 14 &lt;10M · TT134-P0-03</span>
           <span class="prio-badge p0">P0</span>
         </div>
-        <div class="card-title">Rút tiền &lt;10M: Smart OTP bắt buộc</div>
+        <div class="card-title">Rút tiền &lt;10M: covered by Session Auth (STT5)</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 28/08/2026</span>
           <span class="tag">Điều 12 k4a</span>
         </div>
         <div class="card-task-count">
-          <span class="task-count-chip tc-be">BE 10 tasks</span>
-          <span class="task-count-chip tc-fe">FE 6 tasks</span>
-          <span class="task-count-chip tc-core">CORE 5 tasks</span>
+          <span class="task-count-chip tc-be">BE merge → STT5</span>
+          <span class="task-count-chip tc-fe">FE merge → STT5</span>
         </div>
         <div class="card-deps">
-          <span class="dep-tag dep-ext">🔌 Smart OTP go-live</span>
-          <span class="dep-tag dep-needs">⚠ Core purpose field</span>
-          <span class="dep-tag dep-needs">⚠ P0-01 OTP config</span>
+          <span class="dep-tag dep-needs">⚠ Phụ thuộc STT5 Session Auth</span>
         </div>
-        <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
+        <div class="card-subgroup">📁 Order 2FA · scope merged into Session Auth</div>
       </div>
 
       <!-- BE-7 P0 -->
@@ -965,7 +970,7 @@ body {
         <div class="dep-node dn-p0" id="dn-stt35" onclick="selectDepNode('dn-stt35')">P0-02 Device ID Log<small>Điều 18 · 28/08/2026</small></div>
         <div class="dep-node dn-p0" id="dn-stt14a" onclick="selectDepNode('dn-stt14a')">P0-03 Rút &lt;10M<small>Điều 12 · 28/08/2026</small></div>
         <div class="dep-node dn-p0" id="dn-be7" onclick="selectDepNode('dn-be7')">BE-7 S-OTP Biometric<small>Điều 8.5b · 14/08/2026</small></div>
-        <div class="dep-node dn-p1" id="dn-stt5" onclick="selectDepNode('dn-stt5')">STT 5 Order 2FA<small>16/10/2026</small></div>
+        <div class="dep-node dn-p0" id="dn-stt5" onclick="selectDepNode('dn-stt5')">P0-04 Session Auth<small>Điều 10/18 · 28/08/2026</small></div>
         <div class="dep-node dn-p1" id="dn-stt36" onclick="selectDepNode('dn-stt36')">STT 36 Mobile Sec<small>30/10/2026</small></div>
       </div>
 
@@ -1115,66 +1120,53 @@ const CARDS = {
     blockedBy: [],
   },
   stt14a: {
-    title: '[TT134-P0-03] Rút tiền <10M — Bắt buộc Smart OTP',
+    title: '[TT134-P0-03] Rút tiền <10M — Covered by Session Auth (STT5)',
+    prio: 'P0',
+    deadline: '28/08/2026 🔴',
+    owner: 'BE Lead + FE Lead',
+    subgroup: 'Order 2FA',
+    c06: 'Không',
+    beTasks: [
+      { text: 'Scope merged vào STT5 Session Auth. Middleware BE-SA-4 (STT5) tự động log auth_method + auth_time từ session JWT vào t_withdrawal_log cho rút tiền < 10M.', critical: false },
+      { text: 'BE cần thêm amount-based routing: withdrawal < 10M → session auth đủ (không cần OTP riêng); ≥ 10M → biometric per-transaction (stt14b)', critical: false },
+    ],
+    feTasks: [
+      { text: 'Scope merged vào STT5. FE withdrawal screen < 10M gọi thẳng /cash/withdraw/confirm, không hiện OTP screen riêng. Session đã auth.', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Web trading: rút tiền < 10M covered bởi session auth đầu phiên — không cần OTP riêng per-transaction', critical: false },
+    ],
+    note: '📌 SCOPE CHANGE (v1.2): Rút tiền < 10M không còn cần Smart OTP per-transaction riêng. Auth được cover bởi Session Auth (STT5 — bắt buộc đầu phiên). Phụ thuộc STT5 hoàn thành trước.',
+    status: 'Merged → STT5 Session Auth',
+    blocks: [],
+    blockedBy: ['STT5 Session Auth'],
+  },
+  stt5: {
+    title: '[TT134-P0-04] Session Auth v1.3 — Login Smart OTP = session auth; Hard gate activation',
     prio: 'P0',
     deadline: '28/08/2026 🔴',
     owner: 'BE Lead + FE Lead + Smart OTP team',
     subgroup: 'Order 2FA',
-    c06: 'Không — dùng Smart OTP (lotte-bridge)',
+    c06: 'Không — Smart OTP (lotte-bridge)',
     beTasks: [
-      { text: 'BE-1: Update /cash/withdraw/confirm: enforce Smart OTP verify', critical: false },
-      { text: 'BE-2: Thêm requireSmartOtp flag cho withdrawal dưới ngưỡng', critical: false },
-      { text: 'BE-3: Proxy Smart OTP verify sang Lotte Core cho withdrawal', critical: false },
-      { text: 'BE-4: Return requireOtp: true, otpType: SMART_OTP trong initiate response', critical: false },
-      { text: 'BE-5: Lockout Smart OTP sau N lần sai → SMART_OTP_LOCKED, fallback SMS OTP', critical: false },
-      { text: 'BE-6: Audit log: smartOtpVerifiedAt, verificationMethod (SMART_OTP / SMS_OTP)', critical: false },
-      { text: 'BE-7: [Core request] Core thêm purpose field vào Smart OTP verify API', critical: true },
-      { text: 'BE-8: [Core request] Confirm mapping purpose enum TradeX ↔ Core (LOGIN, CASH_WITHDRAWAL, ORDER_PLACEMENT)', critical: false },
-      { text: 'BE-9: Initiate withdrawal: query Smart OTP status → trả otpType phù hợp ngay từ đầu', critical: false },
-      { text: 'BE-10: SMS OTP fallback: trigger /otp/send bind với withdrawId khi otpType: SMS_OTP', critical: false },
+      { text: 'BE-SA-1: Embed sAm=SOFT_OTP + sAt=login_time trong generateToken() khi otpType=SMART_OTP tại verifyOTP. Không embed khi SMS OTP. (Merge vào Smart OTP Login task 07 Task 4)', critical: true },
+      { text: 'BE-SA-2: Thêm sAm? + sAt? vào IAccessToken (aaa-main/src/models/IAccessToken.ts). Carry qua refresh token trong cùng ngày. Lưu trong JWT (không cần Redis).', critical: true },
+      { text: 'BE-SA-3: Middleware đọc sAm/sAt từ JWT → ghi t_order_log.auth_method + auth_time cho mọi GDCK (equity/order, derivatives/order, orders/cancel)', critical: false },
+      { text: 'BE-SA-4: Middleware tương tự cho t_withdrawal_log — rút tiền < 10M (POST /cash/withdraw/confirm)', critical: false },
+      { text: 'BE-SA-5: Guard: JWT không có sAm → reject SESSION_AUTH_REQUIRED (401). FE xử lý bằng hard gate activation, không redirect về session/auth screen.', critical: true },
     ],
     feTasks: [
-      { text: 'FE-1: Sau nhập số tiền → navigate to OTP screen (loại quyết định bởi otpType từ initiate)', critical: false },
-      { text: 'FE-2: Reuse SmartOTPInput component khi otpType: SMART_OTP', critical: false },
-      { text: 'FE-3: Handle lỗi: OTP_INVALID, OTP_EXPIRED, MAX_RETRY_EXCEEDED', critical: false },
-      { text: 'FE-4: Countdown 2 phút (TTL TT134), code refresh 30s TOTP', critical: false },
-      { text: 'FE-5: otpType: SMS_OTP từ initiate → render SMS OTP screen trực tiếp + banner giải thích', critical: false },
-      { text: 'FE-6: SMART_OTP_LOCKED từ verify → switch sang SMS OTP + warning banner', critical: false },
+      { text: 'FE-SA-1: Sau login success → parse JWT, check sAm. Nếu sAm=SOFT_OTP → vào home. Nếu không có sAm → Hard gate: navigate Smart OTP activation screen, không cho vào home.', critical: true },
+      { text: 'FE-SA-2: Hard gate activation screen: "Kích hoạt Smart OTP để giao dịch theo quy định TT134". Flow: SMS OTP → PIN → register → sotpKey saved → re-login prompt. Không có nút skip.', critical: true },
+      { text: 'FE-SA-3: Handle SESSION_AUTH_REQUIRED (401) từ BE → redirect hard gate activation (không logout)', critical: false },
+      { text: 'FE-SA-4: ConfirmOrdersScreen: bỏ OTP input khỏi flow — session đã auth từ login, không cần SmartOTPInput/SMSOTPInput trong order confirm', critical: false },
     ],
     coreTasks: [
-      { text: 'CORE-1: Bắt buộc xác thực Điều 7 (Smart OTP hoặc SMS OTP) cho rút tiền < 10M trên web trading', critical: true },
-      { text: 'CORE-2: Hỗ trợ nhận purpose field trong Smart OTP verify: CASH_WITHDRAWAL, ORDER_PLACEMENT, LOGIN', critical: true },
-      { text: 'CORE-3: SMS OTP fallback khi user web chưa activate Smart OTP; nội dung SMS kèm mục đích + TTL', critical: false },
-      { text: 'CORE-4: Audit log rút tiền web: auth_method, auth_time, device_id, source_ip, dest_bank_account', critical: false },
-      { text: 'CORE-5: Lockout Smart OTP sau ≤ 10 lần sai web → vĩnh viễn, fallback SMS OTP', critical: false },
+      { text: 'CORE-1: Web trading: enforce Smart OTP login (otpType=SMART_OTP) để có sAm trong JWT trước khi giao dịch', critical: false },
     ],
-    note: '⚠️ CRITICAL RISK: (1) Phụ thuộc Smart OTP 3rd party go-live — nếu trễ, SMS OTP là path duy nhất. (2) Core phải hỗ trợ purpose field (BE-7) trước khi lotte-bridge implement. Raise Core ngay.',
-    status: 'Ready — cần confirm Smart OTP ETA + raise Core purpose field',
-    blocks: [],
-    blockedBy: ['Smart OTP 3rd party go-live', 'Core: purpose field support (BE-7, BE-8)', 'P0-01 OTP TTL config'],
-  },
-  stt5: {
-    title: 'STT 5 — Smart OTP giao dịch đầu/phiên + Verify S-OTP API',
-    prio: 'P1',
-    deadline: '16/10/2026',
-    owner: 'Smart OTP team + BE',
-    subgroup: 'Order 2FA',
-    c06: 'Không',
-    beTasks: [
-      { text: 'BE-1: Update /smartOtp/verify API: support session-level auth (firstOrderInSession flag)', critical: false },
-      { text: 'BE-2: Track session state firstOrderInSession (Redis hoặc t_session)', critical: false },
-      { text: 'BE-3: Reset flag khi login mới (đầu phiên)', critical: false },
-    ],
-    feTasks: [
-      { text: 'FE-1: Detect firstOrderInSession khi user place order GDCK', critical: false },
-      { text: 'FE-2: Trigger Smart OTP screen cho lệnh đầu phiên', critical: false },
-    ],
-    coreTasks: [
-      { text: 'CORE-1: Web trading: enforce Smart OTP cho lệnh GDCK đầu phiên', critical: false },
-    ],
-    note: 'Phụ thuộc Smart OTP project go-live. Plan kickoff tháng 8 sau P0.',
-    status: 'Backlog — plan tháng 8',
-    blocks: [],
+    note: '📌 THAY ĐỔI MODEL v1.3: Không có Session Auth screen/endpoint riêng. Login Smart OTP = session auth (sAm/sAt embedded tại verifyOTP). Hard gate thay SMS OTP fallback. Tất cả OQ đã resolved: auth_time=login_time ✅, sAm carry qua refresh ✅, no SMS fallback mid-session ✅. Prerequisite: Smart OTP Login (07_BE_Task + 08_FE_Issue). Spec: Order_2FA_Integration_Spec.md v1.3.',
+    status: 'Ready — prerequisite Smart OTP Login go-live',
+    blocks: ['stt14a — rút tiền <10M (merged into session auth)'],
     blockedBy: ['Smart OTP 3rd party go-live'],
   },
   stt36: {

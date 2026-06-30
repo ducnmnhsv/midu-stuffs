@@ -1,0 +1,729 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent {
+        label 'master'
+    }
+
+    environment {
+        // Service Configuration
+        SERVICE_NAME      = 'lotte-ws-bridge'
+        SERVICE_FULL_NAME = 'tradex/lotte-ws-bridge'
+        
+        // Deployment Configuration
+        DEPLOY_ENV = "${env.BRANCH_NAME == 'main' ? 'prod' : (env.BRANCH_NAME == 'dev' ? 'dev' : 'test')}"
+
+        // Jenkins Agent Configuration
+        BUILD_AGENT       = "${env.BRANCH_NAME == 'main' ? 'master' : 'master'}"
+        DEPLOY_AGENT      = "${env.BRANCH_NAME == 'main' ? 'tradex-prod-agent-1' : 'tradex-dev-agent-1'}"
+        
+        // Harbor Registry Configuration
+        HARBOR_REGISTRY   = 'uat-harbor.nhsv.vn' 
+        HARBOR_PROJECT    = 'tradex'
+        HARBOR_CREDS_ID   = 'harbor-robot-credentials'
+        HARBOR_IMAGE_PATH = "${HARBOR_REGISTRY}/${HARBOR_PROJECT}/${SERVICE_NAME}-${DEPLOY_ENV}"
+        
+        // Version Management
+        VERSION           = '1.0.0'
+        BUILD_NUMBER_TAG  = "${BUILD_NUMBER}"
+        IMAGE_TAG         = "${VERSION}.${BUILD_NUMBER}"
+        
+        // Configuration Paths
+        CONFIG_BASE_PATH  = '/home/ubuntu/containers/share'
+        TEMPLATE_DIR      = '/opt/jenkins-templates'
+
+        TEAMS_CREDS_ID    = 'teams-webhook-url'
+        
+        // Build Configuration
+        NODE_VERSION      = '16'
+        DOCKER_BUILDKIT   = '0'
+    }
+
+    options {
+        // Pipeline options
+        buildDiscarder(logRotator(numToKeepStr: '30', daysToKeepStr: '30'))
+        timestamps()
+        timeout(time: 30, unit: 'MINUTES')
+        disableConcurrentBuilds()
+        skipDefaultCheckout()
+    }
+
+    parameters {
+
+        choice(
+            name: 'DEPLOY_ACTION',
+            choices: ['build-and-deploy', 'build-only', 'deploy-only', 'rollback'],
+            description: 'Deployment action to perform'
+        )
+        string(
+            name: 'ROLLBACK_VERSION',
+            defaultValue: '',
+            description: 'Version to rollback to'
+        )
+        booleanParam(
+            name: 'FORCE_REBUILD',
+            defaultValue: false,
+            description: 'Force rebuild even if no changes detected'
+        )
+    }
+
+    stages {
+        stage('Initialize') {
+            steps {
+                script {
+                    echo "╔════════════════════════════════════════════════════════════╗"
+                    echo "║          ${SERVICE_NAME} Service Deployment Pipeline       ║"
+                    echo "╚════════════════════════════════════════════════════════════╝"
+                    echo ""
+                    echo "Pipeline Information:"
+                    echo "  • Service:        ${SERVICE_NAME}"
+                    echo "  • Environment:    ${env.DEPLOY_ENV}"
+                    echo "  • Action:         ${params.DEPLOY_ACTION}"
+                    echo "  • Version:        ${IMAGE_TAG}"
+                    echo "  • Branch:         ${env.BRANCH_NAME ?: 'N/A'}"
+                    echo "  • Build Number:   ${BUILD_NUMBER}"
+                    echo "  • Started By:     ${currentBuild.getBuildCauses()[0].userName ?: 'System'}"
+                    echo ""
+                    
+                    // Set build description
+                    currentBuild.description = "Env: ${env.DEPLOY_ENV} | Action: ${params.DEPLOY_ACTION} | Tag: ${IMAGE_TAG}"
+                    
+                    // Send start notification
+                    // sendTeamsNotification('STARTED')
+                }
+            }
+        }
+
+        stage('Checkout') {
+            when {
+                expression { params.DEPLOY_ACTION != 'deploy-only' && params.DEPLOY_ACTION != 'rollback' }
+            }
+            steps {
+                script {
+                    echo "📥 Checking out source code from Bitbucket..."
+                    checkout scm
+                    
+                    // Get commit information
+                    env.GIT_COMMIT_SHORT = sh(
+                        script: "git rev-parse --short HEAD",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.GIT_COMMIT_MSG = sh(
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.GIT_AUTHOR = sh(
+                        script: "git log -1 --pretty=%an",
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "✅ Checkout completed"
+                    echo "  • Commit: ${env.GIT_COMMIT_SHORT}"
+                    echo "  • Author: ${env.GIT_AUTHOR}"
+                    echo "  • Message: ${env.GIT_COMMIT_MSG}"
+                }
+            }
+        }
+
+        stage('Dependency Check') {
+            when {
+                expression { params.DEPLOY_ACTION != 'deploy-only' && params.DEPLOY_ACTION != 'rollback' }
+            }
+            steps {
+                script {
+                    echo "🔍 Checking dependencies..."
+                    
+                    // Check if package-lock.json changed
+                    def changedFiles = sh(
+                        script: "git diff --name-only HEAD~1 HEAD || echo ''",
+                        returnStdout: true
+                    ).trim()
+                    
+                    env.DEPS_CHANGED = changedFiles.contains('package-lock.json') ? 'true' : 'false'
+                    
+                    echo "✅ Dependency check completed"
+                    echo "  • Dependencies changed: ${env.DEPS_CHANGED}"
+                }
+            }
+        }
+
+
+        stage('Docker Build & Push') {
+            when {
+                expression { params.DEPLOY_ACTION == 'build-and-deploy' || params.DEPLOY_ACTION == 'build-only' }
+            }
+            stages {
+                stage('Build Docker Image') {
+                    steps {
+                        script {
+                            echo "🐳 Building Docker image..."
+                            echo "  • Image: ${HARBOR_IMAGE_PATH}:${IMAGE_TAG}"
+                            
+                            sh """
+                                docker build --no-cache \
+                                    --network=host \
+                                    --build-arg BUILD_DATE=\$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+                                    --build-arg VCS_REF=${env.GIT_COMMIT_SHORT} \
+                                    --build-arg VERSION=${IMAGE_TAG} \
+                                    -t ${HARBOR_IMAGE_PATH}:${IMAGE_TAG} \
+                                    -t ${HARBOR_IMAGE_PATH}:latest \
+                                    -t ${HARBOR_IMAGE_PATH}:${env.DEPLOY_ENV}-latest \
+                                    .
+                            """
+                            
+                            echo "✅ Docker image built successfully"
+                            
+                            // Display image info
+                            sh """
+                                docker images | grep ${SERVICE_NAME} | head -5
+                            """
+                        }
+                    }
+                }
+
+                stage('Security Scan') {
+                    when {
+                        expression { !params.SKIP_TESTS }
+                    }
+                    steps {
+                        script {
+                            echo "🔒 Running security scan on Docker image..."
+                            sh """
+                                # Using Trivy for vulnerability scanning (if available)
+                                if command -v trivy &> /dev/null; then
+                                    trivy image --severity HIGH,CRITICAL ${HARBOR_IMAGE_PATH}:${IMAGE_TAG} || echo "Security scan completed with findings"
+                                else
+                                    echo "Trivy not installed, skipping security scan"
+                                fi
+                            """
+                            echo "✅ Security scan completed"
+                        }
+                    }
+                }
+
+                stage('Push to Harbor') {
+                    steps {
+                        script {
+                            echo "📤 Pushing Docker image to Harbor registry..."
+                            
+                            docker.withRegistry("https://${HARBOR_REGISTRY}", HARBOR_CREDS_ID) {
+                                sh """
+                                    docker push ${HARBOR_IMAGE_PATH}:${IMAGE_TAG}
+                                    docker push ${HARBOR_IMAGE_PATH}:latest
+                                    docker push ${HARBOR_IMAGE_PATH}:${env.DEPLOY_ENV}-latest
+                                """
+                            }
+                            
+                            echo "✅ Image pushed successfully"
+                            echo "  • ${HARBOR_IMAGE_PATH}:${IMAGE_TAG}"
+                            echo "  • ${HARBOR_IMAGE_PATH}:latest"
+                            echo "  • ${HARBOR_IMAGE_PATH}:${env.DEPLOY_ENV}-latest"
+                        }
+                    }
+                }
+
+                stage('Cleanup Local Images') {
+                    steps {
+                        script {
+                            echo "🧹 Cleaning up local Docker images..."
+                            sh """
+                                docker image prune -f
+                            """
+                            echo "✅ Cleanup completed"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deployment') {
+            when {
+                expression { 
+                    params.DEPLOY_ACTION == 'build-and-deploy' || 
+                    params.DEPLOY_ACTION == 'deploy-only' ||
+                    params.DEPLOY_ACTION == 'rollback'
+                }
+            }
+            agent {
+                label "${DEPLOY_AGENT}"
+            }
+            stages {
+                stage('Prepare Deployment') {
+                    steps {
+                        script {
+                            echo "Preparing deployment to ${env.DEPLOY_ENV} environment..."
+                            echo "Running on node: ${env.NODE_NAME}"
+                            
+                            // Determine version to deploy
+                            env.DEPLOY_VERSION = params.DEPLOY_ACTION == 'rollback' ? params.ROLLBACK_VERSION : IMAGE_TAG
+                            
+                            if (params.DEPLOY_ACTION == 'rollback' && !params.ROLLBACK_VERSION) {
+                                error("❌ Rollback version must be specified for rollback action")
+                            }
+                            
+                            env.DEPLOY_IMAGE = "${HARBOR_IMAGE_PATH}:${env.DEPLOY_VERSION}"
+                            
+                            echo "  • Deploying version: ${env.DEPLOY_VERSION}"
+                            echo "  • Image: ${env.DEPLOY_IMAGE}"
+                            echo "  • Container name: ${SERVICE_NAME}-${env.DEPLOY_ENV}"
+                            
+                            // Check if config files exist
+                            sh """
+                                echo "🔍 Checking configuration files..."
+                                echo ""
+                                
+                                # Check base config directory
+                                if [ ! -d "${CONFIG_BASE_PATH}" ]; then
+                                    echo "❌ Error: Config directory not found at ${CONFIG_BASE_PATH}"
+                                    exit 1
+                                fi
+                                echo "✅ Config base directory exists: ${CONFIG_BASE_PATH}"
+                                
+                                # Check services directory
+                                if [ ! -d "${CONFIG_BASE_PATH}/services" ]; then
+                                    echo "⚠️  Warning: Services directory not found at ${CONFIG_BASE_PATH}/services"
+                                    echo "   Creating services directory..."
+                                    sudo mkdir -p "${CONFIG_BASE_PATH}/services"
+                                fi
+                                echo "✅ Services directory exists: ${CONFIG_BASE_PATH}/services"
+                                
+                                # Check global config file
+                                if [ ! -f "${CONFIG_BASE_PATH}/app_env.sh" ]; then
+                                    echo "⚠️  Warning: Global config not found at ${CONFIG_BASE_PATH}/app_env.sh"
+                                    echo "   Container may not start properly without this file."
+                                else
+                                    echo "✅ Global config exists: app_env.sh"
+                                fi
+                                
+                                # Check service-specific config file
+                                SERVICE_CONFIG_FILE="${CONFIG_BASE_PATH}/services/${SERVICE_NAME}-${env.DEPLOY_ENV}.sh"
+                                if [ ! -f "\${SERVICE_CONFIG_FILE}" ]; then
+                                    echo "⚠️  Warning: Service config not found at \${SERVICE_CONFIG_FILE}"
+                                    echo "   Container will use default configuration."
+                                else
+                                    echo "✅ Service config exists: ${SERVICE_NAME}-${env.DEPLOY_ENV}.sh"
+                                fi
+                                
+                                # Check if config files are executable (only if they exist)
+                                if [ -f "${CONFIG_BASE_PATH}/app_env.sh" ] && [ ! -x "${CONFIG_BASE_PATH}/app_env.sh" ]; then
+                                    echo "⚠️  Warning: app_env.sh is not executable, attempting to fix..."
+                                    sudo chmod +x "${CONFIG_BASE_PATH}/app_env.sh"
+                                fi
+                                
+                                if [ -f "\${SERVICE_CONFIG_FILE}" ] && [ ! -x "\${SERVICE_CONFIG_FILE}" ]; then
+                                    echo "⚠️  Warning: Service config is not executable, attempting to fix..."
+                                    sudo chmod +x "\${SERVICE_CONFIG_FILE}"
+                                fi
+                                
+                                echo ""
+                                echo "✅ Configuration check completed"
+                            """
+                        }
+                    }
+                }
+
+                stage('Login to Registry') {
+                    steps {
+                        script {
+                            echo "🔐 Logging in to Harbor registry..."
+                            
+                            withCredentials([
+                                usernamePassword(credentialsId: HARBOR_CREDS_ID, usernameVariable: 'HARBOR_USER', passwordVariable: 'HARBOR_PASS')
+                            ]) {
+                                sh """
+                                    echo "Logging in to ${HARBOR_REGISTRY}..."
+                                    echo \${HARBOR_PASS} | docker login ${HARBOR_REGISTRY} -u \${HARBOR_USER} --password-stdin
+                                """
+                            }
+                            
+                            echo "✅ Successfully logged in to Harbor registry"
+                        }
+                    }
+                }
+
+                stage('Pull Docker Image') {
+                    steps {
+                        script {
+                            echo "📥 Pulling Docker image from Harbor..."
+                            echo "  • Image: ${env.DEPLOY_IMAGE}"
+                            
+                            sh """
+                                docker pull ${env.DEPLOY_IMAGE}
+                                
+                                # Verify image pulled successfully
+                                if docker images ${env.DEPLOY_IMAGE} | grep -q ${SERVICE_NAME}; then
+                                    echo "✅ Image pulled successfully"
+                                    docker images ${env.DEPLOY_IMAGE}
+                                else
+                                    echo "❌ Failed to pull image"
+                                    exit 1
+                                fi
+                            """
+                        }
+                    }
+                }
+
+                stage('Stop Old Container') {
+                    steps {
+                        script {
+                            echo "🛑 Stopping old container if exists..."
+                            
+                            sh """
+                                CONTAINER_NAME="${SERVICE_NAME}-${env.DEPLOY_ENV}"
+                                
+                                # Check if container exists
+                                if docker ps -a --format '{{.Names}}' | grep -q "^\${CONTAINER_NAME}\$"; then
+                                    echo "Found existing container: \${CONTAINER_NAME}"
+                                    
+                                    # Stop container
+                                    echo "Stopping container..."
+                                    docker stop \${CONTAINER_NAME} || true
+                                    
+                                    # Remove container
+                                    echo "Removing container..."
+                                    docker rm \${CONTAINER_NAME} || true
+                                    
+                                    echo "✅ Old container stopped and removed"
+                                else
+                                    echo "No existing container found"
+                                fi
+                            """
+                        }
+                    }
+                }
+
+                stage('Start New Container') {
+                    steps {
+                        script {
+                            echo "🚀 Starting new container..."
+                            
+                            // Get server IP
+                            def serverIp = sh(
+                                script: "hostname -I | awk '{print \$1}'",
+                                returnStdout: true
+                            ).trim()
+                            
+                            def containerName = "${SERVICE_NAME}-${env.DEPLOY_ENV}"
+                            // Service config file follows naming pattern: aaa-dev.sh, etc.
+                            def serviceConfigFile = "${CONFIG_BASE_PATH}/services/${SERVICE_NAME}-${env.DEPLOY_ENV}.sh"
+                            
+                            echo "  • Server IP: ${serverIp}"
+                            echo "  • Container name: ${containerName}"
+                            echo "  • Network: host (no port mapping)"
+                            echo "  • Restart policy: unless-stopped"
+                            echo "  • Service config: ${serviceConfigFile}"
+                            
+                            // Check if service-specific config exists
+                            def hasServiceConfig = sh(
+                                script: "[ -f '${serviceConfigFile}' ] && echo 'true' || echo 'false'",
+                                returnStdout: true
+                            ).trim()
+                            
+                            if (hasServiceConfig == 'true') {
+                                echo "  ✅ Found service config file"
+                            } else {
+                                echo "  ⚠️  Warning: Service config file not found at ${serviceConfigFile}"
+                                echo "  ⚠️  Container will use default configuration"
+                            }
+                            
+                            sh """
+                                CONTAINER_NAME="${containerName}"
+                                SERVICE_CONFIG="${serviceConfigFile}"
+                                
+                                # Create log and data directories if not exist
+                                sudo mkdir -p /home/ubuntu/containers/logs/\${CONTAINER_NAME}
+                                sudo mkdir -p /home/ubuntu/containers/data/\${CONTAINER_NAME}
+                                
+                                # Build docker run command
+                                echo "Building docker run command..."
+                                DOCKER_RUN_CMD="docker run"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} --name \${CONTAINER_NAME}"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -d"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} --restart unless-stopped"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} --network host"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -e DOCKERMASTERIP=${serverIp}"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -e TRADEX_ENV_ENVIRONMENT=${env.DEPLOY_ENV}"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -e TRADEX_ENV_INSTANCE_ID=\$(hostname)"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -v ${CONFIG_BASE_PATH}:/appEnv"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -v /home/ubuntu/containers/logs/\${CONTAINER_NAME}:/logs"
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -v /home/ubuntu/containers/data/\${CONTAINER_NAME}:/data"
+                                
+                                # Add service-specific config mount if file exists
+                                if [ -f "\${SERVICE_CONFIG}" ]; then
+                                    echo "✅ Mounting service config: \${SERVICE_CONFIG} -> /appEnv/env.sh"
+                                    DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -v \${SERVICE_CONFIG}:/appEnv/env.sh"
+                                else
+                                    echo "⚠️  Service config not found, continuing without it"
+                                fi
+                                
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} ${env.DEPLOY_IMAGE}"
+                                
+                                # Add entrypoint parameters for entrypoint.sh (-s serviceName -e environment)
+                                DOCKER_RUN_CMD="\${DOCKER_RUN_CMD} -s ${SERVICE_NAME} -e ${env.DEPLOY_ENV}"
+                                
+                                echo ""
+                                echo "Executing command:"
+                                echo "\${DOCKER_RUN_CMD}"
+                                echo ""
+                                
+                                # Run the container
+                                eval \${DOCKER_RUN_CMD}
+                                
+                                echo ""
+                                echo "✅ Container started successfully"
+                                echo ""
+                                
+                                # Display container info
+                                docker ps --filter name=\${CONTAINER_NAME} --format "table {{.Names}}\\t{{.Status}}\\t{{.Image}}"
+                            """
+                        }
+                    }
+                }
+
+                stage('Cleanup Old Images') {
+                    steps {
+                        script {
+                            echo "🧹 Cleaning up old Docker images..."
+                            
+                            sh """
+                                # Keep only the 3 most recent images
+                                OLD_IMAGES=\$(docker images ${HARBOR_IMAGE_PATH} --format "{{.ID}} {{.Tag}}" | \
+                                    grep -v "${env.DEPLOY_VERSION}" | \
+                                    grep -v "latest" | \
+                                    grep -v "${env.DEPLOY_ENV}-latest" | \
+                                    tail -n +4 | \
+                                    awk '{print \$1}')
+                                
+                                if [ ! -z "\${OLD_IMAGES}" ]; then
+                                    echo "Removing old images..."
+                                    echo "\${OLD_IMAGES}" | xargs -r docker rmi -f || true
+                                    echo "✅ Old images cleaned up"
+                                else
+                                    echo "No old images to clean up"
+                                fi
+                                
+                                # Prune dangling images
+                                docker image prune -f
+                            """
+                        }
+                    }
+                }
+
+                stage('Logout from Registry') {
+                    steps {
+                        script {
+                            echo "🔓 Logging out from Harbor registry..."
+                            
+                            sh """
+                                docker logout ${HARBOR_REGISTRY}
+                            """
+                            
+                            echo "✅ Logged out successfully"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Health Check') {
+            when {
+                expression { 
+                    params.DEPLOY_ACTION == 'build-and-deploy' || 
+                    params.DEPLOY_ACTION == 'deploy-only' ||
+                    params.DEPLOY_ACTION == 'rollback'
+                }
+            }
+            agent {
+                label "${DEPLOY_AGENT}"  // Run on deployment agent
+            }
+            steps {
+                script {
+                    echo "🏥 Performing health check..."
+                    
+                    // Wait for container to fully start
+                    echo "  • Waiting 15 seconds for container to initialize..."
+                    sleep(time: 15, unit: 'SECONDS')
+                    
+                    def containerName = "${SERVICE_NAME}-${env.DEPLOY_ENV}"
+                    
+                    // Check container status
+                    def containerStatus = sh(
+                        script: "docker ps --filter name=${containerName} --format '{{.Status}}'",
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "  • Container: ${containerName}"
+                    echo "  • Status: ${containerStatus}"
+                    
+                    if (containerStatus.startsWith('Up')) {
+                        echo "✅ Container is running"
+                        
+                        // Check application logs for successful startup
+                        echo "  • Checking application logs..."
+                        def logs = sh(
+                            script: "docker logs --tail 50 ${containerName}",
+                            returnStdout: true
+                        ).trim()
+                        
+                        echo "Last 20 lines of logs:"
+                        sh "docker logs --tail 20 ${containerName}"
+                        
+                        // Check for error patterns in logs
+                        if (logs.contains('startup finish') || logs.contains('Server listening')) {
+                            echo "✅ Application started successfully"
+                        } else if (logs.contains('Error') || logs.contains('FATAL')) {
+                            echo "⚠️  Warning: Errors detected in logs, but container is running"
+                        } else {
+                            echo "✅ Health check passed"
+                        }
+                    } else {
+                        error("❌ Health check failed - Container is not running properly")
+                    }
+                }
+            }
+        }
+
+        stage('Smoke Tests') {
+            when {
+                expression { 
+                    params.DEPLOY_ACTION == 'build-and-deploy' || 
+                    params.DEPLOY_ACTION == 'deploy-only'
+                }
+            }
+            agent {
+                label "${DEPLOY_AGENT}"  // Run on deployment agent
+            }
+            steps {
+                script {
+                    echo "💨 Running smoke tests..."
+                    
+                    def containerName = "${SERVICE_NAME}-${env.DEPLOY_ENV}"
+                    
+                    // Test 1: Container resource usage
+                    echo "  • Test 1: Container resource usage..."
+                    sh """
+                        echo "Checking container stats..."
+                        docker stats --no-stream ${containerName} --format "table {{.Name}}\\t{{.CPUPerc}}\\t{{.MemUsage}}"
+                    """
+                    
+                    // Test 2: Check for crashes
+                    echo "  • Test 2: Container stability check..."
+                    def restartCount = sh(
+                        script: "docker inspect ${containerName} --format='{{.RestartCount}}'",
+                        returnStdout: true
+                    ).trim()
+                    
+                    if (restartCount.toInteger() > 0) {
+                        echo "⚠️  Warning: Container has restarted ${restartCount} times"
+                    } else {
+                        echo "✅ Container is stable (no restarts)"
+                    }
+                    
+                    echo "All smoke tests passed"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                echo "╔════════════════════════════════════════════════════════════╗"
+                echo "║                   ✅ DEPLOYMENT SUCCESSFUL                 ║"
+                echo "╚════════════════════════════════════════════════════════════╝"
+                echo ""
+                echo "Deployment Summary:"
+                echo "  • Service:      ${SERVICE_NAME}"
+                echo "  • Environment:  ${env.DEPLOY_ENV}"
+                echo "  • Version:      ${IMAGE_TAG}"
+                echo "  • Action:       ${params.DEPLOY_ACTION}"
+                echo "  • Duration:     ${currentBuild.durationString}"
+                echo ""
+                
+                // sendTeamsNotification('SUCCESS')
+            }
+        }
+        
+        failure {
+            script {
+                echo "╔════════════════════════════════════════════════════════════╗"
+                echo "║                    ❌ DEPLOYMENT FAILED                    ║"
+                echo "╚════════════════════════════════════════════════════════════╝"
+                echo ""
+                echo "Failure Information:"
+                echo "  • Stage Failed: ${env.STAGE_NAME}"
+                echo "  • Build Number: ${BUILD_NUMBER}"
+                echo "  • Duration:     ${currentBuild.durationString}"
+                echo ""
+                
+                // sendTeamsNotification('FAILURE')
+            }
+        }
+        
+        always {
+            script {
+                echo "🧹 Performing cleanup..."
+                
+                cleanWs(
+                    deleteDirs: true,
+                    disableDeferredWipeout: true,
+                    notFailBuild: true
+                )
+                
+                echo "✅ Cleanup completed"
+            }
+        }
+    }
+}
+
+def sendTeamsNotification(String buildStatus) {
+    node('master') {
+        try {
+            def templatePath = "${env.TEMPLATE_DIR}/teams-result.json"
+            
+            if (fileExists(templatePath)) {
+                def payload = readFile(templatePath)
+                
+                def color = 'Default'
+                def icon = '🚀'
+                def title = "${icon} DEPLOYMENT ${buildStatus}"
+                
+                if (buildStatus == 'SUCCESS') {
+                    color = 'Good'
+                    icon = '✅'
+                    title = "${icon} DEPLOYMENT ${buildStatus}"
+                } else if (buildStatus == 'FAILURE') {
+                    color = 'Attention'
+                    icon = '❌'
+                    title = "${icon} DEPLOYMENT ${buildStatus}"
+                } else if (buildStatus == 'STARTED') {
+                    color = 'Default'
+                    icon = '🚀'
+                    title = "${icon} DEPLOYMENT ${buildStatus}"
+                }
+                
+                payload = payload.replace('{{SERVICE_NAME}}', env.SERVICE_NAME)
+                                 .replace('{{ENV}}', env.DEPLOY_ENV)
+                                 .replace('{{VERSION}}', env.IMAGE_TAG)
+                                 .replace('{{TITLE}}', title)
+                                 .replace('{{COLOR}}', color)
+                                 .replace('{{DURATION}}', currentBuild.durationString)
+                                 .replace('{{BUILD_URL}}', env.BUILD_URL)
+                
+                withEnv(["JSON_PAYLOAD=${payload}"]) {
+                    withCredentials([string(credentialsId: env.TEAMS_CREDS_ID, variable: 'TEAMS_URL')]) {
+                         sh '''
+                            curl -v -X POST -H "Content-Type: application/json" -d "$JSON_PAYLOAD" "$TEAMS_URL"
+                         '''
+                    }
+                }
+            } else {
+                echo "⚠️ Template not found: ${templatePath}"
+            }
+        } catch (Exception e) {
+            echo "❌ Notification Error: ${e.getMessage()}"
+        }
+    }
+}

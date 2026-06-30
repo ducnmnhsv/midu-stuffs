@@ -146,6 +146,7 @@ export class RightService {
           availableAmount: item.cons_sbst_able_amt,
           approveWaitingQuantity: item.waiting_qty,
           bankCancelWaitingQuantity: item.cancel_qty,
+          requestedQuantity: item.cons_sbst_qty,
           processStatusCode: item.rgt_proc_stat,
           processStatusName: item.proc_nm,
           quantity: `${item.asn_qty}`,

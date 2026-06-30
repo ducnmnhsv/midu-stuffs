@@ -3,6 +3,7 @@ export interface ILotteNotificationRequest {
   sub_no: string;
   from_dt: string;
   to_dt: string;
+  type: string;
   next_key: string;
   lang_code: string;
 }

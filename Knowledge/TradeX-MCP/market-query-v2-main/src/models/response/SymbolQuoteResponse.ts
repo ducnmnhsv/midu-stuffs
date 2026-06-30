@@ -57,10 +57,10 @@ export interface SymbolQuoteResponse {
 	/**
 	 * total offer volume
 	 */
-	to?: number;
+	asv?: number;
 	/**
 	 * total bid volume
 	 */
-	tb?: number;
+	abv?: number;
 	[k: string]: any;
 }

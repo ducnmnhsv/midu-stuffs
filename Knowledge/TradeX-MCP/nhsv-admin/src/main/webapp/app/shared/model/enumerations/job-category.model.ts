@@ -1,0 +1,9 @@
+export enum JobCategory {
+  MARKET = 'MARKET',
+
+  REAL_TRADING = 'REAL_TRADING',
+
+  VIRTUAL_TRADING = 'VIRTUAL_TRADING',
+
+  OTHER = 'OTHER',
+}

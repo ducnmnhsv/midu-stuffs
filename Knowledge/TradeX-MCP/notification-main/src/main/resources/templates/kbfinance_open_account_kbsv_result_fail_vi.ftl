@@ -1,0 +1,1 @@
+<OneSignalTitle>Rất tiếc! Bạn chưa mở tài khoản KBSV thành công.</OneSignalTitle>Vui lòng truy cập KB Fina để thực hiện lại bạn nhé!

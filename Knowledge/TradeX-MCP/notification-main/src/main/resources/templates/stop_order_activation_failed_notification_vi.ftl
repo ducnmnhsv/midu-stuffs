@@ -1,0 +1,1 @@
+Lệnh dừng ${sellBuyType} vừa kích hoạt lệnh thất bại vì ${failedReason}

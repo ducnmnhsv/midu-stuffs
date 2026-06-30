@@ -1,0 +1,72 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-68-03">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('NHSV-VIEW-ALL-BROKER-PROFILE',
+                    'get:/api/v1/brokerChat/brokerProfile',
+                    NULL, NULL, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+                    'CONNECTION', '{
+                                    "uri": "get:/api/v1/brokerChat/brokerProfile",
+                                    "service": "nhsv-admin",
+                                    "forwardType": "SERVICE"
+                                }')
+            ON DUPLICATE KEY UPDATE
+                uri_pattern = VALUES(uri_pattern),
+                created_by = VALUES(created_by),
+                updated_by = VALUES(updated_by),
+                created_at = VALUES(created_at),
+                updated_at = VALUES(updated_at),
+                forward_type = VALUES(forward_type),
+                forward_data = VALUES(forward_data);
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_open_api (
+                id, operation_id, tags, uri_pattern, summary, `security`,
+                parameters, request_body, responses, description, `version`, created_at, updated_at
+            )
+            SELECT
+                id, name, '["NHSV-ADMIN"]', uri_pattern, name, '[{"jwt": []}]',
+                '[{"in":"path","name":"type","schema":{"type":"string"},"description":"Type of select"},
+                {"in":"path","name":"pageNumber","schema":{"type":"number"},"description":"Page Number"},
+                {"in":"path","name":"pageSize","schema":{"type":"number"},"description":"Page Size"},
+                {"in":"path","name":"keyword","schema":{"type":"string"},"description":"Keyword for Full Name"}]',
+                '[]',
+                '{"200":{"brokers":{"application/json":{"schema":{"type":"object","properties":{"total":{"type":"number"},"currentPage":{"type":"number"},"pageSize":{"type":"number"},"brokersList":{"type":"array","items":{"type":"object","properties":{"id":{"type":"number"},"fullName":{"type":"string"},"isDynamic":{"type":"boolean"},"fullname":{"type":"string"},"rank":{"type":"number"}}}}}}}},"description":"OK"},"401":{"description":"Your access token is invalid or expired"}}',
+                'get Broker Profile',
+                '/api/v1',
+                CURRENT_TIMESTAMP(),
+                CURRENT_TIMESTAMP()
+            FROM `tradex-configuration`.t_scope
+            WHERE name = 'NHSV-VIEW-ALL-BROKER-PROFILE'
+            ON DUPLICATE KEY UPDATE
+                operation_id = VALUES(operation_id),
+                tags = VALUES(tags),
+                uri_pattern = VALUES(uri_pattern),
+                summary = VALUES(summary),
+                `security` = VALUES(`security`),
+                parameters ='[{"in":"path","name":"type","schema":{"type":"string"},"description":"Type of select"},
+                {"in":"path","name":"pageNumber","schema":{"type":"number"},"description":"Page Number"},
+                {"in":"path","name":"pageSize","schema":{"type":"number"},"description":"Page Size"},
+                {"in":"path","name":"keyword","schema":{"type":"string"},"description":"Keyword for Full Name"}]',
+                request_body = VALUES(request_body),
+                responses = VALUES(responses),
+                description = VALUES(description),
+                `version` = VALUES(`version`),
+                updated_at = VALUES(updated_at);
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV-VIEW-ALL-BROKER-PROFILE'
+            AND tsg.scope_group_name = 'PUBLIC'
+            ON DUPLICATE KEY UPDATE scope_id = VALUES(scope_id), scope_group_id = VALUES(scope_group_id);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

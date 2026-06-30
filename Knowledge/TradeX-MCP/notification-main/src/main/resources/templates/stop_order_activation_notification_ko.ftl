@@ -1,0 +1,1 @@
+${sellBuyType} stop order just activated ${orderType} order ${orderNumber} for ${code} with quantity ${orderQuantity} & price ${orderPrice} at ${time}

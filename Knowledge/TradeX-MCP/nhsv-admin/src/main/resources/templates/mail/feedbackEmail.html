@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}" lang="en">
+  <body>
+    <p>Kính gửi Nhóm Hỗ trợ NHSV, </p>
+    <p th:text="${message}"></p>
+    <p>Xin cảm ơn!</p>
+    <p style="font-weight: bold;">Thông tin khách hàng:</p>
+    <p>
+      <span style="font-style: italic;"> &nbsp;&nbsp;&#x2022;&nbsp;&nbsp; Tên khách hàng: </span> <span th:text="${fullName}"></span>
+    </p>
+    <p>
+      <span style="font-style: italic;">&nbsp;&nbsp;&#x2022;&nbsp;&nbsp; Số điện thoại liên hệ: </span> <span th:text="${phoneNo}"></span>
+    </p>
+    <p>
+      <span style="font-style: italic;">&nbsp;&nbsp;&#x2022;&nbsp;&nbsp; Email: </span> <span th:text="${email}"></span>
+    </p>
+    <p>
+      <span style="font-style: italic;">&nbsp;&nbsp;&#x2022;&nbsp;&nbsp; Thông tin tệp đính kèm: </span> <span th:each="attach : ${href}">
+        <a th:href="${attach}" th:text="${attach.substring(attach.lastIndexOf('/') + 1)}"></a>
+        </span>
+    </p>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-182-01">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('NHSV_SEND_FEEDBACK',
+                    'post:/api/v1/equity/account/feedback',
+                    NULL, NULL, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+                    'CONNECTION', '{
+                                "uri": "post:/api/v1/equity/account/feedback",
+                                "service": "nhsv-admin",
+                                "forwardType": "SERVICE"
+                              }');
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            IGNORE INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                 `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_SEND_FEEDBACK'
+              AND tsg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+
+    <changeSet author="ADMIN (generated)" id="NHSV-182-02">
+      <createTable tableName="t_feedback">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="fullname" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="phoneNo" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="message" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="image_url" type="varchar(255)">
+            </column>
+            <column name="created_at" type="DATETIME">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="ADMIN (generated)" id="NHSV-182-03">
+         <modifyDataType 
+            columnName="image_url"  
+            newDataType="text"  
+            tableName="t_feedback"/>  
+    </changeSet>
+</databaseChangeLog>

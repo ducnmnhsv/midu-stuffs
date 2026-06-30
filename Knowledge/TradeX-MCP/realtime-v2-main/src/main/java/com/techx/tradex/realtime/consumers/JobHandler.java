@@ -4,7 +4,9 @@ import com.difisoft.kafka.handler.Controller;
 import com.difisoft.kafka.handler.DeserializeServerRequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techx.tradex.realtime.configurations.AppConf;
+import com.techx.tradex.realtime.model.request.EodBackfillRequest;
 import com.techx.tradex.realtime.model.request.SaveRedisToDatabaseRequest;
+import com.techx.tradex.realtime.services.EodSnapshotService;
 import com.techx.tradex.realtime.services.RedisService;
 import com.techx.tradex.realtime.services.SymbolInfoRollerService;
 import com.techx.tradex.realtime.services.SymbolInfoService;
@@ -26,7 +28,8 @@ public class JobHandler extends DeserializeServerRequestHandler {
             AppConf appConf,
             RedisService redisService,
             SymbolInfoRollerService symbolInfoRollerService,
-            SymbolInfoService symbolInfoService
+            SymbolInfoService symbolInfoService,
+            EodSnapshotService eodSnapshotService
     ) {
         super(objectMapper, appConf.getKafkaBootstraps(), appConf.getTopics().getRealtimeJob(), 5);
         Map<String, Controller> map = new HashMap<>();
@@ -36,6 +39,8 @@ public class JobHandler extends DeserializeServerRequestHandler {
         map.put("/job/saveRedisToDatabase", new Controller<>(SaveRedisToDatabaseRequest.class, redisService::saveRedisToDatabaseJob));
         map.put("/job/updateHighLowYear", new Controller<>(Object.class, symbolInfoRollerService::updateHighLowYear));
         map.put("job:/api/v1/realTime/vnIndexTopWorstReturns/trigger", new Controller<>(Object.class, symbolInfoService::stockTopWorstReturnsInfoExecute));
+        map.put("/job/publishEodSnapshot", new Controller<>(Object.class, (p1, p2) -> forwarded(eodSnapshotService::publishEodSnapshot)));
+        map.put("/job/triggerEodBackfill", new Controller<>(EodBackfillRequest.class, eodSnapshotService::triggerBackfillJob));
         this.setControllerMap(map);
     }
 

@@ -56,7 +56,8 @@ TradeX Knowledge/
 
 | Document | Status | Description |
 |----------|--------|-------------|
-| [regular-order-api-mapping.md](./Planning/regular-order-api-mapping.md) | 📋 Planning | General order API patterns |
+| [regular-order-api-mapping.md](./Planning/regular-order-api-mapping.md) | 📋 Planning | Regular orders (Buy/Sell/Cancel/Modify) — lotte-bridge / tuxedo |
+| [conditional-order-api-mapping.md](./Planning/conditional-order-api-mapping.md) | ✅ Complete | Conditional orders (Stop / OCO / Trailing / Bull-Bear) — `order-v2` |
 
 **When to use:** Planning new features, understanding future direction
 
@@ -135,17 +136,25 @@ TradeX Knowledge/
 
 ## 🏗️ Core Services
 
-| Service | Tech | Kafka Topic | Role |
+> **Kafka topic = `clusterId` / `spring.application.name`** (verified từ config, 2026-06-30). Snapshot code đồng bộ tại `Knowledge/TradeX-MCP/` cùng ngày.
+
+| Service (folder TradeX-MCP) | Tech | Kafka Topic | Role |
 |---------|------|-------------|------|
-| `rest-proxy` | Node.js | - | API Gateway, routing |
-| `aaa` | Node.js | `aaa` | Authentication, authorization |
-| `lotte-bridge` | Node.js | `paave-real-trading` | Trading API integration |
-| `market-collector-lotte` | Java | - | Collect market data from Lotte WS |
-| `realtime-v2` | Java | - | Process real-time data |
-| `market-query-v2` | Node.js | `market-query-v2` | Market data queries |
-| `ws-v2` | Node.js | - | WebSocket server for clients |
-| `order-v2` | Java | `order-v2` | Order processing |
-| `notification` | Java | `notification` | Push, SMS, email |
+| `rest-proxy` | Node.js | `rest-proxy` (gateway, route theo scope) | API Gateway, scope-based routing |
+| `aaa` | Node.js | `aaa` | Authentication, OTP, Smart OTP |
+| `lotte-bridge` | Node.js | `lotte-bridge` | Lotte integration: order, account, balance, transfer, change broker, smart OTP |
+| `lotte-ws-bridge` | Node.js | `lotte-ws-bridge` | Lotte WS bridge: notification (gồm Derivatives margin/VM/position) |
+| `market-query-v2` | Node.js | `market-v2` | Market data queries (pkg `tradex-market`) |
+| `ws-v2` | Node.js | — (WebSocket server) | WebSocket server cho client |
+| `configuration` | Node.js | `configuration` | Config service |
+| `order-v2` | Java (Spring Boot 3.1, Java 17) | `order` | Conditional orders (Stop/OCO/Trailing/Bull-Bear) |
+| `realtime-v2` | Java | `realtime-v2` | Real-time processing, EOD snapshot/backfill |
+| `market-collector-lotte` | Java | `market-collector-lotte` | Collect market data từ Lotte WS |
+| `notification` | Java | `notification` | Push / SMS / email + templates |
+| `ekyc-admin` | Java (JHipster) | `ekyc-admin` | eKYC admin: Lotte upload + FPT eContract + OTP |
+| `nhsv-admin` | Java (JHipster) | `nhsv-admin` | Admin web tool |
+| `tradex-common-java` | Java library | — | Shared models / enums / kafka utils |
+| `documents` | — (docs only) | — | API specs / BA / QA / DB docs |
 
 ---
 
@@ -251,6 +260,7 @@ System/ (Live documentation)
 | Document | Status | Last Updated |
 |----------|--------|--------------|
 | `regular-order-api-mapping.md` | 📋 Planning | 2026-02-03 |
+| `conditional-order-api-mapping.md` | ✅ Complete | 2026-06-30 |
 
 ---
 

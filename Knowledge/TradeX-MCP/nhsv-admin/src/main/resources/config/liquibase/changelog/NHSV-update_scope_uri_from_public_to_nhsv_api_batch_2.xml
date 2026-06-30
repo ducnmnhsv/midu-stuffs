@@ -1,0 +1,88 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-update-scope-uri-from-public-to-nhsv-api-2">
+        <sql splitStatements="false">
+            delete
+            from `tradex-configuration`.t_scope_scope_group_map
+            where scope_id in (select id
+                               from `tradex-configuration`.t_scope
+                               where uri_pattern IN (
+                                                     'get:/api/v1/brokerChat/brokerProfile/{brokerId}',
+                                                     'get:/api/v1/brokerChat/brokerProfile',
+                                                     'get:/api/v1/brokerChat/chatRooms',
+                                                     'get:/api/v1/brokerChat/chatRooms/{chatRoomId}',
+                                                     'get:/api/v1/copyTrading/marketLeader/currentPortfolio',
+                                                     'get:/api/v1/copyTrading/marketLeader/historicalPortfolio',
+                                                     'get:/api/v1/copyTrading/marketLeader/historicalPortfolio/allStocks',
+                                                     'post:/api/v1/copyTrading/subscriber/subscribe',
+                                                     'delete:/api/v1/copyTrading/subscriber/subscribe',
+                                                     'get:/api/v1/copyTrading/subscriber/subscriberInformation'
+                                   ));
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope_scope_group_map(scope_id, scope_group_id)
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/brokerChat/brokerProfile/{brokerId}'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/brokerChat/brokerProfile'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/brokerChat/chatRooms'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/brokerChat/chatRooms/{chatRoomId}'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/currentPortfolio'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/historicalPortfolio'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/marketLeader/historicalPortfolio/allStocks'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'post:/api/v1/copyTrading/subscriber/subscribe'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'delete:/api/v1/copyTrading/subscriber/subscribe'
+              and sg.scope_group_name = 'NHSV_API'
+            UNION ALL
+            SELECT s.id, sg.id
+            from `tradex-configuration`.t_scope s,
+                 `tradex-configuration`.t_scope_group sg
+            where s.uri_pattern = 'get:/api/v1/copyTrading/subscriber/subscriberInformation'
+              and sg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

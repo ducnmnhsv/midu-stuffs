@@ -1,6 +1,6 @@
 ---
 name: tradex-validator
-description: "TradeX 컨벤션 검증 스킬 — API Spec/문서 생성 후 네이밍, 응답 포맷, 구조를 자동 검증. tradex-orchestrator Phase 3에서 자동 실행. 'validate', 'check convention', 'review doc', 'spec 검토', '컨벤션 확인' 요청 시에도 단독 사용 가능."
+description: "Kiểm tra convention TradeX — validate naming, response format, cấu trúc spec/doc sau khi tạo. Dùng khi: 'validate', 'check convention', 'review spec', 'spec có đúng không', 'kiểm tra convention'. Được tradex-orchestrator gọi tự động ở Phase 3."
 ---
 
 # tradex-validator Skill

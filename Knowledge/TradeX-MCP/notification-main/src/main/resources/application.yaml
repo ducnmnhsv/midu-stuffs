@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: notification
+  profiles:
+    active: ${ER_ENV:default}
+  devtools:
+    restart:
+      exclude: resources/db/**
+  jackson:
+    default-property-inclusion: non_null
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    url: jdbc:mysql://localhost:3306/notification?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true
+    username: admin
+    password: password
+    driver-class-name: com.mysql.jdbc.Driver
+
+logging:
+  file: application.log
+  level:
+    root: WARN
+    org.springframework: WARN
+    com.techx.tradex: INFO
+    io.github: INFO
+    in: INFO
+    out: INFO
+
+app:
+  domain: "${TRADEX_ENV_DOMAIN:tradex}"
+  clusterId: ${spring.application.name}
+  nodeId: ${TRADEX_ENV_NODE_ID:1}
+  kafkaUrl: 172.31.43.101:9092
+  tradexOnlyRequestHandler: ${spring.application.name}-tradex
+  topics:
+    requestResponseListener: ${spring.application.name}.{uuid}
+    requestListener: ${app.clusterId}
+    paaveNotification: paave-notification
+  
+  email:
+    endpoint: email-smtp.us-west-2.amazonaws.com
+    port: 587
+    username: ses-smtp-user.tradex_support
+    smtpUsername: accessKey
+    smtpPassword: secretKey
+    sender: noreply@tradex.vn
+    support: admin@tradex.vn
+  template:
+    dir: templates/
+  oneSignal:
+    appId: appId
+    apiKey: apiKey
+  templatesMap:
+    tradex:
+      order_match_notification: ""
+      alarm_notification: ""
+      stop_order_activation_notification: ""
+      stop_order_activation_failed_notification: ""
+      smart_otp_notification: ""
+  oneSignalMap:
+    nhsv:
+      appId: appId
+      apiKey: apiKey
+  smsServerMap:
+    nhsv:
+      url: https://gbapi.onesms.vn/wspartners/service.asmx
+      type: ONE_SMS
+      user: nhsv
+      pass: ""
+      senderName: NHSV
+      isFlash: false
+      isUnicode: false
+      soapAction: http://1sms.vn/SendMT
+
+  schedulers:
+    shutdown: "0 0 17 * * *"
+  SmsOneSignal:
+    phoneFrom: "+16782937506"
+  retry:
+    maxAttempts: 5
+    maxDelay: 1000

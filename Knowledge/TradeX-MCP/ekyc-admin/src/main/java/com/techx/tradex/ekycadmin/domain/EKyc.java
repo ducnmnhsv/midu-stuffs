@@ -232,6 +232,12 @@ public class EKyc implements Serializable {
     @Column(name = "face_mask_log_id")
     private String faceMaskLogId;
 
+    @Column(name = "job")
+    private String job;
+
+    @Column(name = "derivatives_included")
+    private Boolean derivativesIncluded;
+
     // jhipster-needle-entity-add-field - JHipster will add fields here
     public Long getId() {
         return id;
@@ -1065,6 +1071,32 @@ public class EKyc implements Serializable {
         this.faceMaskLogId = faceMaskLogId;
     }
 
+    public String getJob() {
+        return this.job;
+    }
+
+    public EKyc job(String job) {
+        this.job = job;
+        return this;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
+
+    public Boolean getDerivativesIncluded() {
+        return this.derivativesIncluded;
+    }
+
+    public EKyc derivativesIncluded(Boolean derivativesIncluded) {
+        this.derivativesIncluded = derivativesIncluded;
+        return this;
+    }
+
+    public void setDerivativesIncluded(Boolean derivativesIncluded) {
+        this.derivativesIncluded = derivativesIncluded;
+    }
+
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
 
     @Override
@@ -1152,6 +1184,8 @@ public class EKyc implements Serializable {
             ", compareLogId='" + getCompareLogId() + "'" +
             ", faceLivenessLogId='" + getFaceLivenessLogId() + "'" +
             ", faceMaskLogId='" + getFaceMaskLogId() + "'" +
+            ", job='" + getJob() + "'" +
+            ", derivativesIncluded='" + getDerivativesIncluded() + "'" +
             "}";
     }
 }

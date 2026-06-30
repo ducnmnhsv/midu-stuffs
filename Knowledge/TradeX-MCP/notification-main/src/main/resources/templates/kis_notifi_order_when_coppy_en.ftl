@@ -1,0 +1,1 @@
+The ${type} automatic order (ID ${orderNumber}) for stock ${symbol} is successfully placed by Auto Copy Trade Service at ${createdAt} (VNT)

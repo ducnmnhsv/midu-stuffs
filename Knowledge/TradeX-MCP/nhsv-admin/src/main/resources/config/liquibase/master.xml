@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <property name="now" value="now()" dbms="mysql"/>
+    <property name="floatType" value="float" dbms="mysql"/>
+    <property name="clobType" value="clob" dbms="mysql"/>
+    <property name="blobType" value="longblob" dbms="mysql"/>
+    <property name="uuidType" value="varchar(36)" dbms="mysql"/>
+    <property name="datetimeType" value="datetime(6)" dbms="mysql"/>
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230621013037_added_entity_SocialLink.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230621020056_added_entity_ChatRoom.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230621020454_updated_entity_SocialLink.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230621032750_updated_entity_ChatRoom.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230627094323_added_entity_InviteUser.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230628015028_updated_entity_InviteUser.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230703044953_added_entity_Broker.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230703062136_updated_entity_Broker.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230704023729_added_entity_RecentViewChatRoom.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230704092431_added_entity_CreatedChatRoom.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-52.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-68.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-50.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-51.xml"
+             relativeToChangelogFile="false"/>
+    <!--  COPY  -->
+    <include file="config/liquibase/changelog/20230705064543_added_entity_CopySubscriber.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230705064832_added_entity_CopySubscriberHistory.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230705065023_added_entity_CopyPortfolio.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230705065136_added_entity_CopyPortfolioHistory.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230705065338_added_entity_CopyPortfolioDetails.xml"
+             relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230705065519_added_entity_CopyPortfolioDetailHistory.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230705065738_added_entity_CopyMarketLeaderDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230705070342_added_entity_CopyTradingOrder.xml"
+             relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230706043437_updated_entity_CopyMarketLeaderDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230706072938_updated_entity_CopyPortfolioDetailHistory.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230706043437_updated_entity_CopyMarketLeaderDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230706072938_updated_entity_CopyPortfolioDetailHistory.xml"
+        relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230714132601_updated_entity_CopyTradingOrder.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230714133642_updated_entity_CopyTradingOrder.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-30.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-31.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-30_update_uri_scope.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-32.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-33.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-44.xml" relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230720074200_added_entity_CopyMarketLeaderProfitLoss.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230720074200_added_entity_constraints_CopyMarketLeaderProfitLoss.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230720074201_added_entity_CopyMarketLeaderProfitLossDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230720074201_added_entity_constraints_CopyMarketLeaderProfitLossDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230721033250_updated_entity_CopyMarketLeaderProfitLoss.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20230724074648_updated_entity_CopyMarketLeaderProfitLossDetails.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20240719081746_added_entity_MarketHistoryJobResult.xml"
+        relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20240728131145_updated_entity_MarketHistoryJobResult.xml"
+        relativeToChangelogFile="false"/>
+
+    <include file="config/liquibase/changelog/NHSV-34.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-35.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-36.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-37.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230727034443_added_entity_Holiday.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-39.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-28.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-115.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-update_scope_uri_from_public_to_nhsv_api_batch_1.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-update_scope_uri_from_public_to_nhsv_api_batch_2.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230823083750_added_entity_CopySubscriberDetails.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-163.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-182.xml" relativeToChangelogFile="false"/>
+
+    <include file="config/liquibase/changelog/NHSV-184.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231221070112_updated_entity_CopySubscriber.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20231222040928_updated_entity_CopySubscriber.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-636.xml"
+             relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV_update_t_holiday_data.xml" relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20240801101230_added_entity_CopyTradingRegister.xml"
+        relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/NHSV-1353.xml" relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/NHSV-1353-01.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-49.xml" relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/NHSV-1350.xml" relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/NHSV-1350-01.xml" relativeToChangelogFile="false"/>
+    <include file="/config/liquibase/changelog/NHMTS-113.xml" relativeToChangelogFile="false"/>
+    <include
+        file="config/liquibase/changelog/20250612025119_updated_entity_MarketHistoryJobResult.xml"
+        relativeToChangelogFile="false"/>
+</databaseChangeLog>

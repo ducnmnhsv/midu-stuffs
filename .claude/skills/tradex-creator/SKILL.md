@@ -1,6 +1,6 @@
 ---
 name: tradex-creator
-description: "TradeX 문서 작성 전문 스킬 — API Specification, PM/BA 문서, FE Issue 생성. 'create spec', 'API spec 만들어', 'spec 작성', 'create doc', '문서 작성', 'create issue', 'FE issue', 'Derivatives 문서', 'Derivatives spec', 'Derivatives issue' 요청 시 반드시 이 스킬을 사용. tradex-orchestrator Phase 2에서 자동 호출."
+description: "Viết tài liệu TradeX — API Specification, PM/BA doc, FE Issue. Dùng khi: 'tạo spec', 'viết spec', 'API spec', 'create doc', 'viết tài liệu', 'create issue', 'FE issue', 'Derivatives spec/doc/issue'. Được tradex-orchestrator gọi tự động ở Phase 2."
 ---
 
 # tradex-creator Skill

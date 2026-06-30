@@ -83,12 +83,29 @@ import { ICashDepositHistoryRequest } from '../models/request/ICashDepositHistor
 import { ICashDepositHistoryItemResponse } from '../models/response/ICashDepositHistoryResponse';
 import { ILotteCashDepositHistoryRequest } from '../models/request/lotte/ILotteCashDepositHistoryRequest';
 import { ILotteCashDepositHistoryResponse, ILotteCashDepositHistoryResponseData } from '../models/response/lotte/ILotteCashDepositHistoryResponse';
-import { LOTTE_LANG_CODE, CASH_DEPOSIT_HISTORY_TYPE } from '../constants/enum';
+import { LOTTE_LANG_CODE, CASH_DEPOSIT_HISTORY_TYPE, getChangeBrokerReasonCodes, getChangeBrokerReasonLabel, AccountType } from '../constants/enum';
 import { isEmpty } from 'tradex-common/build/src/modules/utils/StringUtils';
+import { IChangeBrokerRequest } from '../models/request/IChangeBrokerRequest';
+import { IChangeBrokerHistoryRequest } from '../models/request/IChangeBrokerHistoryRequest';
+import { IChangeBrokerResponse } from '../models/response/IChangeBrokerResponse';
+import { IChangeBrokerHistoryItemResponse } from '../models/response/IChangeBrokerHistoryResponse';
+import { ILotteChangeBrokerRequest } from '../models/request/lotte/ILotteChangeBrokerRequest';
+import { ILotteChangeBrokerResponse, ILotteChangeBrokerData } from '../models/response/lotte/ILotteChangeBrokerResponse';
+import { AccountChangeBrokerRequestRepository } from '../repositories/AccountChangeBrokerRequestRepository';
+import { AccountChangeBrokerRequest, ChangeBrokerStatus } from '../models/db/AccountChangeBrokerRequest';
+import { calculateExpiredDate, formatDateVietnam, sendEmailNotification, sendSmsNotification } from '../utils/brokerUtils';
+import { ILotteEmployeeInfoRequest } from '../models/request/lotte/ILotteEmployeeInfoRequest';
+import { IRegisterBankAccountRequest, IDeleteBankAccountRequest } from '../models/request/IBankAccountRequest';
+import {
+  ILotteRegisterBankAccountRequest,
+  ILotteDeleteBankAccountRequest,
+} from '../models/request/lotte/ILotteBankAccountRequest';
+import { IRegisterBankAccountResponse, IDeleteBankAccountResponse } from '../models/response/IBankAccountResponse';
 
 const { InvalidParameterError } = Errors;
 const { validate, formatDateToDisplay, convertStringToDate, DATE_DISPLAY_FORMAT } = Utils;
 const DATE_DISPLAY_FORMAT_DMY = 'DDMMYYYY';
+const DATE_DISPLAY_FORMAT_YMD = 'YYYYMMDD';
 
 @Service()
 export class AccountService {
@@ -98,6 +115,8 @@ export class AccountService {
   private lotteBalanceDao: LotteBalanceDao;
   @InjectRepository()
   private accountBankInfoRepository: AccountBankInfoRepository;
+  @InjectRepository()
+  private accountChangeBrokerRequestRepository: AccountChangeBrokerRequestRepository;
 
   async getAccountInfo(request: IAccountInfoRequest, ctx: IContext): Promise<IAccountInfoResponse> {
     const accountNumber = setDefault<string>(request.accountNumber, request.headers.token.userData.username);
@@ -119,6 +138,14 @@ export class AccountService {
         identifierNumber: lotteResDataList.identity_card,
         customerName: lotteResDataList.customer_name,
         agencyName: lotteResDataList.manager,
+        agencyId: lotteResDataList.emp_no,
+        accountType: this.mapAccountType(lotteResDataList.grp_tp),
+        dateOfBirth: this.formatLotteDateDMY(lotteResDataList.birth_dt),
+        identifierIssueDate: this.formatLotteDateDMY(lotteResDataList.idno_iss_dt),
+        identifierExpireDate: this.formatLotteDateYMD(lotteResDataList.idno_expr_dt),
+        issuePlace: lotteResDataList.idno_iss_orga,
+        isForeignCustomer: this.mapForeignCustomer(lotteResDataList.frgn_tp),
+        taxCode: lotteResDataList.tax_cd,
       };
       return response;
     } else if (codes !== null && codes === '2016') {
@@ -126,6 +153,44 @@ export class AccountService {
     } else {
       throw new GeneralError(`${Constants.ACCOUNT_INFO}${codes}`);
     }
+  }
+
+  private mapAccountType(grpTp: string): AccountType | undefined {
+    if (grpTp === '1') {
+      return AccountType.INDIVIDUAL;
+    } else if (grpTp === '2') {
+      return AccountType.INSTITUTION;
+    }
+    return undefined;
+  }
+
+  private mapForeignCustomer(frgnTp: string): boolean | null {
+    if (frgnTp === '1') {
+      return false;
+    } else if (frgnTp === '2') {
+      return true;
+    }
+    return null;
+  }
+
+  private formatLotteDateDMY(dateStr: string): string | undefined {
+    if (!dateStr || dateStr.trim() === '') {
+      return undefined;
+    }
+    if (dateStr.length === 8) {
+      return formatDateToDisplay(convertStringToDate(dateStr, DATE_DISPLAY_FORMAT_DMY), DATE_DISPLAY_FORMAT);
+    }
+    return dateStr;
+  }
+
+  private formatLotteDateYMD(dateStr: string): string | undefined {
+    if (!dateStr || dateStr.trim() === '') {
+      return undefined;
+    }
+    if (dateStr.length === 8) {
+      return formatDateToDisplay(convertStringToDate(dateStr, DATE_DISPLAY_FORMAT_YMD), DATE_DISPLAY_FORMAT);
+    }
+    return dateStr;
   }
 
   // private getAccountInfoFromCache = async (accountNumber: string, ctx: IContext): Promise<IAccountInfoResponse> => {
@@ -677,6 +742,441 @@ export class AccountService {
         })
       );
       return returnResult;
+    } else {
+      throw new GeneralError(lotteRes.error_desc);
+    }
+  }
+
+  async initChangeBroker(request: IChangeBrokerRequest, ctx: IContext): Promise<IChangeBrokerResponse> {
+    const error = new InvalidParameterError();
+    validate(request.accountNumber, 'accountNumber')
+      .setRequire()
+      .add(validateRequestAccountNoCreator(request))
+      .throwValid(error);
+    validate(request.newBrokerId, 'newBrokerId')
+      .setRequire()
+      .throwValid(error);
+    validate(request.reason, 'reason')
+      .setRequire()
+      .throwValid(error);
+    error.throwErr();
+
+    const validReasons = getChangeBrokerReasonCodes();
+    if (!validReasons.includes(request.reason)) {
+      throw new InvalidParameterError().add('INVALID_REASON', 'reason', [request.reason, validReasons.join(', ')]);
+    }
+
+    const accountNumber = request.accountNumber.toUpperCase();
+    const htsUserId = accountNumber.toLowerCase();
+
+    const existingPendingRequest = await this.accountChangeBrokerRequestRepository.findPendingByAccountNo(accountNumber);
+    if (existingPendingRequest) {
+      throw new GeneralError(`${Constants.CHANGE_BROKER_PENDING_EXISTS}`);
+    }
+
+    const accountInfoRequest: ILotteAccountInfoRequest = {
+      acnt_no: accountNumber,
+    };
+    
+    const accountInfoRes = await this.lotteAccountDao.getAccountInfo(accountInfoRequest, ctx);
+    if (accountInfoRes.error_code !== '0000' || !accountInfoRes.data_list || accountInfoRes.data_list.length === 0) {
+      throw new GeneralError(`${Constants.ACCOUNT_INFO}${accountInfoRes.error_code}`);
+    }
+    
+    const accountInfo = accountInfoRes.data_list[0];
+    const previousBrokerId = accountInfo.emp_no || '';
+    const accountName = accountInfo.customer_name || '';
+    const userEmail = accountInfo.email || '';
+    const userPhone = accountInfo.phone || '';
+
+    const lotteRequest: ILotteChangeBrokerRequest = {
+      account_number: accountNumber,
+      account_name: accountName,
+      previous_broker: previousBrokerId,
+      new_broker: request.newBrokerId,
+      reason: request.reason || '',
+      hts_user_id: htsUserId,
+    };
+
+    const lotteRes: ILotteChangeBrokerResponse = await this.lotteAccountDao.requestChangeBroker(lotteRequest, ctx);
+    const { codes } = parseMessages(lotteRes.error_desc, lotteRes.error_code);
+
+    if (lotteRes.error_code === '0000') {
+      const lotteResData: ILotteChangeBrokerData = getElementAtIndex<ILotteChangeBrokerData>(lotteRes.data_list);
+
+      const expiredAt = calculateExpiredDate(5);
+
+      const changeBrokerRequest = new AccountChangeBrokerRequest();
+      changeBrokerRequest.coreSeqNo = lotteResData.seq_no;
+      changeBrokerRequest.accountNo = accountNumber;
+      changeBrokerRequest.customerName = accountName;
+      changeBrokerRequest.oldBrokerId = previousBrokerId;
+      changeBrokerRequest.newBrokerId = request.newBrokerId;
+      changeBrokerRequest.reason = request.reason;
+      changeBrokerRequest.userNote = request.note;
+      changeBrokerRequest.status = ChangeBrokerStatus.PENDING;
+      changeBrokerRequest.expiredAt = expiredAt;
+
+      let previousBrokerName = '';
+      let previousBrokerEmail = '';
+      let previousBrokerPhone = '';
+      let newBrokerName = '';
+      let newBrokerEmail = '';
+
+      if (previousBrokerId) {
+        const empInfoRequest: ILotteEmployeeInfoRequest = {
+          employee_id: previousBrokerId,
+        };
+
+        try {
+          const empInfoRes = await this.lotteAccountDao.getEmployeeInfo(empInfoRequest, ctx);
+          if (empInfoRes.error_code === '0000' && empInfoRes.data_list && empInfoRes.data_list.length > 0) {
+            const previousBrokerInfo = empInfoRes.data_list[0];
+            previousBrokerName = previousBrokerInfo.os_user_nm || '';
+            previousBrokerEmail = previousBrokerInfo.os_email || '';
+            previousBrokerPhone = previousBrokerInfo.os_home_phone || '';
+          }
+        } catch (empError) {
+          Logger.warn(ctx.id, `Failed to get employee info for emp_no ${previousBrokerId}:`, empError);
+        }
+      }
+
+      let newBrokerPhone = '';
+      let newBrokerManagerId = '';
+      let newBrokerManagerEmail = '';
+
+      if (request.newBrokerId) {
+        const newEmpInfoRequest: ILotteEmployeeInfoRequest = {
+          employee_id: request.newBrokerId,
+        };
+
+        try {
+          const newEmpInfoRes = await this.lotteAccountDao.getEmployeeInfo(newEmpInfoRequest, ctx);
+          if (newEmpInfoRes.error_code === '0000' && newEmpInfoRes.data_list && newEmpInfoRes.data_list.length > 0) {
+            const newBrokerInfo = newEmpInfoRes.data_list[0];
+            newBrokerName = newBrokerInfo.os_user_nm || '';
+            newBrokerEmail = newBrokerInfo.os_email || '';
+            newBrokerPhone = newBrokerInfo.os_home_phone || '';
+            newBrokerManagerId = newBrokerInfo.os_mng_emp_no || '';
+          }
+        } catch (empError) {
+          Logger.warn(ctx.id, `Failed to get employee info for new broker ${request.newBrokerId}:`, empError);
+        }
+
+        if (newBrokerManagerId) {
+          const managerInfoRequest: ILotteEmployeeInfoRequest = {
+            employee_id: newBrokerManagerId,
+          };
+
+          try {
+            const managerInfoRes = await this.lotteAccountDao.getEmployeeInfo(managerInfoRequest, ctx);
+            if (managerInfoRes.error_code === '0000' && managerInfoRes.data_list && managerInfoRes.data_list.length > 0) {
+              const managerInfo = managerInfoRes.data_list[0];
+              newBrokerManagerEmail = managerInfo.os_email || '';
+            }
+          } catch (empError) {
+            Logger.warn(ctx.id, `Failed to get employee info for new broker manager ${newBrokerManagerId}:`, empError);
+          }
+        }
+      }
+
+      changeBrokerRequest.oldBrokerName = previousBrokerName;
+      changeBrokerRequest.newBrokerName = newBrokerName;
+
+      await this.accountChangeBrokerRequestRepository.save(changeBrokerRequest);
+
+      try {
+        const locale = ctx.orgMsg?.data?.headers?.['accept-language'] || 'vi';
+        const createdAt = formatDateVietnam(new Date());
+        const reasonLabel = getChangeBrokerReasonLabel(request.reason);
+
+        const initTemplateData = {
+          accountNumber,
+          accountName,
+          previousBrokerName,
+          newBrokerName,
+          reasonLabel,
+          createdAt,
+          sequence: lotteResData.seq_no,
+        };
+
+        if (newBrokerEmail) {
+          sendEmailNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            toList: [newBrokerEmail],
+            subject: `[NHSV] Yêu cầu đổi người chăm sóc tài khoản - Tài khoản ${accountNumber}`,
+            templateName: 'nhsv_change_broker_init',
+            templateData: initTemplateData,
+            locale,
+            logMessage: 'Change broker init notification sent to new broker',
+          });
+        } else {
+          Logger.warn(ctx.id, `No email found for new broker ${request.newBrokerId}, skipping broker email notification`);
+        }
+
+        if (newBrokerManagerEmail) {
+          sendEmailNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            toList: [newBrokerManagerEmail],
+            subject: `[NHSV] Yêu cầu đổi người chăm sóc tài khoản - Tài khoản ${accountNumber}`,
+            templateName: 'nhsv_change_broker_init',
+            templateData: initTemplateData,
+            locale,
+            logMessage: 'Change broker init notification sent to new broker manager',
+          });
+        } else {
+          Logger.warn(ctx.id, `No email found for new broker manager ${newBrokerManagerId}, skipping manager email notification`);
+        }
+
+        if (newBrokerPhone) {
+          sendSmsNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            phoneNumber: newBrokerPhone,
+            templateName: 'nhsv_change_broker_new_broker_sms',
+            templateData: {},
+            locale,
+            logMessage: 'Change broker init SMS sent to new broker',
+          });
+        } else {
+          Logger.warn(ctx.id, `No phone found for new broker ${request.newBrokerId}, skipping broker SMS notification`);
+        }
+
+        if (previousBrokerEmail) {
+          sendEmailNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            toList: [previousBrokerEmail],
+            subject: `[NHSV] Thông báo chuyển đổi người chăm sóc tài khoản ${accountNumber}`,
+            templateName: 'nhsv_change_broker_old_broker',
+            templateData: initTemplateData,
+            locale,
+            logMessage: 'Change broker init notification sent to old broker',
+          });
+        } else {
+          Logger.warn(ctx.id, `No email found for old broker ${previousBrokerId}, skipping old broker email notification`);
+        }
+
+        if (previousBrokerPhone) {
+          sendSmsNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            phoneNumber: previousBrokerPhone,
+            templateName: 'nhsv_change_broker_old_broker_sms',
+            templateData: {},
+            locale,
+            logMessage: 'Change broker init SMS sent to old broker',
+          });
+        } else {
+          Logger.warn(ctx.id, `No phone found for old broker ${previousBrokerId}, skipping old broker SMS notification`);
+        }
+
+        if (userEmail) {
+          sendEmailNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            toList: [userEmail],
+            subject: '[NHSV] Xác nhận đã nhận yêu cầu đổi người chăm sóc tài khoản',
+            templateName: 'nhsv_change_broker_customer_init',
+            templateData: initTemplateData,
+            locale,
+            logMessage: 'Change broker init notification sent to customer',
+          });
+        } else {
+          Logger.warn(ctx.id, `No email found for customer ${accountNumber}, skipping customer notification`);
+        }
+
+        if (userPhone) {
+          sendSmsNotification({
+            txId: ctx.txId,
+            logId: ctx.id,
+            phoneNumber: userPhone,
+            templateName: 'nhsv_change_broker_init_sms',
+            templateData: { accountNumber },
+            locale,
+            logMessage: 'Change broker init SMS sent to customer',
+          });
+        } else {
+          Logger.warn(ctx.id, `No phone found for customer ${accountNumber}, skipping SMS notification`);
+        }
+      } catch (notificationError) {
+        Logger.error(ctx.id, 'Failed to send change broker init notification:', notificationError);
+      }
+
+      const response: IChangeBrokerResponse = {
+        sequence: lotteResData.seq_no,
+        newBrokerId: request.newBrokerId,
+      };
+
+      return response;
+    } else {
+      throw new GeneralError(`${Constants.CHANGE_BROKER_INIT}${codes}`);
+    }
+  }
+
+  async getChangeBrokerHistory(
+    request: IChangeBrokerHistoryRequest,
+    ctx: IContext
+  ): Promise<IChangeBrokerHistoryItemResponse[]> {
+    const error = new InvalidParameterError();
+    validate(request.accountNumber, 'accountNumber')
+      .setRequire()
+      .add(validateRequestAccountNoCreator(request))
+      .throwValid(error);
+    error.throwErr();
+
+    const accountNumber = request.accountNumber.toUpperCase();
+
+    let status: ChangeBrokerStatus | undefined;
+    if (request.status) {
+      switch (request.status.toUpperCase()) {
+        case 'PENDING':
+          status = ChangeBrokerStatus.PENDING;
+          break;
+        case 'APPROVED':
+          status = ChangeBrokerStatus.APPROVED;
+          break;
+        case 'REJECTED':
+          status = ChangeBrokerStatus.REJECTED;
+          break;
+        default:
+          break;
+      }
+    }
+
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+    const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+    
+    let fromDate: Date;
+    if (request.fromDate) {
+      fromDate = convertStringToDate(request.fromDate, DATE_DISPLAY_FORMAT);
+    } else {
+      fromDate = startOfToday;
+    }
+
+    let toDate: Date;
+    if (request.toDate) {
+      const parsedToDate = convertStringToDate(request.toDate, DATE_DISPLAY_FORMAT);
+      toDate = new Date(parsedToDate.getFullYear(), parsedToDate.getMonth(), parsedToDate.getDate(), 23, 59, 59, 999);
+    } else {
+      toDate = endOfToday;
+    }
+    const fetchCount = request.fetchCount && request.fetchCount > 0 ? request.fetchCount : config.defaultFetchCount;
+    const nextKey = request.nextKey ? request.nextKey.trim() : undefined;
+
+    const dbRecords = await this.accountChangeBrokerRequestRepository.findHistoryByAccountNo(
+      accountNumber,
+      status,
+      fromDate,
+      toDate,
+      fetchCount,
+      nextKey
+    );
+
+    const hasMore = dbRecords.length > fetchCount;
+    const records = hasMore ? dbRecords.slice(0, fetchCount) : dbRecords;
+
+    return records.map((record, index) => {
+      const isLastItem = index === records.length - 1;
+      return {
+        sequence: Number(record.coreSeqNo) || record.id,
+        previousBrokerId: record.oldBrokerId || '',
+        previousBrokerName: record.oldBrokerName || '',
+        newBrokerId: record.newBrokerId,
+        newBrokerName: record.newBrokerName || '',
+        reason: record.reason || '',
+        status: record.status,
+        requestedDate: record.createdAt ? formatDateToDisplay(record.createdAt, DATE_DISPLAY_FORMAT) : '',
+        updatedDate: record.updatedAt ? formatDateToDisplay(record.updatedAt, DATE_DISPLAY_FORMAT) : '',
+        nextKey: isLastItem && hasMore ? record.id.toString() : undefined,
+      };
+    });
+  }
+
+  async registerBankAccount(
+    request: IRegisterBankAccountRequest,
+    ctx: IContext
+  ): Promise<IRegisterBankAccountResponse> {
+    const error = new InvalidParameterError();
+    validate(request.accountNumber, 'accountNumber')
+      .setRequire()
+      .add(validateRequestAccountNoCreator(request))
+      .throwValid(error);
+    validate(request.bankCode, 'bankCode')
+      .setRequire()
+      .throwValid(error);
+    validate(request.bankAccountNumber, 'bankAccountNumber')
+      .setRequire()
+      .throwValid(error);
+    validate(request.branchCode, 'branchCode')
+      .setRequire()
+      .throwValid(error);
+    error.throwErr();
+
+    const accountNumber = request.accountNumber.toUpperCase();
+    const userData = request.headers.token.userData;
+    const bankAccountName = userData['name'] || '';
+    const htsUserId = userData.username || accountNumber.toLowerCase();
+
+    const lotteRequest: ILotteRegisterBankAccountRequest = {
+      acnt_no: accountNumber,
+      bank_cd: request.bankCode,
+      bank_acnt_no: request.bankAccountNumber,
+      bank_acnt_nm: bankAccountName,
+      branch: request.branchCode,
+      hts_user_id: htsUserId,
+    };
+
+    const lotteRes = await this.lotteAccountDao.registerBankAccount(lotteRequest, ctx);
+
+    if (lotteRes.error_code === '0000' && lotteRes.success) {
+      return { success: true };
+    } else {
+      throw new GeneralError(lotteRes.error_desc);
+    }
+  }
+
+  async deleteBankAccount(
+    request: IDeleteBankAccountRequest,
+    ctx: IContext
+  ): Promise<IDeleteBankAccountResponse> {
+    const error = new InvalidParameterError();
+    validate(request.accountNumber, 'accountNumber')
+      .setRequire()
+      .add(validateRequestAccountNoCreator(request))
+      .throwValid(error);
+    validate(request.bankCode, 'bankCode')
+      .setRequire()
+      .throwValid(error);
+    validate(request.bankAccountNumber, 'bankAccountNumber')
+      .setRequire()
+      .throwValid(error);
+    validate(request.branchCode, 'branchCode')
+      .setRequire()
+      .throwValid(error);
+    error.throwErr();
+
+    const accountNumber = request.accountNumber.toUpperCase();
+    const userData = request.headers.token.userData;
+    const bankAccountName = userData['name'] || '';
+    const htsUserId = userData.username || accountNumber.toLowerCase();
+
+    const lotteRequest: ILotteDeleteBankAccountRequest = {
+      acnt_no: accountNumber,
+      bank_cd: request.bankCode,
+      bank_acnt_no: request.bankAccountNumber,
+      bank_acnt_nm: bankAccountName,
+      branch: request.branchCode,
+      hts_user_id: htsUserId,
+    };
+
+    const lotteRes = await this.lotteAccountDao.deleteBankAccount(lotteRequest, ctx);
+
+    if (lotteRes.error_code === '0000' && lotteRes.success) {
+      return { success: true };
     } else {
       throw new GeneralError(lotteRes.error_desc);
     }

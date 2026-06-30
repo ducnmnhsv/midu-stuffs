@@ -42,4 +42,5 @@
     <include file="config/liquibase/changelog/20210419021531_updated_entity_EKyc" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/NHSV-734.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/NHSV-1226.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/NHSV-1227.xml" relativeToChangelogFile="false"/>
 </databaseChangeLog>

@@ -40,7 +40,7 @@ import {
 import { IWithdrawRequestRequest } from '../models/request/IWithdrawRequestRequest';
 import { ILotteWithdrawRequestRequest } from '../models/request/lotte/ILotteWithdrawRequestRequest';
 import { ILotteWithdrawRequestResponse } from '../models/response/lotte/ILotteWithdrawRequestResponse';
-import { IBankListResponse } from '../models/response/IBankListResponse';
+import { IBankListResponse, IWithdrawBankListResponse } from '../models/response/IBankListResponse';
 import { ILotteBankListResponse, ILotteBankListResponseData } from '../models/response/lotte/ILotteBankListResponse';
 import { ILotteProfitLossHistoryRequest } from '../models/request/lotte/ILotteProfitLossHistoryRequest';
 import { ILotteStockBalanceRequest } from '../models/request/lotte/ILotteStockBalanceRequest';
@@ -200,7 +200,7 @@ export class BalanceService {
     );
   }
 
-  async getWithdrawBanks(request: IBankListRequest, ctx: IContext): Promise<IBankListResponse[]> {
+  async getWithdrawBanks(request: IBankListRequest, ctx: IContext): Promise<IWithdrawBankListResponse[]> {
     const error = new InvalidParameterError();
     validate(request.accountNumber, 'accountNumber')
       .setRequire()
@@ -214,11 +214,12 @@ export class BalanceService {
       acnt_no: request.accountNumber.toUpperCase(),
     };
     const lotteRes: ILotteBankListResponse = await this.lotteBalanceDao.getBankAccount(lotteResquest, ctx);
-    const bankList: IBankListResponse[] = lotteRes.data_list.map(
-      (item: ILotteBankListResponseData): IBankListResponse => ({
+    const bankList: IWithdrawBankListResponse[] = lotteRes.data_list.map(
+      (item: ILotteBankListResponseData): IWithdrawBankListResponse => ({
         bankCode: item.bank_code,
         bankName: item.bank_name,
-        bankAccount: item.bank_account,
+        bankAccountNumber: item.bank_account,
+        branchCode: item.bank_branch,
         bankAccountName: item.bank_accountname,
       })
     );

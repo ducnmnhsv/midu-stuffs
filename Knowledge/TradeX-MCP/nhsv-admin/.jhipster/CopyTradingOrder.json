@@ -1,0 +1,92 @@
+{
+  "changelogDate": "20230705070342",
+  "dto": "mapstruct",
+  "entityTableName": "t_copy_trading_order",
+  "fields": [
+    {
+      "fieldName": "jobId",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "symbol",
+      "fieldType": "String",
+      "fieldValidateRules": ["required", "maxlength"],
+      "fieldValidateRulesMaxlength": "255"
+    },
+    {
+      "fieldName": "fee",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "tax",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "orderNumber",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "sellBuyType",
+      "fieldType": "SellBuyTypeEnum",
+      "fieldValues": "BUY,SELL"
+    },
+    {
+      "fieldName": "exchangeType",
+      "fieldType": "ExchangeTypeEnum",
+      "fieldValues": "HOSE,HNX,UPCOM"
+    },
+    {
+      "fieldName": "orderType",
+      "fieldType": "OrderTypeEnum",
+      "fieldValues": "ATO,ATC,LO,MP,MAK,MOK,MTL,PLO"
+    },
+    {
+      "fieldName": "orderQuantity",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "orderPrice",
+      "fieldType": "Double"
+    },
+    {
+      "fieldName": "apiParam",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "apiStatusCode",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "apiErrorMessage",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "copySubscriberId",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "copyPortfolioId",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "CopyTradingOrder",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceImpl"
+}

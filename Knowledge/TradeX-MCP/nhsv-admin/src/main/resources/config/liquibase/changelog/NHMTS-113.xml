@@ -1,0 +1,27 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet author="ADMIN (generated)" id="NHMTS-113">
+        <createTable tableName="t_stock_event">
+            <column name="id" type="VARCHAR(100)">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="code" type="VARCHAR(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="effective_date" type="DATETIME" />
+            <column name="expired_date" type="DATETIME"/>
+            <column name="settlement_date" type="DATETIME"/>
+            <column name="event_note" type="TEXT"/>
+            <column name="rate" type="DOUBLE"/>
+            <column name="is_adjusted" type="TINYINT(1)"/>
+            <column name="created_at" type="DATETIME"/>
+            <column name="updated_at" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
+

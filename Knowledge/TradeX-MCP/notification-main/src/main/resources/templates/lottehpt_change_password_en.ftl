@@ -1,0 +1,1 @@
+<OneSignalTitle>Thông báo</OneSignalTitle>Quý khách đã thay đổi mật khẩu thành công. Trân trọng${flag}

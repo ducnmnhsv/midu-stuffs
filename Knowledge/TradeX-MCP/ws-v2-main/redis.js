@@ -37,56 +37,31 @@ class KeyNotExist extends Error {
 }
 
 let client = null;
-
-let readyCallbacks = [];
+let clientConnectPromise = null;
 
 async function createClient() {
-  if (client != null) return;
-  client = await redis.createClient(conf.redis).
-    on('error', err => {
-      Logger.error("error on redis connection", err.message);
-    }).
-    on('reconnecting', err => {
-      Logger.warn("redis connection is reconnecting");
-    }).
-    on('ready', () => {
-      Logger.info("redis connection is ready", readyCallbacks.length);
-      const cbs = [...readyCallbacks];
-      readyCallbacks = [];
-      cbs.forEach(cb => cb());
-    }).
-    connect();
-}
+  if (client?.isReady) return client;
+  if (clientConnectPromise) return clientConnectPromise;
 
-function waitForClientReady(timeout = 5000) {
-  if (client.isReady) {
-    return Promise.resolve(null);
+  if (!client) {
+    client = redis.createClient(conf.redis)
+      .on('error', err => Logger.error('error on redis connection', err.message))
+      .on('reconnecting', () => Logger.warn('redis connection is reconnecting'));
   }
-  return new Promise((resolve, reject) => {
-    let finish = false;
-    const timeOutHandler = setTimeout(() => {
-      if (finish) {
-        return;
-      }
-      finish = true;
-      reject(new Error("redis connection is not ready"));
-    }, timeout);
-    readyCallbacks.push(() => {
-      if (finish) {
-        return;
-      }
-      finish = true;
-      try {
-        resolve();
-      } catch (err) {
-        Logger.error('fail to resolve result for waitd redis ready', err);
-      }
-      try {
-        clearTimeout(timeOutHandler);
-      } catch (err) {
-      }
+
+  const currentClient = client;
+  clientConnectPromise = currentClient.connect()
+    .then(() => currentClient)
+    .catch(err => {
+      try { currentClient.disconnect?.(); } catch (_) {}
+      if (client === currentClient) client = null;
+      throw err;
+    })
+    .finally(() => {
+      clientConnectPromise = null;
     });
-  });
+
+  return clientConnectPromise;
 }
 
 function parseRedisData(value) {
@@ -114,10 +89,9 @@ function parseRedisData(value) {
 }
 
 async function getSymbolInfo(code) {
-  await createClient();
-  await waitForClientReady();
+  const currentClient = await createClient();
   Logger.info('redis is ready. start query symbol info', code);
-  const data = await client.HGET(REDIS_KEY.SYMBOL_INFO, code);
+  const data = await currentClient.HGET(REDIS_KEY.SYMBOL_INFO, code);
   Logger.info('finish query symbol info', code);
   return parseRedisData(data);
 }

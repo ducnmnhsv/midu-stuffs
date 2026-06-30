@@ -1,0 +1,1 @@
+Lệnh ${sellBuyType} ${orderNumber} vừa khớp ${matchQuantity} ${code} với giá ${matchPrice} lúc ${time}

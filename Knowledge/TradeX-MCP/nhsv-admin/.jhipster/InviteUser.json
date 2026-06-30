@@ -1,0 +1,58 @@
+{
+  "changelogDate": "20230627094323",
+  "dto": "no",
+  "fields": [
+    {
+      "fieldName": "login",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "InviteStatusEnum",
+      "fieldValues": "PENDING,EXPIRED,ACCOUNT_CREATED,ACCOUNT_DEACTIVATED"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "createdId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "activationKey",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "activationDate",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "langKey",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "authorities",
+      "fieldType": "String"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "InviteUser",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

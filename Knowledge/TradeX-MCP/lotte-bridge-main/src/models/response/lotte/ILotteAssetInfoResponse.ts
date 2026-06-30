@@ -57,4 +57,5 @@ export interface ILotteAssetInfoData {
   mn_can_withdraw: string;
   CMRb: string;
   unused_grt_mn: string;
+  payable_amount: string;
 }

@@ -107,6 +107,8 @@ public class EKycAddReq extends DataRequest {
     private String eKycId;
     private String groupType;
     private Boolean marginInclued; // false ----> core: 1 true ------> core: 2
+    private Boolean derivativesIncluded; // false ----> acnt_dr_tp: 1 true ----> acnt_dr_tp: 2
+    private String job; // job detail, transmitted as job_detail to Lotte and FPT
     private Boolean onlineTrading; // false ----> core: N true -----> core: Y
     private String authenMethod; // otp ----> core: 1 token -----> core: 2
     private String otpReceiveMethod; // email ------> core: Y express -----> core: N
@@ -267,6 +269,8 @@ public class EKycAddReq extends DataRequest {
         eKyc.setCsPartnerId(this.getCsPartnerId());
         eKyc.setCsName(this.getCsName());
         eKyc.setFatca(this.getFatca());
+        eKyc.setDerivativesIncluded(this.getDerivativesIncluded());
+        eKyc.setJob(this.getJob());
         if (StringUtils.isNotEmpty(this.getOcrLogId())) {
             eKyc.setOcrLogId(this.getOcrLogId());
         }

@@ -1,4 +1,4 @@
-import {connectAndDo, Connection, getConnectAndQuery} from "../db/async";
+import {connectAndDo, Connection, doJobInTransaction, getConnectAndQuery} from "../db/async";
 import ObjectNotFoundError, {OBJECT_NOT_FOUND_ERROR_CODE} from "../errors/ObjectNotFoundError";
 import {Errors, Logger, Models, Utils} from 'tradex-common';
 import {Query, QueryData} from '../models/db/BaseModel';
@@ -86,6 +86,37 @@ export async function unregisterMobileOtp(request: Models.IDataRequest): Promise
   const params: any[] = Object.keys(queryData.data).map((key: string) => queryData.data[key]);
   await getConnectAndQuery(queryData.query, params);
   return {};
+}
+
+/**
+ * Lưu device binding cho Smart OTP.
+ * Logic: invalidate (status=0) tất cả row ACTIVE cũ của user, sau đó INSERT row mới với status=1.
+ * Đảm bảo audit trail đầy đủ trong bảng t_sotp_device.
+ */
+export async function saveSmartOtpDevice(
+  request: { username: string; deviceUniqueId: string },
+): Promise<{ success: boolean }> {
+  if (!request.username || !request.deviceUniqueId) {
+    Logger.warn(`saveSmartOtpDevice -- missing params: username=${request.username}, deviceUniqueId=${request.deviceUniqueId}`);
+    return { success: false };
+  }
+
+  return doJobInTransaction(async (connection: Connection) => {
+    // Step 1: Invalidate tất cả row ACTIVE cũ của user
+    await connection.query(
+      'UPDATE t_sotp_device SET status = 0, updated_at = CURRENT_TIMESTAMP WHERE username = ? AND status = 1',
+      [request.username],
+    );
+
+    // Step 2: Insert row mới với status = 1 (ACTIVE)
+    await connection.query(
+      'INSERT INTO t_sotp_device (username, device_unique_id, status) VALUES (?, ?, 1)',
+      [request.username, request.deviceUniqueId],
+    );
+
+    Logger.info(`saveSmartOtpDevice -- ${request.username} -> ${request.deviceUniqueId} (invalidated old, inserted new)`);
+    return { success: true };
+  });
 }
 
 export async function updateProfile(request: IUpdateProfileRequest): Promise<any> {

@@ -297,6 +297,9 @@ function convertDataPublishV2Quote(data) {
   if (data.foreignerCurrentRoom != null) fr.cr = data.foreignerCurrentRoom;
   if (data.foreignerTotalRoom != null) fr.tr = data.foreignerTotalRoom;
 
+  if (data.activeBuyVolume != null) result.abv = data.activeBuyVolume;
+  if (data.activeSellVolume != null) result.asv = data.activeSellVolume;
+
   if (Object.keys(fr).length > 0) {
     result.fr = fr;
   }

@@ -132,8 +132,8 @@ export default class RedisService {
     });
   }
 
-  async del(category: string, key: string): Promise<boolean> {
-    const redisKey = this.getRedisKey(category, key);
+  async del(category: string, key: string, isNotSetCluster?: boolean): Promise<boolean> {
+    const redisKey = this.getRedisKey(category, key, isNotSetCluster);
     return this.client.del(redisKey, (err: Error | null) => {
       if (err != null) {
         throw err;

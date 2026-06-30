@@ -1,0 +1,11 @@
+id;report_date;stock_code;stock_quantity;created_at;updated_at
+1;2023-07-19T16:53:11;technologies architecture Central;49418;2023-07-19T16:17:32;true
+2;2023-07-20T02:49:21;digital Assistant;19502;2023-07-19T16:00:49;false
+3;2023-07-19T22:08:43;States;52689;2023-07-20T02:35:21;false
+4;2023-07-19T15:37:45;Architect;58439;2023-07-19T16:17:37;false
+5;2023-07-19T12:20:48;Kids Assurance Bedfordshire;84419;2023-07-19T18:14:43;true
+6;2023-07-19T18:35:55;extranet;93111;2023-07-20T03:42:52;false
+7;2023-07-19T13:37:30;engineer Ball;8255;2023-07-20T05:09:20;true
+8;2023-07-19T17:37:39;withdrawal Shoes;42767;2023-07-19T17:57:43;false
+9;2023-07-19T17:23:14;deposit Cuban;61536;2023-07-19T17:26:57;false
+10;2023-07-20T01:06:15;payment;28946;2023-07-20T06:31:10;true

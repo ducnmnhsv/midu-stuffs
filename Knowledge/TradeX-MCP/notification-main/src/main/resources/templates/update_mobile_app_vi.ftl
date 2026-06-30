@@ -1,0 +1,1 @@
+<OneSignalTitle>Vui lòng cập nhật lên phiên bản mới nhẩt</OneSignalTitle>Quý kh áchđang sử dụng phiên bản cũ. Một vài tính năng có thể không hoạt động như mong muốn. Xin quý khách vui lòng cập nhật lên phiên bản mới nhất để có trả nghiệm tốt hơn. Truy cập ${url}

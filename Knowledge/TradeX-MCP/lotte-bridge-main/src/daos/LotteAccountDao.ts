@@ -28,6 +28,20 @@ import { ILotteEstAssetLoanInfoRequest } from '../models/request/lotte/ILotteEst
 import { ILotteEstAssetLoanInfoResponse } from '../models/response/lotte/ILotteEstAssetLoanInfoResponse';
 import { ILotteCashDepositHistoryRequest } from '../models/request/lotte/ILotteCashDepositHistoryRequest';
 import { ILotteCashDepositHistoryResponse } from '../models/response/lotte/ILotteCashDepositHistoryResponse';
+import { ILotteChangeBrokerRequest } from '../models/request/lotte/ILotteChangeBrokerRequest';
+import { ILotteChangeBrokerResponse } from '../models/response/lotte/ILotteChangeBrokerResponse';
+import { ILotteBrokerHistoryRequest } from '../models/request/lotte/ILotteBrokerHistoryRequest';
+import { ILotteBrokerHistoryResponse } from '../models/response/lotte/ILotteBrokerHistoryResponse';
+import { ILotteEmployeeInfoRequest } from '../models/request/lotte/ILotteEmployeeInfoRequest';
+import { ILotteEmployeeInfoResponse } from '../models/response/lotte/ILotteEmployeeInfoResponse';
+import {
+  ILotteRegisterBankAccountRequest,
+  ILotteDeleteBankAccountRequest,
+} from '../models/request/lotte/ILotteBankAccountRequest';
+import {
+  ILotteRegisterBankAccountResponse,
+  ILotteDeleteBankAccountResponse,
+} from '../models/response/lotte/ILotteBankAccountResponse';
 
 @Service()
 export class LotteAccountDao {
@@ -156,6 +170,57 @@ export class LotteAccountDao {
   getEstAssetLoanInfo(request: ILotteEstAssetLoanInfoRequest, ctx: IContext): Promise<ILotteEstAssetLoanInfoResponse> {
     return this.lotteCommonDao.post<ILotteEstAssetLoanInfoResponse>(
       config.lotte.apis.inquiryMarginRate,
+      null,
+      request,
+      ctx
+    );
+  }
+
+  requestChangeBroker(request: ILotteChangeBrokerRequest, ctx: IContext): Promise<ILotteChangeBrokerResponse> {
+    return this.lotteCommonDao.post<ILotteChangeBrokerResponse>(
+      config.lotte.apis.changeBroker,
+      null,
+      request,
+      ctx
+    );
+  }
+
+  getBrokerHistory(request: ILotteBrokerHistoryRequest, ctx: IContext): Promise<ILotteBrokerHistoryResponse> {
+    return this.lotteCommonDao.post<ILotteBrokerHistoryResponse>(
+      config.lotte.apis.brokerHistory,
+      null,
+      request,
+      ctx
+    );
+  }
+
+  getEmployeeInfo(request: ILotteEmployeeInfoRequest, ctx: IContext): Promise<ILotteEmployeeInfoResponse> {
+    return this.lotteCommonDao.post<ILotteEmployeeInfoResponse>(
+      config.lotte.apis.getEmployeeInfo,
+      null,
+      request,
+      ctx
+    );
+  }
+
+  registerBankAccount(
+    request: ILotteRegisterBankAccountRequest,
+    ctx: IContext
+  ): Promise<ILotteRegisterBankAccountResponse> {
+    return this.lotteCommonDao.post<ILotteRegisterBankAccountResponse>(
+      config.lotte.apis.registerBankAccount,
+      null,
+      request,
+      ctx
+    );
+  }
+
+  deleteBankAccount(
+    request: ILotteDeleteBankAccountRequest,
+    ctx: IContext
+  ): Promise<ILotteDeleteBankAccountResponse> {
+    return this.lotteCommonDao.post<ILotteDeleteBankAccountResponse>(
+      config.lotte.apis.deleteBankAccount,
       null,
       request,
       ctx

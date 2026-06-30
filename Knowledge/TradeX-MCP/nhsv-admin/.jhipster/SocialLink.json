@@ -1,0 +1,28 @@
+{
+  "changelogDate": "20230621013037",
+  "dto": "no",
+  "fields": [
+    {
+      "fieldName": "type",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "link",
+      "fieldType": "String"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": false,
+  "name": "SocialLink",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityField": "id",
+      "otherEntityName": "chatRoom",
+      "relationshipName": "chatRoom",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "service": "serviceClass"
+}

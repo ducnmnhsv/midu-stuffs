@@ -145,6 +145,12 @@ public class LotteEKycUpdateAccountReq extends LotteReq {
     @JsonProperty("idno_expr_dt")
     private String idnoExprDt;
 
+    @JsonProperty("acnt_dr_tp")
+    private String acntDrTp; // 1: not register derivatives, 2: register
+
+    @JsonProperty("job_detail")
+    private String jobDetail;
+
 
     public LotteEKycUpdateAccountReq update(EKycAddReq req, String langCode) throws Exception {
         this.setSeqNo(req.getEKycId());
@@ -215,6 +221,8 @@ public class LotteEKycUpdateAccountReq extends LotteReq {
         this.setSendEmailCntrYn("N");
         this.setCliMacAddr(req.getDeviceUniqueId());
         this.setIdnoExprDt(req.getExpireDate());
+        this.setAcntDrTp("1");
+        this.setJobDetail(" ");
         return this;
     }
 }

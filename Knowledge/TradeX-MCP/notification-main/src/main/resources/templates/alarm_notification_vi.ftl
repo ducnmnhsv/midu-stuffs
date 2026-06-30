@@ -1,0 +1,1 @@
+Mã ${code} vừa thay đổi giá trị thành ${value} vào lúc ${time}

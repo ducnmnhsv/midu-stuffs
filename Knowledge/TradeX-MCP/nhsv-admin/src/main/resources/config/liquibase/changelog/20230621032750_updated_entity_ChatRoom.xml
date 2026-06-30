@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added columns to the entity ChatRoom.
+    -->
+    <changeSet id="20230621032750-1-add-columns" author="jhipster">
+        <addColumn tableName="t_chat_room">
+            <column name="action" type="varchar(255)" />
+        </addColumn>
+    </changeSet>
+    <changeSet id="20230621032750-2-change-columns" author="jhipster">
+        <modifyDataType
+            columnName="approved_at"
+            newDataType="${datetimeType}"
+            tableName="t_chat_room" />
+    </changeSet>
+
+    <changeSet id="20230621032750-3-change-columns" author="jhipster">
+        <modifyDataType
+            columnName="introduction"
+            newDataType="TEXT"
+            tableName="t_chat_room" />
+    </changeSet>
+
+    <changeSet id="20230621032750-2-add-columns" author="jhipster">
+        <addColumn tableName="t_chat_room">
+            <column name="broker_photo" type="TEXT">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+</databaseChangeLog>

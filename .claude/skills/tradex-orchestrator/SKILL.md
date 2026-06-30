@@ -1,6 +1,6 @@
 ---
 name: tradex-orchestrator
-description: "TradeX 작업 오케스트레이터 — API 분석, Spec/문서/FE이슈 생성, 컨벤션 검증을 자동으로 파이프라인 실행. 'API spec 만들어', 'spec 작성', 'Derivatives doc', 'FE issue 만들어', 'API 분석해줘', 'TradeX API 추적', 'Derivatives 문서', '다시 만들어', '업데이트', '수정해줘', '재실행' 요청 시 반드시 이 스킬을 사용할 것. 단순 질문(예: '이 필드가 무엇인가')은 직접 응답 가능."
+description: "Điều phối toàn bộ công việc TradeX — tự động chạy pipeline analyst→creator→validator. Dùng khi: 'tạo spec', 'viết spec', 'API spec', 'Derivatives doc', 'FE issue', 'tạo tài liệu', 'phân tích API', 'trace API', 'cập nhật spec', 'sửa lại', 'làm lại'. Câu hỏi đơn giản ('field này là gì') thì trả lời trực tiếp."
 ---
 
 # tradex-orchestrator

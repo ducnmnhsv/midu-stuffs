@@ -1,0 +1,1 @@
+<OneSignalTitle>Quyền mua cổ phiếu PHT</OneSignalTitle>Thông báo ${stk_cd} chốt danh sách ngày ${trd_dt} Phát hành thêm CP, tỉ lệ ${rate}. Thời gian thực hiện: Công ty sẽ thông báo tới KH sau. Trân trọng

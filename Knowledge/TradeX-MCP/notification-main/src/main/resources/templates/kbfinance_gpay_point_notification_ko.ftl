@@ -1,0 +1,1 @@
+You have exchanged successfully ${point} point to money in GPAY wallet.

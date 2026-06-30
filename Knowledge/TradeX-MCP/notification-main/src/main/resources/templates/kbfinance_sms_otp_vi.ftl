@@ -1,0 +1,1 @@
+(KB FINA) Ma xac thuc <#if action == "REGISTER">dang ky<#elseif action == "KBSV_EKYC">dang ky tai khoan chung khoan<#elseif action == "RESET_PASSWORD">lay lai mat khau<#elseif action == "NEW_DEVICE">dang nhap<#elseif action == "VERIFY">xac thuc<#else>${action}</#if> la ${otp}. Ma se het han trong vong 0${expiredInMinute} phut. Vui long khong chia se voi bat ky ai.

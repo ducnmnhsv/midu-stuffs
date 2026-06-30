@@ -1,0 +1,50 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-34-01">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('NHSV_MTS_COPY_TRADING_API_RECALCULATE_PROFIT_LOSS_BY_PERIOD',
+                    'get:/api/v1/copyTrading/marketLeader/recalculateProfitLossByPeriod',
+                    NULL, NULL, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+                    'CONNECTION', '{
+                                "uri": "get:/api/v1/copyTrading/marketLeader/recalculateProfitLossByPeriod",
+                                "service": "nhsv-admin",
+                                "forwardType": "SERVICE"
+                              }');
+        </sql>
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_open_api (id, operation_id, tags, uri_pattern, summary, `security`,
+                                                           parameters,
+                                                           request_body, responses, description, `version`, created_at,
+                                                           updated_at)
+            SELECT id,
+                   name,
+                   '["NHSV_ADMIN"]',
+                   uri_pattern,
+                   name,
+                   '[{"jwt": []}]',
+                   '[[{"in":"query","name":"contestId","schema":{"type":"number"},"required":true,"description":"Selected live trading contest"},{"in":"query","name":"period","schema":{"enum":["ALL","WEEEK"],"type":"string"},"description":""},{"in":"query","name":"withCondition","schema":{"type":"boolean"},"description":""},{"in":"query","name":"pageNumber","schema":{"type":"number"},"description":""},{"in":"query","name":"pageSize","schema":{"type":"number"},"description":""}]]',
+                   '[]',
+                   '{"200":{"content":{"application/json":{"schema":{"type":"object","properties":{"investors":{"type":"array","items":{"type":"object","properties":{"bio":{"type":"string"},"userId":{"type":"number"},"ranking":{"type":"number"},"fullname":{"type":"string"},"username":{"type":"string"},"subAccount":{"type":"string"},"optinBoardDate":{"type":"string"},"rankingChanged":{"type":"number"},"investmentReturn":{"type":"double"}}}},"updatedDateTime":{"type":"string"}}}}},"description":"OK"},"401":{"description":"Your access token is invalid or expired"}}',
+                   'recalculate profit loss by period ',
+                   '/api/v1',
+                   CURRENT_TIMESTAMP(),
+                   CURRENT_TIMESTAMP()
+            FROM `tradex-configuration`.t_scope
+            WHERE name = 'NHSV_MTS_COPY_TRADING_API_RECALCULATE_PROFIT_LOSS_BY_PERIOD';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            IGNORE INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+                 `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_RECALCULATE_PROFIT_LOSS_BY_PERIOD'
+              AND tsg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,1 @@
+Lệnh <#if type == "buy">mua<#else>bán</#if> tự động (ID lệnh ${orderNumber}) cho cổ phiếu ${symbol} được đặt thành công bởi hệ thống Giao Dịch Tự Động vào ${createdAt}

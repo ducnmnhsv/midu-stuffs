@@ -308,12 +308,12 @@ Rule này định nghĩa chuẩn response format cho **TẤT CẢ** Order APIs t
 
 **Lotte-integrated Reference:**
 - Read: `@Regular_Orders_API_Spec.md`
-- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../OrderController.java`
+- Code: `@Knowledge/TradeX-MCP/order-v2-main/.../OrderController.java`
 
 **TradeX-native Reference:**
 - Read: `@TPSL_Orders_API_Spec.md`
-- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../StopOrderService.java`
-- Code: `@TradeX MCP/Knowledge based/order-v2-main/.../Constants.java` (error codes)
+- Code: `@Knowledge/TradeX-MCP/order-v2-main/.../StopOrderService.java`
+- Code: `@Knowledge/TradeX-MCP/order-v2-main/.../Constants.java` (error codes)
 
 ---
 

@@ -1,0 +1,48 @@
+{
+  "userManagement": {
+    "home": {
+      "title": "Users",
+      "refreshListLabel": "Refresh list",
+      "createLabel": "Invite user",
+      "createOrEditLabel": "Invite user",
+      "editLabel": "Edit User Information"
+    },
+    "action": {
+      "save": "Invite User",
+      "Save": "Save"
+    },
+    "created": "A new user is created with identifier {{ param }}",
+    "updated": "A user is updated with identifier {{ param }}",
+    "deleted": "A user is deleted with identifier {{ param }}",
+    "delete": {
+      "question": "Are you sure you want to delete user {{ login }}?"
+    },
+    "deactivate": {
+      "question": "Are you sure you want to deactivate this account {{ login }}?"
+    },
+    "detail": {
+      "title": "User"
+    },
+    "login": "Username",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "fullName": "Full name",
+    "email": "Email",
+    "activated": "Activated",
+    "deactivated": "Deactivated",
+    "profiles": "Roles: ",
+    "langKey": "Language",
+    "createdBy": "Created by",
+    "createdDate": "Created date",
+    "lastModifiedBy": "Modified by",
+    "lastModifiedDate": "Modified date",
+    "createAt": "Create At",
+    "updatedAt": "Update At",
+    "deactivatedAt": "Deactivated At",
+    "deactivatedBy": "Deactivated By",
+    "invitedBy": "Invited By",
+    "status": "Status",
+    "Activated": "Activated",
+    "Deactivated": "Deactivated"
+  }
+}

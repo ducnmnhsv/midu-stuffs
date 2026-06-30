@@ -129,6 +129,7 @@ public final class Constants {
         public static final String vPhoneNumber = "Phone_number";
         public static final String vEmail = "Email";
         public static final String vTaxCode = "Tax_code";
+        public static final String vJobDetail = "job_detail";
         public static final String vNhsvRepresentative = "NHSV_representative";
         public static final String vNhsvRepresentativePotition = "NHSV_representative_potition";
         public static final String vAuthorizationDocNo = "Authorization_doc_No";

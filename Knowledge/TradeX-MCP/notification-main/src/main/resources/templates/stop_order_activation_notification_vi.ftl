@@ -1,0 +1,1 @@
+Lệnh dừng ${sellBuyType} vừa kích hoạt lệnh ${orderType} ${orderNumber} cho mã ${code} với KL ${orderQuantity} và giá ${orderPrice} vào lúc ${time}

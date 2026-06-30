@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity CreatedChatRoom.
+    -->
+    <changeSet id="20230704092431-1" author="jhipster">
+        <createTable tableName="t_created_chat_room">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="group_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="group_owner" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="introduction" type="TEXT">
+                <constraints nullable="true" />
+            </column>
+            <column name="photo" type="TEXT">
+                <constraints nullable="true" />
+            </column>
+            <column name="broker_name" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="broker_contact" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="approved_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="approved_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="total_view" type="bigint" defaultValue="0">
+                <constraints nullable="false" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="t_created_chat_room" columnName="updated_at"
+            columnDataType="${datetimeType}" />
+        <dropDefaultValue tableName="t_created_chat_room" columnName="approved_at"
+            columnDataType="${datetimeType}" />
+    </changeSet>
+
+    <changeSet id="20230704092431-2" author="jhipster">
+        <addColumn tableName="t_created_chat_room">
+            <column name="broker_id" type="bigint"> </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20230704092431-3" author="jhipster">
+        <addColumn tableName="t_created_chat_room">
+            <column name="rejected_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="reject_reason" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="rejected_by" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="20230704092431-4" author="jhipster">
+        <addColumn tableName="t_created_chat_room">
+            <column name="broker_photo" type="TEXT">
+                <constraints nullable="true" />
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

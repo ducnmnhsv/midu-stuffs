@@ -1,0 +1,1 @@
+Bạn đã nhận điểm thưởng chưa? Truy cập KB FINA ngay thôi nào!

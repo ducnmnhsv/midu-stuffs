@@ -1,0 +1,50 @@
+
+# Stage 2: Maven builder with Java 8 (includes tradex-common build)
+FROM maven:3.9.9-eclipse-temurin-11-focal AS maven-builder
+
+WORKDIR /workspace
+
+
+# Install Node.js 16.13.0 (needed for frontend build)
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - \
+    && apt-get update \
+    && apt-get install -y nodejs \
+    && node --version \
+    && npm --version
+
+# Copy the tradex-common project first
+COPY tradex-common-java ./tradex-common-java
+
+# Build and install tradex-common to local Maven repository
+WORKDIR /workspace/tradex-common-java
+RUN mvn clean install -DskipTests
+
+# Return to workspace and copy ekyc-admin project
+WORKDIR /workspace
+COPY . ./ekyc-admin
+
+# Change to ekyc-admin directory for the main build
+WORKDIR /workspace/ekyc-admin
+
+# Now build the complete application with Maven (tradex-common should be available)
+RUN mvn clean package -DskipTests -Pprod
+
+# Stage 3: Production runtime
+FROM eclipse-temurin:11-jre-focal AS production
+
+# Install dumb-init for proper signal handling
+RUN apt-get update && apt-get install -y --no-install-recommends bash && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+ENV TRADEX_WORKING_DIR /app
+# Copy the built JAR file from build stage
+COPY --from=maven-builder /workspace/ekyc-admin/target/*.jar ./app.jar
+
+# Copy entrypoint script
+COPY run.sh ./run.sh
+
+# Make entrypoint script executable
+RUN chmod +x ./run.sh
+
+ENTRYPOINT ["/bin/bash", "/app/run.sh", "app.jar"]

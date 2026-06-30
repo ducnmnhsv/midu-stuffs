@@ -29,6 +29,9 @@ export interface IUserInfo {
   accounts?: IUserAccount[];
   branchCode?: string;
   requireChangePassword?: boolean;
+  sotpStatus?: string;
+  sotpKey?: string;
+
 }
 
 export interface IUserData {

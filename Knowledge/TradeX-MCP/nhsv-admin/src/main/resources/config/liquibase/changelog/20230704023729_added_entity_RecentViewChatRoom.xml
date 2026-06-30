@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity RecentViewChatRoom.
+    -->
+    <changeSet id="20230704023729-1" author="jhipster">
+        <createTable tableName="t_recent_view_chat_room">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="chat_room_id" type="bigint">
+                <constraints nullable="true" />
+            </column>
+            <column name="created_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="updated_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <column name="deleted_at" type="${datetimeType}">
+                <constraints nullable="true" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+        <dropDefaultValue tableName="t_recent_view_chat_room" columnName="created_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="t_recent_view_chat_room" columnName="updated_at" columnDataType="${datetimeType}"/>
+        <dropDefaultValue tableName="t_recent_view_chat_room" columnName="deleted_at" columnDataType="${datetimeType}"/>
+    </changeSet>
+</databaseChangeLog>

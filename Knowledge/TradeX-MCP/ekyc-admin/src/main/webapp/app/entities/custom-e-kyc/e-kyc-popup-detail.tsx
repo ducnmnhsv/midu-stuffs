@@ -325,6 +325,15 @@ export const EKycPopupDetail = (props: IEKycDetailProps) => {
                 </Row>
                 <Row className="mb-4">
                   <Col sm="6">
+                    <Translate contentKey="eKycAdminApp.customEKyc.nhsv.job">Job</Translate>
+                    <span>:</span>
+                  </Col>
+                  <Col sm="6">
+                    <span>{eKycEntity.job}</span>
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col sm="6">
                     <Translate contentKey="eKycAdminApp.customEKyc.nhsv.bankList">Bank List</Translate>
                     <span>:</span>
                   </Col>
@@ -455,6 +464,15 @@ export const EKycPopupDetail = (props: IEKycDetailProps) => {
                   </Col>
                   <Col className="info" sm="6">
                     <span>{eKycEntity.fatca ? 'Yes' : 'No'}</span>
+                  </Col>
+                </Row>
+                <Row className="mb-4">
+                  <Col className="info" sm="6">
+                    <Translate contentKey="eKycAdminApp.customEKyc.nhsv.derivativesIncluded">Derivatives Included</Translate>
+                    <span>:</span>
+                  </Col>
+                  <Col className="info" sm="6">
+                    <span>{eKycEntity.derivativesIncluded ? 'Yes' : 'No'}</span>
                   </Col>
                 </Row>
               </Col>

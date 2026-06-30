@@ -5,6 +5,7 @@ import com.difisoft.kafka.handler.Controller;
 import com.difisoft.kafka.handler.DeserializeServerRequestHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techx.tradex.realtime.configurations.AppConf;
+import com.techx.tradex.realtime.model.request.EodBackfillRequest;
 import com.techx.tradex.realtime.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,8 @@ public class RequestHandler extends DeserializeServerRequestHandler {
             CacheService cacheService,
             SymbolInfoRollerService symbolInfoRollerService,
             MonitorService monitorService,
-            SymbolInfoService symbolInfoService
+            SymbolInfoService symbolInfoService,
+            EodSnapshotService eodSnapshotService
     ) {
         super(objectMapper, appConf.getKafkaBootstraps(), appConf.getClusterId(), 5);
         Map<String, Controller> map = new HashMap<>();
@@ -37,6 +39,8 @@ public class RequestHandler extends DeserializeServerRequestHandler {
         map.put("/resetCache", new Controller<>(Object.class, (p1, p2) -> forwarded(cacheService::reset)));
         map.put("/calculateRoller", new Controller<>(Object.class, (p1, p2) -> forwarded(symbolInfoRollerService::rollerData)));
         map.put("/uploadMarketStaticFile", new Controller<>(Object.class, (p1, p2) -> forwarded(symbolInfoService::uploadMarketStaticFile)));
+        map.put("/job/publishEodSnapshot", new Controller<>(Object.class, (p1, p2) -> forwarded(eodSnapshotService::publishEodSnapshot)));
+        map.put("/job/triggerEodBackfill", new Controller<>(EodBackfillRequest.class, eodSnapshotService::triggerBackfillJob));
         this.setControllerMap(map);
     }
 

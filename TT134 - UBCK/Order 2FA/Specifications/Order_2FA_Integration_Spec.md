@@ -3,101 +3,108 @@
 **Feature:** Xác thực 2 lớp — Login & Giao dịch
 **TT134 Reference:** Điều 7 (Xác thực), Điều 8 (Phương thức xác thực & TTL), Điều 10 (Xử lý Giao dịch), Điều 11 (Rủi ro)
 **Priority:** P0
-**Version:** 1.1
+**Version:** 1.3
 **Status:** Draft — updated 2026-06-30
 
 ---
 
 ## 0. Flow Overview
 
-> **Architecture note:** Core (Lotte) đã có sẵn khả năng verify Smart OTP cho đặt lệnh. NHSV Pro app đã handle TOTP code generation (SmartOTPInput từ Login S-OTP). Với Smart OTP, TradeX chỉ cần proxy OTP code kèm order data sang Core — Core verify và process order atomically, không cần challenge/proof-token riêng. Proof token chỉ cần thiết cho Biometric L2 (verify local trên AAA, tách biệt với Core).
+> **Architecture note:** Core (Lotte) đã có sẵn khả năng verify Smart OTP cho đặt lệnh. NHSV Pro app đã handle TOTP code generation (SmartOTPInput từ Login S-OTP). Với Smart OTP, TradeX chỉ cần proxy OTP code kèm order data sang Core — Core verify và process order atomically, không cần challenge/proof-token riêng. Proof token chỉ cần thiết cho Biometric path (verify qua kbfinance/verifyPassword với `pinType: "BIOMETRIC"`, tách biệt với Core).
 
-### 0.1 Bức tranh toàn cảnh — 3 giai đoạn xác thực trong một phiên
+### 0.1 Bức tranh toàn cảnh — model xác thực theo phiên
+
+> **Quyết định thiết kế v1.3:** Login Smart OTP = Session Auth. Không có màn hình Session Auth riêng. Hard gate: bắt buộc kích hoạt Smart OTP trước khi giao dịch.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  STAGE 1: LOGIN                                                     │
+│  STAGE 1+2 (MERGED): LOGIN WITH SMART OTP                          │
 │                                                                     │
-│  Cùng thiết bị    →  Password only          → Vào app              │
+│  Password + Smart OTP (Case A) → verifyOTP → JWT embed sAm+sAt    │
+│                                  → Vào app, giao dịch tự do        │
 │                                                                     │
-│  Thiết bị mới /   →  Password               → 2FA bắt buộc (Điều 7)│
-│  Lần đầu             ├─ Smart OTP (nếu đã kích hoạt)               │
-│                       └─ SMS OTP             ← fallback             │
+│  Password + SMS OTP (chưa kích hoạt Smart OTP)                     │
+│  → JWT không có sAm → Hard gate: bắt buộc kích hoạt Smart OTP     │
+│  → Sau kích hoạt → re-login với Smart OTP → sAm embedded → app    │
 └─────────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────────┐
-│  STAGE 2: GIAO DỊCH ĐẦU PHIÊN (đầu tiên trong session)            │
+│  STAGE 3: PER-TRANSACTION — chỉ áp dụng cho rút tiền ≥ 10M        │
 │                                                                     │
-│  Smart OTP bắt buộc trước khi đặt lệnh đầu tiên                   │
-│  ├─ Nếu vừa xác thực Smart OTP ở login (thiết bị mới) → bỏ qua    │
-│  └─ Fallback: SMS OTP                                               │
-└─────────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────────┐
-│  STAGE 3: TỪNG GIAO DỊCH (theo giá trị)                            │
-│                                                                     │
-│  < 10tr           →  Không cần 2FA (silent)                        │
-│  10tr – 100tr     →  Biometric L2 (Face ID) → SMS OTP              │
-│  ≥ 100tr          →  Smart OTP → SMS OTP                           │
-│  Rút tiền ≥ 10M   →  Biometric server-side (stt14b, sau GATE)      │
+│  Rút tiền ≥ 10M  →  Biometric server-side (Điều 12k4a)            │
+│                      verify qua kbfinance/verifyPassword            │
+│                      KHÔNG cho phép fallback Smart OTP              │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 0.2 Method priority — Auto-select, degrade gracefully
+### 0.2 Method priority
 
-| Độ ưu tiên | Method | Điều kiện available | UX |
-|---|---|---|---|
-| 1 | **Smart OTP (TOTP)** | Đã kích hoạt trên thiết bị | Nhập 6 số — không cần mạng |
-| 2 | **SMS OTP** | Luôn available | Chờ tin nhắn, phụ thuộc sóng |
+| Method | Điều kiện | Áp dụng cho |
+|---|---|---|
+| **Smart OTP (TOTP)** | Bắt buộc — đã kích hoạt | Login verifyOTP → sAm/sAt embedded → GDCK + rút tiền < 10M |
+| **SMS OTP** | Chỉ cho login khi Smart OTP chưa kích hoạt | Không cover GDCK — user phải kích hoạt Smart OTP trước |
+| **Biometric server-side** | Enrolled (`t_biometric`) | Rút tiền ≥ 10M, bắt buộc, không fallback |
 
-> Hệ thống **auto-select method ưu tiên cao nhất** còn available. User có thể chủ động chuyển sang SMS OTP ("Gửi OTP qua SMS").
+> Smart OTP là **bắt buộc** cho session auth. Không có SMS OTP fallback cho GDCK. User chưa kích hoạt Smart OTP → hard gate, phải kích hoạt trước khi giao dịch.
 
 ### 0.3 Architecture — path theo method
 
-| Path | 2FA Challenge | Verify | Confirm |
+| Path | Trigger | Verify | Ghi log |
 |---|---|---|---|
-| **Smart OTP** | Không cần — app gen TOTP ngay | Core verify atomic | POST confirm kèm `smartOtpCode` |
-| **Biometric L2** | Cần — bind RSA signature với txHash | AAA verify locally → proof token | POST confirm kèm `X-2FA-Token` |
-| **SMS OTP** | Không cần challenge | Core verify (qua lotte-bridge) | POST confirm kèm `smsOtpCode` |
+| **Smart OTP** | Login verifyOTP với `otpType=SMART_OTP` | Core verify (lotte-bridge `verifySmartOtp`) | `sAm=SOFT_OTP`, `sAt=login_time` — embedded trong JWT |
+| **Biometric server-side** | Rút tiền ≥ 10M (per-transaction) | `kbfinance/verifyPassword` với `pinType=BIOMETRIC` → proof token | `auth_method=BIOMETRIC`, `auth_time=biometric_verify_time` (riêng từng giao dịch) |
 
 ---
 
-## 0a. Login 2FA Flow (Điều 7 — thiết bị mới / lần đầu)
+## 0a. Login Flow — sAm/sAt embedded tại verifyOTP
 
-> Điều khoản trigger: *"Khi KH đăng nhập lần đầu hoặc đăng nhập trên thiết bị khác với thiết bị đã đăng nhập lần gần nhất phải thực hiện xác thực theo một trong các hình thức quy định tại Điều 7."*
+> **Không có màn hình Session Auth riêng.** Login với Smart OTP = session auth. `sAm`/`sAt` được embed ngay trong JWT tại bước verifyOTP.
 
 ```
-[Nhập user/pass] → [BE check deviceId vs last_device_id]
-        │
-        ├─ Cùng thiết bị ──────────────────────────────────→ Login OK
-        │
-        └─ Thiết bị mới / lần đầu
-               │
-               ├─ Smart OTP đã kích hoạt?
-               │    └─ YES → Hiện màn Smart OTP (TOTP)
-               │         ├─ Verify OK  → Login OK + flag "session_device_authed = true"
-               │         └─ Fail 3 lần → Chuyển SMS OTP
-               │
-               └─ Chưa có Smart OTP / Smart OTP locked → SMS OTP
-                    └─ Gửi OTP về SĐT đã đăng ký
-                         └─ Verify OK → Login OK + flag "session_device_authed = true"
+Case A — Smart OTP user (sotpStatus=Y, local key có sẵn):
 
-Sau login thành công (thiết bị mới): prompt kích hoạt Smart OTP (BE-7 flow)
+[Nhập user/pass] → POST /login → sotpStatus=Y + otpType=SMART_OTP
+       → [Smart OTP input — 6 chữ số]
+       → POST /login/sec/verifyOTP { otpType: "SMART_OTP" }
+       → BE embed sAm=SOFT_OTP, sAt=<login_time> trong JWT
+       → JWT final → Vào app, giao dịch tự do toàn phiên ✓
+
+Case C — Smart OTP user, cài lại app (sotpStatus=Y, local key mất):
+
+[Nhập user/pass] → POST /login → sotpStatus=Y, nhưng không có local key
+       → [Special screen: kích hoạt lại / SMS fallback]
+       → PRIMARY: kích hoạt lại Smart OTP (otp/send → otp/verify → smartOtp/register)
+           → sotpKey mới lưu vào Keychain
+           → [Smart OTP input] → verifyOTP với Smart OTP → sAm embedded → app ✓
+       → SECONDARY: SMS fallback (tạm thời, để login)
+           → verifyOTP SMS → JWT không có sAm
+           → Hard gate: phải kích hoạt Smart OTP → sau đó re-login ✓
+
+Case B — Chưa có Smart OTP (sotpStatus=N):
+
+[Nhập user/pass] → POST /login → sotpStatus=N + otpType=SMS_OTP
+       → [SMS OTP input — 4 chữ số]
+       → POST /login/sec/verifyOTP (SMS)
+       → JWT final không có sAm
+       → Hard gate: "Kích hoạt Smart OTP để giao dịch"
+           → Activation flow (SMS OTP → PIN → register → sotpKey saved)
+           → Re-login → Case A → sAm embedded → app ✓
 ```
 
-**Lưu ý quan trọng về Stage 2 (giao dịch đầu phiên):**
-- Nếu `session_device_authed = true` (vừa xác thực Smart OTP lúc login) → **bỏ qua** yêu cầu Smart OTP đầu phiên — tránh hỏi 2 lần liên tiếp
-- Nếu login bằng SMS OTP → vẫn phải xác thực Smart OTP đầu phiên riêng
+**Lưu ý:**
+- `sAm`/`sAt` chỉ được embed khi `otpType=SMART_OTP` trong verifyOTP — không embed cho SMS OTP login
+- `sAt` = thời điểm login, hợp lệ toàn phiên (session timeout hoặc logout mới reset)
+- Hard gate: FE kiểm tra JWT sau login — nếu không có `sAm` → redirect mandatory Smart OTP activation, không vào home
 
 ## 0b. UX Principles
 
 | Principle | Mô tả |
 |-----------|-------|
-| **Tự động chọn method** | Hệ thống tự chọn method mạnh nhất còn available — không bắt user chọn |
-| **Fallback mượt mà** | Smart OTP locked/unavailable → SMS OTP tự động — không block giao dịch |
-| **Không hỏi 2 lần** | Vừa xác thực Smart OTP lúc login (thiết bị mới) → bỏ qua Smart OTP đầu phiên |
-| **Minh bạch về bảo mật** | Hiển thị lý do cần 2FA, số tiền, SĐT nhận OTP |
-| **Reuse existing** | SmartOTPInput component và TOTP generation đã có từ Login flow — reuse, không build mới |
+| **Smart OTP bắt buộc** | Tất cả user phải có Smart OTP để giao dịch. Không có SMS OTP fallback cho GDCK. |
+| **Zero extra step** | User đã có Smart OTP: login → giao dịch ngay. Không màn hình trung gian. |
+| **Hard gate activation** | User chưa có Smart OTP: mandatory activation trước khi vào home. Clear CTA, không cho skip. |
+| **Minh bạch** | Hard gate hiển thị lý do rõ ràng: "Smart OTP cần thiết để đặt lệnh theo quy định TT134" |
+| **Reuse existing** | SmartOTPInput và TOTP generation đã có từ Login S-OTP flow — reuse, không build mới |
 
 ## 0c. BE / FE Responsibility Split
 
@@ -146,22 +153,20 @@ Hiện tại, việc xác nhận giao dịch (đặt lệnh, chuyển tiền, ch
 
 ### 1.4 Transactions Requiring 2FA
 
-| Transaction Type | Threshold | Method (ưu tiên cao → thấp) |
-|-----------------|-----------|------------------------------|
-| Login — thiết bị mới / lần đầu | Luôn | Smart OTP → SMS OTP |
-| Giao dịch đầu phiên | Luôn (trừ khi đã auth Smart OTP ở login) | Smart OTP → SMS OTP |
-| Order đặt lệnh | ≥ 100tr | Smart OTP → SMS OTP |
-| Order đặt lệnh | 10tr – 100tr | Biometric L2 → SMS OTP |
-| Order đặt lệnh | < 10tr | Không cần 2FA |
-| Cash transfer (chuyển tiền) | Mọi giá trị | Smart OTP → SMS OTP |
-| Stock transfer (chuyển CK) | Mọi giá trị | Smart OTP → SMS OTP |
-| Rút tiền | < 10M | Smart OTP → SMS OTP |
-| Rút tiền | ≥ 10M | Biometric server-side (stt14b — sau GATE) |
-| Profile change (đổi SĐT/email) | N/A | SMS OTP + Smart OTP |
-| Smart OTP enrollment (BE-7) | N/A | SMS OTP + Biometric device |
-| Password change | N/A | SMS OTP |
+| Transaction Type | Auth method | Fallback | Auth log |
+|---|---|---|---|
+| Login — thiết bị mới / lần đầu | Smart OTP | SMS OTP | Ghi vào session |
+| **Đầu phiên (sau mọi login)** | **Smart OTP — bắt buộc** | **SMS OTP** | `session_auth_method`, `session_auth_time` |
+| **GDCK — mọi giá trị** | **Session auth (đã xác thực đầu phiên)** | — | Reuse `session_auth_method/time` |
+| Cash transfer (chuyển tiền) | Session auth | — | Reuse `session_auth_method/time` |
+| Stock transfer (chuyển CK) | Session auth | — | Reuse `session_auth_method/time` |
+| **Rút tiền < 10M** | **Session auth** | — | Reuse `session_auth_method/time` |
+| **Rút tiền ≥ 10M** | **Biometric server-side (Điều 12k4a)** | **Không cho fallback** | `auth_method=BIOMETRIC`, `auth_time=thời điểm biometric verify` |
+| Profile change (đổi SĐT/email) | SMS OTP + Smart OTP | — | — |
+| Smart OTP enrollment (BE-7) | SMS OTP + Biometric device | — | — |
+| Password change | SMS OTP | — | — |
 
-> **Note:** Threshold 10tr/100tr cần confirm với compliance. Đây là đề xuất ban đầu dựa trên TT134.
+> **Điểm thay đổi so với v1.0:** Không còn tier theo giá trị lệnh GDCK (< 10tr / 10tr–100tr / ≥ 100tr). Thay bằng model session-auth — xác thực 1 lần đầu phiên, cover toàn bộ GDCK. Rút tiền ≥ 10M vẫn yêu cầu biometric per-transaction theo Điều 12k4a.
 
 ---
 
@@ -169,97 +174,152 @@ Hiện tại, việc xác nhận giao dịch (đặt lệnh, chuyển tiền, ch
 
 ### 2.1 2FA Verification Flow
 
-**Path A — Smart OTP (≥ 100tr) — primary**
+**Path A — Smart OTP Login → sAm/sAt embedded (GDCK + rút tiền < 10M)**
 
 ```
-User chọn items → tap "Confirm"
+[Login với Smart OTP]
     │
-    ├─ FE check totalValue ≥ 100tr → check Smart OTP status
-    │   ├─ Đã kích hoạt → hiển thị Smart OTP screen (TOTP 6-digit)
-    │   └─ Chưa kích hoạt / locked → xuống Path C (SMS OTP)
+    ├─ POST /rest/api/v1/login → sotpStatus=Y + otpType=SMART_OTP
     │
-    ├─ User nhập 6-digit TOTP code → tap "Xác nhận"
+    ├─ User nhập TOTP 6-digit → POST /rest/api/v1/login/sec/verifyOTP
+    │       { otpValue: "123456", otpType: "SMART_OTP" }
+    │       → BE embed sAm=SOFT_OTP, sAt=<login_time> trong JWT final
     │
-    └─ FE: POST /api/v1/order/confirm
-           { orders: [...], smartOtpCode: "123456", purpose: "ORDER_PLACEMENT" }
+    └─ Từ đây: mọi GDCK và rút tiền < 10M → FE gọi thẳng confirm API
+               không cần OTP thêm, BE middleware tự lấy sAm/sAt từ JWT để log
+```
+
+```
+[GDCK — đặt lệnh bất kỳ giá trị]
+    │
+    └─ FE: POST /rest/api/v1/lotte/equity/order (hoặc derivatives/order)
+           { accountNumber, orders: [...] }
+           (không có OTP field — session đã auth qua login)
                │
-               └─ lotte-bridge → Core
-                       Core: verify Smart OTP + process order (atomic)
-                       ├─ OTP valid → order confirmed → trả kết quả
-                       └─ OTP invalid → trả lỗi → FE retry (max 5 lần → fallback SMS OTP)
+               └─ lotte-bridge → Core (process order)
+                   BE middleware log: auth_method=sAm, auth_time=sAt từ JWT
 ```
 
-**Path B — Biometric L2 (10tr – 100tr) — primary**
+**Path B — Hard gate Smart OTP activation (user chưa kích hoạt)**
 
 ```
-User chọn items → tap "Confirm"
+[Login với SMS OTP — sotpStatus=N]
     │
-    ├─ FE check 10tr ≤ totalValue < 100tr → check biometric enrollment
-    │   ├─ Enrolled → trigger Biometric prompt
-    │   └─ Chưa enroll → xuống Path C (SMS OTP)
+    ├─ POST /rest/api/v1/login/sec/verifyOTP (SMS) → JWT không có sAm
+    │
+    ├─ FE: JWT parse → sAm không tồn tại → Hard gate (không vào home)
+    │       Màn hình: "Kích hoạt Smart OTP để giao dịch"
+    │       Lý do rõ: "Theo quy định TT134, Smart OTP là bắt buộc"
+    │
+    ├─ User kích hoạt Smart OTP (otp/send → otp/verify → smartOtp/register)
+    │       → sotpKey mới lưu vào Keychain
+    │
+    └─ "Đăng nhập lại với Smart OTP để bắt đầu giao dịch"
+           → Re-login → Path A → sAm embedded → vào app ✓
+```
+
+**Path C — Biometric server-side (rút tiền ≥ 10M, per-transaction)**
+
+```
+User tap "Rút tiền" với amount ≥ 10M
+    │
+    ├─ FE check biometric enrollment status
+    │   └─ Chưa enroll → BLOCK, hiển thị yêu cầu đăng ký biometric
+    │      (không cho fallback Smart OTP — Điều 12k4a bắt buộc)
     │
     ├─ FE: POST /api/v1/transactions/2fa/challenge
-    │       { transactionType: "ORDER_CONFIRM", transactionData: {...} }
+    │       { transactionType: "WITHDRAWAL", transactionData: { amount, destAccount } }
     │       → nhận challengeId + transactionHash
     │
     ├─ FE: BiometricPromptHandler.sign(challengeId + transactionHash)
-    │   └─ FAIL 3 lần → chuyển Path C (SMS OTP)
+    │   └─ FAIL → thông báo lỗi, không cho tiếp tục
     │
     ├─ FE: POST /api/v1/transactions/2fa/verify
     │       { challengeId, method: "BIOMETRIC", signature }
+    │       → BE: verify RSA signature → gọi kbfinance/verifyPassword (pinType=BIOMETRIC)
     │       → nhận proofToken (JWT 60s, 1-time)
     │
-    └─ FE: POST /api/v1/order/confirm kèm X-2FA-Token: proofToken
+    └─ FE: POST /api/v1/cash/withdraw/confirm kèm X-2FA-Token: proofToken
+           BE log: auth_method=BIOMETRIC, auth_time=thời điểm biometric verify
 ```
 
-**Path C — SMS OTP (fallback cuối cùng)**
+### 2.2 Session Auth Token — IAccessToken bổ sung
 
-```
-[Smart OTP locked / chưa kích hoạt] → FE switch sang SMS
-    │
-    ├─ FE: POST /api/v1/otp/send
-    │       { purpose: "ORDER_PLACEMENT", transactionRef: pendingOrderRef }
-    │       → SMS gửi về SĐT đã đăng ký, TTL 5 phút (Điều 8 — TT134)
-    │
-    ├─ User nhập SMS OTP (countdown 5 phút)
-    │
-    └─ FE: POST /api/v1/order/confirm
-           { orders: [...], smsOtpCode: "123456", purpose: "ORDER_PLACEMENT" }
-               │
-               └─ lotte-bridge → Core (verify SMS OTP + process order)
+BE cần thêm 2 field vào `IAccessToken` (hiện có: `uId`, `cId`, `lm`, `rId`, `sc`, `rls`, `step`, `pl`, `gt`, `osV`, `appV`, `madr`):
+
+```typescript
+interface IAccessToken {
+  // ... existing fields (giữ nguyên)
+  sAm?: string;    // sessionAuthMethod: "SOFT_OTP" (chỉ giá trị này — SMS OTP không được embed)
+  sAt?: number;    // sessionAuthTime: Unix timestamp (giây) — thời điểm login
+}
 ```
 
-### 2.2 2FA Proof Token
+`sAm`/`sAt` được embed **tại bước `generateToken()` trong verifyOTP** khi `otpType=SMART_OTP`. Không có endpoint session/auth riêng. Middleware của order và withdraw/confirm đọc 2 field này từ JWT để ghi vào `t_order_log.auth_method` / `auth_time` — không cần FE gửi thêm.
 
-Để tránh replay attack và đảm bảo OTP chỉ dùng cho 1 transaction, cần tạo **2FA proof token** — access token ngắn hạn, 1-time, gắn với transaction data:
+`sAm`/`sAt` carry qua refresh token trong cùng ngày giao dịch. Reset khi: logout, session timeout, hoặc refresh token expire.
+
+### 2.3 2FA Proof Token — Biometric path (rút tiền ≥ 10M)
+
+Proof token chỉ dùng cho biometric path. Tránh replay attack bằng cách bind với transactionHash:
 
 ```json
-// 2FA Token Payload
 {
   "sub": "2fa_proof",
   "userId": 12345,
-  "transactionType": "ORDER_CONFIRM",
-  "transactionHash": "sha256(...orderData...)",
-  "method": "SMARTOTP",
+  "transactionType": "WITHDRAWAL",
+  "transactionHash": "sha256(...withdrawalData...)",
+  "method": "BIOMETRIC",
   "iat": 1718200000,
-  "exp": 1718200060   // 60s TTL
+  "exp": 1718200060
 }
 ```
 
 **Flow:**
-1. User confirm → backend tạo `2faChallenge` (transactionHash, method, expiresAt)
-2. User verify OTP/biometric → backend kiểm tra → trả về 2FA proof token
-3. User gọi POST confirm order API kèm 2FA token trong header `X-2FA-Token`
-4. Backend verify 2FA token + match transactionHash → xử lý order
-5. 2FA token chỉ dùng 1 lần (revoke ngay sau khi dùng)
+1. FE gọi challenge API → nhận `challengeId` + `transactionHash`
+2. FE trigger biometric prompt → ký `challengeId + transactionHash` bằng RSA private key
+3. FE gọi verify API với signature → BE verify RSA + call `kbfinance/verifyPassword (pinType=BIOMETRIC)` → trả proof token
+4. FE gọi `POST /cash/withdraw/confirm` kèm `X-2FA-Token`
+5. Proof token dùng 1 lần, TTL 60s, revoke ngay sau khi dùng
 
 ---
 
 ## 3. API Endpoints
 
-### 3.1 Confirm Order — Smart OTP Path (≥ 100tr)
+> **v1.3:** Không có `POST /api/v1/session/auth` endpoint. sAm/sAt được embed trong verifyOTP (login flow). Smart OTP Login (07_BE_Task) là prerequisite trực tiếp.
 
-> Core verify Smart OTP và process order atomic. Không cần challenge/proof token riêng.
+### 3.0 verifyOTP — điểm embed sAm/sAt (thay đổi existing endpoint)
+
+```
+POST /rest/api/v1/login/sec/verifyOTP
+Authorization: Bearer <temp_access_token>
+Content-Type: application/json
+```
+
+**Request Body (Smart OTP — sẽ embed sAm/sAt):**
+```json
+{
+  "otpValue": "482916",
+  "otpType": "SMART_OTP"
+}
+```
+
+**JWT final (khi otpType=SMART_OTP):**
+```typescript
+{
+  // ... existing fields
+  sAm: "SOFT_OTP",    // embedded tại generateToken()
+  sAt: 1751260800     // Unix timestamp của login time
+}
+```
+
+> Không embed sAm/sAt khi otpType = SMS_OTP. FE parse JWT sau login — thiếu sAm → hard gate activation.
+
+---
+
+### 3.1 Confirm Order — Session Auth (mọi giá trị GDCK)
+
+> Không cần OTP trong body — session đã auth. BE middleware tự lấy `sAm`/`sAt` từ JWT để log.
 
 ```
 POST /api/v1/order/confirm
@@ -275,18 +335,15 @@ Content-Type: application/json
   "orders": [
     { "orderDate": "2026-06-13", "orderNumber": "123456" }
   ],
-  "smartOtpCode": "482916",
   "purpose": "ORDER_PLACEMENT"
 }
 ```
 
 | Field | Type | Mô tả |
 |---|---|---|
-| `smartOtpCode` | string | 6-digit TOTP code từ NHSV Pro app (Smart OTP path) |
-| `smsOtpCode` | string | Code từ SMS OTP (fallback path) |
 | `purpose` | enum | `ORDER_PLACEMENT` — bắt buộc để Core log đúng nghiệp vụ |
 
-> Chỉ 1 trong 2 (`smartOtpCode`, `smsOtpCode`) được phép có trong 1 request. BE reject nếu có cả hai.
+> `auth_method` và `auth_time` trong `t_order_log` được lấy tự động từ `sAm`/`sAt` trong JWT.
 
 **Response (success):**
 ```json
@@ -311,29 +368,6 @@ Content-Type: application/json
 | `ORDER_PLACE_XXXX` | 422 | Lỗi từ Core (pass-through) |
 
 ---
-
-### 3.2 Confirm Order — SMS OTP Fallback Path
-
-```
-POST /api/v1/order/confirm
-Authorization: Bearer <access_token>
-Content-Type: application/json
-```
-
-**Request Body:**
-```json
-{
-  "accountNumber": "123456",
-  "subNumber": "001",
-  "orders": [
-    { "orderDate": "2026-06-13", "orderNumber": "123456" }
-  ],
-  "smsOtpCode": "482916",
-  "purpose": "ORDER_PLACEMENT"
-}
-```
-
-> Cùng endpoint với Smart OTP — BE phân biệt qua field `smartOtpCode` vs `smsOtpCode`. Chỉ 1 trong 2 được phép có trong 1 request.
 
 ---
 
@@ -713,15 +747,16 @@ ConfirmOrdersScreen
 
 | Question | Decision |
 |----------|----------|
-| Threshold 10tr/100tr có đúng không? | Cần confirm với compliance |
-| SmartOTP device binding: 1 device/user? | Hiện tại 1 device, future multi-device |
-| User chưa enroll Smart-OTP: force enroll hay fallback? | SMS fallback — không block giao dịch |
-| Biometric L2 có verify qua Lotte Core không? | **Không** — verify local trên AAA (RSA signature) |
-| Smart OTP verify có qua Core không? | **Có** — Core verify TOTP và process order atomic |
+| SmartOTP device binding: 1 device/user? | Hiện tại 1 device (`t_sotp_device`), future multi-device |
+| User chưa enroll Smart OTP: force enroll hay fallback? | ✅ **Resolved v1.3:** Hard gate — bắt buộc kích hoạt trước khi giao dịch. Không có SMS OTP fallback cho GDCK. |
+| Biometric verify có qua Lotte Core không? | **Không** — verify qua `kbfinance/verifyPassword (pinType=BIOMETRIC)` |
+| Smart OTP verify qua Core hay AAA? | **Qua Core** — lotte-bridge `verifySmartOtp` → Core. Embedded tại verifyOTP. |
 | SmartOTPInput component có sẵn chưa? | **Có** — NHSV Pro app đã có từ Login S-OTP flow, reuse |
-| session_device_authed flag lưu ở đâu? | JWT session claim hoặc Redis session store — cần align với BE |
-| Login 2FA: Smart OTP verify qua Core hay AAA? | Cần clarify — nếu qua Core thì cùng path với transaction; nếu AAA thì riêng |
-| Admin transactions có cần 2FA không? | Có — configurable |
+| `sAm`/`sAt` lưu trong JWT hay Redis? | ✅ **Resolved v1.3:** JWT — đơn giản, không cần Redis lookup per-request |
+| Rút tiền ≥ 10M: nếu user chưa enroll biometric? | Block giao dịch, yêu cầu enroll — không cho fallback Smart OTP (Điều 12k4a) |
+| `sAm`/`sAt` có carry qua refresh token không? | ✅ **Resolved v1.3:** Có — carry trong cùng ngày giao dịch. Reset khi logout/session expire. |
+| TT134 Điều 18 k4: auth_time = session auth time hay per-transaction? | ✅ **Resolved v1.3:** auth_time = thời điểm login (session auth time). Hợp lệ toàn phiên. |
+| Admin transactions có cần session auth không? | Có — áp dụng cùng model |
 
 ---
 
@@ -745,4 +780,4 @@ ConfirmOrdersScreen
 
 ---
 
-*Last updated: 2026-06-30*
+*Last updated: 2026-06-30 — v1.3: login Smart OTP = session auth (no separate screen/endpoint), hard gate activation, all open questions resolved*

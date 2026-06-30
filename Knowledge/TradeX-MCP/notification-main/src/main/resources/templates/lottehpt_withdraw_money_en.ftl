@@ -1,0 +1,1 @@
+<OneSignalTitle>Thông báo</OneSignalTitle>TK ${acnt_no}-${sub_no} của quý khách đã thay đổi: ${trd_amt}VND lúc ${trd_tm} ngày ${trd_dt}. Số dư hiện tại là: ${dpo}VND

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Added the field constraints for entity Broker.
+    -->
+    <changeSet id="20230703062136-fields-constraints" author="jhipster">
+        <addUniqueConstraint tableName="broker"
+            columnNames="email"
+            constraintName="ux_broker__email"/>
+    </changeSet>
+</databaseChangeLog>

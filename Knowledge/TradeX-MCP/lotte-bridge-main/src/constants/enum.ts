@@ -189,6 +189,29 @@ export const CASH_DEPOSIT_HISTORY_TYPE = {
   EXTERNAL_LOAN: '11',
 }
 
+export enum AccountType {
+  INDIVIDUAL = 'INDIVIDUAL',
+  INSTITUTION = 'INSTITUTION',
+}
+
+export const CHANGE_BROKER_REASON = {
+  SELF_TRADING: { code: 'SELF_TRADING', label: 'Muốn tự giao dịch, không cần môi giới hỗ trợ' },
+  CHANGE_BROKER: { code: 'CHANGE_BROKER', label: 'Muốn chuyển sang môi giới khác' },
+  LOW_QUALITY: { code: 'LOW_QUALITY', label: 'Không hài lòng với chất lượng tư vấn, khuyến nghị đầu tư' },
+  LOW_SUPPORT: { code: 'LOW_SUPPORT', label: 'Môi giới hiện tại ít liên lạc / hỗ trợ chưa kịp thời' },
+  BROKER_MOVED: { code: 'BROKER_MOVED', label: 'Môi giới hiện tại thay đổi nơi làm việc / không còn làm tại công ty' },
+  OTHER: { code: 'OTHER', label: 'Lý do cá nhân khác' },
+} as const;
+
+export function getChangeBrokerReasonLabel(code: string): string {
+  const reason = Object.values(CHANGE_BROKER_REASON).find(r => r.code === code);
+  return reason?.label || code;
+}
+
+export function getChangeBrokerReasonCodes(): string[] {
+  return Object.values(CHANGE_BROKER_REASON).map(r => r.code);
+}
+
 export const TradingSession = {
   P: 'ATO',
   O: 'CONTINUOUS',
@@ -198,6 +221,16 @@ export const TradingSession = {
   C: 'PLO',
   K: 'CLOSED',
   G: 'CLOSED',
+} as const;
+
+export const NOTIFICATION_TYPE = {
+  ALL: '%',
+  ACCOUNT: '01',
+  STOCK: '02',
+  ORDER: '03',
+  LOAN: '04',
+  CASH: '07',
+  OTHER: '09',
 } as const;
 
 export type SellBuyType = typeof SELL_BUY_TYPE[keyof typeof SELL_BUY_TYPE];
@@ -229,6 +262,10 @@ export type ConfirmStatus = typeof CONFIRM_STATUS[keyof typeof CONFIRM_STATUS];
 export type SubType = typeof SUB_TYPE[keyof typeof SUB_TYPE];
 
 export type CashDepositHistoryType = typeof CASH_DEPOSIT_HISTORY_TYPE[keyof typeof CASH_DEPOSIT_HISTORY_TYPE];
+
+export type NotificationType = typeof NOTIFICATION_TYPE[keyof typeof NOTIFICATION_TYPE];
+
+export type ChangeBrokerReasonType = typeof CHANGE_BROKER_REASON[keyof typeof CHANGE_BROKER_REASON]['code'];
 
 export function getKeyByValue(value: string | number, obj: object) {
   const indexOfS = Object.values(obj).indexOf(value);

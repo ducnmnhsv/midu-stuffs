@@ -1,0 +1,85 @@
+{
+  "changelogDate": "20230621020056",
+  "fields": [
+    {
+      "fieldName": "groupName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "groupOwner",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "introduction",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "photo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "brokerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "brokerContact",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "StatusEnum",
+      "fieldValues": "PENDING,APPROVED,REJECTED,CREATED,UPDATED"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "approvedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "rejectedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "rejectReason",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "approvedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "rejectedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "action",
+      "fieldType": "ActionEnum",
+      "fieldValues": "CREATE,UPDATE,DELETE"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "ChatRoom",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [
+    {
+      "otherEntityName": "socialLink",
+      "otherEntityRelationshipName": "chatRoom",
+      "relationshipName": "socialLink",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "service": "serviceClass"
+}

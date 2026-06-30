@@ -9,6 +9,7 @@ export interface IRightDetailResponse {
   availableAmount?: number;
   standardQuantity?: number;
   availableQuantity?: number;
+  requestedQuantity?: number;
   processStatusCode?: number;
   processStatusName?: string;
   approveWaitingQuantity?: number;

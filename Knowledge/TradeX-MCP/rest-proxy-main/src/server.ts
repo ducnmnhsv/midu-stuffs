@@ -14,13 +14,96 @@ import ScopeService from './services/ScopeService';
 import { checkApiKey } from './app/middlewares/check-apikey';
 
 const app: express.Application = express();
-
+app.disable('x-powered-by');
 
 Kafka.create(config, {}, true, { 'auto.offset.reset': 'earliest' }, {}, () => Logger.info("requestor reaady!"));
 
 export default async function initServer() {
-  /** Cors */
-  app.use(cors(config.cors));
+  const rawOrigins: string[] = config.corsAllowedOrigins || [];
+
+  const normalizeOrigin = (value: string): string => {
+    return value.trim().toLowerCase().replace(/\/+$/, '');
+  };
+
+  const VALID_EXACT_PATTERN = /^https?:\/\/[a-z0-9-]+(\.[a-z0-9-]+)*(?::\d+)?$/;
+  const VALID_WILDCARD_PATTERN = /^https?:\/\/\*\.[a-z0-9-]+(\.[a-z0-9-]+)*(?::\d+)?$/;
+
+  const exactOrigins = new Set<string>();
+  const wildcardRegexes: RegExp[] = [];
+
+  for (const raw of rawOrigins) {
+    const pattern = normalizeOrigin(raw);
+
+    if (pattern.includes('*')) {
+      if (VALID_WILDCARD_PATTERN.test(pattern)) {
+        const match = pattern.match(/^(https?):\/\/\*\.([a-z0-9.-]+)(?::(\d+))?$/);
+        if (match) {
+          const [, protocol, domain, port] = match;
+          const escapedDomain = domain.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+          const portPart = port ? `:${port}` : '';
+          wildcardRegexes.push(
+            new RegExp(`^${protocol}:\\/\\/([a-z0-9-]+\\.)+${escapedDomain}${portPart}$`)
+          );
+        }
+      } else {
+        Logger.error(`CORS: Invalid wildcard pattern ignored: ${raw}`);
+      }
+    } else if (VALID_EXACT_PATTERN.test(pattern)) {
+      exactOrigins.add(pattern);
+    } else {
+      Logger.error(`CORS: Invalid origin pattern ignored: ${raw}`);
+    }
+  }
+
+  const validOriginCount = exactOrigins.size + wildcardRegexes.length;
+
+  if (rawOrigins.length > 0 && validOriginCount === 0) {
+    Logger.error(
+      'CORS: Configured origins are all invalid. Browser requests will fail, but server is starting for Mobile/Native traffic.'
+    );
+  } else if (rawOrigins.length === 0) {
+    Logger.warn(
+      'CORS: No origins configured. Cross-origin browser requests will be denied. Mobile/Native traffic is unaffected.'
+    );
+  } else {
+    Logger.info(`CORS: Enabled for ${validOriginCount} origins.`);
+  }
+
+  const isOriginAllowed = (origin: string): boolean => {
+    const normalized = normalizeOrigin(origin);
+    if (exactOrigins.has(normalized)) return true;
+    return wildcardRegexes.some(regex => regex.test(normalized));
+  };
+
+  const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+      if (origin === undefined) {
+        return callback(null, true);
+      }
+
+      if (!origin) {
+        Logger.warn('CORS: Rejected empty Origin header');
+        return callback(null, false);
+      }
+
+      if (origin === 'null') {
+        Logger.warn('CORS: Rejected null origin');
+        return callback(null, false);
+      }
+
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+
+      Logger.warn(`CORS: Rejected web request from: ${origin}`);
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    optionsSuccessStatus: 204,
+  };
+
+  app.use(cors(corsOptions));
   await initApis();
 }
 

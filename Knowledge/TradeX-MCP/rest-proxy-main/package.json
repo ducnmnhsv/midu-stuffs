@@ -22,7 +22,7 @@
     "http-proxy-middleware": "^2.0.6",
     "jsonwebtoken": "^9.0.2",
     "openapi-types": "^1.3.5",
-    "tradex-common": "git+https://github.com/difisoft/tradex-common-16.16.0.git",
+    "tradex-common": "git+https://bitbucket.org/nhsv-dev/tradex-common-16.16.0.git",
     "tslib": "^1.14.1",
     "typedi": "^0.8.0",
     "uuid": "^3.2.1"

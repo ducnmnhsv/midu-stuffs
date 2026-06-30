@@ -1,0 +1,116 @@
+
+.p-wrap {
+  min-height: 1200px;
+}
+
+.p-header-title {
+  margin: 20px 0 !important;
+}
+
+.p-image-wrap {
+  min-width: 170px;
+  width: 170px;
+  height: 170px;
+}
+
+.p-image {
+  display: block;
+  max-width: 150px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+}
+
+.p-card {
+  cursor: pointer;
+}
+
+.p-card:hover {
+  background-color: #cff4fc;
+}
+
+.p-card-selected {
+  background-color: #cff4fc;
+}
+
+.p-icon {
+  margin-right: 5px !important;
+  width: 20px;
+  height: 20px;
+}
+
+.p-header-info {
+  padding: 0 8px;
+  margin-bottom: 20px;
+}
+
+.p-router-link {
+  text-decoration: none;
+}
+
+.p-component-wrap {
+  margin: 30px 0 20px 0 !important;
+}
+
+.p-width-percent-10 {
+  width: 10% !important;
+}
+
+.p-width-percent-20 {
+  width: 20% !important;
+}
+
+.p-width-percent-30 {
+  width: 30% !important;
+}
+
+.p-width-percent-40 {
+  width: 40% !important;
+}
+
+.p-width-percent-60 {
+  width: 60% !important;
+}
+
+.p-account-text-info {
+  //margin: 0 20px;
+}
+
+.p-account-title {
+  font-size: 25px;
+}
+
+.p-account-username {
+  font-size: 20px;
+}
+
+
+.p-width-percent-20 {
+  width: 20% !important;
+  text-align: center !important;
+}
+
+.p-width-percent-60 {
+  width: 60% !important;
+  text-align: center !important;
+}
+
+.p-content-tab {
+  height: 40px !important;
+}
+
+.p-pagination {
+  margin: 20px 0;
+}
+
+.p-orders-wrap {
+  margin: 20px 0;
+}
+
+.p-text-capitalize {
+  text-transform: capitalize;
+}
+
+.p-font-25 {
+  font-size: 25px;
+}

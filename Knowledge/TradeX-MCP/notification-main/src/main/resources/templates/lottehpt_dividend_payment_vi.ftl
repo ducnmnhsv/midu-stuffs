@@ -1,0 +1,1 @@
+<OneSignalTitle>Trả cổ tức bằng tiền</OneSignalTitle>TK ${acnt_no}-${sub_no} của quý khách đã thay đổi: +${trd_amt}VND. Trả cổ tức bằng tiền ${stk_cd} tỷ lệ ${percent}%. Số dư hiện tại là: ${dpo}VND

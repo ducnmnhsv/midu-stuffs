@@ -1,0 +1,71 @@
+{
+  "changelogDate": "20230704092431",
+  "dto": "no",
+  "fields": [
+    {
+      "fieldName": "groupName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "groupOwner",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "introduction",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "photo",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "brokerName",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "brokerContact",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "StatusEnum",
+      "fieldValues": "PENDING,APPROVED,REJECTED,CREATED,UPDATED"
+    },
+    {
+      "fieldName": "createdBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "approvedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "approvedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "rejectReason",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "totalView",
+      "fieldType": "Long",
+      "fieldValues": "0"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "CreatedChatRoom",
+  "pagination": "pagination",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

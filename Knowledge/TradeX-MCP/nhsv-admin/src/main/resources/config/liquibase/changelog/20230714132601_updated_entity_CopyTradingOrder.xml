@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Dropped relationships to the entity CopyTradingOrder.
+    -->
+    <changeSet id="20230714132601-1-drop-relationships" author="jhipster">
+        <dropForeignKeyConstraint baseTableName="t_copy_trading_order" constraintName="fk_copy_trading_order__copy_portfolio_id"/>
+        <dropForeignKeyConstraint baseTableName="t_copy_trading_order" constraintName="fk_copy_trading_order__copy_subscriber_id"/>
+        <dropColumn tableName="t_copy_trading_order">
+            <column name="copy_portfolio_id_id"/>
+            <column name="copy_subscriber_id_id"/>
+        </dropColumn>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+</databaseChangeLog>

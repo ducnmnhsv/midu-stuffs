@@ -1,0 +1,107 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="NHSV-636-01" author="Hoang Manh">
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_GET_COPY_TRADING_MARKET_LEADER_LIST'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_GET_ML_PROFILE'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>        
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_GET_CURRENT_PORTFOLIO'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>        
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_GET_HISTORICAL_PORTFOLIO'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>       
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_GET_HISTORICAL_PORTFOLIO_ALL_STOCKS'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>        
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_DAILY_PROFIT_LOSS'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_MTS_COPY_TRADING_API_SUBSCRIBER_GROWTH_RATE'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV-VIEW-ALL-BROKER-PROFILE'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV-VIEW-BROKER-PROFILE'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV-VIEW-ALL-CHAT-ROOM'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV-VIEW-CHAT-ROOM'
+            AND tsg.scope_group_name = 'NON-LOGIN';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

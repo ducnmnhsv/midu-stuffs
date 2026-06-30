@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <!--
+        Added the entity CopySubscriberDetails.
+    -->
+    <changeSet id="20230823083750-1" author="jhipster">
+        <createTable tableName="t_copy_subscriber_details">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="identifier_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="branch_code" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="mng_dept_code" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="dept_code" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="agency_number" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_numbers" type="varchar(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="user_level" type="varchar(255)">
+                <constraints nullable="true" />
+            </column>
+            <column name="copy_subscriber_id_id" type="bigint">
+                <constraints nullable="false" unique="true" uniqueConstraintName="t_copy_subscriber_details_copy_subscriber_id_id_unique" />
+            </column>
+            <!-- jhipster-needle-liquibase-add-column - JHipster will add columns here -->
+        </createTable>
+    </changeSet>
+
+    <!-- jhipster-needle-liquibase-add-changeset - JHipster will add changesets here -->
+
+    <!--
+        Load sample data generated with Faker.js
+        - This data can be easily edited using a CSV editor (or even MS Excel) and
+          is located in the 'src/main/resources/config/liquibase/fake-data' directory
+        - By default this data is applied when running with the JHipster 'dev' profile.
+          This can be customized by adding or removing 'faker' in the 'spring.liquibase.contexts'
+          Spring Boot configuration key.
+    -->
+    <changeSet id="20230823083750-1-data" author="jhipster" context="faker">
+        <loadData
+                  file="config/liquibase/fake-data/20230823083750_entity_copy_subscriber_details.csv"
+                  separator=";"
+                  tableName="t_copy_subscriber_details"
+                  usePreparedStatements="true">
+            <column name="id" type="numeric"/>
+            <column name="username" type="string"/>
+            <column name="identifier_number" type="string"/>
+            <column name="branch_code" type="string"/>
+            <column name="mng_dept_code" type="string"/>
+            <column name="dept_code" type="string"/>
+            <column name="agency_number" type="string"/>
+            <column name="account_numbers" type="string"/>
+            <column name="user_level" type="string"/>
+            <!-- jhipster-needle-liquibase-add-loadcolumn - JHipster (and/or extensions) can add load columns here -->
+        </loadData>
+    </changeSet>
+
+    <changeSet id="20230823083750-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="copy_subscriber_id_id"
+                                 baseTableName="t_copy_subscriber_details"
+                                 constraintName="fk_copy_subscriber_details__copy_subscriber_id_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="t_copy_subscriber"/>
+    </changeSet>
+</databaseChangeLog>

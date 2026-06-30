@@ -21,6 +21,10 @@ import { IResetPasswordInitResponse } from '../models/response/IResetPasswordIni
 import { Constants } from '../constants/Constants';
 import { validateRequestAccountNoCreator } from '../utils/lotte';
 import { IOtpInfoResponse } from '../models/response/IOtpInfoResponse';
+import { IRegisterSmartOtpRequest } from '../models/request/IRegisterSmartOtpRequest';
+import { IRegisterSmartOtpResponse } from '../models/response/IRegisterSmartOtpResponse';
+import { IVerifySmartOtpRequest } from '../models/request/IVerifySmartOtpRequest';
+import { IVerifySmartOtpResponse } from '../models/response/IVerifySmartOtpResponse';
 
 const { InvalidParameterError, GeneralError } = Errors;
 const { validate } = Utils;
@@ -216,5 +220,19 @@ export class AuthenticationService {
     }
     const response: IParam = await this.lotteAuthenticationDao.resetPassword(request, ctx);
     return response;
+  }
+
+  async registerSmartOtp(
+    request: IRegisterSmartOtpRequest,
+    ctx: IContext
+  ): Promise<IRegisterSmartOtpResponse> {
+    return this.lotteAuthenticationDao.registerSmartOtp(request, ctx);
+  }
+
+  async verifySmartOtp(
+    request: IVerifySmartOtpRequest,
+    ctx: IContext
+  ): Promise<IVerifySmartOtpResponse> {
+    return this.lotteAuthenticationDao.verifySmartOtp(request, ctx);
   }
 }

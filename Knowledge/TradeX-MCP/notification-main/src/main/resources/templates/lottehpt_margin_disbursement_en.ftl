@@ -1,0 +1,1 @@
+<OneSignalTitle>Giải ngân margin</OneSignalTitle>TK ${acnt_no}-${sub_no} giải ngân margin ${lnd_amt}VND. Tổng dư nợ gốc hiện tại là ${tot_lnd_amt}VND

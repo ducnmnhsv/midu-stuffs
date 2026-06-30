@@ -1,6 +1,7 @@
 import { authenticate } from "../services/authenticationService";
 import { handleMessage } from "./HandleForwardRequest";
 import { Kafka, Models } from "tradex-common";
+import { Container } from "typedi";
 import { refreshAccessToken, revokeToken } from "../services/TokenService";
 import { verifyOtp } from "../services/VerifyOtp";
 import * as linkAccountService from "../services/linkAccountService";
@@ -10,7 +11,8 @@ import Scope from "../models/db/Scope";
 import {
   registerMobileOtp,
   unregisterMobileOtp,
-  updateProfile
+  updateProfile,
+  saveSmartOtpDevice
 } from '../services/UserService';
 import {
   importDbJsonService
@@ -29,6 +31,9 @@ import {
 import { loginPartnerCredential } from "../services/loginPartnerCredentialService";
 import conf from "../conf";
 import { loginVerifyOtp } from "../services/authen/loginOtp";
+import { OtpStrategyService } from "../services/otp/OtpStrategyService";
+
+const otpStrategyService = Container.get(OtpStrategyService);
 
 // tslint:disable-next-line:cyclomatic-complexity
 function handleAAAMessage(msg: Kafka.IMessage): Promise<any> | boolean {
@@ -121,6 +126,17 @@ function handleAAAMessage(msg: Kafka.IMessage): Promise<any> | boolean {
     return linkAccountService.putLeaderboardSetting(msg.data, `${msg.transactionId}`)
   } else if (msg.uri === "/api/v1/client/updateAppVersion") {
     return updateAppVersion(msg.data)
+  } else if (msg.uri === "post:/api/v1/otp/send") {
+    return otpStrategyService.sendOtp(msg.data, msg);
+  } else if (msg.uri === "post:/api/v1/otp/verify") {
+    return otpStrategyService.verifyOtp(msg.data, msg);
+  } else if (msg.uri === "post:/api/v1/smartOtp/activationOtp/send") {
+    msg.data.txType = 'SMART_OTP';
+    return otpStrategyService.sendOtp(msg.data, msg);
+  } else if (msg.uri === "post:/api/v1/smartOtp/activationOtp/verify") {
+    return otpStrategyService.verifyOtp(msg.data, msg, 'SMART_OTP');
+  } else if (msg.uri === "/api/v1/internal/saveSmartOtpDevice") {
+    return saveSmartOtpDevice(msg.data);
   }
   return handleMessage(msg);
 }

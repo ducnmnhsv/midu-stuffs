@@ -12,11 +12,11 @@ This rule contains accumulated knowledge about TradeX backend system, compiled f
 
 ## Knowledge Location
 
-**Folder:** `@TradeX Knowledge/`
+**Folder:** `@Knowledge/TradeX/`
 
 **Structure:**
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 ├── System/              # ✅ Production - Live mechanisms
 ├── API Standards/       # 📘 Conventions - Universal standards  
 └── Planning/            # 📋 Future - Features in planning
@@ -134,7 +134,7 @@ Lotte WS → market-collector-lotte → Kafka → realtime-v2 + ws-v2 → Client
 | `fetchCount`   | `row_count`  | ❌ No    |
 | `nextKey`      | `next_data` | ❌ No    |
 
-Chi tiết: `TradeX Knowledge/API Standards/tradex-api-conventions.md` — § Common Request Fields → **GET API optional parameters**.
+Chi tiết: `Knowledge/TradeX/API Standards/tradex-api-conventions.md` — § Common Request Fields → **GET API optional parameters**.
 
 ### TradeX naming — không dùng tên/giá trị Core
 
@@ -192,7 +192,7 @@ Success: Lotte `error_code: "0000"`
 
 ## Usage Instructions
 
-1. **Start with index**: Read `@TradeX Knowledge/_index.md` to see structure
+1. **Start with index**: Read `@Knowledge/TradeX/_index.md` to see structure
 2. **Choose folder based on need**:
    - **System/** - Understand production mechanisms
    - **API Standards/** - 2 files: conventions (all-in-one) + template
@@ -209,7 +209,7 @@ Success: Lotte `error_code: "0000"`
 
 When analyzing new TradeX mechanisms:
 
-1. Create document at: `TradeX Knowledge/{topic}.md`
+1. Create document at: `Knowledge/TradeX/{topic}.md`
 2. Add links to/from `_index.md` and related documents
 3. Update this rule's Quick Reference if frequently needed
 

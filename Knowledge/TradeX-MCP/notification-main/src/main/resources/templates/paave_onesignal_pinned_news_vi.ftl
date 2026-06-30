@@ -1,0 +1,1 @@
+<OneSignalTitle>${title}</OneSignalTitle>${message}

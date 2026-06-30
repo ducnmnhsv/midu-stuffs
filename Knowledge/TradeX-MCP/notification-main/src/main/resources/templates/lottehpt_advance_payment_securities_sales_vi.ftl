@@ -1,0 +1,1 @@
+<OneSignalTitle>Ứng trước tiền bán chứng khoán</OneSignalTitle>TK ${acnt_no}-${sub_no} ứng trước tiền bán ${lnd_amt}VND. Số dư hiện tại là: ${dpo}VND

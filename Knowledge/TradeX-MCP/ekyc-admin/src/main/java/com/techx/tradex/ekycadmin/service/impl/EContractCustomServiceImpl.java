@@ -1008,11 +1008,8 @@ public class EContractCustomServiceImpl implements EContractCustomService {
             case Constants.EContract.vTaxCode:
                 field.setValue(ekyc.getTaxNumber());
                 break;
-            case Constants.EContract.vNhsvRepresentative:
-                field.setValue(dfv.getDfvNhsvRepresentative());
-                break;
-            case Constants.EContract.vNhsvRepresentativePotition:
-                field.setValue(dfv.getDfvNhsvRepresentativePotition());
+            case Constants.EContract.vJobDetail:
+                field.setValue(StringUtils.isNotEmpty(ekyc.getJob()) ? ekyc.getJob() : " ");
                 break;
             case Constants.EContract.vAuthorizationDocNo:
                 field.setValue(dfv.getDfvAuthorizationDocNo());

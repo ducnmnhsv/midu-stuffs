@@ -217,8 +217,8 @@ public class WsConnection {
         quoteUpdate.setForeignerTotalRoom(getLong(parts[27], null));
 
         if (parts.length >= 35) {
-            quoteUpdate.setTotalOfferVolume(getLong(parts[33], null));
-            quoteUpdate.setTotalBidVolume(getLong(parts[34], null));
+            quoteUpdate.setActiveSellVolume(getLong(parts[33], null));
+            quoteUpdate.setActiveBuyVolume(getLong(parts[34], null));
         }
 
         quoteUpdate.setType(symbolInfo.getType());

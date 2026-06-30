@@ -1,0 +1,69 @@
+{
+  "changelogDate": "20230703044953",
+  "dto": "no",
+  "fields": [
+    {
+      "autoGenerate": false,
+      "fieldName": "id",
+      "fieldType": "Long",
+      "fieldValidateRules": ["required", "unique"]
+    },
+    {
+      "fieldName": "username",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "fullname",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "Boolean"
+    },
+    {
+      "defaultValue": "0",
+      "fieldName": "totalChatRoom",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "currentRank",
+      "fieldType": "Integer"
+    },
+    {
+      "fieldName": "isDynamic",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "email",
+      "fieldType": "String",
+      "fieldValidateRules": ["unique"]
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "deactivatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "deactivatedBy",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "invitedBy",
+      "fieldType": "String"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": true,
+  "name": "Broker",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

@@ -1,0 +1,8 @@
+src/main/java/com/difisoft/nhsv/admin/domain/ChatRoom.java skip
+src/main/java/com/difisoft/nhsv/admin/domain/CreatedChatRoom.java skip
+src/main/java/com/difisoft/nhsv/admin/domain/Broker.java skip
+src/main/java/com/difisoft/nhsv/admin/domain/SocialLink.java skip
+src/main/java/com/difisoft/nhsv/admin/domain/InviteUser.java skip
+src/main/java/com/difisoft/nhsv/admin/domain/RecentViewChatRoom.java skip
+src\main\webapp\app\shared\model\chat-room.model.ts skip
+src\main\webapp\app\shared\model\created-chat-room.model.ts skip

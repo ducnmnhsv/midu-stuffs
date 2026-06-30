@@ -78,6 +78,7 @@ app:
     virtualCore: paave-virtual-core
     virtualNotification: paave-notification
     indexStockListUpdate: indexStockListUpdate
+    eodSnapshot: market.eod.snapshot
   socketCluster:
     enable: true
     hostname: "172.31.43.101"
@@ -96,6 +97,7 @@ app:
     resetMonitorData: "0 0 16,17 * * MON-FRI"
     updateThemeStatistic: "0 * 1-9 * * MON-FRI"
     stockTopWorstReturns: "0 5 8 * * MON-FRI"
+    publishEodSnapshot: "0 31 8 * * MON-FRI"
   publishV2Statistic:
     topic: statisticUpdate
     channel: market.statistic
@@ -112,6 +114,8 @@ app:
   enableSaveWrongOrderQuote: false
   enableInitData: false
   enableQuotePartition: false
+  enableEodSnapshotPublish: false
+  eodMaxBackfillDays: 30
   batchSize: 10000
   notifications:
     stockTopWordsNumberRank: 5

@@ -1,0 +1,57 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="NHSV-184-03">
+       <addColumn tableName="t_copy_market_leader_profit_loss">
+           <column name="type" type="varchar(50)" afterColumn="profit_loss_ratio">
+                <constraints nullable="false" />
+           </column>
+       </addColumn>
+        <dropColumn tableName="t_copy_market_leader_profit_loss">
+            <column name="accumulate_profit_loss_ratio" type="double" />
+        </dropColumn>
+    </changeSet>
+    <changeSet id="NHSV-184-02" author="Hoang Manh">
+        <sql splitStatements="false">
+            SET SQL_SAFE_UPDATES = 0;
+        </sql>
+        <sql splitStatements="false">
+            UPDATE `nhsv-admin`.t_copy_market_leader_profit_loss
+            SET type = 'DAY'
+            WHERE type = '' OR type IS NULL;
+        </sql>
+        <sql splitStatements="false">
+            SET SQL_SAFE_UPDATES = 1;
+        </sql>
+    </changeSet>
+    <changeSet id="NHSV-184-04" author="Hoang Manh">
+        <dropNotNullConstraint tableName="t_copy_market_leader_profit_loss" columnName="net_assets_value" columnDataType="Double" />
+        <addDefaultValue tableName="t_copy_market_leader_profit_loss" columnName="net_assets_value"
+            defaultValue="NULL" />
+    </changeSet>
+    <changeSet id="NHSV-184-05" author="Hoang Manh">
+        <sql splitStatements="false">
+            INSERT INTO `tradex-configuration`.t_scope
+            (name, uri_pattern, created_by, updated_by, created_at, updated_at, forward_type, forward_data)
+            VALUES ('NHSV_GET_COPY_TRADING_MARKET_LEADER_LIST',
+            'get:/api/v1/copyTrading/marketLeader/list',
+            NULL, NULL, CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(),
+            'CONNECTION', '{
+            "uri": "get:/api/v1/copyTrading/marketLeader/list",
+            "service": "nhsv-admin",
+            "forwardType": "SERVICE"
+            }');
+        </sql>
+        <sql splitStatements="false">
+            INSERT
+            INTO `tradex-configuration`.t_scope_scope_group_map (scope_id, scope_group_id)
+            SELECT ts.id, tsg.id
+            FROM `tradex-configuration`.t_scope ts,
+            `tradex-configuration`.t_scope_group tsg
+            WHERE ts.name = 'NHSV_GET_COPY_TRADING_MARKET_LEADER_LIST'
+            AND tsg.scope_group_name = 'NHSV_API';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

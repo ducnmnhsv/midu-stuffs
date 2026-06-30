@@ -60,6 +60,20 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { HeaderTokenUserDataRepository } from '../repositories/HeaderTokenUserDataRepository';
 import { AccountBankInfoRepository } from '../repositories/AccountBankInfoRepository';
 import { checkStringTrim } from '../utils/defaultUtils';
+import { ILotteRegisterSmartOtpRequest } from '../models/request/lotte/ILotteRegisterSmartOtpRequest';
+import {
+  ILotteRegisterSmartOtpResponse,
+  ILotteRegisterSmartOtpDataList,
+} from '../models/response/lotte/ILotteRegisterSmartOtpResponse';
+import { IRegisterSmartOtpResponse } from '../models/response/IRegisterSmartOtpResponse';
+import { IRegisterSmartOtpRequest } from '../models/request/IRegisterSmartOtpRequest';
+import { ILotteVerifySmartOtpRequest } from '../models/request/lotte/ILotteVerifySmartOtpRequest';
+import {
+  ILotteVerifySmartOtpResponse,
+  ILotteVerifySmartOtpDataList,
+} from '../models/response/lotte/ILotteVerifySmartOtpResponse';
+import { IVerifySmartOtpRequest } from '../models/request/IVerifySmartOtpRequest';
+import { IVerifySmartOtpResponse } from '../models/response/IVerifySmartOtpResponse';
 
 const { GeneralError } = Errors;
 
@@ -413,6 +427,8 @@ export class LotteAuthenticationDao {
       userLevel,
       requireChangePassword,
       branchCode: verifyLotteResDataList.dept_code1,
+      sotpStatus: verifyLotteResDataList.sotp_stat === 'Y' ? 'ACTIVE' : 'INACTIVE',
+      sotpKey: verifyLotteResDataList.sotp_sec,
     };
     const response: ILoginResponse = {
       userData,
@@ -679,5 +695,142 @@ export class LotteAuthenticationDao {
     } else {
       throw new GeneralError(`${Constants.ACCOUNT_CHANGE_HTS_PASSWORD}${codes}}`);
     }
+  }
+
+  async registerSmartOtp(request: IRegisterSmartOtpRequest, ctx: IContext): Promise<IRegisterSmartOtpResponse> {
+    // 1. Validate otpKey không rỗng
+    if (!request.otpKey || request.otpKey.trim() === '') {
+      throw new InvalidParameterError().add('REQUIRED', 'otpKey', null);
+    }
+
+    // 2. Lấy hts_user_id từ JWT
+    const htsUserId: string = request.headers.token.userData.username;
+    if (!htsUserId) {
+      throw new GeneralError(Constants.UNAUTHORIZED);
+    }
+
+    // 3. Validate otpKey từ Redis (đã được /verify lưu vào, isNotSetCluster=true để share giữa aaa và lotte-bridge)
+    const tokenData = await this.redis.get<{ username: string; accountNumber: string }>(
+      Category.SOTP_REGISTER_TOKEN,
+      request.otpKey,
+      true
+    );
+    if (tokenData == null) {
+      Logger.warn(ctx.id, `registerSmartOtp -- otpKey not found or expired in Redis: ${request.otpKey}`);
+      throw new GeneralError('OTP_KEY_INVALID');
+    }
+
+    // 4. Cross-check: username trong Redis phải khớp với JWT (chống dùng otpKey của user khác)
+    if (tokenData.username.toLowerCase() !== htsUserId.toLowerCase()) {
+      Logger.warn(
+        ctx.id,
+        `registerSmartOtp -- otpKey username mismatch: tokenUser=${tokenData.username}, jwtUser=${htsUserId}`
+      );
+      throw new GeneralError('OTP_KEY_INVALID');
+    }
+
+    // 5. Build Lotte request
+    const body: ILotteRegisterSmartOtpRequest = {
+      mode: 'Y',
+      hts_user_id: htsUserId.toLowerCase(),
+    };
+
+    Logger.info(ctx.id, `registerSmartOtp -- body: `, JSON.stringify(body));
+
+    // 6. Call Lotte
+    const lotteResponse: ILotteRegisterSmartOtpResponse = await this.lotteCommonDao.post<
+      ILotteRegisterSmartOtpResponse
+    >(config.lotte.apis.registerSmartOtp, null, body, ctx);
+
+    // 7. Parse error
+
+    // 8. Transform response
+    //    Nếu data_list rỗng/null → trả về sotpStatus/sotpKey = null (không throw error).
+    const data: ILotteRegisterSmartOtpDataList = getElementAtIndex<ILotteRegisterSmartOtpDataList>(
+      lotteResponse.data_list
+    );
+    if (!data) {
+      Logger.warn(ctx.id, `registerSmartOtp -- empty data_list from Lotte, return null sotpStatus/sotpKey`);
+      // Vẫn xóa otpKey để tránh replay (Lotte đã trả 0000 nên flow coi như thành công)
+      await this.redis.del(Category.SOTP_REGISTER_TOKEN, request.otpKey, true);
+      return {
+        sotpStatus: null,
+        sotpKey: null,
+      };
+    }
+
+    // 9. Bắn Kafka fire-and-forget tới AAA để lưu device binding vào t_sotp_device
+    //    Nếu fail chỉ ảnh hưởng tracking, không phá vỡ flow đăng ký Smart OTP.
+    if (request.deviceUniqueId) {
+      try {
+        Kafka.getInstance().sendMessage(ctx.txId, 'aaa', '/api/v1/internal/saveSmartOtpDevice', {
+          username: htsUserId,
+          deviceUniqueId: request.deviceUniqueId,
+        });
+        Logger.info(
+          ctx.id,
+          `registerSmartOtp -- sent Kafka to AAA save device binding: username=${htsUserId}, deviceUniqueId=${request.deviceUniqueId}`
+        );
+      } catch (e) {
+        Logger.error(ctx.id, `registerSmartOtp -- failed to send Kafka for device binding (non-blocking)`, e);
+      }
+    }
+
+    // 10. Xóa otpKey khỏi Redis sau khi Lotte success (one-shot, chống replay)
+    //     isNotSetCluster=true để xóa đúng key không prefix (AAA set với isNotSetCluster=true)
+    await this.redis.del(Category.SOTP_REGISTER_TOKEN, request.otpKey, true);
+    Logger.info(ctx.id, `registerSmartOtp -- otpKey deleted from Redis after success: ${request.otpKey}`);
+
+    return {
+      sotpStatus: data.sotp_stat === 'Y' ? 'ACTIVE' : 'INACTIVE',
+      sotpKey: data.sotp_sec,
+    };
+  }
+
+  async verifySmartOtp(request: IVerifySmartOtpRequest, ctx: IContext): Promise<IVerifySmartOtpResponse> {
+    // 1. Validate input
+    const invalidParams = new InvalidParameterError();
+    if (!request.sotpKey || request.sotpKey.trim() === '') {
+      invalidParams.add('REQUIRED', 'sotpKey', null);
+    }
+    if (!request.otpCode || request.otpCode.trim() === '') {
+      invalidParams.add('REQUIRED', 'otpCode', null);
+    }
+    invalidParams.throwErr();
+
+    // 2. Lấy user_id từ JWT
+    const userId: string = request.headers?.token?.userData?.username;
+    if (!userId) {
+      throw new GeneralError(Constants.UNAUTHORIZED);
+    }
+
+    // 3. Build Lotte body
+    const body: ILotteVerifySmartOtpRequest = {
+      secret: request.sotpKey,
+      code: request.otpCode,
+      user_id: userId.toLowerCase(),
+    };
+
+    // 4. POST to Lotte verify-totp
+    const lotteResponse: ILotteVerifySmartOtpResponse = await this.lotteCommonDao.post<ILotteVerifySmartOtpResponse>(
+      config.lotte.apis.verifySmartOtp,
+      null,
+      body,
+      ctx
+    );
+
+    // 6. Transform response
+    //    Nếu data_list rỗng/null → trả về status = null (không throw error).
+    const data: ILotteVerifySmartOtpDataList = getElementAtIndex<ILotteVerifySmartOtpDataList>(lotteResponse.data_list);
+    if (!data) {
+      Logger.warn(ctx.id, `verifySmartOtp -- empty data_list from Lotte, return null status`);
+      return {
+        status: null,
+      };
+    }
+
+    return {
+      status: data.auth_result, // 'AUTHENTICATED' | 'NOT_AUTHENTICATED'
+    };
   }
 }

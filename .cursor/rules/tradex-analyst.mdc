@@ -12,18 +12,23 @@ Business Analyst chuyên về domain chứng khoán Việt Nam, hỗ trợ phân
 
 ## Knowledge Base
 
-**Primary:** `@TradeX MCP/Knowledge based/`
+**Primary:** `@Knowledge/TradeX-MCP/`
 
 ```
-├── aaa-main/                    # Authentication service
+├── aaa-main/                    # Authentication, OTP, Smart OTP
 ├── configuration-main/          # Configuration service
-├── rest-proxy-main/             # API Gateway
-├── lotte-bridge-main/           # Lotte Securities integration
+├── rest-proxy-main/             # API Gateway (route theo scope)
+├── lotte-bridge-main/           # Lotte integration (order/account/balance/change-broker/smart-OTP)
+├── lotte-ws-bridge-main/        # Lotte WS bridge — notification (gồm Derivatives)
 ├── market-collector-lotte-main/ # Market data collector
-├── realtime-v2-main/            # Real-time processing
-├── market-query-v2-main/        # Market query service
+├── realtime-v2-main/            # Real-time processing + EOD snapshot
+├── market-query-v2-main/        # Market query service (pkg tradex-market)
 ├── ws-v2-main/                  # WebSocket server
-├── order-v2-main/               # Order service
+├── order-v2-main/               # Conditional orders (Stop/OCO/Trailing/Bull-Bear)
+├── notification-main/           # Push / SMS / email + templates
+├── ekyc-admin/                  # eKYC admin (Lotte upload + FPT eContract + OTP)
+├── nhsv-admin/                  # Admin web tool
+├── tradex-common-java-main/     # Shared models / enums / kafka utils
 └── documents-main/              # Documentation
     ├── API_spec_docs/           # OpenAPI specs
     ├── BA_docs/                 # BA documents
@@ -42,12 +47,14 @@ Client → rest-proxy → Kafka Topic → Backend Service → Response
 
 | Service | Tech Stack | Kafka Topic |
 |---------|------------|-------------|
-| `rest-proxy` | Node.js, Express | - |
+| `rest-proxy` | Node.js, Express | `rest-proxy` (route theo scope) |
 | `aaa` | Node.js, MySQL, Redis | `aaa` |
 | `configuration` | Node.js, MySQL | `configuration` |
-| `lotte-bridge` | Node.js, Axios | `paave-real-trading` |
-| `market-query-v2` | Node.js, Redis, MongoDB | `market-query-v2` |
-| `realtime-v2` | Java, Redis | - |
+| `lotte-bridge` | Node.js, Axios | `lotte-bridge` |
+| `lotte-ws-bridge` | Node.js | `lotte-ws-bridge` |
+| `market-query-v2` | Node.js, Redis, MongoDB | `market-v2` |
+| `realtime-v2` | Java, Redis | `realtime-v2` |
+| `order-v2` | Java 17 / Spring Boot 3.1 | `order` |
 | `notification` | Java, Kafka | `notification` |
 
 ### API Routes Structure
@@ -193,4 +200,4 @@ Business Rules:
 ## 5. Test Scenarios
 ```
 
-Save outputs to: `TradeX MCP/Knowledge based/[Agent] BA-artifacts`
+Save outputs to: `Knowledge/TradeX-MCP/[Agent] BA-artifacts`

@@ -1,6 +1,7 @@
 package com.techx.tradex.ekycadmin.service.impl;
 
 import com.techx.tradex.ekycadmin.constant.Constants;
+import com.techx.tradex.ekycadmin.models.dto.EContractField;
 import com.techx.tradex.ekycadmin.models.request.FptECEnvelopesRecipientRequest;
 import com.techx.tradex.ekycadmin.models.request.FptECExCallRequest;
 import com.techx.tradex.ekycadmin.models.request.FptECLoginRequest;
@@ -12,12 +13,14 @@ import com.techx.tradex.ekycadmin.service.FptEContractApiClient;
 import com.techx.tradex.ekycadmin.utils.CommonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -47,12 +50,48 @@ public class FptEContractApiClientImpl {
                     this.fptEContractApiClient.getTemplateStructure(Constants.TOKEN_PREFIX + token, alias);
             log.info("{} -- getTemplateStructure -- response: {}", prefixLog, CommonUtil.objectToStringJsonIgnoreError(response));
             if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody();
+                return this.filterTemplateStructure(alias, response.getBody());
             }
         } catch (Exception e) {
             log.error("{} -- getTemplateStructure -- error: ", prefixLog, e);
         }
         return null;
+    }
+
+    private FptECTemplateStructureResponse filterTemplateStructure(String alias, FptECTemplateStructureResponse templateStructure) {
+        if (Objects.isNull(templateStructure) || !StringUtils.equals(alias, "HDMTK") || Objects.isNull(templateStructure.getDatas())) {
+            return templateStructure;
+        }
+
+        templateStructure.setDatas(
+            templateStructure.getDatas().stream().map(this::filterHdmtkFields).collect(Collectors.toList())
+        );
+        return templateStructure;
+    }
+
+    private List<EContractField> filterHdmtkFields(List<EContractField> fields) {
+        if (Objects.isNull(fields)) {
+            return null;
+        }
+
+        return fields
+            .stream()
+            .filter(this::isNotExcludedHdmtkField)
+            .collect(Collectors.toList());
+    }
+
+    private boolean isNotExcludedHdmtkField(EContractField field) {
+        return Objects.nonNull(field) &&
+            !StringUtils.equalsAny(
+                field.getId(),
+                Constants.EContract.vNhsvRepresentative,
+                Constants.EContract.vNhsvRepresentativePotition
+            ) &&
+            !StringUtils.equalsAny(
+                field.getName(),
+                Constants.EContract.vNhsvRepresentative,
+                Constants.EContract.vNhsvRepresentativePotition
+            );
     }
 
     public FptECExCallResponse exCall(String prefixLog, FptECExCallRequest request, String token) {

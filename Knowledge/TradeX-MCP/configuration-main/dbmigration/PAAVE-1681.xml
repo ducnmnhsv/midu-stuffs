@@ -1,0 +1,49 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                        http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet author="ADMIN (generated)" id="PAAVE-1681-1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists schemaName="tradex-configuration" tableName="t_client"
+                    columnName="app_version" />
+            </not>
+        </preConditions>
+        <addColumn
+            schemaName="tradex-configuration"
+            tableName="t_client">
+            <column name="app_version"
+                afterColumn="status"
+                type="TEXT" />
+        </addColumn>
+    </changeSet>
+    <changeSet author="ADMIN (generated)" id="PAAVE-1681-2">
+        <update
+            schemaName="tradex-configuration"
+            tableName="t_client">
+            <column name="app_version"
+                value="{&quot;M.PAAVE.OS&quot;:&quot;1.6.0&quot;,&quot;M.PAAVE.AN&quot;:&quot;1.6.0&quot;}" />
+        <where>`client_id` = 'paave'</where>
+        </update>
+        <update
+            schemaName="tradex-configuration"
+            tableName="t_client">
+            <column name="app_version"
+                value="{&quot;M.PAAVE.OS&quot;:&quot;1.6.0&quot;,&quot;M.PAAVE.AN&quot;:&quot;1.6.0&quot;}" />
+        <where>`client_id` = 'paavetest'</where>
+        </update>
+        <update
+            schemaName="tradex-configuration"
+            tableName="t_client">
+            <column name="app_version"
+                value="{&quot;M.PAAVE.OS&quot;:&quot;1.6.0&quot;,&quot;M.PAAVE.AN&quot;:&quot;1.6.0&quot;}" />
+        <where>`client_id` = 'paave-non-login'</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

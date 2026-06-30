@@ -17,4 +17,5 @@ export interface ILotteRightDetailResponseData {
   inq_qty: number;
   rgt_proc_stat: number;
   proc_nm: string;
+  cons_sbst_qty: number;
 }

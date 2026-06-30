@@ -1,0 +1,33 @@
+{
+  "changelogDate": "20230704023729",
+  "dto": "no",
+  "fields": [
+    {
+      "fieldName": "userId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "chatRoomId",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "createdAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "updatedAt",
+      "fieldType": "ZonedDateTime"
+    },
+    {
+      "fieldName": "deletedAt",
+      "fieldType": "ZonedDateTime"
+    }
+  ],
+  "incrementalChangelog": true,
+  "jpaMetamodelFiltering": false,
+  "name": "RecentViewChatRoom",
+  "pagination": "no",
+  "readOnly": false,
+  "relationships": [],
+  "service": "serviceClass"
+}

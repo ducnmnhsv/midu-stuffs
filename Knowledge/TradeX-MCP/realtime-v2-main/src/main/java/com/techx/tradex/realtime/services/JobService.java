@@ -26,6 +26,7 @@ public class JobService {
     private QuoteService quoteService;
     private final SymbolInfoService symbolInfoService;
     private final CacheService cacheService;
+    private final EodSnapshotService eodSnapshotService;
 
     @Autowired
     public JobService(
@@ -37,6 +38,7 @@ public class JobService {
             , SymbolInfoService symbolInfoService
             , QuoteService quoteService
             , CacheService cacheService
+            , EodSnapshotService eodSnapshotService
     ) {
         this.appConf = appConf;
         this.redisService = redisService;
@@ -46,6 +48,7 @@ public class JobService {
         this.symbolInfoService = symbolInfoService;
         this.quoteService = quoteService;
         this.cacheService = cacheService;
+        this.eodSnapshotService = eodSnapshotService;
     }
 
     @Scheduled(cron = "${app.schedulers.refreshSymbolInfo}")
@@ -88,6 +91,11 @@ public class JobService {
         redisService.saveRedisToDatabase(appConf.isEnableSaveQuote(), appConf.isEnableSaveQuoteMinute(), appConf.isEnableSaveBidAsk());
     }
 
+    @Scheduled(cron = "${app.schedulers.publishEodSnapshot}")
+    public void publishEodSnapshot() {
+        log.info("_______________________publishEodSnapshot by Job");
+        eodSnapshotService.publishEodSnapshot();
+    }
 
     @Scheduled(cron = "${app.schedulers.restartService}")
     public void shutdown() {

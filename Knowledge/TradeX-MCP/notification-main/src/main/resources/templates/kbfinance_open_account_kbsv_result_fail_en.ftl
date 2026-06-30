@@ -1,0 +1,1 @@
+<OneSignalTitle>Sorry! You have not successfully opened a KBSV account.</OneSignalTitle>Please visit KB Fina to do it again!

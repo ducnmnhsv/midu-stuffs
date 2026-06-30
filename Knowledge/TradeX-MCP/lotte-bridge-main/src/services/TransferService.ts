@@ -403,6 +403,8 @@ export class TransferService {
           nextKey: it.next,
         })
       );
+    } else if (codes !== null && codes === '2016') {
+      return [];
     } else {
       throw new GeneralError(lotteRes.error_desc);
     }
@@ -502,6 +504,8 @@ export class TransferService {
           nextKey: it.next_data,
         })
       );
+    } else if (codes !== null && codes === '2016') {
+      return [];
     } else {
       throw new GeneralError(lotteRes.error_desc);
     }
@@ -600,6 +604,8 @@ export class TransferService {
           nextKey: it.next,
         })
       );
+    } else if (codes !== null && codes === '2016') {
+      return [];
     } else {
       throw new GeneralError(lotteRes.error_desc);
     }

@@ -1,0 +1,1 @@
+<OneSignalTitle>Nhận chuyển khoản CK</OneSignalTitle>Nhận chứng khoán vào TK ${acnt_no}-${sub_no} mã ${stk_cd_kl_stk_qty}. Nhận chuyển khoản từ công ty khác

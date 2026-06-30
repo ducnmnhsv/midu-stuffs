@@ -8,6 +8,7 @@ export const LOTTE_API_CATEGORIES = {
   NOTIFICATION: 'notification',
   EKYC: 'ekyc',
   MARKET: 'market',
+  SOTP: 'sotp'
 };
 
 export const API: { [k: string]: IAPI } = {
@@ -58,6 +59,14 @@ export const API: { [k: string]: IAPI } = {
   getCashBalance: {
     api: 'tsol/apikey/tuxsvc/account/cash-blc',
     category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  registerSmartOtp: {
+    api: 'tsol/apikey/tuxsvc/account/user/register-sotp',
+    category: LOTTE_API_CATEGORIES.SOTP,
+  },
+  verifySmartOtp: {
+    api: 'tsol/apikey/sotp/v2/verify-totp',
+    category: LOTTE_API_CATEGORIES.SOTP,
   },
   buyNormalOrder: {
     api: 'tsol/apikey/tuxsvc/order/ord-buy',
@@ -361,6 +370,26 @@ export const API: { [k: string]: IAPI } = {
   },
   getCashDepositHistory: {
     api: 'tsol/apikey/tuxsvc/account/balance/deposit-history',
+    category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  changeBroker: {
+    api: 'tsol/apikey/tuxsvc/account/change-broker',
+    category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  brokerHistory: {
+    api: 'tsol/apikey/tuxsvc/account/broker-history',
+    category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  getEmployeeInfo: {
+    api: 'tsol/apikey/tuxsvc/account/user/emp_info',
+    category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  registerBankAccount: {
+    api: 'tsol/apikey/tuxsvc/account/reg-bank-acc',
+    category: LOTTE_API_CATEGORIES.ACCOUNT,
+  },
+  deleteBankAccount: {
+    api: 'tsol/apikey/tuxsvc/account/del-bank-acc',
     category: LOTTE_API_CATEGORIES.ACCOUNT,
   },
 };
