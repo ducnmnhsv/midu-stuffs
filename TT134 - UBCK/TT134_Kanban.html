@@ -302,6 +302,21 @@ body {
   display: flex; align-items: center; gap: 4px;
 }
 
+/* Sub-issue card: left-border accent */
+.card-sub {
+  border-left: 3px solid #D97706;
+}
+
+/* Parent chip — shown below card-top on sub-issue cards */
+.card-parent-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 600;
+  background: rgba(217,119,6,.12); color: #D97706;
+  border: 1px solid rgba(217,119,6,.30);
+  border-radius: 6px; padding: 2px 8px;
+  margin-bottom: 5px; width: fit-content;
+}
+
 /* GATE card special */
 .gate-card {
   border: 1.5px solid var(--gate-bd);
@@ -356,7 +371,7 @@ body {
 /* ─── MODAL ──────────────────────────────────────────────────────── */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,.45); z-index: 1000;
+  background: rgba(0,0,0,.48); z-index: 1000;
   align-items: center; justify-content: center; padding: 20px;
 }
 .modal-overlay.open { display: flex; }
@@ -364,61 +379,123 @@ body {
 .modal {
   background: var(--surface);
   border-radius: 14px;
-  max-width: 520px; width: 100%;
-  max-height: 85vh; overflow-y: auto;
+  max-width: min(1200px, 96vw); width: 100%;
+  max-height: 88vh;
   border: 1px solid var(--border);
-  box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  box-shadow: 0 24px 72px rgba(0,0,0,.25);
   animation: modal-in 180ms var(--ease);
+  /* Grid outer: header auto, body takes remaining 1fr.
+     max-height + grid-template-rows creates a definite height for 1fr —
+     unlike flex where max-height alone does NOT propagate to flex children. */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
 }
 
 @keyframes modal-in {
-  from { opacity: 0; transform: translateY(12px) scale(.97); }
+  from { opacity: 0; transform: translateY(14px) scale(.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
-  padding: 16px 18px 12px;
+  padding: 16px 20px 13px;
   border-bottom: 1px solid var(--border2);
   display: flex; align-items: flex-start; gap: 10px;
 }
 
-.modal-title { font-size: 14px; font-weight: 700; line-height: 1.4; flex: 1; }
+.modal-title { font-size: 14.5px; font-weight: 700; line-height: 1.4; flex: 1; }
 .modal-close {
-  width: 26px; height: 26px; flex-shrink: 0;
-  border: 1px solid var(--border); border-radius: 6px;
+  width: 28px; height: 28px; flex-shrink: 0;
+  border: 1px solid var(--border); border-radius: 7px;
   background: var(--surface2); cursor: pointer; font-size: 13px;
   display: flex; align-items: center; justify-content: center;
   color: var(--text-2);
 }
 .modal-close:hover { background: var(--border2); }
 
-.modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
+/* ── Two-column layout — body fills the 1fr grid row ── */
+.modal-body {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: 0; /* grid child must opt-in to shrink below content */
+  overflow: hidden;
+}
+
+.modal-sidebar {
+  padding: 16px 14px;
+  border-right: 1px solid var(--border2);
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex; flex-direction: column; gap: 14px;
+  background: var(--surface2);
+  min-height: 0;
+}
+
+.modal-main {
+  padding: 16px 18px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex; flex-direction: column; gap: 12px;
+  min-height: 0;
+}
+
+/* Responsive: single col on narrow */
+@media (max-width: 600px) {
+  .modal-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .modal-sidebar { border-right: none; border-bottom: 1px solid var(--border2); max-height: 40vh; }
+}
 
 .modal-row { display: flex; flex-direction: column; gap: 4px; }
 .modal-label { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: .5px; }
-.modal-value { font-size: 13px; color: var(--text); line-height: 1.5; }
+.modal-value { font-size: 12.5px; color: var(--text); line-height: 1.5; }
 
-.modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-.modal-tasks { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+/* ── Task section card ── */
+.task-section {
+  border: 1px solid var(--border2);
+  border-radius: 10px; overflow: hidden;
+}
+
+.task-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px;
+}
+.tsh-be   { background: var(--p2-bg);  color: var(--p2);   border-bottom: 1px solid var(--p2-bd); }
+.tsh-fe   { background: rgba(5,150,105,.08); color: #059669; border-bottom: 1px solid rgba(5,150,105,.25); }
+.tsh-core { background: var(--gate-bg); color: var(--gate); border-bottom: 1px solid var(--gate-bd); }
+
+.tsh-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.tsh-badge {
+  font-size: 10px; font-weight: 600;
+  background: rgba(0,0,0,.08); border-radius: 10px;
+  padding: 1px 8px; white-space: nowrap;
+}
+
+.modal-tasks { list-style: none; display: flex; flex-direction: column; gap: 5px; padding: 10px; }
 .modal-tasks li {
-  font-size: 12px; color: var(--text-2);
-  padding: 6px 8px; border-radius: 6px;
-  background: var(--surface2); border: 1px solid var(--border2);
-  display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
+  font-size: 12.5px; color: var(--text-2);
+  padding: 7px 10px; border-radius: 7px;
+  background: var(--surface); border: 1px solid var(--border2);
+  display: flex; align-items: flex-start; gap: 7px; line-height: 1.45;
 }
 .modal-tasks li.critical {
   background: var(--p0-bg); border-color: var(--p0-bd); color: var(--text);
 }
-.task-icon { flex-shrink: 0; margin-top: 1px; }
+.task-icon { flex-shrink: 0; margin-top: 1px; font-size: 11px; }
 
+/* keep for sidebar dep lists */
 .task-section-label {
   font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
-  padding: 3px 8px; border-radius: 6px; margin-bottom: 2px; display: inline-block;
+  padding: 3px 8px; border-radius: 6px; display: inline-block;
 }
 .task-section-be { background: var(--p2-bg); color: var(--p2); }
 .task-section-fe { background: rgba(5,150,105,.08); color: #059669; }
 .task-section-core { background: var(--gate-bg); color: var(--gate); }
+
+.modal-divider {
+  border: none; border-top: 1px solid var(--border2); margin: 2px 0;
+}
 
 .card-task-count {
   display: flex; gap: 5px; margin-top: 6px;
@@ -730,7 +807,7 @@ body {
           <span class="card-stt">STT 7 · TT134-P0-01</span>
           <span class="prio-badge p0">P0</span>
         </div>
-        <div class="card-title">OTP TTL compliance — SMS / Thẻ ma trận / Soft OTP</div>
+        <div class="card-title">OTP TTL compliance — SMS OTP / Smart OTP</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 14/08/2026</span>
           <span class="tag">Điều 8</span>
@@ -742,6 +819,7 @@ body {
         </div>
         <div class="card-deps">
           <span class="dep-tag dep-blocks">⛔ Blocks: P0-03</span>
+          <span class="dep-tag" style="background:rgba(217,119,6,.10);color:#D97706;border-color:rgba(217,119,6,.25)">📎 1 sub-issue</span>
         </div>
         <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/OTP_TTL_Compliance_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
       </div>
@@ -793,11 +871,12 @@ body {
       </div>
 
       <!-- BE-7 P0 -->
-      <div class="card" onclick="openModal('be7')">
+      <div class="card card-sub" onclick="openModal('be7')">
         <div class="card-top">
-          <span class="card-stt">BE-7 · Sub-issue of P0-01</span>
+          <span class="card-stt">BE-7</span>
           <span class="prio-badge p0">P0</span>
         </div>
+        <div class="card-parent-chip">↳ Sub-issue: STT 7 · Smart OTP</div>
         <div class="card-title">Smart OTP Biometric Activation (Điều 8.5b)</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 14/08/2026</span>
@@ -964,7 +1043,7 @@ const CARDS = {
     blockedBy: [],
   },
   stt7: {
-    title: '[TT134-P0-01] OTP TTL Compliance — SMS / Thẻ ma trận / Soft OTP',
+    title: '[TT134-P0-01] OTP TTL Compliance — SMS OTP / Smart OTP',
     prio: 'P0',
     deadline: '14/08/2026 🔴',
     owner: 'BE Lead + FE Lead',
@@ -972,7 +1051,7 @@ const CARDS = {
     c06: 'Không — xử lý nội bộ',
     beTasks: [
       { text: 'BE-1: Audit cấu hình SMS OTP TTL hiện tại → phải ≤ 5 phút (300s)', critical: false },
-      { text: 'BE-2: Audit Thẻ ma trận TTL → request window ≤ 2 phút; card validity ≤ 1 năm', critical: false },
+      { text: 'BE-2: Audit Smart OTP TTL → code phải expire sau ≤ 2 phút kể từ lúc tạo (TOTP 30s window vẫn ok nếu window ≤ 2 phút)', critical: true },
       { text: 'BE-3: Audit Smart OTP code TTL → phải expire sau ≤ 2 phút kể từ lúc tạo', critical: true },
       { text: 'BE-4: Xác nhận SMS/Voice/Email OTP response kèm thông tin mục đích', critical: false },
       { text: 'BE-5: Update SMS/Voice OTP template: kèm mục đích + "Hiệu lực X phút"', critical: false },
@@ -991,14 +1070,15 @@ const CARDS = {
     ],
     coreTasks: [
       { text: 'CORE-1: Audit SMS OTP TTL trên web trading ≤ 5 phút', critical: true },
-      { text: 'CORE-2: Audit Thẻ ma trận web trading: request window ≤ 2 phút, card validity ≤ 1 năm', critical: true },
+      { text: 'CORE-2: Audit Smart OTP web trading (nếu có): TTL ≤ 2 phút, lockout sau ≤ 10 lần sai', critical: true },
       { text: 'CORE-3: Update nội dung SMS OTP kèm mục đích giao dịch + thời hạn hiệu lực', critical: true },
       { text: 'CORE-4: OTP hết hạn → web trading trả lỗi rõ, không silent accept', critical: false },
       { text: 'CORE-5: Nếu Soft OTP web: TTL ≤ 2 phút; lockout sau ≤ 10 lần sai, chỉ mở qua CSH', critical: false },
     ],
-    note: 'TTL tối đa theo TT134: SMS OTP ≤ 5 phút, Thẻ ma trận ≤ 2 phút, Smart OTP ≤ 2 phút (≠ TOTP 30s thông thường). Cần confirm cấu hình hiện tại.',
+    note: 'TTL tối đa theo TT134: SMS OTP ≤ 5 phút, Smart OTP ≤ 2 phút (≠ TOTP 30s refresh thông thường — TT134 tính từ thời điểm tạo). Cần confirm cấu hình hiện tại. Thẻ ma trận đã được quyết định không triển khai.',
     status: 'Ready — bắt đầu ngay',
-    blocks: ['stt14a — Rút tiền <10M (OTP config dependency)', 'be7 — Smart OTP Biometric Activation (Điều 8.5b sub-issue)'],
+    subIssues: [{ id: 'be7', label: 'BE-7 · Smart OTP Biometric Activation (Điều 8.5b)' }],
+    blocks: ['stt14a — Rút tiền <10M (OTP config dependency)'],
     blockedBy: [],
   },
   stt35: {
@@ -1283,7 +1363,9 @@ const CARDS = {
     prio: 'P0',
     deadline: '14/08/2026 🔴',
     owner: 'BE Lead + FE Lead + Pháp chế',
-    subgroup: 'Order 2FA · Sub-issue of P0-01',
+    parent: 'stt7',
+    parentLabel: 'STT 7 · Smart OTP (TT134-P0-01)',
+    subgroup: 'Order 2FA',
     c06: 'Không — device-level biometric (Face ID/Touch ID), không phải C06/VNPT',
     beTasks: [
       { text: 'BE-1: Endpoint mới POST /api/v1/smartOtp/biometricCheck — call AAA queryBiometricStatus', critical: true },
@@ -1307,15 +1389,22 @@ const CARDS = {
 
 function renderTasks(tasks, sectionClass, sectionLabel) {
   if (!tasks || tasks.length === 0) return '';
+  const typeKey = sectionClass.replace('task-section-', '');
+  const critCount = tasks.filter(t => typeof t === 'object' && t.critical).length;
+  const badge = critCount > 0
+    ? `🔴 ${critCount} critical · ${tasks.length} tasks`
+    : `${tasks.length} tasks`;
+  const items = tasks.map(t => {
+    const item = typeof t === 'string' ? { text: t, critical: false } : t;
+    return `<li class="${item.critical ? 'critical' : ''}"><span class="task-icon">${item.critical ? '🔴' : '▸'}</span>${item.text}</li>`;
+  }).join('');
   return `
-    <div class="modal-row">
-      <div style="margin-bottom:5px"><span class="task-section-label ${sectionClass}">${sectionLabel}</span></div>
-      <ul class="modal-tasks">
-        ${tasks.map(t => {
-          const item = typeof t === 'string' ? { text: t, critical: false } : t;
-          return `<li class="${item.critical ? 'critical' : ''}"><span class="task-icon">${item.critical ? '🔴' : '▸'}</span>${item.text}</li>`;
-        }).join('')}
-      </ul>
+    <div class="task-section">
+      <div class="task-section-header tsh-${typeKey}">
+        <span class="tsh-title">${sectionLabel}</span>
+        <span class="tsh-badge">${badge}</span>
+      </div>
+      <ul class="modal-tasks">${items}</ul>
     </div>`;
 }
 
@@ -1324,56 +1413,96 @@ function openModal(id) {
   if (!d) return;
   document.getElementById('modalTitle').textContent = d.title;
 
-  const tasksHtml = d.beTasks
-    ? renderTasks(d.beTasks, 'task-section-be', 'BE Tasks') +
-      renderTasks(d.feTasks, 'task-section-fe', 'FE Tasks') +
-      (d.coreTasks ? renderTasks(d.coreTasks, 'task-section-core', 'Core (Web Trading)') : '')
-    : renderTasks(d.tasks, 'task-section-be', 'Tasks');
+  // ── Sidebar: meta + deps ──────────────────────────────────────────
+  const parentChip = d.parent ? `
+    <div style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;
+      background:rgba(217,119,6,.12);color:#D97706;border:1px solid rgba(217,119,6,.28);
+      border-radius:7px;padding:4px 10px;cursor:pointer"
+      onclick="closeModalDirect();openModal('${d.parent}')">
+      ↳ Sub-issue của: <u>${d.parentLabel}</u>
+    </div>` : '';
 
-  document.getElementById('modalBody').innerHTML = `
-    <div class="modal-grid">
+  const statusColor = d.status && d.status.toLowerCase().includes('block')
+    ? 'var(--gate)' : d.status && d.status.toLowerCase().includes('done')
+    ? '#059669' : 'var(--text)';
+
+  const sidebar = `
+    ${parentChip}
+    <div class="modal-meta-grid">
       <div class="modal-row">
         <div class="modal-label">Priority</div>
         <div class="modal-value">${d.prio}</div>
       </div>
       <div class="modal-row">
         <div class="modal-label">Deadline</div>
-        <div class="modal-value">${d.deadline}</div>
+        <div class="modal-value" style="font-weight:600">${d.deadline}</div>
       </div>
-      <div class="modal-row">
-        <div class="modal-label">Owner</div>
-        <div class="modal-value">${d.owner}</div>
-      </div>
-      <div class="modal-row">
-        <div class="modal-label">Sub-group</div>
-        <div class="modal-value">${d.subgroup}</div>
-      </div>
+    </div>
+    <hr class="modal-divider">
+    <div class="modal-row">
+      <div class="modal-label">Owner</div>
+      <div class="modal-value">${d.owner}</div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-label">Sub-group</div>
+      <div class="modal-value">${d.subgroup}</div>
     </div>
     <div class="modal-row">
       <div class="modal-label">Phụ thuộc C06</div>
       <div class="modal-value">${d.c06}</div>
     </div>
-    ${tasksHtml}
-    ${(d.blocks && d.blocks.length) ? `
-<div class="modal-row">
-  <div class="modal-label">⛔ Blocks (issue này block)</div>
-  <ul class="modal-tasks">${d.blocks.map(b => `<li><span class="task-icon">→</span>${b}</li>`).join('')}</ul>
-</div>` : ''}
-    ${(d.blockedBy && d.blockedBy.length) ? `
-<div class="modal-row">
-  <div class="modal-label">⚠ Blocked by (cần xong trước)</div>
-  <ul class="modal-tasks">${d.blockedBy.map(b => `<li><span class="task-icon" style="color:var(--gate)">←</span>${b}</li>`).join('')}</ul>
-</div>` : ''}
+    <hr class="modal-divider">
+    ${(d.subIssues && d.subIssues.length) ? `
     <div class="modal-row">
-      <div class="modal-label">Ghi chú</div>
-      <div class="modal-value">${d.note}</div>
-    </div>
+      <div class="modal-label">📎 Sub-issues</div>
+      <ul class="modal-tasks" style="padding:0;gap:4px;margin-top:2px">
+        ${d.subIssues.map(s => `<li style="padding:5px 8px"><span class="task-icon" style="color:#D97706">↳</span>
+          <span style="cursor:pointer;color:#D97706;font-weight:600;text-decoration:underline"
+            onclick="closeModalDirect();openModal('${s.id}')">${s.label}</span></li>`).join('')}
+      </ul>
+    </div>` : ''}
+    ${(d.blocks && d.blocks.length) ? `
+    <div class="modal-row">
+      <div class="modal-label">⛔ Blocks</div>
+      <ul class="modal-tasks" style="padding:0;gap:4px;margin-top:2px">
+        ${d.blocks.map(b => `<li style="padding:5px 8px"><span class="task-icon">→</span>${b}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+    ${(d.blockedBy && d.blockedBy.length) ? `
+    <div class="modal-row">
+      <div class="modal-label">⚠ Blocked by</div>
+      <ul class="modal-tasks" style="padding:0;gap:4px;margin-top:2px">
+        ${d.blockedBy.map(b => `<li style="padding:5px 8px"><span class="task-icon" style="color:var(--gate)">←</span>${b}</li>`).join('')}
+      </ul>
+    </div>` : ''}
+    <hr class="modal-divider">
     <div class="modal-row">
       <div class="modal-label">Status</div>
-      <div class="modal-value">${d.status}</div>
+      <div class="modal-value" style="color:${statusColor};font-weight:600">${d.status}</div>
     </div>
+    ${d.note ? `<div class="modal-row">
+      <div class="modal-label">Ghi chú</div>
+      <div class="modal-value" style="font-size:11.5px;color:var(--text-2)">${d.note}</div>
+    </div>` : ''}
+  `;
+
+  // ── Main: task sections ───────────────────────────────────────────
+  const hasTasks = d.beTasks || d.feTasks || d.coreTasks || d.tasks;
+  const tasksHtml = hasTasks
+    ? (d.beTasks
+        ? renderTasks(d.beTasks, 'task-section-be', 'BE Tasks') +
+          renderTasks(d.feTasks, 'task-section-fe', 'FE Tasks') +
+          (d.coreTasks ? renderTasks(d.coreTasks, 'task-section-core', 'Core (Web Trading)') : '')
+        : renderTasks(d.tasks, 'task-section-be', 'Tasks'))
+    : `<div style="padding:40px 0;text-align:center;color:var(--text-3);font-size:13px">Không có task chi tiết</div>`;
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-sidebar">${sidebar}</div>
+    <div class="modal-main">${tasksHtml}</div>
   `;
   document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
 }
 
 function closeModal(e) {
@@ -1382,6 +1511,8 @@ function closeModal(e) {
 
 function closeModalDirect() {
   document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
 }
 
 document.addEventListener('keydown', e => {

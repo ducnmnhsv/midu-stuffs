@@ -1,10 +1,10 @@
 # Order 2FA — Integration Specification
 
-**Feature:** Xác thực giao dịch 2 lớp (Order 2FA)
-**TT134 Reference:** Điều 10 (Xử lý Giao dịch & Xác nhận), Điều 7 (Xác thực)
+**Feature:** Xác thực 2 lớp — Login & Giao dịch
+**TT134 Reference:** Điều 7 (Xác thực), Điều 8 (Phương thức xác thực & TTL), Điều 10 (Xử lý Giao dịch), Điều 11 (Rủi ro)
 **Priority:** P0
-**Version:** 1.0
-**Status:** Draft
+**Version:** 1.1
+**Status:** Draft — updated 2026-06-30
 
 ---
 
@@ -12,49 +12,104 @@
 
 > **Architecture note:** Core (Lotte) đã có sẵn khả năng verify Smart OTP cho đặt lệnh. NHSV Pro app đã handle TOTP code generation (SmartOTPInput từ Login S-OTP). Với Smart OTP, TradeX chỉ cần proxy OTP code kèm order data sang Core — Core verify và process order atomically, không cần challenge/proof-token riêng. Proof token chỉ cần thiết cho Biometric L2 (verify local trên AAA, tách biệt với Core).
 
+### 0.1 Bức tranh toàn cảnh — 3 giai đoạn xác thực trong một phiên
+
 ```
-[User chọn orders] → [Check giá trị]
-     │
-     ├─ < 10tr → không cần 2FA (silent)
-     │
-     ├─ 10-100tr → Biometric L2 (Face ID)
-     │     → Verify RSA signature (AAA) → Proof token → Confirm order
-     │
-     └─ ≥ 100tr → Smart OTP (TOTP)
-           → App generate code → User enter → Confirm order kèm otpCode
-           → lotte-bridge → Core (verify OTP + process order atomic)
-     
-     [Fallback] Smart OTP unavailable/locked → SMS OTP
-           → Send OTP → User enter → Confirm order kèm otpCode
-           → lotte-bridge → Core
+┌─────────────────────────────────────────────────────────────────────┐
+│  STAGE 1: LOGIN                                                     │
+│                                                                     │
+│  Cùng thiết bị    →  Password only          → Vào app              │
+│                                                                     │
+│  Thiết bị mới /   →  Password               → 2FA bắt buộc (Điều 7)│
+│  Lần đầu             ├─ Smart OTP (nếu đã kích hoạt)               │
+│                       └─ SMS OTP             ← fallback             │
+└─────────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  STAGE 2: GIAO DỊCH ĐẦU PHIÊN (đầu tiên trong session)            │
+│                                                                     │
+│  Smart OTP bắt buộc trước khi đặt lệnh đầu tiên                   │
+│  ├─ Nếu vừa xác thực Smart OTP ở login (thiết bị mới) → bỏ qua    │
+│  └─ Fallback: SMS OTP                                               │
+└─────────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────────┐
+│  STAGE 3: TỪNG GIAO DỊCH (theo giá trị)                            │
+│                                                                     │
+│  < 10tr           →  Không cần 2FA (silent)                        │
+│  10tr – 100tr     →  Biometric L2 (Face ID) → SMS OTP              │
+│  ≥ 100tr          →  Smart OTP → SMS OTP                           │
+│  Rút tiền ≥ 10M   →  Biometric server-side (stt14b, sau GATE)      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Hai path khác nhau về architecture:**
+### 0.2 Method priority — Auto-select, degrade gracefully
+
+| Độ ưu tiên | Method | Điều kiện available | UX |
+|---|---|---|---|
+| 1 | **Smart OTP (TOTP)** | Đã kích hoạt trên thiết bị | Nhập 6 số — không cần mạng |
+| 2 | **SMS OTP** | Luôn available | Chờ tin nhắn, phụ thuộc sóng |
+
+> Hệ thống **auto-select method ưu tiên cao nhất** còn available. User có thể chủ động chuyển sang SMS OTP ("Gửi OTP qua SMS").
+
+### 0.3 Architecture — path theo method
 
 | Path | 2FA Challenge | Verify | Confirm |
 |---|---|---|---|
-| **Smart OTP** | Không cần — app gen code ngay | Core verify atomic | POST confirm kèm `smartOtpCode` |
-| **Biometric L2** | Cần — tạo challenge để bind RSA signature | AAA verify locally → proof token | POST confirm kèm `X-2FA-Token` |
-| **SMS OTP fallback** | Không cần challenge | Core verify (qua lotte-bridge) | POST confirm kèm `smsOtpCode` |
+| **Smart OTP** | Không cần — app gen TOTP ngay | Core verify atomic | POST confirm kèm `smartOtpCode` |
+| **Biometric L2** | Cần — bind RSA signature với txHash | AAA verify locally → proof token | POST confirm kèm `X-2FA-Token` |
+| **SMS OTP** | Không cần challenge | Core verify (qua lotte-bridge) | POST confirm kèm `smsOtpCode` |
 
-## 0a. UX Principles
+---
+
+## 0a. Login 2FA Flow (Điều 7 — thiết bị mới / lần đầu)
+
+> Điều khoản trigger: *"Khi KH đăng nhập lần đầu hoặc đăng nhập trên thiết bị khác với thiết bị đã đăng nhập lần gần nhất phải thực hiện xác thực theo một trong các hình thức quy định tại Điều 7."*
+
+```
+[Nhập user/pass] → [BE check deviceId vs last_device_id]
+        │
+        ├─ Cùng thiết bị ──────────────────────────────────→ Login OK
+        │
+        └─ Thiết bị mới / lần đầu
+               │
+               ├─ Smart OTP đã kích hoạt?
+               │    └─ YES → Hiện màn Smart OTP (TOTP)
+               │         ├─ Verify OK  → Login OK + flag "session_device_authed = true"
+               │         └─ Fail 3 lần → Chuyển SMS OTP
+               │
+               └─ Chưa có Smart OTP / Smart OTP locked → SMS OTP
+                    └─ Gửi OTP về SĐT đã đăng ký
+                         └─ Verify OK → Login OK + flag "session_device_authed = true"
+
+Sau login thành công (thiết bị mới): prompt kích hoạt Smart OTP (BE-7 flow)
+```
+
+**Lưu ý quan trọng về Stage 2 (giao dịch đầu phiên):**
+- Nếu `session_device_authed = true` (vừa xác thực Smart OTP lúc login) → **bỏ qua** yêu cầu Smart OTP đầu phiên — tránh hỏi 2 lần liên tiếp
+- Nếu login bằng SMS OTP → vẫn phải xác thực Smart OTP đầu phiên riêng
+
+## 0b. UX Principles
 
 | Principle | Mô tả |
 |-----------|-------|
-| **Tự động chọn method** | Hệ thống tự chọn method mạnh nhất — không bắt user chọn |
-| **Fallback mượt mà** | Smart OTP locked/unavailable → SMS OTP tự động, không block |
+| **Tự động chọn method** | Hệ thống tự chọn method mạnh nhất còn available — không bắt user chọn |
+| **Fallback mượt mà** | Smart OTP locked/unavailable → SMS OTP tự động — không block giao dịch |
+| **Không hỏi 2 lần** | Vừa xác thực Smart OTP lúc login (thiết bị mới) → bỏ qua Smart OTP đầu phiên |
 | **Minh bạch về bảo mật** | Hiển thị lý do cần 2FA, số tiền, SĐT nhận OTP |
 | **Reuse existing** | SmartOTPInput component và TOTP generation đã có từ Login flow — reuse, không build mới |
 
-## 0b. BE / FE Responsibility Split
+## 0c. BE / FE Responsibility Split
 
 | Component | Backend | Frontend (App) |
 |-----------|---------|----------------|
+| **Device detect** | Check deviceId vs last_device_id → trigger login 2FA nếu mới | Gửi deviceId trong header mỗi request |
 | **Smart OTP generate** | N/A — không cần | ✅ **Đã có**: TOTP generation trong SmartOTPInput (Login S-OTP) — reuse |
 | **Smart OTP verify** | lotte-bridge proxy sang Core — Core verify + process order atomic | SmartOTPInput (6-digit) |
 | **Biometric L2 verify** | AAA: RSA signature verify locally → trả proof token | BiometricPromptHandler |
 | **SMS OTP** | POST /otp/send (`purpose: ORDER_PLACEMENT`) + Core verify | SMSOTPInput (+ countdown + resend) |
 | **Proof token** | Chỉ cần cho Biometric path: JWT 60s, single-use, txHash-bound | Gửi X-2FA-Token header (Biometric path only) |
+| **session_device_authed flag** | Set true sau khi Smart OTP verify thành công ở login | Không cần hỏi Smart OTP đầu phiên nếu flag = true |
 | **Confirm order** | Middleware check: `smartOtpCode` OR `smsOtpCode` OR `X-2FA-Token` | Update saga flow |
 
 ---
@@ -91,17 +146,22 @@ Hiện tại, việc xác nhận giao dịch (đặt lệnh, chuyển tiền, ch
 
 ### 1.4 Transactions Requiring 2FA
 
-| Transaction Type | 2FA Required | Threshold | Method |
-|-----------------|-------------|-----------|--------|
-| Order (đặt lệnh) | ✅ Có | ≥ 100tr VND | Smart-OTP TOTP |
-| Order (đặt lệnh) | ✅ Có | ≥ 10tr VND | Biometric L2 |
-| Cash transfer (chuyển tiền) | ✅ Có | Mọi giá trị | Smart-OTP TOTP |
-| Stock transfer (chuyển CK) | ✅ Có | Mọi giá trị | Smart-OTP TOTP |
-| Profile change (đổi SĐT/email) | ✅ Có | N/A | SMS OTP + Smart-OTP |
-| Biometric enrollment | ✅ Có | N/A | SMS OTP |
-| Password change | ✅ Có | N/A | SMS OTP |
+| Transaction Type | Threshold | Method (ưu tiên cao → thấp) |
+|-----------------|-----------|------------------------------|
+| Login — thiết bị mới / lần đầu | Luôn | Smart OTP → SMS OTP |
+| Giao dịch đầu phiên | Luôn (trừ khi đã auth Smart OTP ở login) | Smart OTP → SMS OTP |
+| Order đặt lệnh | ≥ 100tr | Smart OTP → SMS OTP |
+| Order đặt lệnh | 10tr – 100tr | Biometric L2 → SMS OTP |
+| Order đặt lệnh | < 10tr | Không cần 2FA |
+| Cash transfer (chuyển tiền) | Mọi giá trị | Smart OTP → SMS OTP |
+| Stock transfer (chuyển CK) | Mọi giá trị | Smart OTP → SMS OTP |
+| Rút tiền | < 10M | Smart OTP → SMS OTP |
+| Rút tiền | ≥ 10M | Biometric server-side (stt14b — sau GATE) |
+| Profile change (đổi SĐT/email) | N/A | SMS OTP + Smart OTP |
+| Smart OTP enrollment (BE-7) | N/A | SMS OTP + Biometric device |
+| Password change | N/A | SMS OTP |
 
-> **Note:** Threshold values cần được confirm với compliance team. Đây là đề xuất ban đầu dựa trên TT134.
+> **Note:** Threshold 10tr/100tr cần confirm với compliance. Đây là đề xuất ban đầu dựa trên TT134.
 
 ---
 
@@ -109,13 +169,14 @@ Hiện tại, việc xác nhận giao dịch (đặt lệnh, chuyển tiền, ch
 
 ### 2.1 2FA Verification Flow
 
-**Path A — Smart OTP (≥ 100tr)**
+**Path A — Smart OTP (≥ 100tr) — primary**
 
 ```
 User chọn items → tap "Confirm"
     │
-    ├─ FE check totalValue ≥ 100tr → hiển thị Smart OTP screen
-    │   [SmartOTPInput — reuse từ Login S-OTP, app đã gen TOTP code]
+    ├─ FE check totalValue ≥ 100tr → check Smart OTP status
+    │   ├─ Đã kích hoạt → hiển thị Smart OTP screen (TOTP 6-digit)
+    │   └─ Chưa kích hoạt / locked → xuống Path C (SMS OTP)
     │
     ├─ User nhập 6-digit TOTP code → tap "Xác nhận"
     │
@@ -125,21 +186,24 @@ User chọn items → tap "Confirm"
                └─ lotte-bridge → Core
                        Core: verify Smart OTP + process order (atomic)
                        ├─ OTP valid → order confirmed → trả kết quả
-                       └─ OTP invalid → trả lỗi → FE retry (max N lần)
+                       └─ OTP invalid → trả lỗi → FE retry (max 5 lần → fallback SMS OTP)
 ```
 
-**Path B — Biometric L2 (10tr ~ 100tr)**
+**Path B — Biometric L2 (10tr – 100tr) — primary**
 
 ```
 User chọn items → tap "Confirm"
     │
-    ├─ FE check 10tr ≤ totalValue < 100tr → trigger Biometric prompt
+    ├─ FE check 10tr ≤ totalValue < 100tr → check biometric enrollment
+    │   ├─ Enrolled → trigger Biometric prompt
+    │   └─ Chưa enroll → xuống Path C (SMS OTP)
     │
     ├─ FE: POST /api/v1/transactions/2fa/challenge
     │       { transactionType: "ORDER_CONFIRM", transactionData: {...} }
     │       → nhận challengeId + transactionHash
     │
     ├─ FE: BiometricPromptHandler.sign(challengeId + transactionHash)
+    │   └─ FAIL 3 lần → chuyển Path C (SMS OTP)
     │
     ├─ FE: POST /api/v1/transactions/2fa/verify
     │       { challengeId, method: "BIOMETRIC", signature }
@@ -148,15 +212,16 @@ User chọn items → tap "Confirm"
     └─ FE: POST /api/v1/order/confirm kèm X-2FA-Token: proofToken
 ```
 
-**Path C — SMS OTP Fallback**
+**Path C — SMS OTP (fallback cuối cùng)**
 
 ```
-[Smart OTP locked / unavailable] → FE switch sang SMS path
+[Smart OTP locked / chưa kích hoạt] → FE switch sang SMS
     │
     ├─ FE: POST /api/v1/otp/send
     │       { purpose: "ORDER_PLACEMENT", transactionRef: pendingOrderRef }
+    │       → SMS gửi về SĐT đã đăng ký, TTL 5 phút (Điều 8 — TT134)
     │
-    ├─ User nhập SMS OTP
+    ├─ User nhập SMS OTP (countdown 5 phút)
     │
     └─ FE: POST /api/v1/order/confirm
            { orders: [...], smsOtpCode: "123456", purpose: "ORDER_PLACEMENT" }
@@ -217,8 +282,11 @@ Content-Type: application/json
 
 | Field | Type | Mô tả |
 |---|---|---|
-| `smartOtpCode` | string | 6-digit TOTP code từ NHSV Pro app |
+| `smartOtpCode` | string | 6-digit TOTP code từ NHSV Pro app (Smart OTP path) |
+| `smsOtpCode` | string | Code từ SMS OTP (fallback path) |
 | `purpose` | enum | `ORDER_PLACEMENT` — bắt buộc để Core log đúng nghiệp vụ |
+
+> Chỉ 1 trong 2 (`smartOtpCode`, `smsOtpCode`) được phép có trong 1 request. BE reject nếu có cả hai.
 
 **Response (success):**
 ```json
@@ -439,10 +507,11 @@ const isValid = crypto.verify(
 
 ### 5.1 When to Use
 
-- User chưa kích hoạt Smart-OTP
-- User mất thiết bị đã đăng ký Smart-OTP
-- Biometric L2 thất bại sau N lần (max 3)
+- User chưa kích hoạt Smart OTP
+- Smart OTP bị locked (10 lần sai)
+- Biometric L2 thất bại sau 3 lần (giao dịch 10tr–100tr)
 - User chọn "Gửi OTP qua SMS" từ màn hình 2FA
+- Lần đầu login, chưa có Smart OTP
 
 ### 5.2 API Endpoints
 
@@ -475,11 +544,12 @@ Content-Type: application/json
 ```
 
 **Business Rules:**
-- SMS OTP TTL: 60 giây
-- Resend cooldown: 30 giây
+- SMS OTP TTL: **300 giây (5 phút)** — theo Điều 8 TT134 (≤ 5 phút)
+- Resend cooldown: 60 giây
 - Max 5 OTP requests/giờ
 - Phone number masked trong response (chỉ hiện 4 số cuối)
 - OTP gửi đến SĐT đã đăng ký (từ user profile), không cho nhập SĐT khác
+- SMS content bắt buộc kèm mục đích: `"[NHSV] Mã xác thực ĐẶT LỆNH: {OTP}. Hiệu lực 5 phút. Không chia sẻ mã này với ai."`
 
 ---
 
@@ -551,11 +621,11 @@ ConfirmOrdersScreen
 
 | Component | Description |
 |-----------|-------------|
-| `TwoFAChallengeModal` | Modal hiển thị lựa chọn phương thức 2FA |
-| `SmartOTPInput` | 6-digit OTP input (TOTP) |
-| `SMSOTPInput` | OTP input + "Gửi lại" button + countdown |
+| `TwoFAChallengeModal` | Modal hiển thị phương thức 2FA đang dùng + nút "Dùng phương thức khác" |
+| `SmartOTPInput` | 6-digit OTP input (TOTP) — reuse từ Login S-OTP |
+| `SMSOTPInput` | OTP input + "Gửi lại" button + countdown 5 phút |
 | `BiometricPromptHandler` | Wrapper cho biometric prompt (Face ID / Touch ID) |
-| `TwoFAProviderSelector` | Chọn phương thức 2FA (nếu có nhiều option) |
+| `TwoFAMethodSwitcher` | Nút chuyển sang SMS OTP: "Gửi OTP qua SMS" |
 
 ### 8.3 Saga Updates
 
@@ -645,10 +715,12 @@ ConfirmOrdersScreen
 |----------|----------|
 | Threshold 10tr/100tr có đúng không? | Cần confirm với compliance |
 | SmartOTP device binding: 1 device/user? | Hiện tại 1 device, future multi-device |
-| User chưa enroll Smart-OTP: force enroll hay SMS fallback? | SMS fallback — không block giao dịch |
+| User chưa enroll Smart-OTP: force enroll hay fallback? | SMS fallback — không block giao dịch |
 | Biometric L2 có verify qua Lotte Core không? | **Không** — verify local trên AAA (RSA signature) |
-| Smart OTP verify có qua Core không? | **Có** — Core verify TOTP và process order atomic (đã clarify) |
+| Smart OTP verify có qua Core không? | **Có** — Core verify TOTP và process order atomic |
 | SmartOTPInput component có sẵn chưa? | **Có** — NHSV Pro app đã có từ Login S-OTP flow, reuse |
+| session_device_authed flag lưu ở đâu? | JWT session claim hoặc Redis session store — cần align với BE |
+| Login 2FA: Smart OTP verify qua Core hay AAA? | Cần clarify — nếu qua Core thì cùng path với transaction; nếu AAA thì riêng |
 | Admin transactions có cần 2FA không? | Có — configurable |
 
 ---
@@ -673,4 +745,4 @@ ConfirmOrdersScreen
 
 ---
 
-*Last updated: 2026-06-13*
+*Last updated: 2026-06-30*
