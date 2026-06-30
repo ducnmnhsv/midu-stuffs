@@ -407,7 +407,29 @@ body {
   background: var(--surface2); border: 1px solid var(--border2);
   display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
 }
+.modal-tasks li.critical {
+  background: var(--p0-bg); border-color: var(--p0-bd); color: var(--text);
+}
 .task-icon { flex-shrink: 0; margin-top: 1px; }
+
+.task-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px;
+  padding: 3px 8px; border-radius: 6px; margin-bottom: 2px; display: inline-block;
+}
+.task-section-be { background: var(--p2-bg); color: var(--p2); }
+.task-section-fe { background: rgba(5,150,105,.08); color: #059669; }
+.task-section-core { background: var(--gate-bg); color: var(--gate); }
+
+.card-task-count {
+  display: flex; gap: 5px; margin-top: 6px;
+}
+.task-count-chip {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 8px;
+}
+.tc-be { background: var(--p2-bg); color: var(--p2); border: 1px solid var(--p2-bd); }
+.tc-fe { background: rgba(5,150,105,.08); color: #059669; border: 1px solid rgba(5,150,105,.25); }
+.tc-core { background: var(--gate-bg); color: var(--gate); border: 1px solid var(--gate-bd); }
 
 .modal-link {
   font-size: 12px; color: #2563EB; text-decoration: none;
@@ -417,6 +439,85 @@ body {
 
 /* ─── SCROLL WRAPPER ─────────────────────────────────────────────── */
 .board-scroll { overflow-x: auto; }
+
+/* ─── TABS ──────────────────────────────────────────────────────────── */
+.tab-nav {
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+  display: flex; gap: 2px;
+}
+.tab-btn {
+  padding: 10px 18px;
+  border: none; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; color: var(--text-3);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color 150ms, border-color 150ms; font-family: inherit;
+}
+.tab-btn:hover { color: var(--text-2); }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ─── DEP CHIPS ON CARDS ─────────────────────────────────────────────── */
+.card-deps { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.dep-tag {
+  font-size: 10px; font-weight: 600;
+  padding: 2px 7px; border-radius: 8px;
+  display: inline-flex; align-items: center; gap: 3px;
+}
+.dep-blocks { background: rgba(220,38,38,.08); color: var(--p0); border: 1px solid rgba(220,38,38,.2); }
+.dep-needs  { background: var(--p1-bg); color: var(--p1); border: 1px solid var(--p1-bd); }
+.dep-ext    { background: var(--gate-bg); color: var(--gate); border: 1px solid var(--gate-bd); }
+
+/* ─── DEP GRAPH ──────────────────────────────────────────────────────── */
+.dep-graph-wrap { padding: 20px 24px; overflow-x: auto; }
+.dep-graph-legend {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-wrap: wrap; gap: 8px;
+}
+.dep-graph-legend-text { font-size: 11px; color: var(--text-3); }
+.btn-dep-clear {
+  font-size: 11px; font-weight: 600; padding: 4px 10px;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface2); cursor: pointer; color: var(--text-2);
+  font-family: inherit;
+}
+.btn-dep-clear:hover { background: var(--border2); }
+.dep-graph {
+  display: grid;
+  grid-template-columns: 170px 185px 185px 195px;
+  gap: 0;
+  position: relative;
+  min-width: 760px;
+}
+.dep-lane { padding: 0 10px; border-right: 1px dashed var(--border2); }
+.dep-lane:last-child { border-right: none; }
+.dep-lane-header {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text-3);
+  padding: 6px 0 14px; display: flex; align-items: center; gap: 5px;
+}
+.dep-node {
+  padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border2); background: var(--surface);
+  font-size: 11px; font-weight: 600; color: var(--text-2);
+  margin-bottom: 8px; cursor: pointer; line-height: 1.4;
+  transition: box-shadow 150ms, opacity 150ms, transform 150ms;
+}
+.dep-node:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,.1); }
+.dep-node small { font-weight: 400; color: var(--text-3); display: block; margin-top: 2px; }
+.dep-node.dn-p0   { background: var(--p0-bg); border-color: var(--p0-bd); color: var(--p0); }
+.dep-node.dn-p1   { background: var(--p1-bg); border-color: var(--p1-bd); color: var(--p1); }
+.dep-node.dn-p2   { background: var(--p2-bg); border-color: var(--p2-bd); color: var(--p2); }
+.dep-node.dn-gate { background: var(--gate-bg); border-color: var(--gate-bd); color: var(--gate); }
+.dep-node.dn-ext  { background: var(--surface2); border-color: var(--border); color: var(--text-3); font-style: italic; }
+.dep-node.dn-done { background: rgba(5,150,105,.08); border-color: rgba(5,150,105,.25); color: #059669; }
+.dep-node.hl-source { box-shadow: 0 0 0 2px var(--teal) !important; transform: none; }
+.dep-node.hl-blocks { box-shadow: 0 0 0 2px var(--p0) !important; }
+.dep-node.hl-needs  { box-shadow: 0 0 0 2px var(--gate) !important; }
+.dep-node.hl-dim    { opacity: 0.25; }
+#dep-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 </style>
 </head>
 <body>
@@ -427,7 +528,7 @@ body {
     <div class="header-logo">📋</div>
     <div>
       <div class="header-title">TT134 / UBCK — Kanban Board</div>
-      <div class="header-sub">NHSV Pro · Compliance 2026 · Cập nhật: 29/06/2026</div>
+      <div class="header-sub">NHSV Pro · Compliance 2026 · Cập nhật: 30/06/2026</div>
     </div>
   </div>
   <div class="header-right">
@@ -447,22 +548,29 @@ body {
   <span class="legend-item"><span class="legend-dot" style="background:#059669"></span>Done ✓</span>
 </div>
 
+<!-- ─── TAB NAV ────────────────────────────────────── -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="board" onclick="switchTab('board')">📋 Kanban Board</button>
+  <button class="tab-btn" data-tab="deps" onclick="switchTab('deps')">🔗 Dependency Graph</button>
+</div>
+<div id="tab-board" class="tab-panel active">
+
 <!-- ─── PROGRESS ───────────────────────────────────── -->
 <div class="progress-section">
   <div class="progress-label">
-    <span>Tiến độ tổng thể (12 items)</span>
-    <span id="pct">8%</span>
+    <span>Tiến độ tổng thể (14 items)</span>
+    <span id="pct">7%</span>
   </div>
   <div class="progress-track">
-    <div class="progress-fill-done"     style="width:8%"></div>
+    <div class="progress-fill-done"     style="width:7%"></div>
     <div class="progress-fill-progress" style="width:0%"></div>
-    <div class="progress-fill-ready"    style="width:17%"></div>
+    <div class="progress-fill-ready"    style="width:29%"></div>
   </div>
   <div class="progress-pills">
     <div class="progress-pill"><span class="pill-dot" style="background:#059669"></span>1 Done</div>
     <div class="progress-pill"><span class="pill-dot" style="background:#2563EB"></span>0 In Progress</div>
-    <div class="progress-pill"><span class="pill-dot" style="background:#D97706"></span>3 Ready (P0 unblocked)</div>
-    <div class="progress-pill"><span class="pill-dot" style="background:#64748B"></span>8 Backlog</div>
+    <div class="progress-pill"><span class="pill-dot" style="background:#D97706"></span>4 Ready (P0 unblocked)</div>
+    <div class="progress-pill"><span class="pill-dot" style="background:#64748B"></span>9 Backlog</div>
   </div>
 </div>
 
@@ -474,7 +582,7 @@ body {
   <div class="col col-backlog">
     <div class="col-header">
       <div class="col-title">⏸ Backlog</div>
-      <span class="col-count">8</span>
+      <span class="col-count">9</span>
     </div>
     <div class="col-body">
 
@@ -612,7 +720,7 @@ body {
   <div class="col col-ready">
     <div class="col-header">
       <div class="col-title">▶ Ready — P0</div>
-      <span class="col-count">3</span>
+      <span class="col-count">4</span>
     </div>
     <div class="col-body">
 
@@ -625,7 +733,15 @@ body {
         <div class="card-title">OTP TTL compliance — SMS / Thẻ ma trận / Soft OTP</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 14/08/2026</span>
-          <span class="tag">Order 2FA</span>
+          <span class="tag">Điều 8</span>
+        </div>
+        <div class="card-task-count">
+          <span class="task-count-chip tc-be">BE 9 tasks</span>
+          <span class="task-count-chip tc-fe">FE 6 tasks</span>
+          <span class="task-count-chip tc-core">CORE 5 tasks</span>
+        </div>
+        <div class="card-deps">
+          <span class="dep-tag dep-blocks">⛔ Blocks: P0-03</span>
         </div>
         <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/OTP_TTL_Compliance_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
       </div>
@@ -639,7 +755,15 @@ body {
         <div class="card-title">Device ID logging (deviceUniqueId) — GDCK & rút tiền</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 28/08/2026</span>
-          <span class="tag">Device Fingerprinting</span>
+          <span class="tag">Điều 18 k3/4/5</span>
+        </div>
+        <div class="card-task-count">
+          <span class="task-count-chip tc-be">BE 6 tasks</span>
+          <span class="task-count-chip tc-fe">FE 4 tasks</span>
+          <span class="task-count-chip tc-core">CORE 5 tasks</span>
+        </div>
+        <div class="card-deps">
+          <span class="dep-tag dep-blocks">⛔ Blocks: Session · Alert · Audit</span>
         </div>
         <div class="card-subgroup">📁 Device Fingerprinting · <a href="./Device%20Fingerprinting/Issues/Device_ID_Logging_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
       </div>
@@ -653,10 +777,42 @@ body {
         <div class="card-title">Rút tiền &lt;10M: Smart OTP bắt buộc</div>
         <div class="card-meta">
           <span class="tag tag-deadline">🔴 28/08/2026</span>
-          <span class="tag">Order 2FA</span>
+          <span class="tag">Điều 12 k4a</span>
         </div>
-        <div class="card-blocker">⚠️ Phụ thuộc: Smart OTP ETA cần confirm</div>
+        <div class="card-task-count">
+          <span class="task-count-chip tc-be">BE 10 tasks</span>
+          <span class="task-count-chip tc-fe">FE 6 tasks</span>
+          <span class="task-count-chip tc-core">CORE 5 tasks</span>
+        </div>
+        <div class="card-deps">
+          <span class="dep-tag dep-ext">🔌 Smart OTP go-live</span>
+          <span class="dep-tag dep-needs">⚠ Core purpose field</span>
+          <span class="dep-tag dep-needs">⚠ P0-01 OTP config</span>
+        </div>
         <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
+      </div>
+
+      <!-- BE-7 P0 -->
+      <div class="card" onclick="openModal('be7')">
+        <div class="card-top">
+          <span class="card-stt">BE-7 · Sub-issue of P0-01</span>
+          <span class="prio-badge p0">P0</span>
+        </div>
+        <div class="card-title">Smart OTP Biometric Activation (Điều 8.5b)</div>
+        <div class="card-meta">
+          <span class="tag tag-deadline">🔴 14/08/2026</span>
+          <span class="tag">Điều 8.5b</span>
+        </div>
+        <div class="card-task-count">
+          <span class="task-count-chip tc-be">BE 4 tasks</span>
+          <span class="task-count-chip tc-fe">FE 4 tasks</span>
+        </div>
+        <div class="card-deps">
+          <span class="dep-tag dep-needs">⚠ AAA biometric flag</span>
+          <span class="dep-tag dep-needs">⚠ FE RSA Keystore</span>
+          <span class="dep-tag dep-needs">⚠ stt7 OTP TTL</span>
+        </div>
+        <div class="card-subgroup">📁 Order 2FA · <a href="./Order%202FA/Issues/BE7_SmartOTP_Biometric_Activation.md" style="color:#2563EB;font-size:10px">Issue ↗</a></div>
       </div>
 
     </div>
@@ -703,6 +859,65 @@ body {
 </div>
 </div>
 
+</div><!-- /tab-board -->
+
+<!-- ─── DEP GRAPH TAB ──────────────────────────────── -->
+<div id="tab-deps" class="tab-panel">
+  <div class="dep-graph-wrap">
+    <div class="dep-graph-legend">
+      <span class="dep-graph-legend-text">Click vào node để highlight dependencies. <span style="color:var(--p0)">■</span> Blocks · <span style="color:var(--gate)">■</span> Needed by · <span style="color:var(--teal)">■</span> Selected</span>
+      <button class="btn-dep-clear" onclick="clearDepHighlight()">✕ Bỏ chọn</button>
+    </div>
+    <div class="dep-graph" id="depGraph">
+      <svg id="dep-svg" aria-hidden="true"></svg>
+
+      <!-- Lane 1: External -->
+      <div class="dep-lane">
+        <div class="dep-lane-header">🔌 External Blockers</div>
+        <div class="dep-node dn-ext" id="dn-smartotp" onclick="selectDepNode('dn-smartotp')">Smart OTP go-live<small>3rd party integration</small></div>
+        <div class="dep-node dn-gate" id="dn-gate" onclick="selectDepNode('dn-gate')">★ BOM GATE<small>C06 vs VNPT · 30/06</small></div>
+        <div class="dep-node dn-ext" id="dn-aaa-flag" onclick="selectDepNode('dn-aaa-flag')">AAA Biometric flag<small>TRADEX_ENV_ENABLE_BIOMETRIC</small></div>
+      </div>
+
+      <!-- Lane 2: P0 -->
+      <div class="dep-lane">
+        <div class="dep-lane-header">🔴 P0 Active</div>
+        <div class="dep-node dn-p0" id="dn-stt7" onclick="selectDepNode('dn-stt7')">P0-01 OTP TTL<small>Điều 8 · 14/08/2026</small></div>
+        <div class="dep-node dn-p0" id="dn-stt35" onclick="selectDepNode('dn-stt35')">P0-02 Device ID Log<small>Điều 18 · 28/08/2026</small></div>
+        <div class="dep-node dn-p0" id="dn-stt14a" onclick="selectDepNode('dn-stt14a')">P0-03 Rút &lt;10M<small>Điều 12 · 28/08/2026</small></div>
+        <div class="dep-node dn-p0" id="dn-be7" onclick="selectDepNode('dn-be7')">BE-7 S-OTP Biometric<small>Điều 8.5b · 14/08/2026</small></div>
+        <div class="dep-node dn-p1" id="dn-stt5" onclick="selectDepNode('dn-stt5')">STT 5 Order 2FA<small>16/10/2026</small></div>
+        <div class="dep-node dn-p1" id="dn-stt36" onclick="selectDepNode('dn-stt36')">STT 36 Mobile Sec<small>30/10/2026</small></div>
+      </div>
+
+      <!-- Lane 3: P1 -->
+      <div class="dep-lane">
+        <div class="dep-lane-header">🟡 P1 Cần Spec</div>
+        <div class="dep-node dn-p1" id="dn-session" onclick="selectDepNode('dn-session')">Session Management<small>Điều 7</small></div>
+        <div class="dep-node dn-p1" id="dn-alert" onclick="selectDepNode('dn-alert')">Alert System<small>Điều 8</small></div>
+        <div class="dep-node dn-p1" id="dn-audit" onclick="selectDepNode('dn-audit')">Audit Log<small>Điều 5, 10</small></div>
+        <div class="dep-node dn-p1" id="dn-risk" onclick="selectDepNode('dn-risk')">Risk Controls<small>Điều 11</small></div>
+        <div class="dep-node dn-p1" id="dn-service" onclick="selectDepNode('dn-service')">Service Agreement<small>Điều 5.4</small></div>
+      </div>
+
+      <!-- Lane 4: P2/Blocked -->
+      <div class="dep-lane">
+        <div class="dep-lane-header">🔒 P2 / Blocked</div>
+        <div class="dep-node dn-p2" id="dn-compliance" onclick="selectDepNode('dn-compliance')">Compliance Reporting<small>Điều 13</small></div>
+        <div class="dep-node dn-p2" id="dn-datasec" onclick="selectDepNode('dn-datasec')">Data Security<small>Điều 9</small></div>
+        <div class="dep-node dn-gate" id="dn-biometric" onclick="selectDepNode('dn-biometric')">Biometric System<small>Điều 7,9,10,11</small></div>
+        <div class="dep-node dn-gate" id="dn-stt8" onclick="selectDepNode('dn-stt8')">STT 8 FIDO Biometric<small>FAR/FRR · 30/10/2026</small></div>
+        <div class="dep-node dn-gate" id="dn-stt10" onclick="selectDepNode('dn-stt10')">STT 10 Biometric Rules<small>Lock ≤10 · Timeout 3p</small></div>
+        <div class="dep-node dn-gate" id="dn-stt12" onclick="selectDepNode('dn-stt12')">STT 12 GDCK Biometric<small>30/10/2026</small></div>
+        <div class="dep-node dn-gate" id="dn-stt14b" onclick="selectDepNode('dn-stt14b')">STT 14 Rút ≥10M<small>TBD</small></div>
+        <div class="dep-node dn-gate" id="dn-stt40" onclick="selectDepNode('dn-stt40')">STT 40 Biometric Storage<small>TBD</small></div>
+        <div class="dep-node dn-p2" id="dn-stt3" onclick="selectDepNode('dn-stt3')">STT 3 Xác minh SĐT<small>Research · No vendor</small></div>
+        <div class="dep-node dn-done" id="dn-stt9" onclick="selectDepNode('dn-stt9')">✅ STT 9 PAD Cert<small>Done — VNPT FIDO cert</small></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ─── MODALS ─────────────────────────────────────── -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" id="modalBox">
@@ -737,12 +952,16 @@ const CARDS = {
     owner: 'BOM / Ms Nhai + IT',
     subgroup: 'BOM / IT Feasibility',
     c06: 'Core decision',
-    tasks: [
-      'BOM phê duyệt chủ trương C06 (bao gồm chấp nhận risk admin credentials)',
-      'IT báo cáo feasibility hệ thống & nhân lực cho Ms Nhai',
+    beTasks: [
+      { text: 'BOM phê duyệt chủ trương C06 (bao gồm chấp nhận risk admin credentials)', critical: true },
+      { text: 'IT báo cáo feasibility hệ thống & nhân lực cho Ms Nhai', critical: true },
     ],
-    note: 'Block 5 tasks: STT 8, 10, 12, 14≥10M, 40. Mỗi ngày trễ = mỗi ngày trễ deadline 28/08.',
-    status: 'Pending'
+    feTasks: [],
+    coreTasks: [],
+    note: 'Block 5 cards: stt8, stt10, stt12, stt14b, stt40. Mỗi ngày trễ = mỗi ngày trễ deadline 28/08.',
+    status: 'Pending',
+    blocks: ['stt8', 'stt10', 'stt12', 'stt14b', 'stt40'],
+    blockedBy: [],
   },
   stt7: {
     title: '[TT134-P0-01] OTP TTL Compliance — SMS / Thẻ ma trận / Soft OTP',
@@ -751,33 +970,69 @@ const CARDS = {
     owner: 'BE Lead + FE Lead',
     subgroup: 'Order 2FA',
     c06: 'Không — xử lý nội bộ',
-    tasks: [
-      'BE: Audit cấu hình SMS OTP TTL hiện tại trong Lotte Core',
-      'BE: Update SMS OTP TTL về ≤ 180s nếu khác',
-      'BE: Xác nhận Matrix card one-time (không reusable)',
-      'BE: Update SMS template — thêm "OTP có hiệu lực trong X phút"',
-      'FE: Hiển thị countdown timer trên màn hình nhập OTP',
-      'FE: Disable resend button trong TTL window',
+    beTasks: [
+      { text: 'BE-1: Audit cấu hình SMS OTP TTL hiện tại → phải ≤ 5 phút (300s)', critical: false },
+      { text: 'BE-2: Audit Thẻ ma trận TTL → request window ≤ 2 phút; card validity ≤ 1 năm', critical: false },
+      { text: 'BE-3: Audit Smart OTP code TTL → phải expire sau ≤ 2 phút kể từ lúc tạo', critical: true },
+      { text: 'BE-4: Xác nhận SMS/Voice/Email OTP response kèm thông tin mục đích', critical: false },
+      { text: 'BE-5: Update SMS/Voice OTP template: kèm mục đích + "Hiệu lực X phút"', critical: false },
+      { text: 'BE-6: Log TTL events: otp_generated_at, otp_expires_at, otp_used_at', critical: false },
+      { text: 'BE-7: [Điều 8.5b] Activate Smart OTP thiết bị mới → bắt buộc SMS OTP + biometric trước', critical: true },
+      { text: 'BE-8: [Điều 8.5c] Activation code chỉ kích hoạt được trên 1 thiết bị duy nhất, có TTL', critical: false },
+      { text: 'BE-9: [Điều 8.5d] Lockout vĩnh viễn sau ≤ 10 lần sai → chỉ CSH mở, phải verify danh tính KH', critical: true },
     ],
-    note: 'TTL tối đa: SMS OTP ≤ 180s, Matrix card = one-time, TOTP = 1 window 30s.',
-    status: 'Ready — bắt đầu ngay'
+    feTasks: [
+      { text: 'FE-1: Countdown timer 5 phút trên màn hình nhập SMS OTP', critical: false },
+      { text: 'FE-2: Disable "Gửi lại" trong thời gian TTL còn hiệu lực', critical: false },
+      { text: 'FE-3: Error message rõ khi OTP hết hạn ("OTP đã hết hạn, vui lòng yêu cầu mã mới")', critical: false },
+      { text: 'FE-4: Soft OTP screen: countdown 2 phút (TTL TT134), code refresh 30s TOTP', critical: false },
+      { text: 'FE-5: [Điều 8.5b] Activate trên thiết bị mới → redirect SMS OTP + biometric trước', critical: true },
+      { text: 'FE-6: [Điều 8.5d] Sau lockout → màn "Smart OTP bị khóa, liên hệ hỗ trợ" (không countdown, không auto-unlock)', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Audit SMS OTP TTL trên web trading ≤ 5 phút', critical: true },
+      { text: 'CORE-2: Audit Thẻ ma trận web trading: request window ≤ 2 phút, card validity ≤ 1 năm', critical: true },
+      { text: 'CORE-3: Update nội dung SMS OTP kèm mục đích giao dịch + thời hạn hiệu lực', critical: true },
+      { text: 'CORE-4: OTP hết hạn → web trading trả lỗi rõ, không silent accept', critical: false },
+      { text: 'CORE-5: Nếu Soft OTP web: TTL ≤ 2 phút; lockout sau ≤ 10 lần sai, chỉ mở qua CSH', critical: false },
+    ],
+    note: 'TTL tối đa theo TT134: SMS OTP ≤ 5 phút, Thẻ ma trận ≤ 2 phút, Smart OTP ≤ 2 phút (≠ TOTP 30s thông thường). Cần confirm cấu hình hiện tại.',
+    status: 'Ready — bắt đầu ngay',
+    blocks: ['stt14a — Rút tiền <10M (OTP config dependency)', 'be7 — Smart OTP Biometric Activation (Điều 8.5b sub-issue)'],
+    blockedBy: [],
   },
   stt35: {
     title: '[TT134-P0-02] Device ID Logging — GDCK & Rút tiền',
     prio: 'P0',
     deadline: '28/08/2026 🔴',
-    owner: 'BE Lead + FE Lead',
+    owner: 'BE Lead + FE Lead + DBA',
     subgroup: 'Device Fingerprinting',
     c06: 'Không — internal TradeX',
-    tasks: [
-      'BE: Thêm deviceUniqueId vào transaction log cho GDCK (đặt/hủy lệnh)',
-      'BE: Thêm deviceUniqueId vào transaction log cho rút tiền',
-      'BE: DB migration — thêm column device_unique_id, source_ip',
-      'FE: Đảm bảo X-Device-Id header được gửi trong tất cả API đặt lệnh',
-      'FE: Đảm bảo X-Device-Id header được gửi trong API rút tiền',
+    beTasks: [
+      { text: 'BE-1: Audit & enrich nhật ký GDCK: đủ fields Điều 18 k4 (loại KH, phương thức GD, loại lệnh, auth method, auth time, device ID, IP)', critical: false },
+      { text: 'BE-2: Audit & enrich nhật ký rút tiền + chuyển tiền: đủ fields Điều 18 k5 (auth method, device ID, IP, TK ngân hàng nhận)', critical: false },
+      { text: 'BE-3: DB migration: thêm auth_method, auth_time, device_unique_id, source_ip vào t_order_log và t_withdrawal_log', critical: false },
+      { text: 'BE-4: Hỗ trợ device ID cho WTS (web): MAC address hoặc browser fingerprint', critical: false },
+      { text: 'BE-5: Validate X-Device-Id header — reject nếu thiếu (feature flag)', critical: false },
+      { text: 'BE-6: Expose transaction log qua audit API (nội bộ + UBCK khi có yêu cầu)', critical: false },
     ],
-    note: 'TT134 Điều 7: ghi nhận thiết bị cho giao dịch quan trọng. deviceUniqueId = IDFV (iOS) / Android ID.',
-    status: 'Ready — bắt đầu ngay'
+    feTasks: [
+      { text: 'FE-1: Luôn gửi deviceUniqueId trong X-Device-Id header cho API đặt lệnh GDCK', critical: false },
+      { text: 'FE-2: Luôn gửi deviceUniqueId trong X-Device-Id header cho API rút tiền + chuyển tiền', critical: false },
+      { text: 'FE-3: Không lấy được deviceUniqueId → show error, không cho thực hiện giao dịch', critical: false },
+      { text: 'FE-4: WTS web: collect và gửi device fingerprint (MAC/browser) cho API đặt lệnh + rút/chuyển tiền', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Thu thập và log device identifier máy tính khi đặt lệnh/rút tiền qua web (MAC address hoặc browser fingerprint)', critical: true },
+      { text: 'CORE-2: Nhật ký GDCK web đủ tất cả fields Điều 18 k4', critical: true },
+      { text: 'CORE-3: Nhật ký rút/chuyển tiền web đủ fields Điều 18 k5', critical: true },
+      { text: 'CORE-4: Gửi X-Device-Id trong mọi API call đặt lệnh/rút tiền', critical: false },
+      { text: 'CORE-5: Không thu thập được device ID → không cho thực hiện giao dịch', critical: false },
+    ],
+    note: 'deviceUniqueId = IMEI / Serial / Android ID / WLAN MAC (mobile) hoặc MAC address / browser fingerprint (web). Phân biệt device_id (client UUID) vs deviceUniqueId (OS-level, required by TT134).',
+    status: 'Ready — bắt đầu ngay',
+    blocks: ['Session Management', 'Alert System', 'Audit Log'],
+    blockedBy: [],
   },
   stt14a: {
     title: '[TT134-P0-03] Rút tiền <10M — Bắt buộc Smart OTP',
@@ -786,17 +1041,37 @@ const CARDS = {
     owner: 'BE Lead + FE Lead + Smart OTP team',
     subgroup: 'Order 2FA',
     c06: 'Không — dùng Smart OTP (lotte-bridge)',
-    tasks: [
-      'Confirm ETA Smart OTP 3rd party go-live (CRITICAL blocker)',
-      'BE: Update /api/v1/cash/withdraw/confirm — enforce Smart OTP verify',
-      'BE: Return requireOtp: true, otpType: SMART_OTP trong initiate',
-      'BE: Rate limiting — max 5 lần sai → lock withdrawal 15 phút',
-      'FE: Navigate to Smart OTP screen sau bước nhập số tiền',
-      'FE: Reuse SmartOTPInput component (đã có từ Login flow)',
-      'FE: Handle SMART_OTP_NOT_ACTIVATED → redirect to enrollment',
+    beTasks: [
+      { text: 'BE-1: Update /cash/withdraw/confirm: enforce Smart OTP verify', critical: false },
+      { text: 'BE-2: Thêm requireSmartOtp flag cho withdrawal dưới ngưỡng', critical: false },
+      { text: 'BE-3: Proxy Smart OTP verify sang Lotte Core cho withdrawal', critical: false },
+      { text: 'BE-4: Return requireOtp: true, otpType: SMART_OTP trong initiate response', critical: false },
+      { text: 'BE-5: Lockout Smart OTP sau N lần sai → SMART_OTP_LOCKED, fallback SMS OTP', critical: false },
+      { text: 'BE-6: Audit log: smartOtpVerifiedAt, verificationMethod (SMART_OTP / SMS_OTP)', critical: false },
+      { text: 'BE-7: [Core request] Core thêm purpose field vào Smart OTP verify API', critical: true },
+      { text: 'BE-8: [Core request] Confirm mapping purpose enum TradeX ↔ Core (LOGIN, CASH_WITHDRAWAL, ORDER_PLACEMENT)', critical: false },
+      { text: 'BE-9: Initiate withdrawal: query Smart OTP status → trả otpType phù hợp ngay từ đầu', critical: false },
+      { text: 'BE-10: SMS OTP fallback: trigger /otp/send bind với withdrawId khi otpType: SMS_OTP', critical: false },
     ],
-    note: '⚠️ CRITICAL: Issue này phụ thuộc hoàn toàn vào Smart OTP 3rd party. Cần confirm ETA trước 05/07.',
-    status: 'Ready — nhưng cần confirm Smart OTP ETA'
+    feTasks: [
+      { text: 'FE-1: Sau nhập số tiền → navigate to OTP screen (loại quyết định bởi otpType từ initiate)', critical: false },
+      { text: 'FE-2: Reuse SmartOTPInput component khi otpType: SMART_OTP', critical: false },
+      { text: 'FE-3: Handle lỗi: OTP_INVALID, OTP_EXPIRED, MAX_RETRY_EXCEEDED', critical: false },
+      { text: 'FE-4: Countdown 2 phút (TTL TT134), code refresh 30s TOTP', critical: false },
+      { text: 'FE-5: otpType: SMS_OTP từ initiate → render SMS OTP screen trực tiếp + banner giải thích', critical: false },
+      { text: 'FE-6: SMART_OTP_LOCKED từ verify → switch sang SMS OTP + warning banner', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Bắt buộc xác thực Điều 7 (Smart OTP hoặc SMS OTP) cho rút tiền < 10M trên web trading', critical: true },
+      { text: 'CORE-2: Hỗ trợ nhận purpose field trong Smart OTP verify: CASH_WITHDRAWAL, ORDER_PLACEMENT, LOGIN', critical: true },
+      { text: 'CORE-3: SMS OTP fallback khi user web chưa activate Smart OTP; nội dung SMS kèm mục đích + TTL', critical: false },
+      { text: 'CORE-4: Audit log rút tiền web: auth_method, auth_time, device_id, source_ip, dest_bank_account', critical: false },
+      { text: 'CORE-5: Lockout Smart OTP sau ≤ 10 lần sai web → vĩnh viễn, fallback SMS OTP', critical: false },
+    ],
+    note: '⚠️ CRITICAL RISK: (1) Phụ thuộc Smart OTP 3rd party go-live — nếu trễ, SMS OTP là path duy nhất. (2) Core phải hỗ trợ purpose field (BE-7) trước khi lotte-bridge implement. Raise Core ngay.',
+    status: 'Ready — cần confirm Smart OTP ETA + raise Core purpose field',
+    blocks: [],
+    blockedBy: ['Smart OTP 3rd party go-live', 'Core: purpose field support (BE-7, BE-8)', 'P0-01 OTP TTL config'],
   },
   stt5: {
     title: 'STT 5 — Smart OTP giao dịch đầu/phiên + Verify S-OTP API',
@@ -805,13 +1080,22 @@ const CARDS = {
     owner: 'Smart OTP team + BE',
     subgroup: 'Order 2FA',
     c06: 'Không',
-    tasks: [
-      'Yêu cầu Smart OTP xác thực giao dịch đầu tiên mỗi phiên',
-      'Update Verify S-OTP API cho session-level auth',
-      'Implement session flag: firstOrderInSession',
+    beTasks: [
+      { text: 'BE-1: Update /smartOtp/verify API: support session-level auth (firstOrderInSession flag)', critical: false },
+      { text: 'BE-2: Track session state firstOrderInSession (Redis hoặc t_session)', critical: false },
+      { text: 'BE-3: Reset flag khi login mới (đầu phiên)', critical: false },
+    ],
+    feTasks: [
+      { text: 'FE-1: Detect firstOrderInSession khi user place order GDCK', critical: false },
+      { text: 'FE-2: Trigger Smart OTP screen cho lệnh đầu phiên', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Web trading: enforce Smart OTP cho lệnh GDCK đầu phiên', critical: false },
     ],
     note: 'Phụ thuộc Smart OTP project go-live. Plan kickoff tháng 8 sau P0.',
-    status: 'Backlog — plan tháng 8'
+    status: 'Backlog — plan tháng 8',
+    blocks: [],
+    blockedBy: ['Smart OTP 3rd party go-live'],
   },
   stt36: {
     title: 'STT 36 — Mobile security: 1 device/TK, anti-tampering',
@@ -820,14 +1104,24 @@ const CARDS = {
     owner: 'BE + FE Lead',
     subgroup: 'Device Fingerprinting',
     c06: 'Không (C06 SSO có thể bổ sung sau)',
-    tasks: [
-      'Implement device management: 1 thiết bị/TK',
-      'Xác thực thiết bị mới qua SMS OTP',
-      'Anti-tampering detection (jailbreak/root detection)',
-      'Alert khi đăng nhập từ thiết bị mới',
+    beTasks: [
+      { text: 'BE-1: Enforce 1 active device per account (t_active_device hoặc t_refresh_token check)', critical: false },
+      { text: 'BE-2: SMS OTP verification cho thiết bị mới (login từ device chưa bind)', critical: false },
+      { text: 'BE-3: Notify endpoint khi login từ thiết bị mới (publish event cho Alert System)', critical: false },
+    ],
+    feTasks: [
+      { text: 'FE-1: Jailbreak detection (JailMonkey iOS) + Root detection (Android)', critical: false },
+      { text: 'FE-2: Anti-tampering: Frida/SSL pinning bypass detection', critical: false },
+      { text: 'FE-3: SMS OTP screen cho thiết bị mới', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Browser fingerprint per session, detect browser/IP mới', critical: false },
+      { text: 'CORE-2: SMS OTP cho session mới trên browser lạ', critical: false },
     ],
     note: 'Internal — có thể kickoff song song với P0 nếu có resource.',
-    status: 'Backlog — plan tháng 8'
+    status: 'Backlog — plan tháng 8',
+    blocks: [],
+    blockedBy: [],
   },
   stt8: {
     title: 'STT 8 — Sinh trắc học FIDO: FAR <0.01%, FRR <5%, PAD',
@@ -836,14 +1130,21 @@ const CARDS = {
     owner: 'IT + BE + FE',
     subgroup: 'Biometric System',
     c06: '★ CẦN hoặc VNPT interim',
-    tasks: [
-      '[Sau GATE] Nếu VNPT: implement flow VNPT eKYC face verification',
-      '[Sau GATE] Nếu C06: setup AgentGW Zone, HSM, VPN S2S',
-      'Implement FIDO face verification trong app',
-      'Validate FAR < 0.01%, FRR < 5%',
+    beTasks: [
+      { text: 'BE-1: [Post-GATE] Vendor integration setup — C06 (AgentGW/HSM/VPN S2S) HOẶC VNPT eKYC API', critical: true },
+      { text: 'BE-2: Biometric verification service: liveness check, FAR/FRR config theo Điều 9', critical: true },
+      { text: 'BE-3: Biometric token issuance sau FIDO check (bind với userId + deviceId)', critical: false },
     ],
+    feTasks: [
+      { text: 'FE-1: FIDO biometric capture flow (camera, liveness detection)', critical: false },
+      { text: 'FE-2: Loading state + retry UI khi face verification fail', critical: false },
+      { text: 'FE-3: Fallback path khi biometric unavailable (device không support)', critical: false },
+    ],
+    coreTasks: [],
     note: '🔒 BLOCKED — chờ BOM decision 30/06. Nếu VNPT: kịp 28/08. Nếu C06: KHÔNG kịp 28/08.',
-    status: 'Blocked — chờ GATE'
+    status: 'Blocked — chờ GATE',
+    blocks: [],
+    blockedBy: ['gate'],
   },
   stt10: {
     title: 'STT 10 — Biometric rules: lock ≤10 lần, timeout 3p, verify CSDL QG',
@@ -852,13 +1153,22 @@ const CARDS = {
     owner: 'BE + C06/VNPT',
     subgroup: 'Biometric System',
     c06: 'CẦN (nếu chọn C06)',
-    tasks: [
-      'Implement lock sau ≤10 lần verify fail',
-      'Timeout 3 phút mỗi session biometric',
-      'Verify sinh trắc vs CCCD chip hoặc CSDL quốc gia',
+    beTasks: [
+      { text: 'BE-1: consecutive_failures tracker per user; lock vĩnh viễn tại 10 lần fail', critical: true },
+      { text: 'BE-2: Biometric session timeout 3 phút (Redis TTL)', critical: false },
+      { text: 'BE-3: Verify sinh trắc vs CCCD chip (NFC) hoặc C06 CSDL Quốc gia', critical: true },
+      { text: 'BE-4: Lockout recovery flow (CSH only, phải verify danh tính KH)', critical: false },
     ],
+    feTasks: [
+      { text: 'FE-1: Show countdown 3 phút khi enter biometric flow', critical: false },
+      { text: 'FE-2: Disable biometric sau 10 fail, show recovery hint (liên hệ CSH)', critical: false },
+      { text: 'FE-3: NFC reader integration cho CCCD chip', critical: false },
+    ],
+    coreTasks: [],
     note: '🔒 BLOCKED — phụ thuộc GATE. C06 đáp ứng tốt nhất (verify vs CSDL QG). VNPT verify vs ảnh lưu — cần xác nhận pháp lý.',
-    status: 'Blocked — chờ GATE'
+    status: 'Blocked — chờ GATE',
+    blocks: [],
+    blockedBy: ['gate'],
   },
   stt12: {
     title: 'STT 12 — GDCK online: sinh trắc học giao dịch đầu/phiên',
@@ -867,13 +1177,22 @@ const CARDS = {
     owner: 'BE + FE + C06/VNPT',
     subgroup: 'Biometric System · Order 2FA',
     c06: 'CẦN (nếu chọn C06)',
-    tasks: [
-      'Implement biometric check cho giao dịch GDCK đầu phiên',
-      'Same device requirement cho biometric verify',
-      'Integration với C06 Face Verification hoặc VNPT',
+    beTasks: [
+      { text: 'BE-1: Detect firstOrderInSession on GDCK request → require biometric token', critical: false },
+      { text: 'BE-2: Validate biometric token bind với deviceId (same device check)', critical: true },
+      { text: 'BE-3: Integration C06/VNPT face verification', critical: true },
+    ],
+    feTasks: [
+      { text: 'FE-1: Trigger biometric prompt cho lệnh GDCK đầu phiên', critical: false },
+      { text: 'FE-2: Show retry/fallback UX khi biometric fail', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Web trading: enforce biometric đầu phiên (qua mobile-bound flow hoặc same-device)', critical: false },
     ],
     note: '🔒 BLOCKED — phụ thuộc GATE. Phương án interim VNPT → C06 migrate sau Q4.',
-    status: 'Blocked — chờ GATE'
+    status: 'Blocked — chờ GATE',
+    blocks: [],
+    blockedBy: ['gate', 'stt8'],
   },
   stt14b: {
     title: 'STT 14 ≥10M — Rút tiền ≥10M: sinh trắc học bắt buộc',
@@ -882,13 +1201,23 @@ const CARDS = {
     owner: 'BE + FE + C06/VNPT',
     subgroup: 'Biometric System · Order 2FA',
     c06: '★ CẦN hoặc VNPT interim',
-    tasks: [
-      'Enforce biometric verification trước khi rút ≥10M',
-      'Integration với Face Verification provider',
-      'Anti-replay: bind biometric token với withdrawal session',
+    beTasks: [
+      { text: 'BE-1: /cash/withdraw/confirm: enforce biometric_token if amount >= 10M', critical: true },
+      { text: 'BE-2: Bind biometric_token với withdrawalId (anti-replay)', critical: true },
+      { text: 'BE-3: TTL biometric token 5 phút', critical: false },
+      { text: 'BE-4: Audit log: biometric_verified_at, vendor (C06 hoặc VNPT)', critical: false },
+    ],
+    feTasks: [
+      { text: 'FE-1: Threshold check trong WithdrawScreen: ≥10M → trigger biometric flow', critical: false },
+      { text: 'FE-2: Biometric prompt + retry handling (max 10 lần per stt10 rule)', critical: false },
+    ],
+    coreTasks: [
+      { text: 'CORE-1: Web trading: enforce biometric cho rút ≥10M (mobile-bound flow)', critical: false },
     ],
     note: '🔒 BLOCKED — phụ thuộc GATE. Risk compliance cao nhất. Nếu VNPT: có thể kịp 28/08.',
-    status: 'Blocked — chờ GATE'
+    status: 'Blocked — chờ GATE',
+    blocks: [],
+    blockedBy: ['gate', 'stt8'],
   },
   stt40: {
     title: 'STT 40 — Lưu trữ, bảo quản thông tin sinh trắc học KH',
@@ -897,14 +1226,19 @@ const CARDS = {
     owner: 'IT + BE + C06',
     subgroup: 'Data Security',
     c06: 'CẦN (nếu chọn C06)',
-    tasks: [
-      'Nếu C06: không cần build DB riêng — C06 quản lý',
-      'Nếu VNPT: build & bảo quản biometric DB theo Điều 20',
-      'Encryption at rest cho biometric data',
-      'Data retention policy theo TT134',
+    beTasks: [
+      { text: 'BE-1: [If C06] Không cần build DB riêng — C06 quản lý', critical: false },
+      { text: 'BE-2: [If VNPT] Build t_biometric_data với AES-256-GCM encryption (Điều 20)', critical: true },
+      { text: 'BE-3: [If VNPT] KMS integration cho key rotation', critical: false },
+      { text: 'BE-4: Data retention policy: lưu 5 năm theo Điều 13', critical: false },
+      { text: 'BE-5: Audit log mọi biometric template read/write', critical: false },
     ],
+    feTasks: [],
+    coreTasks: [],
     note: '★ Lợi thế lớn của C06: NHSV không cần tự xây dựng biometric DB. Nếu VNPT: NHSV phải build.',
-    status: 'Blocked — chờ GATE'
+    status: 'Blocked — chờ GATE',
+    blocks: [],
+    blockedBy: ['gate'],
   },
   stt3: {
     title: 'STT 3 — Xác minh SĐT thuộc quyền sử dụng hợp pháp của KH',
@@ -913,13 +1247,18 @@ const CARDS = {
     owner: 'PO + IT',
     subgroup: 'Service Agreement · Research',
     c06: 'Có thể dùng C06 (cần xác nhận)',
-    tasks: [
-      'Hỏi C06: TTXT có field SĐT trong 11 trường chia sẻ không?',
-      'Research: nhà mạng có API verify SĐT cho doanh nghiệp không?',
-      'Xác định vendor/solution phù hợp',
+    beTasks: [
+      { text: 'BE-1: [Research] Confirm C06 TTXT có field SĐT trong 11 trường chia sẻ không', critical: true },
+      { text: 'BE-2: [Research] GSMA Open Gateway CAMARA APIs (Viettel/VNPT/MobiFone) — feasibility', critical: false },
+      { text: 'BE-3: [Research] VNeID app-to-app integration với RAR Center C06', critical: false },
+      { text: 'BE-4: Xác định vendor/solution phù hợp + chi phí', critical: false },
     ],
+    feTasks: [],
+    coreTasks: [],
     note: 'Nhà mạng không share API cho doanh nghiệp. Hiện chỉ C06 hoặc Bộ TT&TT có thể giải quyết.',
-    status: 'Research'
+    status: 'Research',
+    blocks: [],
+    blockedBy: ['Vendor TBD'],
   },
   stt9: {
     title: 'STT 9 — PAD Certification (FIDO Alliance)',
@@ -928,19 +1267,69 @@ const CARDS = {
     owner: 'VNPT',
     subgroup: 'Biometric System',
     c06: 'Không cần',
-    tasks: [
-      '✅ VNPT FaceID đã đạt FIDO Alliance certification',
-      '✅ PAD (Presentation Attack Detection) đã được xác nhận',
+    beTasks: [
+      { text: '✅ VNPT FaceID đã đạt FIDO Alliance certification', critical: false },
+      { text: '✅ PAD (Presentation Attack Detection) đã được xác nhận', critical: false },
     ],
+    feTasks: [],
+    coreTasks: [],
     note: 'Confirmed: VNPT FaceID đạt FIDO cert. Không cần action thêm.',
-    status: '✅ Done'
+    status: '✅ Done',
+    blocks: [],
+    blockedBy: [],
+  },
+  be7: {
+    title: '[BE-7] Smart OTP Biometric Activation — Điều 8.5b',
+    prio: 'P0',
+    deadline: '14/08/2026 🔴',
+    owner: 'BE Lead + FE Lead + Pháp chế',
+    subgroup: 'Order 2FA · Sub-issue of P0-01',
+    c06: 'Không — device-level biometric (Face ID/Touch ID), không phải C06/VNPT',
+    beTasks: [
+      { text: 'BE-1: Endpoint mới POST /api/v1/smartOtp/biometricCheck — call AAA queryBiometricStatus', critical: true },
+      { text: 'BE-2: Endpoint mới POST /api/v1/smartOtp/biometricVerify — issue biometricToken JWT (TTL 10 phút)', critical: true },
+      { text: 'BE-3: Sửa POST /api/v1/smartOtp/register: validate biometricToken trước khi call Core SOTP-102', critical: true },
+      { text: 'BE-4: DevOps: enable TRADEX_ENV_ENABLE_BIOMETRIC=true trên prod, TRADEX_ENV_BIOMETRIC_VALIDATE_PASSWORD=true', critical: true },
+    ],
+    feTasks: [
+      { text: 'FE-1: Generate RSA keypair khi đăng ký biometric (Secure Enclave iOS / Android Keystore)', critical: true },
+      { text: 'FE-2: Trigger Face ID / Touch ID khi activate Smart OTP lần đầu hoặc thiết bị mới', critical: true },
+      { text: 'FE-3: Sign username.toUpperCase() bằng RSA private key → gửi signature lên /biometricVerify', critical: true },
+      { text: 'FE-4: Sửa màn Kích Hoạt Smart OTP: thêm bước biometric trước /register', critical: false },
+    ],
+    coreTasks: [],
+    note: 'AAA service đã có sẵn t_biometric + verifyPwdBiometric (RSA-SHA256). Không cần build AAA mới. Đây là Điều 8.5b — KHÔNG phải Điều 9 (Điều 9 mới cần C06/VNPT, blocked GATE).',
+    status: 'Ready — chờ FE confirm RSA Keystore implementation',
+    blocks: [],
+    blockedBy: ['AAA biometric flag enable', 'FE RSA Keystore confirm', 'stt7 OTP TTL config'],
   },
 };
+
+function renderTasks(tasks, sectionClass, sectionLabel) {
+  if (!tasks || tasks.length === 0) return '';
+  return `
+    <div class="modal-row">
+      <div style="margin-bottom:5px"><span class="task-section-label ${sectionClass}">${sectionLabel}</span></div>
+      <ul class="modal-tasks">
+        ${tasks.map(t => {
+          const item = typeof t === 'string' ? { text: t, critical: false } : t;
+          return `<li class="${item.critical ? 'critical' : ''}"><span class="task-icon">${item.critical ? '🔴' : '▸'}</span>${item.text}</li>`;
+        }).join('')}
+      </ul>
+    </div>`;
+}
 
 function openModal(id) {
   const d = CARDS[id];
   if (!d) return;
   document.getElementById('modalTitle').textContent = d.title;
+
+  const tasksHtml = d.beTasks
+    ? renderTasks(d.beTasks, 'task-section-be', 'BE Tasks') +
+      renderTasks(d.feTasks, 'task-section-fe', 'FE Tasks') +
+      (d.coreTasks ? renderTasks(d.coreTasks, 'task-section-core', 'Core (Web Trading)') : '')
+    : renderTasks(d.tasks, 'task-section-be', 'Tasks');
+
   document.getElementById('modalBody').innerHTML = `
     <div class="modal-grid">
       <div class="modal-row">
@@ -964,12 +1353,17 @@ function openModal(id) {
       <div class="modal-label">Phụ thuộc C06</div>
       <div class="modal-value">${d.c06}</div>
     </div>
-    <div class="modal-row">
-      <div class="modal-label">Tasks</div>
-      <ul class="modal-tasks">
-        ${d.tasks.map(t => `<li><span class="task-icon">▸</span>${t}</li>`).join('')}
-      </ul>
-    </div>
+    ${tasksHtml}
+    ${(d.blocks && d.blocks.length) ? `
+<div class="modal-row">
+  <div class="modal-label">⛔ Blocks (issue này block)</div>
+  <ul class="modal-tasks">${d.blocks.map(b => `<li><span class="task-icon">→</span>${b}</li>`).join('')}</ul>
+</div>` : ''}
+    ${(d.blockedBy && d.blockedBy.length) ? `
+<div class="modal-row">
+  <div class="modal-label">⚠ Blocked by (cần xong trước)</div>
+  <ul class="modal-tasks">${d.blockedBy.map(b => `<li><span class="task-icon" style="color:var(--gate)">←</span>${b}</li>`).join('')}</ul>
+</div>` : ''}
     <div class="modal-row">
       <div class="modal-label">Ghi chú</div>
       <div class="modal-value">${d.note}</div>
@@ -992,6 +1386,148 @@ function closeModalDirect() {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModalDirect();
+});
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelector('.tab-btn[data-tab="' + tab + '"]').classList.add('active');
+  if (tab === 'deps') setTimeout(drawDepGraph, 80);
+}
+
+// ─── DEPENDENCY GRAPH ────────────────────────────────────────────
+const DEP_CONNECTIONS = [
+  ['dn-smartotp', 'dn-stt7'],
+  ['dn-smartotp', 'dn-stt14a'],
+  ['dn-smartotp', 'dn-stt5'],
+  ['dn-aaa-flag', 'dn-be7'],
+  ['dn-stt7', 'dn-stt14a'],
+  ['dn-stt7', 'dn-be7'],
+  ['dn-stt35', 'dn-session'],
+  ['dn-stt35', 'dn-alert'],
+  ['dn-stt35', 'dn-audit'],
+  ['dn-audit', 'dn-compliance'],
+  ['dn-audit', 'dn-datasec'],
+  ['dn-alert', 'dn-risk'],
+  ['dn-gate', 'dn-biometric'],
+  ['dn-gate', 'dn-stt8'],
+  ['dn-gate', 'dn-stt10'],
+  ['dn-gate', 'dn-stt12'],
+  ['dn-gate', 'dn-stt14b'],
+  ['dn-gate', 'dn-stt40'],
+  ['dn-biometric', 'dn-stt8'],
+  ['dn-stt8', 'dn-stt12'],
+  ['dn-stt8', 'dn-stt14b'],
+  ['dn-stt10', 'dn-stt12'],
+  ['dn-stt10', 'dn-stt14b'],
+];
+
+let depGraphDrawn = false;
+let selectedDepNode = null;
+
+function drawDepGraph() {
+  const svg = document.getElementById('dep-svg');
+  const graph = document.getElementById('depGraph');
+  if (!svg || !graph) return;
+  svg.innerHTML = '';
+
+  // Arrow marker
+  const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  ['arrow-default','arrow-active'].forEach((id, i) => {
+    const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+    marker.setAttribute('id', id);
+    marker.setAttribute('markerWidth', '7'); marker.setAttribute('markerHeight', '7');
+    marker.setAttribute('refX', '5'); marker.setAttribute('refY', '3');
+    marker.setAttribute('orient', 'auto');
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', 'M0,0 L0,6 L7,3 z');
+    p.setAttribute('fill', i === 0 ? 'var(--border)' : 'var(--teal)');
+    marker.appendChild(p); defs.appendChild(marker);
+  });
+  svg.appendChild(defs);
+
+  const graphRect = graph.getBoundingClientRect();
+  svg.setAttribute('width', graphRect.width);
+  svg.setAttribute('height', Math.max(graphRect.height, 400));
+
+  DEP_CONNECTIONS.forEach(([fromId, toId]) => {
+    const fromEl = document.getElementById(fromId);
+    const toEl = document.getElementById(toId);
+    if (!fromEl || !toEl) return;
+    const fr = fromEl.getBoundingClientRect();
+    const tr = toEl.getBoundingClientRect();
+    const x1 = fr.right - graphRect.left;
+    const y1 = fr.top + fr.height / 2 - graphRect.top;
+    const x2 = tr.left - graphRect.left - 2;
+    const y2 = tr.top + tr.height / 2 - graphRect.top;
+    const cx = (x1 + x2) / 2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}`);
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', 'var(--border)');
+    path.setAttribute('stroke-width', '1.5');
+    path.setAttribute('marker-end', 'url(#arrow-default)');
+    path.setAttribute('opacity', '0.6');
+    path.dataset.from = fromId; path.dataset.to = toId;
+    svg.appendChild(path);
+  });
+  depGraphDrawn = true;
+}
+
+function selectDepNode(nodeId) {
+  const wasSame = selectedDepNode === nodeId;
+  clearDepHighlight();
+  if (wasSame) return;
+  selectedDepNode = nodeId;
+
+  const blocksSet = new Set();
+  const needsSet = new Set();
+  DEP_CONNECTIONS.forEach(([from, to]) => {
+    if (from === nodeId) blocksSet.add(to);
+    if (to === nodeId) needsSet.add(from);
+  });
+
+  document.querySelectorAll('.dep-node').forEach(node => {
+    if (node.id === nodeId) node.classList.add('hl-source');
+    else if (blocksSet.has(node.id)) node.classList.add('hl-blocks');
+    else if (needsSet.has(node.id)) node.classList.add('hl-needs');
+    else node.classList.add('hl-dim');
+  });
+
+  const svg = document.getElementById('dep-svg');
+  if (svg) {
+    svg.querySelectorAll('path[data-from]').forEach(path => {
+      const active = path.dataset.from === nodeId || path.dataset.to === nodeId;
+      path.setAttribute('stroke', active ? 'var(--teal)' : 'var(--border2)');
+      path.setAttribute('stroke-width', active ? '2.5' : '1');
+      path.setAttribute('opacity', active ? '1' : '0.15');
+      path.setAttribute('marker-end', active ? 'url(#arrow-active)' : 'url(#arrow-default)');
+    });
+  }
+}
+
+function clearDepHighlight() {
+  document.querySelectorAll('.dep-node').forEach(n =>
+    n.classList.remove('hl-source','hl-blocks','hl-needs','hl-dim')
+  );
+  const svg = document.getElementById('dep-svg');
+  if (svg) {
+    svg.querySelectorAll('path[data-from]').forEach(p => {
+      p.setAttribute('stroke', 'var(--border)');
+      p.setAttribute('stroke-width', '1.5');
+      p.setAttribute('opacity', '0.6');
+      p.setAttribute('marker-end', 'url(#arrow-default)');
+    });
+  }
+  selectedDepNode = null;
+}
+
+window.addEventListener('resize', () => {
+  if (depGraphDrawn && document.getElementById('tab-deps').classList.contains('active')) {
+    drawDepGraph();
+  }
 });
 </script>
 </body>
