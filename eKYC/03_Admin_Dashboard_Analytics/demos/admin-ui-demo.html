@@ -95,6 +95,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .sum-table tr:last-child td { border-bottom: none; }
 .sum-table tr:hover td { background: #1a2332; }
 
+/* ── List tabs ── */
+.list-tabs { display: flex; gap: 4px; padding: 0 24px; background: #1f2937; border-bottom: 1px solid #374151; }
+.list-tab { padding: 12px 16px; cursor: pointer; font-size: 12px; font-weight: 600; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; align-items: center; gap: 7px; transition: color .15s; }
+.list-tab:hover:not(.active) { color: #9ca3af; }
+.list-tab.active { color: #60a5fa; border-bottom-color: #3b82f6; }
+.list-tab-count { background: #374151; color: #9ca3af; font-size: 10px; padding: 1px 8px; border-radius: 10px; font-weight: 700; }
+.list-tab.active .list-tab-count { background: #1e3a5f; color: #93c5fd; }
+.list-panel { display: none; }
+.list-panel.active { display: block; }
+.reason-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 700; }
+.reason-notsub { background: #1c1917; color: #d6d3d1; border: 1px solid #57534e; }
+.reason-rejected { background: #450a0a; color: #fca5a5; }
+.reason-pending { background: #451a03; color: #fcd34d; }
+.reason-abandoned { background: #374151; color: #9ca3af; }
+
 /* ── Filter bar ── */
 .filter-bar { background: #1f2937; padding: 10px 24px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #374151; flex-wrap: wrap; }
 .filter-label { font-size: 11px; color: #6b7280; white-space: nowrap; }
@@ -544,119 +559,182 @@ table.mt tr:hover td { background: #1a2332; }
     <div class="page" id="pg-list">
       <div class="page-header">
         <div class="page-title">📋 Danh sách eKYC</div>
-        <div class="page-subtitle">Tra cứu và quản lý hồ sơ mở tài khoản eKYC</div>
+        <div class="page-subtitle">Tra cứu và quản lý hồ sơ mở tài khoản eKYC — bao gồm cả khách chưa mở TK thành công</div>
       </div>
-      <div class="filter-bar">
-        <span class="filter-label">Từ ngày</span><input type="date" class="fi" value="2026-05-17">
-        <span class="filter-label">Đến ngày</span><input type="date" class="fi" value="2026-05-24">
-        <span class="filter-label">Trạng thái</span>
-        <select class="fi">
-          <option>Tất cả</option><option>APPROVED</option><option>PENDING</option><option>REJECTED</option>
-        </select>
-        <span class="filter-label">Tìm kiếm</span>
-        <input type="text" class="fi" placeholder="Họ tên / CCCD / SĐT">
-        <button class="btn btn-secondary btn-sm">✕ Xóa</button>
-        <button class="btn btn-primary btn-sm">🔄 Làm mới</button>
-        <div class="ml-auto">
-          <button class="btn btn-success btn-sm">⚡ Update PENDING Requests</button>
+
+      <div class="list-tabs">
+        <div class="list-tab active" id="ltab-approved" onclick="switchListTab('approved')">
+          ✅ Đã mở TK thành công <span class="list-tab-count">5</span>
+        </div>
+        <div class="list-tab" id="ltab-notapproved" onclick="switchListTab('notapproved')">
+          ⚠️ Chưa mở TK thành công <span class="list-tab-count">3</span>
         </div>
       </div>
-      <div class="table-wrap">
-        <table class="mt">
-          <thead><tr>
-            <th>#</th><th>eKYC-ID</th><th>Ngày tạo</th><th>Loại</th>
-            <th>Số CCCD</th><th>Họ tên</th><th>Ngày sinh</th>
-            <th>Matching Rate</th><th>Lần thử</th><th>Trạng thái</th>
-            <th>Số TK</th><th>Chi tiết</th>
-          </tr></thead>
-          <tbody>
-            <tr>
-              <td style="color:#6b7280">1</td>
-              <td style="font-weight:700;color:#93c5fd">85169</td>
-              <td style="color:#9ca3af">23/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">030207010063</td>
-              <td><strong>NGUYỄN TUẤN PHONG</strong></td>
-              <td style="color:#9ca3af">22/11/2007</td>
-              <td><span class="rate-h">98.22%</span></td>
-              <td><span class="ab ab-total">1 lần</span></td>
-              <td><span class="pill pill-green">✅ APPROVED</span></td>
-              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C202465</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280">2</td>
-              <td style="font-weight:700;color:#93c5fd">85168</td>
-              <td style="color:#9ca3af">23/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">025077012166</td>
-              <td><strong>ĐỖ LỆNH TÚ</strong></td>
-              <td style="color:#9ca3af">14/03/1977</td>
-              <td><span class="rate-h">98.80%</span></td>
-              <td><span class="ab ab-total">2 lần</span><span class="ab ab-fail">1 fail</span></td>
-              <td><span class="pill pill-green">✅ APPROVED</span></td>
-              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C570283</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280">3</td>
-              <td style="font-weight:700;color:#93c5fd">85163</td>
-              <td style="color:#9ca3af">21/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">040091038104</td>
-              <td><strong>PHAN QUỐC HUY</strong></td>
-              <td style="color:#9ca3af">06/11/1991</td>
-              <td><span class="rate-h">98.39%</span></td>
-              <td><span class="ab ab-total">1 lần</span></td>
-              <td><span class="pill pill-green">✅ APPROVED</span></td>
-              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C110266</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280">4</td>
-              <td style="font-weight:700;color:#93c5fd">85144</td>
-              <td style="color:#9ca3af">18/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">079084039653</td>
-              <td><strong>NGUYỄN HỮU THÉ</strong></td>
-              <td style="color:#9ca3af">28/01/1984</td>
-              <td><span class="rate-h">99.02%</span></td>
-              <td><span class="ab ab-total">1 lần</span></td>
-              <td><span class="pill pill-green">✅ APPROVED</span></td>
-              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C600685</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280">5</td>
-              <td style="font-weight:700;color:#93c5fd">85102</td>
-              <td style="color:#9ca3af">15/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">038094001234</td>
-              <td><strong>NGUYỄN VĂN AN</strong></td>
-              <td style="color:#9ca3af">10/05/1994</td>
-              <td><span class="rate-m">92.10%</span></td>
-              <td><span class="ab ab-total">3 lần</span><span class="ab ab-fail">2 fail</span></td>
-              <td><span class="pill pill-green">✅ APPROVED</span></td>
-              <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C123456</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
-            </tr>
-            <tr>
-              <td style="color:#6b7280">6</td>
-              <td style="font-weight:700;color:#93c5fd">85088</td>
-              <td style="color:#9ca3af">13/05/2026</td>
-              <td><span class="pill pill-blue">CCCD</span></td>
-              <td style="font-family:monospace;font-size:11px">001083005678</td>
-              <td><strong>TRẦN THỊ BÌNH</strong></td>
-              <td style="color:#9ca3af">08/03/1983</td>
-              <td><span class="rate-l">74.50%</span></td>
-              <td><span class="ab ab-total">5 lần</span><span class="ab ab-fail">4 fail</span><span class="ab ab-warn">⚠ Fraud</span></td>
-              <td><span class="pill pill-amber">⏳ PENDING</span></td>
-              <td style="color:#4b5563">—</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openModal('fraud')">👁 Xem</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+
+      <!-- ═══ TAB PANEL: ĐÃ MỞ TK ═══ -->
+      <div class="list-panel active" id="lpanel-approved">
+        <div class="filter-bar">
+          <span class="filter-label">Từ ngày</span><input type="date" class="fi" value="2026-05-17">
+          <span class="filter-label">Đến ngày</span><input type="date" class="fi" value="2026-05-24">
+          <span class="filter-label">Tìm kiếm</span>
+          <input type="text" class="fi" placeholder="Họ tên / CCCD / SĐT">
+          <button class="btn btn-secondary btn-sm">✕ Xóa</button>
+          <button class="btn btn-primary btn-sm">🔄 Làm mới</button>
+        </div>
+        <div class="table-wrap">
+          <table class="mt">
+            <thead><tr>
+              <th>#</th><th>eKYC-ID</th><th>Ngày tạo</th><th>Loại</th>
+              <th>Số CCCD</th><th>Họ tên</th><th>Ngày sinh</th>
+              <th>Matching Rate</th><th>Lần thử</th><th>Trạng thái</th>
+              <th>Số TK</th><th>Chi tiết</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="color:#6b7280">1</td>
+                <td style="font-weight:700;color:#93c5fd">85169</td>
+                <td style="color:#9ca3af">23/05/2026</td>
+                <td><span class="pill pill-blue">CCCD</span></td>
+                <td style="font-family:monospace;font-size:11px">030207010063</td>
+                <td><strong>NGUYỄN TUẤN PHONG</strong></td>
+                <td style="color:#9ca3af">22/11/2007</td>
+                <td><span class="rate-h">98.22%</span></td>
+                <td><span class="ab ab-total">1 lần</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C202465</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">2</td>
+                <td style="font-weight:700;color:#93c5fd">85168</td>
+                <td style="color:#9ca3af">23/05/2026</td>
+                <td><span class="pill pill-blue">CCCD</span></td>
+                <td style="font-family:monospace;font-size:11px">025077012166</td>
+                <td><strong>ĐỖ LỆNH TÚ</strong></td>
+                <td style="color:#9ca3af">14/03/1977</td>
+                <td><span class="rate-h">98.80%</span></td>
+                <td><span class="ab ab-total">2 lần</span><span class="ab ab-fail">1 fail</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C570283</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">3</td>
+                <td style="font-weight:700;color:#93c5fd">85163</td>
+                <td style="color:#9ca3af">21/05/2026</td>
+                <td><span class="pill pill-blue">CCCD</span></td>
+                <td style="font-family:monospace;font-size:11px">040091038104</td>
+                <td><strong>PHAN QUỐC HUY</strong></td>
+                <td style="color:#9ca3af">06/11/1991</td>
+                <td><span class="rate-h">98.39%</span></td>
+                <td><span class="ab ab-total">1 lần</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C110266</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">4</td>
+                <td style="font-weight:700;color:#93c5fd">85144</td>
+                <td style="color:#9ca3af">18/05/2026</td>
+                <td><span class="pill pill-blue">CCCD</span></td>
+                <td style="font-family:monospace;font-size:11px">079084039653</td>
+                <td><strong>NGUYỄN HỮU THÉ</strong></td>
+                <td style="color:#9ca3af">28/01/1984</td>
+                <td><span class="rate-h">99.02%</span></td>
+                <td><span class="ab ab-total">1 lần</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C600685</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('success')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">5</td>
+                <td style="font-weight:700;color:#93c5fd">85102</td>
+                <td style="color:#9ca3af">15/05/2026</td>
+                <td><span class="pill pill-blue">CCCD</span></td>
+                <td style="font-family:monospace;font-size:11px">038094001234</td>
+                <td><strong>NGUYỄN VĂN AN</strong></td>
+                <td style="color:#9ca3af">10/05/1994</td>
+                <td><span class="rate-m">92.10%</span></td>
+                <td><span class="ab ab-total">3 lần</span><span class="ab ab-fail">2 fail</span></td>
+                <td><span class="pill pill-green">✅ APPROVED</span></td>
+                <td style="font-family:monospace;font-size:11px;color:#93c5fd">039C123456</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('multiattempt')">👁 Xem</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /lpanel-approved -->
+
+      <!-- ═══ TAB PANEL: CHƯA MỞ TK ═══ -->
+      <div class="list-panel" id="lpanel-notapproved">
+        <div style="margin:14px 24px 0;padding:10px 14px;background:rgba(96,165,250,.08);border:1px solid #1e3a5f;border-radius:7px;font-size:11.5px;color:#93c5fd;display:flex;gap:8px">
+          💡 Nguồn dữ liệu: <code style="background:#111827;padding:1px 5px;border-radius:3px">ekyc_attempt_log</code> — bao gồm cả khách <strong>chưa từng chạm tới Lotte</strong> (fail ngay từ OCR/liveness), không phụ thuộc việc đã có bản ghi <code style="background:#111827;padding:1px 5px;border-radius:3px">e_kyc</code> hay chưa.
+        </div>
+        <div class="filter-bar">
+          <span class="filter-label">Từ ngày</span><input type="date" class="fi" value="2026-05-17">
+          <span class="filter-label">Đến ngày</span><input type="date" class="fi" value="2026-06-30">
+          <span class="filter-label">Lý do</span>
+          <select class="fi">
+            <option>Tất cả</option>
+            <option>Chưa gửi hồ sơ (NOT_SUBMITTED)</option>
+            <option>Bị từ chối (REJECTED)</option>
+            <option>Đang chờ duyệt (PENDING)</option>
+            <option>Bỏ dở ký HĐ (ABANDONED)</option>
+          </select>
+          <span class="filter-label">Tìm kiếm</span>
+          <input type="text" class="fi" placeholder="Họ tên / CCCD / SĐT">
+          <button class="btn btn-secondary btn-sm">✕ Xóa</button>
+          <button class="btn btn-primary btn-sm">🔄 Làm mới</button>
+          <div class="ml-auto">
+            <button class="btn btn-success btn-sm">⚡ Update PENDING Requests</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="mt">
+            <thead><tr>
+              <th>#</th><th>Số CCCD</th><th>Họ tên</th><th>SĐT</th>
+              <th>Lần thử</th><th>Trạng thái</th><th>Dừng ở bước</th>
+              <th>Cập nhật gần nhất</th><th>Chi tiết</th>
+            </tr></thead>
+            <tbody>
+              <tr>
+                <td style="color:#6b7280">1</td>
+                <td style="font-family:monospace;font-size:11px">001083005678</td>
+                <td><strong>TRẦN THỊ BÌNH</strong></td>
+                <td style="color:#9ca3af">0912345678</td>
+                <td><span class="ab ab-total">5 lần</span><span class="ab ab-fail">4 fail</span><span class="ab ab-warn">⚠ Fraud</span></td>
+                <td><span class="reason-pill reason-pending">⏳ PENDING</span></td>
+                <td style="color:#9ca3af;font-size:11px">LOTTE_SUBMIT · chờ Admin duyệt (fraud flags)</td>
+                <td style="color:#6b7280">13/05/2026</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('fraud')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">2</td>
+                <td style="font-family:monospace;font-size:11px">041205019876</td>
+                <td><strong>LÊ THỊ HOA</strong></td>
+                <td style="color:#9ca3af">0987654321</td>
+                <td><span class="ab ab-total">2 lần</span><span class="ab ab-fail">2 fail</span></td>
+                <td><span class="reason-pill reason-notsub">⚠️ NOT_SUBMITTED</span></td>
+                <td style="color:#9ca3af;font-size:11px">VNPT_LIVENESS · liveness khuôn mặt thất bại 2 lần</td>
+                <td style="color:#6b7280">30/06/2026</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('notsub_liveness')">👁 Xem</button></td>
+              </tr>
+              <tr>
+                <td style="color:#6b7280">3</td>
+                <td style="font-family:monospace;font-size:11px">052309004411</td>
+                <td style="color:#6b7280;font-style:italic">Chưa xác định (chưa đọc được OCR)</td>
+                <td style="color:#9ca3af">0977112233</td>
+                <td><span class="ab ab-total">1 lần</span><span class="ab ab-fail">1 fail</span></td>
+                <td><span class="reason-pill reason-notsub">⚠️ NOT_SUBMITTED</span></td>
+                <td style="color:#9ca3af;font-size:11px">VNPT_OCR · ảnh mặt trước quá mờ — chưa từng đọc được OCR</td>
+                <td style="color:#6b7280">30/06/2026</td>
+                <td><button class="btn btn-ghost btn-sm" onclick="openModal('notsub_noocr')">👁 Xem</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div><!-- /lpanel-notapproved -->
+
     </div><!-- /pg-list -->
 
   </div><!-- /main -->
@@ -1116,7 +1194,7 @@ table.mt tr:hover td { background: #1a2332; }
         </div>
 
         <!-- Final success -->
-        <div class="att-item att-success">
+        <div class="att-item att-success" id="ah-final-success">
           <div class="att-hdr" onclick="toggleAtt(this)" style="background:rgba(6,78,59,.12)">
             <div class="att-icon ai-success">✅</div>
             <div class="att-info">
@@ -1192,6 +1270,13 @@ function navTo(page) {
   document.getElementById('nav-' + page).classList.add('active');
 }
 
+function switchListTab(tab) {
+  document.querySelectorAll('.list-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.list-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('ltab-' + tab).classList.add('active');
+  document.getElementById('lpanel-' + tab).classList.add('active');
+}
+
 const MODAL_DATA = {
   success: {
     id:'85169', name:'NGUYỄN TUẤN PHONG', cccd:'030207010063', dob:'22/11/2007',
@@ -1219,13 +1304,33 @@ const MODAL_DATA = {
     logs:{ ocr:'LOG-VNPT-20260513-08301' },
     attempts:5, failBefore:4,
     finalLabel:'Lần thử #5', finalDate:'13/05/2026 08:30:00', finalRate:'74.50%', signTime:'—'
+  },
+  // ── Chưa mở TK — không có bản ghi e_kyc, chỉ có ekyc_attempt_log ──
+  notsub_liveness: {
+    noEkyc: true, id:'—', name:'LÊ THỊ HOA', cccd:'041205019876', dob:'19/12/2005',
+    rate:'—', rateClass:'', status:'NOT_SUBMITTED', acc:'—',
+    phone:'0987654321', email:'—',
+    vnpt:{ tamper:'✓ Hợp lệ', idfake:'✓ Không (1%)', namefake:'✓ Không', dup:'✓ Không', recap:'✓ Ảnh gốc', photo:'✓ Gốc' },
+    logs:{ ocr:'LOG-VNPT-20260630-14021' },
+    attempts:2, failBefore:2, allFailed:true,
+    lastFailureStep:'VNPT_LIVENESS', lastFailureMessage:'Xác minh khuôn mặt trực tiếp thất bại 2 lần liên tiếp — nghi ngờ ảnh/video giả (fake_liveness_prob cao)'
+  },
+  notsub_noocr: {
+    noEkyc: true, id:'—', name:null, cccd:'052309004411', dob:'—',
+    rate:'—', rateClass:'', status:'NOT_SUBMITTED', acc:'—',
+    phone:'0977112233', email:'—',
+    vnpt:{ tamper:'—', idfake:'—', namefake:'—', dup:'—', recap:'—', photo:'—' },
+    logs:{ ocr:'—' },
+    attempts:1, failBefore:1, allFailed:true,
+    lastFailureStep:'VNPT_OCR', lastFailureMessage:'Ảnh mặt trước quá mờ — blur_score 0.19 (yêu cầu ≥ 0.50). VNPT chưa kịp đọc OCR trước khi fail.'
   }
 };
 
 function openModal(type) {
   const d = MODAL_DATA[type];
-  document.getElementById('d-id').textContent = d.id;
-  document.getElementById('d-name').textContent = d.name;
+  const displayName = d.name || 'Chưa xác định (chưa đọc được OCR)';
+  document.getElementById('d-id').textContent = d.noEkyc ? '— (chưa có e_kyc)' : d.id;
+  document.getElementById('d-name').textContent = displayName;
   document.getElementById('d-cccd').textContent = d.cccd;
   document.getElementById('d-dob').textContent = d.dob;
   document.getElementById('d-phone').textContent = d.phone;
@@ -1233,12 +1338,20 @@ function openModal(type) {
   document.getElementById('d-rate').textContent = d.rate;
   document.getElementById('d-rate').className = 'info-val ' + d.rateClass;
   const sp = document.getElementById('d-status-pill');
-  sp.textContent = d.status === 'APPROVED' ? '✅ APPROVED' : (d.status === 'PENDING' ? '⏳ PENDING' : '❌ REJECTED');
-  sp.className = 'pill ' + (d.status === 'APPROVED' ? 'pill-green' : d.status === 'PENDING' ? 'pill-amber' : 'pill-red');
+  const statusMap = {
+    APPROVED: ['✅ APPROVED', 'pill-green'],
+    PENDING: ['⏳ PENDING', 'pill-amber'],
+    REJECTED: ['❌ REJECTED', 'pill-red'],
+    NOT_SUBMITTED: ['⚠️ NOT_SUBMITTED — Chưa gửi hồ sơ', 'pill-gray'],
+    ABANDONED: ['⏸ ABANDONED — Bỏ dở ký HĐ', 'pill-gray'],
+  };
+  const [label, cls] = statusMap[d.status] || statusMap.REJECTED;
+  sp.textContent = label;
+  sp.className = 'pill ' + cls;
   document.getElementById('d-acc').textContent = d.acc;
-  document.getElementById('modal-meta').textContent = 'ID: ' + d.id + ' · CCCD: ' + d.cccd;
+  document.getElementById('modal-meta').textContent = (d.noEkyc ? 'Chưa có eKYC-ID' : 'ID: ' + d.id) + ' · CCCD: ' + d.cccd;
   document.getElementById('vl-cccd').textContent = d.cccd;
-  document.getElementById('vl-name').textContent = d.name.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase();
+  document.getElementById('vl-name').textContent = d.name ? d.name.normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase() : '— (chưa đọc được)';
   document.getElementById('vl-ocr-log').textContent = d.logs.ocr;
   ['tamper','idfake','namefake','dup'].forEach(k => {
     const el = document.getElementById('vl-' + k);
@@ -1267,17 +1380,29 @@ function openModal(type) {
   const banner = document.getElementById('ah-banner');
   const ok = d.status === 'APPROVED';
   banner.className = 'attempt-banner ' + (ok ? 'ab-green' : 'ab-amber');
-  banner.querySelector('.ab-icon').textContent = ok ? '✅' : '⏳';
-  banner.querySelector('.ab-title').textContent = ok ? 'Kết quả cuối: APPROVED' : 'Đang xử lý — Chưa mở được TK';
-  document.getElementById('ah-acc').textContent = d.acc;
-  document.getElementById('ah-total').textContent = d.attempts;
-  // Journey timeline
-  let jHtml = '';
-  for (let i = 0; i < d.failBefore; i++) {
-    jHtml += `<div class="jdot jdot-fail">${i+1}</div><div class="jline"></div>`;
+  banner.querySelector('.ab-icon').textContent = ok ? '✅' : (d.allFailed ? '⚠️' : '⏳');
+  const abSub = banner.querySelector('.ab-sub');
+  if (d.allFailed) {
+    banner.querySelector('.ab-title').textContent = 'Chưa mở được tài khoản — chưa từng gửi hồ sơ tới Lotte';
+    abSub.innerHTML = `Dừng ở bước <strong>${d.lastFailureStep}</strong> sau <strong>${d.attempts}</strong> lần thử · ${d.lastFailureMessage}`;
+  } else if (!ok) {
+    banner.querySelector('.ab-title').textContent = 'Đang xử lý — Chưa mở được TK';
+    abSub.innerHTML = `Tài khoản <strong id="ah-acc">${d.acc}</strong> · <strong id="ah-total">${d.attempts}</strong> lần thử`;
+  } else {
+    banner.querySelector('.ab-title').textContent = 'Kết quả cuối: APPROVED';
+    abSub.innerHTML = `Tài khoản <strong id="ah-acc">${d.acc}</strong> mở thành công sau <strong id="ah-total">${d.attempts}</strong> lần thử`;
   }
-  jHtml += `<div class="jdot jdot-success">${d.attempts}</div>`;
+  // Journey timeline — chấm cuối là "success" chỉ khi đã APPROVED
+  let jHtml = '';
+  const failCount = d.allFailed ? d.attempts : d.failBefore;
+  for (let i = 0; i < failCount; i++) {
+    jHtml += `<div class="jdot jdot-fail">${i+1}</div>`;
+    if (i < failCount - 1 || !d.allFailed) jHtml += '<div class="jline"></div>';
+  }
+  if (!d.allFailed) jHtml += `<div class="jdot jdot-success">${d.attempts}</div>`;
   document.getElementById('ah-journey').innerHTML = jHtml;
+  // Ẩn block "Lần thử thành công" khi tất cả attempts đều fail (chưa mở được TK)
+  document.getElementById('ah-final-success').style.display = d.allFailed ? 'none' : 'block';
   switchTab('personal');
   document.getElementById('modal-overlay').classList.add('open');
 }

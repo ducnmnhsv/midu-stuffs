@@ -53,6 +53,7 @@ MRZ là cơ chế bảo mật mạnh nhất trên CCCD: chứa **checksum tích 
 - [ ] MRZ ngày sinh ≠ OCR ngày sinh → user bị chặn
 - [ ] Unknown warning code → bị chặn (không còn `break` im lặng)
 - [ ] BE nhận được `mrzLine1`, `mrzLine2`, `mrzProb`, `mrzValidScore`, `mrzCrossCheckResult`
+- [ ] BE nhận được `sdkRawLogs` — JSON nguyên văn các SDK log key đã chạy trước thời điểm gọi (xem Task 3d), phục vụ audit đầy đủ ở `01_Biometric_Attempt_Log`
 - [ ] Admin page hiển thị MRZ cross-check trong Attempt Detail
 
 ---
@@ -362,12 +363,37 @@ yield call(logAttemptToTradeX, {
   fakeLivenessProb, fakePrintPhotoProb,
   faceCompareMsg, faceCompareProb,
   // Ảnh: KHÔNG cần (SDK đã pass — OCR image quality đủ tốt)
+  sdkRawLogs: buildSdkRawLogs(state),  // xem Task 3d — raw audit, mọi log key đã chạy
 });
 ```
 
 > **Fire-and-forget pattern:** Lỗi từ `POST /ekycs/attempt-log` **không được throw lên UX**.
 > User không biết / không bị ảnh hưởng nếu log API tạm thời fail.
 > Nên wrap trong try-catch và log analytics.
+
+#### 3d. `sdkRawLogs` — audit toàn bộ output SDK, không chỉ field đã parse
+
+> **Bắt buộc kèm trong MỌI lần gọi `POST /ekycs/attempt-log`** nếu tại thời điểm gọi, SDK đã trả về ít nhất 1 trong 7 log key: `LOG_LIVENESS_CARD_FRONT`, `LOG_LIVENESS_CARD_REAR`, `LOG_LIVENESS_FACE`, `LOG_MASK_FACE`, `LOG_COMPARE`, `LOG_PATH_IMAGE_FRONT`, `LOG_PATH_IMAGE_BACK`.
+>
+> Lý do: các field như `mrzLine1`, `livenessFaceResult`, `faceCompareProb`, v.v. là field App **đã tự rút gọn** từ log SDK gốc. Nếu VNPT SDK trả thêm field mới hoặc field ngoài danh sách App đang parse, dữ liệu đó sẽ mất — không audit được. `sdkRawLogs` đảm bảo BE luôn có bản gốc, độc lập với App có parse đúng/đủ hay không.
+
+**Cách xây dựng payload — App chỉ gộp object gốc, KHÔNG rút gọn field:**
+
+```typescript
+function buildSdkRawLogs(state: EKycReduxState): string {
+  return JSON.stringify({
+    livenessCardFront: state.LOG_LIVENESS_CARD_FRONT ?? null,
+    livenessCardRear:  state.LOG_LIVENESS_CARD_REAR  ?? null,
+    livenessFace:      state.LOG_LIVENESS_FACE        ?? null,
+    maskFace:          state.LOG_MASK_FACE             ?? null,
+    compare:           state.LOG_COMPARE               ?? null,
+    pathImageFront:    state.LOG_PATH_IMAGE_FRONT       ?? null,
+    pathImageBack:     state.LOG_PATH_IMAGE_BACK        ?? null,
+  });
+}
+```
+
+Áp dụng vào cả 2 case ở Task 3b/3c — thêm field `sdkRawLogs: buildSdkRawLogs(state)` vào mọi payload gọi `logAttemptToTradeX(...)` sau khi ít nhất 1 log key liên quan đã có giá trị. Ví dụ case MRZ cross-check fail (3b) chưa chạy liveness → `sdkRawLogs` sẽ có các key liveness = `null`, điều này là hợp lệ (không phải lỗi).
 
 ---
 

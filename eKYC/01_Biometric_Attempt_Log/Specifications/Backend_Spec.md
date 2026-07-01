@@ -104,7 +104,10 @@ CREATE TABLE ekyc_attempt_log (
   image_back_url  VARCHAR(500) COMMENT 'URL ảnh mặt sau CCCD đã upload lên S3/MinIO',
 
   -- ── Raw Data (full audit) ──
-  vnpt_raw_data LONGTEXT COMMENT 'Full VNPT JSON response — dùng cho debug',
+  -- Lưu ý: 2 cột dưới đây cùng đảm bảo AUDIT ĐẦY ĐỦ toàn bộ output SDK trả về —
+  -- không chỉ các field đã được parse vào cột riêng ở trên.
+  vnpt_raw_data LONGTEXT COMMENT 'Raw JSON của LOG_OCR — response gốc từ VNPT server (OCR/biometric/fraud). Base64-decoded.',
+  sdk_raw_logs  LONGTEXT COMMENT 'Raw JSON gộp của 7 SDK log key còn lại: LOG_LIVENESS_CARD_FRONT, LOG_LIVENESS_CARD_REAR, LOG_LIVENESS_FACE, LOG_MASK_FACE, LOG_COMPARE, LOG_PATH_IMAGE_FRONT, LOG_PATH_IMAGE_BACK — nguyên văn, KHÔNG qua xử lý/lọc field. Đảm bảo audit được cả field SDK trả về mà BE chưa map cột riêng.',
 
   INDEX idx_ekyc_attempt_identifier  (identifier_id),
   INDEX idx_ekyc_attempt_phone       (phone_no),
@@ -210,6 +213,7 @@ ALTER TABLE e_kyc
             <column name="image_front_url" type="varchar(500)"/>
             <column name="image_back_url" type="varchar(500)"/>
             <column name="vnpt_raw_data" type="longtext"/>
+            <column name="sdk_raw_logs" type="longtext"/>
         </createTable>
 
         <addForeignKeyConstraint
@@ -305,6 +309,22 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 | `mrz_check_dob` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
 | `mrz_check_gender` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
 | `mrz_check_expiry` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
+
+> ⚠️ **Gap đã fix (2026-07-01):** Các cột trên chỉ lưu field **đã được App cherry-pick** từ mỗi SDK log key (VD: chỉ lấy `liveness` string và `fakeLivenessProb` từ `LOG_LIVENESS_FACE`, bỏ qua các field khác SDK có thể trả về). Nếu VNPT SDK trả thêm field mới hoặc field ngoài danh sách đã map, dữ liệu đó **mất vĩnh viễn** — không audit được.
+>
+> **Fix:** thêm cột `sdk_raw_logs` (LONGTEXT) — App gửi **nguyên văn, không lọc field**, JSON gộp của toàn bộ 7 log key còn lại:
+> ```json
+> {
+>   "livenessCardFront": { /* toàn bộ nội dung LOG_LIVENESS_CARD_FRONT SDK trả về */ },
+>   "livenessCardRear":  { /* toàn bộ nội dung LOG_LIVENESS_CARD_REAR */ },
+>   "livenessFace":      { /* toàn bộ nội dung LOG_LIVENESS_FACE */ },
+>   "maskFace":          { /* toàn bộ nội dung LOG_MASK_FACE */ },
+>   "compare":           { /* toàn bộ nội dung LOG_COMPARE */ },
+>   "pathImageFront":    "...",
+>   "pathImageBack":     "..."
+> }
+> ```
+> Kết hợp `vnpt_raw_data` (LOG_OCR) + `sdk_raw_logs` (7 key còn lại) = **toàn bộ output SDK VNPT trả về** được lưu nguyên vẹn cho mục đích audit, độc lập với các cột đã parse. Xem Section 7.2 cho request field `sdkRawLogs`.
 
 **Nguồn dữ liệu theo loại lần thử:**
 
@@ -510,10 +530,14 @@ public class EKycAttemptLog implements Serializable {
     @Column(name = "image_back_url")
     private String imageBackUrl;
 
-    // Raw Data
+    // Raw Data — audit đầy đủ, không qua parse/lọc field
     @Lob
     @Column(name = "vnpt_raw_data")
-    private String vnptRawData;
+    private String vnptRawData;   // Raw JSON của LOG_OCR (VNPT server response)
+
+    @Lob
+    @Column(name = "sdk_raw_logs")
+    private String sdkRawLogs;    // Raw JSON gộp của 7 SDK log key còn lại (liveness x3, mask, compare, image paths)
 
     // getters/setters omitted for brevity
 }
@@ -738,12 +762,40 @@ public interface EKycAttemptLogRepository extends JpaRepository<EKycAttemptLog, 
 
 ### 4.1 Tìm kiếm theo CCCD hoặc SĐT
 
+> ⚠️ **Quan trọng — khách chưa mở TK thành công vẫn phải tìm được.**
+> `ekyc_attempt_log` là nguồn dữ liệu **chính** cho search — mọi lần thử (pass hay fail, kể cả pre-submit fail chưa từng gọi tới Lotte) đều tạo 1 row ở đây với `identifier_id`/`phone_no`. Bảng `e_kyc` chỉ **join thêm** khi có (không phải nguồn bắt buộc).
+> Trước đây search giả định luôn có `e_kyc` để lấy `fullName`/`accountStatus` — sai với case khách fail ngay từ OCR/liveness (không có `e_kyc` row nào, vì `CustomEKycService` chỉ chạy khi App gọi `/lotte/ekycs`, mà pre-submit fail thì App không gọi).
+
 ```
 GET /api/admin/ekyc/attempts/search
   ?identifierId={cccd}   (optional)
   &phoneNo={phone}       (optional)
+```
 
-Response 200:
+**Query logic (BE):**
+
+```sql
+-- 1. Lấy toàn bộ attempts theo identifierId/phoneNo — LUÔN có data nếu user đã thử ít nhất 1 lần
+SELECT * FROM ekyc_attempt_log
+WHERE identifier_id = :identifierId OR phone_no = :phoneNo
+ORDER BY attempt_number DESC
+
+-- 2. LEFT JOIN e_kyc qua final_ekyc_id của lần thử gần nhất (nullable — có thể chưa có)
+SELECT * FROM e_kyc WHERE id = (SELECT final_ekyc_id FROM ekyc_attempt_log WHERE ... ORDER BY attempt_number DESC LIMIT 1)
+```
+
+**`accountStatus` — suy ra từ `outcome` của lần thử gần nhất** (không cần cột riêng, tái dùng enum outcome đã có):
+
+| `outcome` (lần thử gần nhất) | `accountStatus` trả về | Ý nghĩa |
+|-------------------------------|------------------------|---------|
+| `SUCCESS` | `APPROVED` | TK đã mở — có `e_kyc` + `accountNumber` |
+| `LOTTE_REJECTED` | `REJECTED` | Đã gửi Lotte nhưng bị từ chối |
+| `USER_ABANDONED` | `ABANDONED` | Đã APPROVED về mặt Lotte nhưng chưa ký HĐ trong 48h |
+| `VNPT_FAILED` / `MRZ_FAILED` / `FACE_COMPARE_FAILED` | `NOT_SUBMITTED` | **Chưa từng chạm tới Lotte** — fail ngay ở bước SDK phía App |
+
+**Response 200 — khách đã mở TK thành công:**
+
+```json
 {
   "identifierId": "038xxxxxxxx",
   "fullName": "Nguyễn Văn A",
@@ -756,6 +808,83 @@ Response 200:
   "accountOpenedAt": "2025-05-18T10:05:00+07:00"
 }
 ```
+
+**Response 200 — khách CHƯA mở TK (chỉ có attempt fail, không có `e_kyc` row nào):**
+
+```json
+{
+  "identifierId": "038yyyyyyyy",
+  "fullName": "NGUYEN VAN B",
+  "phoneNo": "09yyyyyyyy",
+  "totalAttempts": 2,
+  "successfulAttempt": null,
+  "accountNumber": null,
+  "accountStatus": "NOT_SUBMITTED",
+  "firstAttemptAt": "2026-06-30T14:02:00+07:00",
+  "accountOpenedAt": null,
+  "lastFailureStep": "VNPT_LIVENESS",
+  "lastFailureMessage": "Liveness khuôn mặt thất bại — nghi ngờ ảnh giả"
+}
+```
+
+**Field mapping khi không có `e_kyc`:**
+
+| Field | Nguồn khi có `e_kyc` | Nguồn fallback khi KHÔNG có `e_kyc` |
+|-------|---------------------|--------------------------------------|
+| `fullName` | `e_kyc.full_name` | `ekyc_attempt_log.vnpt_name` (tên OCR đọc được ở lần thử gần nhất có OCR data) — `null` nếu OCR cũng chưa từng chạy được |
+| `phoneNo` | `e_kyc.phone_no` | `ekyc_attempt_log.phone_no` |
+| `accountNumber` / `accountOpenedAt` | `e_kyc.account_number` / `e_kyc.created_at` | `null` |
+| `lastFailureStep` / `lastFailureMessage` | — (không cần khi APPROVED) | `ekyc_attempt_log.failure_step` / `.failure_message` của lần thử gần nhất |
+
+> Nếu `vnpt_name` cũng null (OCR chưa bao giờ đọc được — VD: fail vì blur ảnh trước khi VNPT kịp OCR), FE hiển thị `identifierId` là định danh chính, không có tên.
+
+### 4.1b Danh sách theo tab — Đã mở TK / Chưa mở TK
+
+> Bổ sung 2026-07-01 — Admin page cần browse theo danh sách (không chỉ tra 1 khách), tách 2 tab để Ops dễ track: khách đã mở TK thành công vs. khách chưa mở TK thành công (dù ở bất kỳ lý do nào: NOT_SUBMITTED / REJECTED / PENDING / ABANDONED).
+
+```
+GET /api/admin/ekyc/attempts/list
+  ?accountStatus={APPROVED|NOT_APPROVED}   (bắt buộc — FE gửi theo tab đang chọn)
+  &keyword={text}                          (optional — match identifierId/phoneNo/fullName)
+  &fromDate={date}&toDate={date}           (optional — filter theo attempt_at)
+  &page=0&size=20                          (pagination)
+```
+
+**Query logic:** `accountStatus=NOT_APPROVED` là giá trị tiện ích — BE hiểu là "outcome của lần thử gần nhất KHÁC `SUCCESS`" (bao gồm cả `NOT_SUBMITTED`, `REJECTED`, `ABANDONED`, và case `e_kyc.status = PENDING` chờ admin duyệt thủ công — VD do fraud flags).
+
+```sql
+-- accountStatus = APPROVED
+SELECT DISTINCT identifier_id FROM ekyc_attempt_log WHERE final_ekyc_id IS NOT NULL AND outcome = 'SUCCESS' ...
+
+-- accountStatus = NOT_APPROVED
+SELECT DISTINCT identifier_id FROM ekyc_attempt_log a
+WHERE NOT EXISTS (
+  SELECT 1 FROM ekyc_attempt_log a2 WHERE a2.identifier_id = a.identifier_id AND a2.outcome = 'SUCCESS'
+) ...
+```
+
+**Response 200:**
+
+```json
+{
+  "totalCount": 3,
+  "customers": [
+    {
+      "identifierId": "041205019876",
+      "fullName": "LÊ THỊ HOA",
+      "phoneNo": "0987654321",
+      "totalAttempts": 2,
+      "accountStatus": "NOT_SUBMITTED",
+      "accountNumber": null,
+      "lastFailureStep": "VNPT_LIVENESS",
+      "lastFailureMessage": "Xác minh khuôn mặt trực tiếp thất bại 2 lần",
+      "lastUpdatedAt": "2026-06-30T14:02:00+07:00"
+    }
+  ]
+}
+```
+
+> Mỗi item trong `customers[]` có cùng shape với response của `/search` (Section 4.1) — chỉ thêm `lastUpdatedAt` để sort danh sách theo hoạt động gần nhất. FE dùng chung 1 component render row cho cả 2 tab.
 
 ### 4.2 Lấy danh sách các lần thử
 
@@ -908,6 +1037,12 @@ public class EKycAttemptLogService {
             buildAttemptLog(log, req.getVnptRawData(), identifierId, attemptNumber);
         }
 
+        // Lưu nguyên văn 7 SDK log key còn lại — KHÔNG parse, KHÔNG lọc field.
+        // Đảm bảo audit đầy đủ dù App gửi field mà BE chưa có cột riêng để map.
+        if (StringUtils.isNotBlank(req.getSdkRawLogs())) {
+            log.setSdkRawLogs(req.getSdkRawLogs());
+        }
+
         // Map MRZ fields từ request (SDK-only, không có trong rawData)
         log.setMrzLine1(req.getMrzLine1());
         log.setMrzLine2(req.getMrzLine2());
@@ -960,7 +1095,8 @@ public class EKycAttemptLogRequest {
     String failureStep;
     String failureCode;
     String failureMessage;
-    String vnptRawData;
+    String vnptRawData;   // Raw JSON của LOG_OCR (Base64), BE tự parse ra các cột vnpt_*
+    String sdkRawLogs;    // Raw JSON gộp 7 SDK log key còn lại — App gửi NGUYÊN VĂN, không tự lọc field
     // MRZ fields
     String mrzLine1; String mrzLine2; Double mrzProb; Integer mrzValidScore;
     String mrzCrossCheck; String mrzCheckId; String mrzCheckDob;
@@ -1069,10 +1205,15 @@ Content-Type: application/json
   "failureCode":    "IMAGE_BLURRED",
   "failureMessage": "Ảnh mặt trước quá mờ — blur_score 0.23 < ngưỡng 0.5",
 
-  // ── VNPT rawData (chỉ post-submit) ──
+  // ── VNPT rawData: LOG_OCR nguyên văn (chỉ post-submit) ──
   // Nếu cung cấp: BE tự extract toàn bộ VNPT fields (OCR, fraud, image quality, v.v.)
   // Nếu không có (pre-submit fail): BE chỉ lưu các field được truyền rõ ràng bên dưới
-  "vnptRawData":    "<base64 VNPT response>",
+  "vnptRawData":    "<base64 VNPT response — nguyên văn LOG_OCR>",
+
+  // ── sdkRawLogs: 7 SDK log key còn lại, NGUYÊN VĂN — BẮT BUỘC khi log key đã chạy ──
+  // App KHÔNG tự lọc/rút gọn field trước khi gửi — gửi toàn bộ object SDK trả về.
+  // Mục đích: audit đầy đủ, không phụ thuộc vào việc BE đã map cột riêng cho field đó chưa.
+  "sdkRawLogs": "{\"livenessCardFront\":{...},\"livenessCardRear\":{...},\"livenessFace\":{...},\"maskFace\":{...},\"compare\":{...},\"pathImageFront\":\"...\",\"pathImageBack\":\"...\"}",
 
   // ── MRZ (App tính toán từ SDK) ──
   "mrzLine1":       "IDVNM030207010063<<<<<<<<<<<<<<<",
@@ -1114,8 +1255,10 @@ Content-Type: application/json
 | `imageFrontBase64` | **Bắt buộc** khi `failureStep = VNPT_OCR`. Optional trong các trường hợp khác |
 | `imageBackBase64` | Cùng rule với `imageFrontBase64` |
 | `vnptRawData` | Optional. Khi có, BE extract VNPT fields (override các field vnpt_* được gửi riêng nếu có conflict) |
+| `sdkRawLogs` | **Bắt buộc** khi App đã nhận được kết quả từ bất kỳ SDK log key nào (liveness/mask/compare) — kể cả khi outcome cuối là `SUCCESS`. Nếu SDK chưa chạy bước nào (fail ngay ở OCR) → có thể để trống. App gửi **nguyên văn** object SDK trả về, không rút gọn field. |
 | `mrzValidScore` | Optional. Nếu null → `mrz_cross_check = SKIPPED` |
 | Ảnh size | Max 5 MB mỗi ảnh sau base64 decode |
+| `sdkRawLogs` size | Max 1 MB sau decode (cảnh báo nếu vượt — không phải lý do reject request) |
 
 ---
 
@@ -1147,6 +1290,8 @@ Content-Type: application/json
    - MRZ fields: mrzLine1, mrzLine2, mrzOverallProb, mrzCrossCheck, mrzCheck*
    - Liveness + face compare fields từ request
    - imageFrontUrl, imageBackUrl (sau khi upload)
+   - vnptRawData = req.vnptRawData (as-is, không transform)
+   - sdkRawLogs = req.sdkRawLogs (as-is, không parse/transform — chỉ lưu để audit)
    - attemptAt = NOW()
 
 6. Response: 201 Created

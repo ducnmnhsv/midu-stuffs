@@ -17,10 +17,12 @@ Team vận hành không có công cụ tra cứu lịch sử eKYC của khách h
 
 | Hiện tại | Sau khi hoàn thành |
 |---------|-------------------|
-| Không có màn tra cứu lịch sử eKYC | Màn hình tìm kiếm theo CCCD/SĐT |
+| Không có màn tra cứu lịch sử eKYC | Danh sách + tra cứu theo CCCD/SĐT/Họ tên |
 | Ops phải hỏi Dev tra DB | Ops tự tra cứu trong < 1 phút |
 | Không biết user fail mấy lần, lý do gì | Xem timeline đầy đủ từng lần thử |
 | Không thấy lý do fail chi tiết | Chi tiết: blur_score, face_compare_prob, fraud flags |
+| Không phân biệt được ai đã mở TK / ai chưa | **2 tab riêng: "Đã mở TK thành công" / "Chưa mở TK thành công"** — track tổng quan không cần tra từng CCCD |
+| Khách fail ngay từ SDK (chưa chạm Lotte) không tra được | Tra được đầy đủ — nguồn là `ekyc_attempt_log`, không phụ thuộc `e_kyc` |
 
 ### Success Criteria
 
@@ -28,6 +30,8 @@ Team vận hành không có công cụ tra cứu lịch sử eKYC của khách h
 - [ ] Thấy được lý do fail cụ thể (ví dụ: "ảnh mặt trước quá mờ, blur_score = 0.23")
 - [ ] Link được sang thông tin tài khoản đã mở thành công
 - [ ] Admin search theo CCCD/SĐT trả kết quả < 2s
+- [ ] **Ops browse được toàn bộ danh sách khách "chưa mở TK thành công" qua 1 tab riêng, không cần biết trước CCCD** — dùng để track case cần follow-up
+- [ ] Khách chưa từng chạm tới Lotte (chưa có `e_kyc`) vẫn xuất hiện đầy đủ trong tab "Chưa mở TK thành công"
 
 ---
 
@@ -47,35 +51,67 @@ Chi tiết request/response: xem `01_Biometric_Attempt_Log/Specifications/Backen
 
 ## Detailed Requirements
 
-### Màn hình 1: Tìm kiếm
+### Màn hình 1: Danh sách + Tra cứu (2 tab)
 
 **Route:** `/admin/ekyc/attempts`
 
+> **Thiết kế 2026-07-01:** Đổi từ pure search-by-ID sang **danh sách phân trang + 2 tab**, để Ops dễ track tổng quan mà không cần biết trước CCCD/SĐT cần tra. Search box vẫn giữ, hoạt động như filter trong tab hiện tại.
+
 **Layout:**
 ```
-┌─────────────────────────────────────────────────────────┐
-│ Tra cứu hành trình eKYC                                 │
-├──────────────────────────┬──────────────────────────────┤
-│ Số CCCD/CMND             │ Số điện thoại                │
-│ [________________]       │ [________________]           │
-│                    [Tìm kiếm]                           │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│ Tra cứu hành trình eKYC                                          │
+├───────────────────────────────┬───────────────────────────────────┤
+│ ✅ Đã mở TK thành công (1,089) │ ⚠️ Chưa mở TK thành công (158)     │  ← 2 tab
+├───────────────────────────────┴───────────────────────────────────┤
+│ [Từ ngày] [Đến ngày] [Tìm kiếm: CCCD/SĐT/Họ tên______] [Làm mới] │
+├───────────────────────────────────────────────────────────────────┤
+│  (bảng danh sách — nội dung khác nhau theo tab, xem dưới)         │
+└───────────────────────────────────────────────────────────────────┘
 ```
 
-**Kết quả:**
+**API:** `GET /api/admin/ekyc/attempts/list?accountStatus={APPROVED|NOT_APPROVED}&keyword=&fromDate=&toDate=&page=&size=` — xem `Backend_Spec.md` Section 4.1b.
 
-| Trường | Nguồn |
-|--------|-------|
+**Tab 1 — "Đã mở TK thành công" (`accountStatus=APPROVED`):**
+
+| Cột | Nguồn |
+|-----|-------|
 | Số CCCD | `identifierId` |
-| Họ tên | `fullName` từ `e_kyc` |
+| Họ tên | `fullName` (luôn có — từ `e_kyc.full_name`) |
 | SĐT | `phoneNo` |
 | Tổng lần thử | `totalAttempts` |
-| Trạng thái TK | `accountStatus` + `accountNumber` |
+| Số TK | `accountNumber` |
 | Thời gian mở TK | `accountOpenedAt` |
+| Hành trình | [Xem →] → Màn hình 2 |
 
-**Nút action:** [Xem hành trình →] → navigate sang Màn hình 2
-**Empty state:** "Không tìm thấy khách hàng với thông tin này"
-**Validation:** Phải nhập ít nhất 1 trong 2 trường (CCCD hoặc SĐT)
+**Tab 2 — "Chưa mở TK thành công" (`accountStatus=NOT_APPROVED`):**
+
+| Cột | Nguồn |
+|-----|-------|
+| Số CCCD | `identifierId` |
+| Họ tên | `fullName` — từ OCR (`vnpt_name`) nếu chưa có `e_kyc`, có thể `null` → hiển thị **"Chưa xác định (chưa đọc được OCR)"** |
+| SĐT | `phoneNo` |
+| Tổng lần thử | `totalAttempts` |
+| Trạng thái | Badge màu theo `accountStatus` (xem bảng dưới) |
+| Dừng ở bước | `lastFailureStep` label + `lastFailureMessage` — hiển thị ngay trong bảng, không cần click vào chi tiết |
+| Cập nhật gần nhất | `lastUpdatedAt` |
+| Hành trình | [Xem →] → Màn hình 2 (luôn khả dụng, bất kể chưa có `e_kyc`) |
+
+> ⚠️ **Tab 2 bao gồm khách chưa từng gọi tới Lotte** — fail ngay ở bước OCR/liveness phía SDK, **không có `e_kyc` row nào**. Nguồn dữ liệu là `ekyc_attempt_log`, không phụ thuộc việc đã có `e_kyc` hay chưa. Đây chính là gap đã fix — trước đây các khách này **không tra được** trên admin page.
+
+**`accountStatus` badge (dùng trong Tab 2 + Màn hình 2/3):**
+
+| accountStatus | Badge | Màu | Ý nghĩa |
+|---------------|-------|-----|---------|
+| `REJECTED` | ❌ Bị từ chối | Đỏ | Đã gửi Lotte, bị reject |
+| `PENDING` | ⏳ Đang chờ duyệt | Vàng | `e_kyc.status = PENDING` — thường do fraud flags, chờ Admin duyệt tay |
+| `ABANDONED` | ⏸ Bỏ dở ký HĐ | Xám | Lotte approve nhưng chưa ký HĐ |
+| `NOT_SUBMITTED` | ⚠️ Chưa gửi hồ sơ | Xám đậm | Fail ngay từ SDK — **chưa từng chạm tới Lotte** |
+
+**Search box:** filter theo CCCD/SĐT/Họ tên **trong tab hiện tại**. Nếu khách tìm thấy ở tab khác (VD: gõ CCCD của khách đã APPROVED trong lúc đang ở Tab 2) → hiển thị gợi ý: *"Không tìm thấy trong tab này. [Khách hàng này đã mở TK thành công — xem ở tab Đã mở TK →]"*
+
+**Empty state mỗi tab:** "Không có khách hàng nào trong khoảng thời gian này"
+**Date filter:** áp dụng theo `attempt_at` của lần thử gần nhất — mặc định 30 ngày qua
 
 ---
 
@@ -83,7 +119,7 @@ Chi tiết request/response: xem `01_Biometric_Attempt_Log/Specifications/Backen
 
 **Route:** `/admin/ekyc/attempts/:identifierId`
 
-**Header:**
+**Header — khách đã mở TK thành công:**
 ```
 Khách hàng: Nguyễn Văn A
 CCCD: 038xxx | SĐT: 09xxx
@@ -91,11 +127,24 @@ Tổng lần thử: 3 (2 thất bại, 1 thành công)
 Thời gian: 15/05/2025 → 18/05/2025 (3 ngày)
 ```
 
+**Header — khách CHƯA mở TK (toàn bộ attempts đều fail, không có `e_kyc`):**
+```
+Khách hàng: NGUYEN VAN B  (từ OCR — chưa xác thực chính thức)
+CCCD: 038yyy | SĐT: 09yyy
+Tổng lần thử: 2 (2 thất bại, 0 thành công)
+Thời gian: 30/06/2026 → 30/06/2026 (đang trong ngày)
+⚠️ Chưa mở được tài khoản — dừng ở bước: Xác minh khuôn mặt trực tiếp
+```
+
+> Nếu `fullName` là `null` (OCR chưa từng đọc được tên — VD: fail ngay vì ảnh mờ trước khi VNPT xử lý), hiển thị `"Chưa xác định (chưa đọc được OCR)"` thay cho tên.
+
 **Tài khoản đã mở (nếu có):**
 ```
 ✅ Tài khoản: 039C123456
 [Xem chi tiết tài khoản →]
 ```
+
+**Nếu chưa có tài khoản** — ẩn hoàn toàn block "Tài khoản đã mở", thay bằng banner cảnh báo màu vàng ngay dưới header (đã thể hiện ở ví dụ header phía trên: dòng "⚠️ Chưa mở được tài khoản..."). Không hiển thị section trống hoặc "N/A".
 
 **Timeline items — mỗi lần thử là 1 item:**
 ```
@@ -195,7 +244,9 @@ Kết quả: ❌ Thất bại — Ảnh mờ
 
 - Chưa có data `ekyc_attempt_log` (khách mở TK trước khi feature go-live): hiển thị "Không có lịch sử lần thử"
 - `vnptRawData` null (lỗi trước bước VNPT): ẩn các section VNPT, chỉ hiển thị `outcome` và `failureCode`
-- `final_ekyc_id` null (chưa mở TK thành công): ẩn section "Tài khoản đã mở"
+- `final_ekyc_id` null (chưa mở TK thành công): ẩn section "Tài khoản đã mở", hiển thị banner "⚠️ Chưa mở được tài khoản" thay thế — **không phải lỗi hay empty state, đây là trạng thái hợp lệ và phải xem được đầy đủ journey**
+- `fullName` null (OCR chưa từng đọc được — fail trước cả bước OCR): hiển thị "Chưa xác định (chưa đọc được OCR)" thay tên, vẫn hiển thị đầy đủ `identifierId` + timeline
+- Khách có nhiều lần thử fail liên tiếp, tất cả đều `NOT_SUBMITTED` (chưa từng chạm Lotte): Journey timeline vẫn hiển thị đầy đủ từng lần, không có item "thành công" nào — đây là dữ liệu hữu ích để Ops biết khách bị kẹt ở đâu
 
 ---
 
