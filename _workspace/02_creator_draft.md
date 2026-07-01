@@ -1,6 +1,6 @@
-# Creator Draft Summary — Market Watch Feature Specs
+# Creator Draft Summary — eKYC Biometric Log Storage
 
-**Task:** #2 — Tạo Feature Spec cho Nhóm dẫn dắt & Biến động ngành
+**Task:** #2 — Tạo BE Issue + Spec document cho Biometric Log Storage
 **Owner:** creator
 **Status:** Done
 
@@ -8,58 +8,51 @@
 
 ## Files created
 
-1. `New feature in NHSV Pro/Market_Watch/Top_Stock_Influence_Spec.md`
-2. `New feature in NHSV Pro/Market_Watch/Sector_Treemap_Spec.md`
+1. `eKYC/Specifications/Biometric_Log_Spec.md`
+2. `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md`
 
 ---
 
-## Spec 1 — Top Stock Influence
+## Spec: Biometric_Log_Spec.md
 
-Cấu trúc 6 sections + footer:
+Cấu trúc 9 sections + footer:
 
-- **1. Overview** — module trong Market Watch, hiển thị top mã tác động mạnh nhất tới index; nguồn Vietstock.
-- **2. User Story** — retail investor xem nhanh ai đang dẫn dắt thị trường + acceptance criteria.
-- **3. UI/UX Behavior**
-  - Layout: title + dropdown sàn (right), bar chart vertical.
-  - Bar chart: X = `StockCode`, Y = `InfluenceIndex` (support âm), color theo `OrderType` (1=green, 2=red).
-  - Interactions: chọn sàn → refetch; tap bar → tooltip; pull-to-refresh.
-  - Tooltip detail: code, đóng góp điểm, giá, %, vốn hóa, trọng số.
-- **4. API Integration**
-  - Endpoint: `GET https://api-demo.vietstock.vn/demo/topstockinfluence`
-  - Default call: `CatID=1, TradeDate=today, Top=20, Type=0`.
-  - Bảng params (4 cột) + bảng response fields (12 fields).
-- **5. Data Mapping** — bảng map UI element ↔ API field.
-- **6. Edge Cases** — empty, market closed, single bar, negative bar, timeout, slow network, future date, đổi CatID, null fields.
-- **Footer** rule C5.
+- **1. Overview & Business Context** — gap hiện tại (no audit trail, raw blob), business goals (audit, compliance, admin visibility, fraud review).
+- **2. Current State — Gap Analysis** — bảng so sánh hiện tại vs cần làm cho từng component.
+- **3. eKYC Flow with Biometric Log** — ASCII flow diagram từ App → VNPT SDK → `POST /ekycs/attempt-log` → DB → `POST /lotte/ekycs` → `updateFinalEkycId`.
+- **4. DB Schema** — DDL đầy đủ cho `ekyc_attempt_log` (35+ cột, indexes), quan hệ với `e_kyc` (1:n, nullable FK) và `ekyc_ext` (vẫn giữ).
+- **5. API: POST /ekycs/attempt-log** — TradeX-native, request body JSON (nested objects: ocr, scores, fraud, imageQuality, cardCheck, matchFrontBack, liveness, faceCompare), response `{ id }`, auto-populated fields (userId từ JWT, attempt_result logic).
+- **6. API: GET /api/admin/ekyc/attempts/search** — query params (identifierId, attemptResult, fromDate, toDate, hasEkycId, page, size), response `{ totalCount, attempts[] }` với 25+ fields per item.
+- **7. API: GET /api/admin/ekyc/attempts/{id}** — full detail response, 404 OBJECT_NOT_FOUND.
+- **8. Error Handling** — bảng 5 scenarios (400, 404, 401, 403, 500).
+- **9. Business Rules & Validation** — 6 rules (identifierId required, lưu kể cả VNPT fail, link ekycId, attempt_result logic, không xóa cũ, giữ ekyc_ext).
+- **Footer C5:** `Document Status: ✅ Complete | For: BE Dev (ekyc-admin team) | Next Steps: ...`
 
 ---
 
-## Spec 2 — Sector Treemap
+## Issue: BE_Issue_Biometric_Log_Storage.md
 
-Cấu trúc 6 sections + footer:
+Cấu trúc: User Story + Context + 7 Tasks + Acceptance Criteria + Implementation Notes + footer:
 
-- **1. Overview** — treemap đa metric, màu theo `PerChange`, 2 API merge.
-- **2. User Story** — đánh giá sức khoẻ ngành + acceptance criteria.
-- **3. UI/UX Behavior**
-  - Tabs ngang sticky: Giá trị GD / Khối lượng GD / Vốn hóa (mở rộng: KLNN mua, KLNN bán).
-  - Cell color scale 5 levels (green đậm/nhạt, grey, red nhạt/đậm).
-  - Cell label 3 lines (Name, PerChange%, metric value).
-  - Interactions: tap tab, tap cell (bottom sheet), nút Toàn màn hình, pull-to-refresh.
-  - Bottom sheet 3 blocks: index/Δ, vol/val/foreign, định giá + lịch sử.
-- **4. API Integration**
-  - API 1 `sectorindex`: 3 params (Type, LanguageID, TradingDate), 11 response fields.
-  - API 2 `GetDetailSector`: 1 param (languageID), 17 response fields.
-  - Join: `sectorindex.ID = GetDetailSector.VSTSectorID`; gọi song song; default `SectorLevel=1`.
-- **5. Tab → Cell Size Mapping** — bảng 5 dòng (Val, Vol, MarketCapital, ForeignBuyVol, ForeignSellVol).
-- **6. Edge Cases** — empty, market closed, single sector, ID mismatch (cả 2 chiều), PerChange=0, null metric, null MarketCapital, TradingDate mismatch, mix SectorLevel, >30 ngành, partial API fail, slow network.
-- **Footer** rule C5.
+- **User Story:** Compliance officer muốn xem full biometric log (OCR, liveness, fraud, face compare) để audit.
+- **Task 1** — Liquibase changeset: tạo `ekyc_attempt_log` table với đầy đủ cột + indexes.
+- **Task 2** — JPA Entity `EKycAttemptLog.java`: annotations, FK relationship, all fields, AttemptResult enum.
+- **Task 3** — Repository `EKycAttemptLogRepository.java`: `findByIdentifierId`, `updateEkycId` (@Modifying query), extends JpaSpecificationExecutor.
+- **Task 4** — Service `EKycAttemptLogService.java`: 4 methods: `saveAttemptLog` (parse + attempt_result logic), `updateFinalEkycId`, `searchAttempts` (JPA Spec), `getAttemptDetail`.
+- **Task 5** — REST Resource `EKycAttemptLogResource.java`: `POST /ekycs/attempt-log`, `@PreAuthorize("isAuthenticated()")`, validate identifierId, return `{ id }`.
+- **Task 6** — Modify `CustomEKycService.java`: sau khi APPROVED, gọi `updateFinalEkycId(attemptLogId, ekycId)`; App cần gửi `attemptLogId` trong body `POST /lotte/ekycs`.
+- **Task 7** — Admin REST `AdminEKycAttemptLogResource.java`: `GET /api/admin/ekyc/attempts/search` + `/{id}`, `@PreAuthorize("hasRole('ADMIN')")`.
+- **Acceptance Criteria:** 12 criteria bao gồm DB migration, API responses, attempt_result logic, link ekycId, pagination, filter, 404, RBAC, no-delete-on-retry, ekyc_ext unchanged.
+- **Implementation Notes:** JHipster pattern, no image storage in scope, privacy retention TBD, ekyc_ext không xóa, partial data OK.
+- **Footer C5:** `Document Status: ✅ Complete | For: BE Dev (ekyc-admin team) | Next Steps: ...`
 
 ---
 
 ## Key design decisions
 
-- Cả 2 spec đều **Feature Spec** (PM/BA readable), không phải API Spec — không đặt vào folder Specs/.
-- Default value cho Spec 1: Top=20 (theo brief), không phải 10.
-- Tab "GTGD/KLGD/Vốn hoá" aliases trong analyst findings → gộp vào 3 tab chính + KLNN mua/bán (mode mở rộng) để tránh trùng lặp UI.
-- Edge case partial API fail (API 2) cho Spec 2: disable tab Vốn hóa thay vì block toàn bộ treemap.
-- Footer rule C5 áp dụng đúng format: `Document Status: 📋 Draft | For: FE Dev, BE Dev, QA | Next Steps: Review with tech lead`.
+- **Integration type:** TradeX-native (không qua Lotte/Core) — lưu thẳng vào DB ekyc-admin.
+- **Only `identifierId` required** trong request — các field VNPT đều optional vì App có thể có partial data.
+- **`attempt_result` auto-calculated** phía BE (PASS/FAIL/PENDING), App không cần tính.
+- **Không xóa `ekyc_ext`** — giữ backward compatibility, `ekyc_attempt_log` bổ sung cấu trúc.
+- **Image (Base64) không lưu vào DB** — out of scope, cần ImageStorageService riêng.
+- **`attemptLogId` flow:** App gọi `POST /ekycs/attempt-log` trước → nhận `id` → gửi `attemptLogId` vào body `POST /lotte/ekycs` → BE link sau khi APPROVED.

@@ -1,63 +1,67 @@
-# Validator Report
+# Validator Report — eKYC Biometric Log
 
-## Top_Stock_Influence_Spec.md
-
-- **Status:** PASS
-- **Path:** `/Users/ducnguyen/Documents/project/tradex-monitoring/New feature in NHSV Pro/Market_Watch/Top_Stock_Influence_Spec.md`
-
-### Checklist results
-- [x] File-level: tồn tại đúng path, PascalCase + underscore, không có brackets/prefix.
-- [x] Structure: H1 đúng (`# Nhóm dẫn dắt thị trường — Feature Specification`); đủ 6 sections (Overview, User Story, UI/UX Behavior, API Integration, Data Mapping, Edge Cases).
-- [x] User Story format `As an ... I want to ... so that ...` đúng chuẩn.
-- [x] Footer C5: `Document Status: 📋 Draft | For: FE Dev, BE Dev, QA | Next Steps: Review with tech lead` — present (line 148).
-- [x] Request params 4 fields (CatID, TradeDate, Top, Type) đầy đủ với valid values rõ ràng.
-- [x] Default call ghi rõ: `CatID=1 (HOSE), Top=20, Type=0` (section 4.2).
-- [x] Response fields đủ 12 fields: StockCode, ClosePrice, Change, PerChange, KLCPLH, MarketCap, Weight, BasicIndex, InfluencePercent, InfluenceIndex, OrderType, Row.
-- [x] Bar color rule: `OrderType=1` → green, `OrderType=2` → red (section 3.2 + Data Mapping).
-- [x] Y-axis hỗ trợ giá trị âm được note (section 3.2 + Edge Cases).
-- [x] Data Mapping table với UI Element → API Field (section 5, 10 rows).
-- [x] Edge cases: no data, market closed, single bar, negative bar, timeout, slow network, future date, null values, CatID switch — đầy đủ.
-
-### Issues found
-- None.
-
-### Fixes applied
-- None.
+**Date:** 2026-07-01
+**Validator:** tradex-validator
+**Pipeline stage:** Phase 3 — Convention Check & Finalize
 
 ---
 
-## Sector_Treemap_Spec.md
+## Spec file: `eKYC/Specifications/Biometric_Log_Spec.md`
 
-- **Status:** PASS
-- **Path:** `/Users/ducnguyen/Documents/project/tradex-monitoring/New feature in NHSV Pro/Market_Watch/Sector_Treemap_Spec.md`
+**Result:** PASS_WITH_WARNINGS
 
-### Checklist results
-- [x] File-level: tồn tại đúng path, PascalCase + underscore, không có brackets/prefix.
-- [x] Structure: H1 đúng (`# Biến động ngành (Sector Treemap) — Feature Specification`); đủ 6 sections.
-- [x] User Story format đúng chuẩn.
-- [x] Footer C5 present (line 214).
-- [x] 2 API endpoints tách riêng — section 4.1 (sectorindex) và 4.2 (GetDetailSector).
-- [x] Join key ghi rõ: `sectorindex.ID = GetDetailSector.VSTSectorID` (section 4.3).
-- [x] Gọi song song được ghi trong Join strategy (section 4.3, gạch đầu dòng "Strategy").
-- [x] Tab → Cell Size Mapping đủ 5 rows: Giá trị GD/Val, Khối lượng GD/Vol, Vốn hóa/MarketCapital, KLNN mua/ForeignBuyVol, KLNN bán/ForeignSellVol.
-- [x] Cell color rule: green >0, red <0, grey =0; có 5 levels gradient (`> +2%`, `0..+2%`, `0`, `-2..0%`, `< -2%`).
-- [x] Nút "Toàn màn hình" được mention (section 3.1 header + section 3.4 Interactions + Acceptance criteria).
-- [x] Edge cases: no data, market closed, single sector, ID mismatch cả 2 chiều (API 1 thiếu trong API 2 và ngược lại), PerChange=0, metric=null, TradingDate mismatch, SectorLevel mix, timeout — đầy đủ.
+### Checks
 
-### Convention compliance (cả 2 files)
-- [x] CommonMark strict, ATX headers, fenced code blocks (plain text với ngữ cảnh hợp lý).
-- [x] Folder placement đúng: `New feature in NHSV Pro/Market_Watch/`.
-- [x] Markdown tables render hợp lệ.
-- [x] Feature Spec — không áp tradex-api-conventions, naming Vietstock giữ nguyên (StockCode, CatID, VSTSectorID, ...).
+| Check | Result | Ghi chú |
+|-------|--------|---------|
+| File naming (PascalCase + underscore) | PASS | `Biometric_Log_Spec.md` đúng convention |
+| API fields camelCase TradeX | PASS | Tất cả request/response fields dùng camelCase TradeX (`identifierId`, `vnptStatusCode`, v.v.) — không có Lotte field names |
+| DB table/column name snake_case | PASS | `ekyc_attempt_log`, tất cả cột snake_case nhất quán |
+| Integration type khai báo rõ | PASS | `TradeX-native (internal DB only — không qua Lotte/Core)` ở đầu file |
+| Mutation response `{ id }` | PASS | `POST /ekycs/attempt-log` trả `{ "id": 1042 }` — đúng chuẩn TradeX-native |
+| Query response có envelope | PASS | `GET /api/admin/ekyc/attempts/search` có `{ totalCount, attempts[] }` |
+| Error codes SCREAMING_SNAKE_CASE | PASS | `INVALID_PARAMETER`, `OBJECT_NOT_FOUND`, `TOKEN_EXPIRED`, `FORBIDDEN`, `INTERNAL_SERVER_ERROR` |
+| Footer C5 format | PASS | `Document Status: ✅ Complete \| For: BE Dev (ekyc-admin team) \| Next Steps: ...` |
+| URL camelCase (TradeX convention) | PASS | `/ekycs/attempt-log`, `/api/admin/ekyc/attempts/search` — đúng pattern JHipster của ekyc-admin |
+| `identifierId` required trong POST | PASS | Ghi rõ **Y** trong Request Fields table, có note riêng |
+| Admin API filter params hợp lý | PASS | `identifierId`, `attemptResult`, `fromDate`, `toDate`, `hasEkycId`, `page`, `size` — đầy đủ |
+| VNPT fields tách thành cột riêng | PASS | 30+ cột riêng, INDEX trên `identifier_id`, `attempt_result`, `e_kyc_id`, `created_at` |
+| Table of Contents anchor typo | FIXED | Sửa `ekcyattemptssearch` → `ekyattemptssearch` trong 2 anchor links |
+| `vnpt_raw_data LONGTEXT` trong schema | WARNING | Không có cột này trong `ekyc_attempt_log` — thiết kế intentional: raw blob giữ ở `ekyc_ext.raw_data` (không xóa), bảng mới chỉ lưu structured fields. Justify rõ ở Section 2 và 9. Hợp lệ nhưng khác checklist validator ban đầu — PM confirm nếu cần thêm redundant raw column. |
 
-### Issues found
-- None.
+### Fixes đã áp dụng
 
-### Fixes applied
-- None.
+- **Typo Table of Contents (dòng 21-22):** Sửa anchor links từ `#...ekcyattemptssearch` / `#...ekcyattemptsid` thành đúng spelling `eky`.
 
 ---
 
-## Overall: PASS
+## Issue file: `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md`
 
-Cả 2 files đều đạt 100% checklist của Task #3. Không có lỗi nhỏ cần sửa, không có lỗi lớn cần báo lại creator. Files đã sẵn sàng finalize tại `New feature in NHSV Pro/Market_Watch/`.
+**Result:** PASS
+
+### Checks
+
+| Check | Result | Ghi chú |
+|-------|--------|---------|
+| File naming | PASS | `BE_Issue_Biometric_Log_Storage.md` — PascalCase + underscore |
+| Integration type khai báo | PASS | `TradeX-native` ở header |
+| Footer C5 format | PASS | Đúng format — đầy đủ Status/For/Next Steps |
+| Tasks khớp spec | PASS | Task 1-7 cover đầy đủ: Liquibase, Entity, Repository, Service, Resource, CustomEKycService hook, Admin REST |
+| Acceptance Criteria rõ ràng | PASS | 12 criteria cụ thể, testable, khớp từng task |
+| Code snippets Java hợp lệ | PASS | Repository interface, Resource controller, CustomEKycService hook — đúng JHipster pattern |
+| No Lotte field names | PASS | Không reference Lotte fields (`acnt_no`, v.v.) |
+| Folder placement | PASS | `eKYC/Issues/` — đúng file routing |
+| `attemptLogId` linking flow | PASS | Task 6 mô tả rõ: App gửi `attemptLogId` vào `POST /lotte/ekycs`, BE link `e_kyc_id` sau APPROVED |
+
+---
+
+## Overall: PASS_WITH_WARNINGS
+
+Cả 2 files đạt chuẩn convention TradeX. Warning duy nhất về `vnpt_raw_data` là thiết kế intentional và được justify rõ trong spec — không phải lỗi convention. Files ready for handoff to BE Dev.
+
+---
+
+## Files đã lưu
+
+- `eKYC/Specifications/Biometric_Log_Spec.md` — PASS_WITH_WARNINGS (1 typo anchor đã fix)
+- `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md` — PASS (không thay đổi)
