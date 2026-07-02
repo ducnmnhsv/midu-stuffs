@@ -385,4 +385,166 @@ For each s in sectors where sectorLevel === 1:
 
 ---
 
+---
+
+## 7. FE Implementation Guide — Treemap Rendering Algorithm
+
+> Section này dành riêng cho FE developer. Mục tiêu: render đúng layout như UI design (xem ảnh mẫu) — các ô lớn ở góc trên/trái, ô nhỏ dồn về phía dưới/phải, tỉ lệ ô gần vuông nhất có thể.
+
+### 7.1 Thuật toán: Squarified Treemap
+
+Dùng thuật toán **Squarified Treemap** (Bruls et al., 2000) — tối thiểu hóa aspect ratio của từng ô, tạo ra các ô gần vuông nhất có thể. Đây là thuật toán cho ra layout đúng như UI design.
+
+**Library đề xuất:** `d3-hierarchy` (không cần DOM, chạy được trong React Native).
+
+```js
+import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
+```
+
+**Cách dùng cơ bản:**
+
+```js
+const root = hierarchy({ children: sectors })
+  .sum(d => d.sizeMetric ?? 0)
+  .sort((a, b) => b.value - a.value); // lớn → nhỏ
+
+treemap()
+  .tile(treemapSquarify)
+  .size([containerWidth, containerHeight])
+  .paddingInner(2)   // khoảng trắng giữa các ô (tạo border effect)
+  .paddingOuter(0)
+  (root);
+
+// Sau khi chạy, mỗi leaf có: x0, y0, x1, y1 (tọa độ tuyệt đối)
+const cells = root.leaves(); // [{ x0, y0, x1, y1, data: sectorData }, ...]
+```
+
+### 7.2 Data preparation trước khi đưa vào treemap
+
+```text
+1. Filter:  chỉ giữ sectors có sectorLevel === 1
+2. Sort:    descending theo sizeMetric (field của tab đang active)
+3. Null/0:  nếu sizeMetric === null → set = 0 (ô rất nhỏ, xem section 7.6)
+4. Build:   hierarchy như code trên
+```
+
+`sizeMetric` theo tab:
+
+| Tab active | sizeMetric field |
+|---|---|
+| Giá trị GD | `tradingValue` (từ sectorIndex) |
+| Khối lượng GD | `tradingVolume` (từ sectorIndex) |
+| Vốn hóa | `marketCap` (từ sectorDetail) |
+| KLNN mua | `foreignBuyVolume` (từ sectorIndex) |
+| KLNN bán | `foreignSellVolume` (từ sectorIndex) |
+
+### 7.3 Container sizing
+
+| Mode | Kích thước container |
+|---|---|
+| **Portrait — inline (Market Watch)** | width = screen width; height = `width × 1.3` (tỉ lệ dọc) |
+| **Landscape — full-screen** | width = screen height; height = screen width (trừ status bar + nav bar) |
+
+- `paddingInner`: **2dp** — tạo khoảng trắng trắng giữa các ô (giống border).
+- `borderRadius` mỗi ô: **4dp**.
+- Background container: `#FFFFFF` (trắng) — ánh sáng qua gap = border effect.
+
+### 7.4 Cell rendering — từ tọa độ sang View
+
+Mỗi leaf sau khi d3 tính toán cho ra `{ x0, y0, x1, y1 }`. Map sang React Native:
+
+```jsx
+cells.map(cell => (
+  <View
+    key={cell.data.sectorId}
+    style={{
+      position: 'absolute',
+      left:   cell.x0,
+      top:    cell.y0,
+      width:  cell.x1 - cell.x0,
+      height: cell.y1 - cell.y0,
+      backgroundColor: colorByPerChange(cell.data.perChange),
+      borderRadius: 4,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+    }}
+  >
+    <CellLabel cell={cell} />
+  </View>
+))
+```
+
+> **SVG vs View:** Với sector treemap (~15 ô), dùng absolute-positioned `<View>` — đơn giản hơn và performance tốt hơn. Với drill-down (50+ mã CK), cân nhắc `react-native-svg` + `<Rect>` để tránh quá nhiều View nodes.
+
+### 7.5 Cell label — logic hiển thị theo kích thước ô
+
+```text
+cellWidth  = cell.x1 - cell.x0
+cellHeight = cell.y1 - cell.y0
+
+IF cellWidth >= 80dp AND cellHeight >= 50dp:
+    Line 1: sectorName (bold, 13sp) — truncate nếu > 12 ký tự → "Hàng &..."
+    Line 2: perChange% (12sp) — prefix "+" nếu dương
+
+ELSE IF cellWidth >= 50dp AND cellHeight >= 35dp:
+    Line 1: sectorName (11sp, truncated)
+    Line 2: perChange% (10sp)
+
+ELSE IF cellWidth >= 30dp AND cellHeight >= 25dp:
+    Line 1: perChange% chỉ (9sp)
+
+ELSE (quá nhỏ):
+    Không render text — chỉ hiển thị màu
+```
+
+**Truncation rule:** Dùng `numberOfLines={1}` + `ellipsizeMode="tail"` của React Native — không cần tự cắt chuỗi.
+
+### 7.6 Min cell threshold
+
+| Condition | Hành vi |
+|---|---|
+| `sizeMetric === 0` hoặc `null` | Set giá trị tối thiểu = `0.3% of total sum` để ô vẫn xuất hiện; label ẩn |
+| `cellWidth < 12dp` hoặc `cellHeight < 12dp` | Skip render (không thêm View); tránh layout rác |
+| `foreignBuyVolume = 0` (tab KLNN mua, nhiều sector = 0) | Các ô size = min threshold, xếp ở góc cuối |
+
+### 7.7 Color mapping — perChange → backgroundColor
+
+```js
+function colorByPerChange(pct) {
+  if (pct === null || pct === undefined) return '#8993A4'; // grey
+  if (pct >  2)  return '#006644'; // green đậm  (+2% trở lên)
+  if (pct >  0)  return '#36B37E'; // green nhạt  (0 → +2%)
+  if (pct === 0) return '#8993A4'; // grey neutral
+  if (pct > -2)  return '#FF5630'; // red nhạt   (-2% → 0)
+  return                '#BF2600'; // red đậm    (dưới -2%)
+}
+```
+
+> Màu text label trong ô: `#FFFFFF` (trắng) — áp dụng cho cả xanh/đỏ/grey.
+
+### 7.8 Tab switch animation
+
+Khi user chọn tab khác, `sizeMetric` thay đổi → layout thay đổi. Animate mượt:
+
+```text
+1. Tính layout mới với sizeMetric mới (re-run d3.treemap())
+2. Với mỗi ô: animate { left, top, width, height } từ giá trị cũ → mới
+3. Duration: 300ms · Easing: ease-in-out
+4. Màu (perChange) giữ nguyên trong suốt animation — không đổi theo tab
+```
+
+Dùng `Animated.Value` (RN built-in) hoặc `Reanimated 2` (khuyến nghị) cho smooth transition.
+
+**Lưu ý:** Nếu tab mới có ô không tồn tại trong tab cũ (ví dụ sector có `marketCap = null` nên bị ẩn ở tab Vốn hóa), animate ô từ `opacity: 0, scale: 0` → `opacity: 1, scale: 1`.
+
+### 7.9 Performance notes
+
+- **Memoize layout:** Chỉ re-run `d3.treemap()` khi data hoặc `containerSize` thay đổi — wrap trong `useMemo`.
+- **Polling update (realtime):** Mỗi 15–30s BE trả data mới → chỉ update `perChange` (màu) và `sizeMetric` (size). Re-run layout và animate.
+- **Drill-down cache:** Giữ layout state của sector view khi user drill-down vào ngành — không re-compute khi back.
+- **Avoid re-render:** Dùng `React.memo` cho từng cell View nếu sector count > 20.
+
+---
+
 Document Status: 🔄 Updated | For: FE Dev, BE Dev, QA | Next Steps: Confirm sectorStocks Vietstock endpoint với BE; Review drill-down UX với design team

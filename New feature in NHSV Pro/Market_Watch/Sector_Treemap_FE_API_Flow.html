@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sector Treemap — FE API Integration Flow</title>
+  <style>
+    :root {
+      --teal:    #006D77;
+      --teal-lt: #E8F4F5;
+      --green:   #006644;
+      --green-lt:#E3F5EC;
+      --red:     #BF2600;
+      --red-lt:  #FFEBE6;
+      --amber:   #FF8B00;
+      --amber-lt:#FFF4E5;
+      --blue:    #0052CC;
+      --blue-lt: #E6F0FF;
+      --grey:    #5E6C84;
+      --grey-lt: #F4F5F7;
+      --border:  #DFE1E6;
+      --bg:      #EBECF0;
+      --white:   #FFFFFF;
+      --text:    #172B4D;
+      --text-sm: #5E6C84;
+      --shadow:  0 2px 8px rgba(9,30,66,0.12);
+      --r:       8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ─── Header ─── */
+    .page-header {
+      background: linear-gradient(135deg, #006D77 0%, #83C5BE 100%);
+      color: #fff;
+      padding: 36px 40px 32px;
+    }
+    .page-header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      margin-bottom: 12px;
+    }
+    .page-header h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+    .page-header p  { opacity: .85; font-size: 14px; }
+    .meta-row { display: flex; gap: 24px; margin-top: 20px; flex-wrap: wrap; }
+    .meta-item { font-size: 12px; opacity: .8; }
+    .meta-item strong { display: block; font-size: 13px; opacity: 1; margin-bottom: 2px; }
+
+    /* ─── Layout ─── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; }
+
+    /* ─── Section titles ─── */
+    .section-title {
+      font-size: 18px; font-weight: 800;
+      margin: 36px 0 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .num {
+      width: 28px; height: 28px;
+      background: var(--teal); color: #fff;
+      border-radius: 50%; font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── Overview table ─── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+    @media (max-width: 700px) { .overview-grid { grid-template-columns: 1fr; } }
+
+    .screen-card {
+      background: var(--white);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      border-top: 4px solid var(--teal);
+    }
+    .screen-card.screen-1 { border-top-color: var(--teal); }
+    .screen-card.screen-2 { border-top-color: var(--blue); }
+    .screen-card.screen-3 { border-top-color: var(--green); }
+
+    .screen-card .screen-num {
+      font-size: 11px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; color: var(--grey); margin-bottom: 4px;
+    }
+    .screen-card h3 { font-size: 15px; font-weight: 800; margin-bottom: 12px; }
+    .api-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700;
+      margin: 3px 0; white-space: nowrap;
+    }
+    .api-pill.p1 { background: #E6F0FF; color: #0052CC; }
+    .api-pill.p2 { background: #E3F5EC; color: #006644; }
+    .api-pill.p3 { background: #FFF4E5; color: #FF8B00; }
+    .api-pill.none { background: #F4F5F7; color: #5E6C84; }
+    .screen-card .trigger {
+      font-size: 12px; color: var(--grey); margin-top: 10px;
+      padding-top: 10px; border-top: 1px solid var(--border);
+    }
+    .screen-card .trigger strong { color: var(--text); }
+
+    /* ─── Step flow ─── */
+    .step-list { display: flex; flex-direction: column; gap: 0; }
+
+    .step {
+      display: flex; gap: 0; position: relative;
+    }
+    .step-connector {
+      display: flex; flex-direction: column; align-items: center;
+      flex-shrink: 0; width: 52px;
+    }
+    .step-dot {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 14px; color: #fff;
+      flex-shrink: 0; z-index: 1;
+    }
+    .step-dot.c-teal  { background: var(--teal); }
+    .step-dot.c-blue  { background: var(--blue); }
+    .step-dot.c-green { background: var(--green); }
+    .step-dot.c-amber { background: var(--amber); }
+    .step-dot.c-grey  { background: var(--grey); }
+
+    .step-line {
+      width: 2px; background: var(--border);
+      flex: 1; min-height: 24px;
+    }
+    .step:last-child .step-line { display: none; }
+
+    .step-body {
+      flex: 1; padding: 0 0 28px 16px;
+    }
+    .step-body h4 {
+      font-size: 15px; font-weight: 800;
+      margin-bottom: 2px; line-height: 36px; /* align with dot */
+    }
+    .step-body .step-trigger {
+      font-size: 12px; color: var(--grey);
+      margin-bottom: 10px;
+    }
+    .step-body .step-trigger code {
+      background: var(--grey-lt); padding: 1px 5px; border-radius: 3px; font-size: 11px;
+    }
+
+    .api-block {
+      background: var(--white);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+    .api-block-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .method-badge {
+      font-size: 11px; font-weight: 800; padding: 2px 7px;
+      border-radius: 4px; text-transform: uppercase;
+    }
+    .method-badge.get { background: var(--green-lt); color: var(--green); }
+    .api-path { font-size: 13px; font-weight: 700; font-family: 'Menlo', monospace; }
+    .api-desc { font-size: 12px; color: var(--grey); margin-left: auto; }
+
+    .api-block-body { padding: 12px 16px; }
+
+    .info-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .info-chip {
+      font-size: 11px; padding: 3px 9px; border-radius: 12px; font-weight: 600;
+    }
+    .info-chip.polling  { background: #E6F0FF; color: #0052CC; }
+    .info-chip.cache    { background: #FFF4E5; color: #FF8B00; }
+    .info-chip.parallel { background: var(--teal-lt); color: var(--teal); }
+    .info-chip.ondemand { background: var(--grey-lt); color: var(--grey); }
+
+    .fields-used {
+      margin-top: 8px;
+    }
+    .fields-used p { font-size: 12px; color: var(--grey); margin-bottom: 6px; font-weight: 600; }
+    .field-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .field-tag {
+      font-size: 11px; background: var(--grey-lt); color: var(--text);
+      padding: 2px 8px; border-radius: 4px; font-family: 'Menlo', monospace;
+    }
+    .field-tag.key { background: var(--teal-lt); color: var(--teal); font-weight: 700; }
+    .field-tag.size { background: var(--blue-lt); color: var(--blue); }
+    .field-tag.color { background: #FFF0F0; color: var(--red); }
+
+    .note-box {
+      background: var(--grey-lt);
+      border-left: 3px solid var(--grey);
+      padding: 10px 14px;
+      border-radius: 0 6px 6px 0;
+      font-size: 12px;
+      margin-top: 8px;
+      color: var(--text-sm);
+    }
+    .note-box.info { border-left-color: var(--blue); background: var(--blue-lt); color: var(--text); }
+    .note-box.warn { border-left-color: var(--amber); background: var(--amber-lt); }
+    .note-box.success { border-left-color: var(--green); background: var(--green-lt); }
+
+    /* ─── Join diagram ─── */
+    .join-diagram {
+      background: var(--white); border-radius: var(--r); box-shadow: var(--shadow);
+      padding: 20px 24px; margin-bottom: 10px;
+    }
+    .join-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .join-box {
+      flex: 1; min-width: 180px;
+      background: var(--grey-lt); border-radius: 6px; padding: 12px 14px;
+      font-size: 12px;
+    }
+    .join-box strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .join-arrow {
+      font-size: 20px; color: var(--teal); font-weight: 800;
+      flex-shrink: 0;
+    }
+    .join-result {
+      flex: 1; min-width: 200px;
+      background: var(--teal-lt); border: 1px solid var(--teal);
+      border-radius: 6px; padding: 12px 14px; font-size: 12px;
+    }
+    .join-result strong { display: block; font-size: 13px; color: var(--teal); margin-bottom: 4px; }
+
+    /* ─── Tab mapping table ─── */
+    .tab-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white); border-radius: var(--r);
+      box-shadow: var(--shadow); overflow: hidden;
+    }
+    .tab-table th {
+      background: var(--teal); color: #fff;
+      padding: 10px 14px; text-align: left;
+      font-size: 12px; font-weight: 700;
+    }
+    .tab-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      font-size: 12px; vertical-align: top;
+    }
+    .tab-table tr:last-child td { border-bottom: none; }
+    .tab-table tr:hover td { background: var(--grey-lt); }
+    .tab-name { font-weight: 700; }
+    code {
+      font-family: 'Menlo', 'Consolas', monospace;
+      background: var(--grey-lt); padding: 1px 5px; border-radius: 3px; font-size: 11px;
+    }
+
+    /* ─── Polling schedule ─── */
+    .poll-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    }
+    @media (max-width: 700px) { .poll-grid { grid-template-columns: 1fr; } }
+
+    .poll-card {
+      background: var(--white); border-radius: var(--r);
+      box-shadow: var(--shadow); padding: 16px;
+    }
+    .poll-card .api-label {
+      font-size: 11px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--grey); margin-bottom: 6px;
+    }
+    .poll-card .interval {
+      font-size: 22px; font-weight: 800; color: var(--teal); margin-bottom: 4px;
+    }
+    .poll-card .condition { font-size: 11px; color: var(--grey); }
+
+    /* ─── Error table ─── */
+    .error-table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white); border-radius: var(--r);
+      box-shadow: var(--shadow); overflow: hidden;
+      font-size: 12px;
+    }
+    .error-table th {
+      background: #42526E; color: #fff;
+      padding: 10px 14px; text-align: left; font-size: 12px;
+    }
+    .error-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .error-table tr:last-child td { border-bottom: none; }
+    .severity { display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 700; font-size: 11px; }
+    .severity.high { background: var(--red-lt); color: var(--red); }
+    .severity.med  { background: var(--amber-lt); color: var(--amber); }
+    .severity.low  { background: var(--green-lt); color: var(--green); }
+
+    /* ─── Footer ─── */
+    .page-footer {
+      text-align: center; font-size: 12px; color: var(--grey);
+      padding: 24px; border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    /* ─── No-API step ─── */
+    .no-api-box {
+      background: var(--green-lt); border: 1px solid var(--green);
+      border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--green);
+      font-weight: 600; display: flex; align-items: center; gap: 8px;
+    }
+    .no-api-box .icon { font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="page-header">
+  <div class="badge">FE API Integration Report</div>
+  <h1>Biến động ngành — Sector Treemap</h1>
+  <p>Màn hình nào gọi API nào · Khi nào · Data dùng cho gì · Step-by-step flow</p>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Feature</strong>Market Watch › Biến động ngành</div>
+    <div class="meta-item"><strong>Platform</strong>NHSV Pro (React Native)</div>
+    <div class="meta-item"><strong>Backend</strong>TradeX → Vietstock proxy</div>
+    <div class="meta-item"><strong>Cập nhật</strong>2026-07-02</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══ SECTION 1: OVERVIEW ═══ -->
+  <div class="section-title">
+    <span class="num">1</span>
+    Tổng quan — Màn hình &amp; API sử dụng
+  </div>
+
+  <div class="overview-grid">
+    <div class="screen-card screen-1">
+      <div class="screen-num">Screen 1</div>
+      <h3>Sector Treemap View<br><small style="font-weight:400;color:var(--grey)">Market Watch › Biến động ngành</small></h3>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="api-pill p1">API 1 · sectorIndex</span>
+        <span class="api-pill p2">API 2 · sectorDetail</span>
+      </div>
+      <div class="trigger"><strong>Trigger:</strong> Screen mount · Pull-to-refresh · Polling 15–30s</div>
+    </div>
+    <div class="screen-card screen-2">
+      <div class="screen-num">Screen 2</div>
+      <h3>Stock Treemap View<br><small style="font-weight:400;color:var(--grey)">Drill-down — mã trong ngành</small></h3>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="api-pill p3">API 3 · sectorStocks</span>
+      </div>
+      <div class="trigger"><strong>Trigger:</strong> Tap vào ô ngành · Polling 15–30s</div>
+    </div>
+    <div class="screen-card screen-3">
+      <div class="screen-num">Screen 3</div>
+      <h3>Stock Detail<br><small style="font-weight:400;color:var(--grey)">Bottom sheet — chi tiết mã CK</small></h3>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="api-pill none">Không gọi API mới</span>
+      </div>
+      <div class="trigger"><strong>Trigger:</strong> Tap vào ô mã CK trong drill-down</div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 2: STEP BY STEP ═══ -->
+  <div class="section-title">
+    <span class="num">2</span>
+    Step-by-step Flow
+  </div>
+
+  <div class="step-list">
+
+    <!-- STEP 1 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-teal">1</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User mở Market Watch → Sector Treemap render</h4>
+        <div class="step-trigger">Trigger: <code>componentDidMount</code> / <code>useEffect([], [])</code> — gọi ngay khi screen mount</div>
+
+        <div class="api-block">
+          <div class="api-block-header">
+            <span class="method-badge get">GET</span>
+            <span class="api-path">/api/v1/marketWatch/sectorIndex</span>
+            <span class="api-desc">Dữ liệu index thời gian thực</span>
+          </div>
+          <div class="api-block-body">
+            <div class="info-row">
+              <span class="info-chip parallel">Gọi song song với API 2</span>
+              <span class="info-chip polling">Poll realtime 15–30s</span>
+            </div>
+            <div class="fields-used">
+              <p>Fields dùng trong UI:</p>
+              <div class="field-tags">
+                <span class="field-tag key">sectorId</span>
+                <span class="field-tag">sectorName</span>
+                <span class="field-tag color">perChange → màu ô</span>
+                <span class="field-tag size">tradingValue → tab GTGD</span>
+                <span class="field-tag size">tradingVolume → tab KLGD</span>
+                <span class="field-tag size">foreignBuyVolume → KLNN mua</span>
+                <span class="field-tag size">foreignSellVolume → KLNN bán</span>
+                <span class="field-tag">change · close · tradingDate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="api-block">
+          <div class="api-block-header">
+            <span class="method-badge get">GET</span>
+            <span class="api-path">/api/v1/marketWatch/sectorDetail</span>
+            <span class="api-desc">Vốn hóa, PE/PB, lịch sử</span>
+          </div>
+          <div class="api-block-body">
+            <div class="info-row">
+              <span class="info-chip parallel">Gọi song song với API 1</span>
+              <span class="info-chip cache">Cache 5–15 phút (không poll realtime)</span>
+            </div>
+            <div class="fields-used">
+              <p>Fields dùng trong UI:</p>
+              <div class="field-tags">
+                <span class="field-tag key">sectorId</span>
+                <span class="field-tag size">marketCap → tab Vốn hóa</span>
+                <span class="field-tag">pe · pb · eps</span>
+                <span class="field-tag">perChange1W · 1M · 3M · 6M · 52W</span>
+                <span class="field-tag">high52W · low52W</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="join-diagram">
+          <p style="font-size:12px;font-weight:700;margin-bottom:12px;color:var(--grey)">JOIN STRATEGY sau khi cả 2 API trả về:</p>
+          <div class="join-row">
+            <div class="join-box">
+              <strong>sectorIndex.list</strong>
+              ~15 sectors · perChange · tradingValue · tradingVolume · …
+            </div>
+            <div class="join-arrow">+</div>
+            <div class="join-box">
+              <strong>sectorDetail.list</strong>
+              keyed by sectorId · marketCap · pe · pb · perChange1W…
+            </div>
+            <div class="join-arrow">→</div>
+            <div class="join-result">
+              <strong>cells[] — input cho d3.treemap()</strong>
+              Filter: sectorLevel === 1<br>
+              Merge by: sectorId<br>
+              Sort: desc by sizeMetric (tab active)
+            </div>
+          </div>
+        </div>
+
+        <div class="note-box info">
+          <strong>Render strategy:</strong> Có thể render treemap ngay khi API 1 về (dùng sectorIndex only), rồi <em>enrich</em> khi API 2 về (enable tab Vốn hóa). Tránh block toàn bộ UI khi sectorDetail chậm.
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-teal">2</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User chọn tab khác (Khối lượng GD / Vốn hóa / …)</h4>
+        <div class="step-trigger">Trigger: Tap tab · Không gọi API mới</div>
+
+        <div class="no-api-box">
+          <span class="icon">✓</span>
+          Không cần gọi API — data đã có trong memory từ Step 1. FE chỉ re-run <code>d3.treemap()</code> với <code>sizeMetric</code> mới và animate layout transition 300ms.
+        </div>
+
+        <div style="margin-top:12px">
+          <table class="tab-table">
+            <thead>
+              <tr>
+                <th>Tab active</th>
+                <th>sizeMetric field</th>
+                <th>Source API</th>
+                <th>Cell color field</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tab-name">Giá trị GD</td>
+                <td><code>tradingValue</code></td>
+                <td><span class="api-pill p1" style="font-size:10px">API 1 · sectorIndex</span></td>
+                <td><code>perChange</code> (API 1)</td>
+              </tr>
+              <tr>
+                <td class="tab-name">Khối lượng GD</td>
+                <td><code>tradingVolume</code></td>
+                <td><span class="api-pill p1" style="font-size:10px">API 1 · sectorIndex</span></td>
+                <td><code>perChange</code> (API 1)</td>
+              </tr>
+              <tr>
+                <td class="tab-name">Vốn hóa</td>
+                <td><code>marketCap</code></td>
+                <td><span class="api-pill p2" style="font-size:10px">API 2 · sectorDetail</span></td>
+                <td><code>perChange</code> (API 1)</td>
+              </tr>
+              <tr>
+                <td class="tab-name">KLNN mua <small>(optional)</small></td>
+                <td><code>foreignBuyVolume</code></td>
+                <td><span class="api-pill p1" style="font-size:10px">API 1 · sectorIndex</span></td>
+                <td><code>perChange</code> (API 1)</td>
+              </tr>
+              <tr>
+                <td class="tab-name">KLNN bán <small>(optional)</small></td>
+                <td><code>foreignSellVolume</code></td>
+                <td><span class="api-pill p1" style="font-size:10px">API 1 · sectorIndex</span></td>
+                <td><code>perChange</code> (API 1)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="note-box warn" style="margin-top:10px">
+          <strong>⚠ Tab Vốn hóa:</strong> Nếu API 2 (sectorDetail) fail → disable tab Vốn hóa, hiển thị tooltip "Không có dữ liệu vốn hóa". Các tab khác vẫn hoạt động bình thường.
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-blue">3</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User tap vào ô ngành → Drill-down Stock Treemap</h4>
+        <div class="step-trigger">Trigger: <code>onPress(cell)</code> → navigate sang drill-down view với <code>sectorId</code> + <code>sectorName</code></div>
+
+        <div class="api-block">
+          <div class="api-block-header">
+            <span class="method-badge get">GET</span>
+            <span class="api-path">/api/v1/marketWatch/sectorStocks?sectorId=<em>{id}</em></span>
+            <span class="api-desc">Danh sách mã CK trong ngành</span>
+          </div>
+          <div class="api-block-body">
+            <div class="info-row">
+              <span class="info-chip ondemand">On-demand — gọi khi tap</span>
+              <span class="info-chip polling">Poll realtime 15–30s khi đang xem</span>
+            </div>
+            <div class="fields-used">
+              <p>Fields dùng trong UI:</p>
+              <div class="field-tags">
+                <span class="field-tag key">stockCode</span>
+                <span class="field-tag">stockName · exchange</span>
+                <span class="field-tag color">perChange → màu ô stock</span>
+                <span class="field-tag size">tradingValue → tab GTGD</span>
+                <span class="field-tag size">tradingVolume → tab KLGD</span>
+                <span class="field-tag size">marketCap → tab Vốn hóa</span>
+                <span class="field-tag size">foreignBuyVolume · foreignSellVolume</span>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--grey);margin-bottom:8px">Backend aggregate flow (FE không cần biết, BE xử lý):</div>
+            <div style="background:var(--grey-lt);border-radius:6px;padding:12px;font-size:11px;font-family:monospace;line-height:1.8;color:var(--text)">
+              GET /api/v1/marketWatch/sectorStocks?sectorId=X<br>
+              &nbsp;&nbsp;├─ [1] Vietstock /GetListStockBySector?sectorID=X <span style="color:var(--amber)">(EOD, cache 24h)</span><br>
+              &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ danh sách stockCode trong ngành<br>
+              &nbsp;&nbsp;└─ [2] TradeX /rest/api/v2/market/symbol/latest?codes={stockCodes} <span style="color:var(--blue)">(realtime)</span><br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ perChange, tradingValue, tradingVolume, marketCap…<br>
+              &nbsp;&nbsp;→ BE merge [1]+[2] on stockCode → trả về response
+            </div>
+          </div>
+        </div>
+
+        <div class="note-box success">
+          <strong>Tab trong drill-down:</strong> Kế thừa tab đang active từ sector view. Cùng 1 API call trả đủ data cho tất cả 5 tabs — không cần gọi lại khi switch tab trong drill-down.
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-blue">4</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User chọn tab trong drill-down view</h4>
+        <div class="step-trigger">Trigger: Tap tab · Không gọi API mới</div>
+
+        <div class="no-api-box">
+          <span class="icon">✓</span>
+          Data đã có từ sectorStocks response (Step 3). Re-run <code>d3.treemap()</code> với <code>sizeMetric</code> mới, animate 300ms. Logic giống hệt Step 2 — chỉ khác source data là stocks thay vì sectors.
+        </div>
+
+        <div style="margin-top:10px">
+          <table class="tab-table">
+            <thead>
+              <tr>
+                <th>Tab active</th>
+                <th>sizeMetric field</th>
+                <th>Cell color field</th>
+                <th>Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="tab-name">Giá trị GD</td>
+                <td><code>tradingValue</code></td>
+                <td><code>perChange</code> — amber nếu = 0</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="tab-name">Khối lượng GD</td>
+                <td><code>tradingVolume</code></td>
+                <td><code>perChange</code></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class="tab-name">Vốn hóa</td>
+                <td><code>marketCap</code></td>
+                <td><code>perChange</code></td>
+                <td>Exclude stock nếu marketCap null</td>
+              </tr>
+              <tr>
+                <td class="tab-name">KLNN mua</td>
+                <td><code>foreignBuyVolume</code></td>
+                <td><code>perChange</code></td>
+                <td>Nhiều mã = 0 → min cell size</td>
+              </tr>
+              <tr>
+                <td class="tab-name">KLNN bán</td>
+                <td><code>foreignSellVolume</code></td>
+                <td><code>perChange</code></td>
+                <td>Nhiều mã = 0 → min cell size</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-green">5</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User tap vào ô mã CK → Stock Detail Bottom Sheet</h4>
+        <div class="step-trigger">Trigger: <code>onPress(stockCell)</code> → present bottom sheet</div>
+
+        <div class="no-api-box">
+          <span class="icon">✓</span>
+          Không gọi API mới. Toàn bộ data hiển thị trong bottom sheet đã có trong sectorStocks response từ Step 3.
+        </div>
+
+        <div style="margin-top:12px;background:var(--white);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden">
+          <div style="background:var(--green);color:#fff;padding:10px 16px;font-size:12px;font-weight:700">Bottom sheet content → data source mapping</div>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <tr style="background:var(--grey-lt)">
+              <th style="padding:8px 14px;text-align:left;color:var(--grey);font-size:11px">UI Element</th>
+              <th style="padding:8px 14px;text-align:left;color:var(--grey);font-size:11px">Data field</th>
+              <th style="padding:8px 14px;text-align:left;color:var(--grey);font-size:11px">Source</th>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:8px 14px">Header: Mã CK · Tên ngành · % đổi</td>
+              <td style="padding:8px 14px"><code>stockCode</code> · <code>sectorName</code> · <code>perChange</code></td>
+              <td style="padding:8px 14px">sectorStocks + params</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:8px 14px">Block 1: KL GD · GT GD · KLNN mua · bán</td>
+              <td style="padding:8px 14px"><code>tradingVolume</code> · <code>tradingValue</code> · <code>foreignBuyVolume</code> · <code>foreignSellVolume</code></td>
+              <td style="padding:8px 14px">sectorStocks (API 3)</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 14px">Block 2: Vốn hóa · PE · PB</td>
+              <td style="padding:8px 14px"><code>marketCap</code> · — · —</td>
+              <td style="padding:8px 14px">sectorStocks (API 3) · <em>PE/PB stock-level: TBD</em></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 6 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-amber">6</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>User nhấn Back → về Sector Treemap</h4>
+        <div class="step-trigger">Trigger: Back button · Swipe back gesture · Không gọi API mới</div>
+
+        <div class="no-api-box">
+          <span class="icon">✓</span>
+          Sector data đã cache trong memory. Không re-fetch. Tab state giữ nguyên. Polling sectorIndex tiếp tục nếu đang chạy (không cancel).
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 7 -->
+    <div class="step">
+      <div class="step-connector">
+        <div class="step-dot c-grey">7</div>
+        <div class="step-line"></div>
+      </div>
+      <div class="step-body">
+        <h4>Pull-to-refresh (bất kỳ view nào)</h4>
+        <div class="step-trigger">Trigger: <code>onRefresh</code> handler</div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="note-box info">
+            <strong>Sector view (Screen 1):</strong> Gọi lại <em>song song</em> API 1 (sectorIndex) + API 2 (sectorDetail). Reset polling timer.
+          </div>
+          <div class="note-box info">
+            <strong>Drill-down view (Screen 2):</strong> Gọi lại API 3 (sectorStocks) với cùng <code>sectorId</code> đang xem. Reset polling timer.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end step-list -->
+
+  <!-- ═══ SECTION 3: POLLING ═══ -->
+  <div class="section-title">
+    <span class="num">3</span>
+    Polling Schedule
+  </div>
+
+  <div class="poll-grid">
+    <div class="poll-card">
+      <div class="api-label">API 1 — sectorIndex</div>
+      <div class="interval">15 – 30s</div>
+      <div class="condition">Chỉ khi market open (9:00–15:00). Dừng khi user navigate khỏi screen.</div>
+    </div>
+    <div class="poll-card">
+      <div class="api-label">API 2 — sectorDetail</div>
+      <div class="interval">Không poll</div>
+      <div class="condition">Cache 5–15 phút ở BE. FE chỉ fetch 1 lần khi mount. Refetch khi pull-to-refresh.</div>
+    </div>
+    <div class="poll-card">
+      <div class="api-label">API 3 — sectorStocks</div>
+      <div class="interval">15 – 30s</div>
+      <div class="condition">Chỉ khi đang trong drill-down view. Dừng ngay khi back về sector view.</div>
+    </div>
+  </div>
+
+  <!-- ═══ SECTION 4: ERROR STATES ═══ -->
+  <div class="section-title">
+    <span class="num">4</span>
+    Error States &amp; FE handling
+  </div>
+
+  <table class="error-table">
+    <thead>
+      <tr>
+        <th>Scenario</th>
+        <th>Severity</th>
+        <th>API bị lỗi</th>
+        <th>FE behavior</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>sectorIndex fail (timeout / 5xx)</td>
+        <td><span class="severity high">HIGH</span></td>
+        <td>API 1</td>
+        <td>Empty state toàn bộ treemap · Hiện error banner · Cho phép retry</td>
+      </tr>
+      <tr>
+        <td>sectorDetail fail</td>
+        <td><span class="severity med">MED</span></td>
+        <td>API 2</td>
+        <td>Vẫn render treemap (dùng API 1 only) · Disable tab "Vốn hóa" · Tooltip giải thích</td>
+      </tr>
+      <tr>
+        <td>sectorStocks fail (drill-down)</td>
+        <td><span class="severity med">MED</span></td>
+        <td>API 3</td>
+        <td>Empty state trong drill-down view · Back button vẫn hoạt động</td>
+      </tr>
+      <tr>
+        <td>sectorStocks trả empty array</td>
+        <td><span class="severity low">LOW</span></td>
+        <td>API 3</td>
+        <td>"Chưa có dữ liệu mã trong ngành này." · Back button hoạt động</td>
+      </tr>
+      <tr>
+        <td>marketCap = null (tab Vốn hóa)</td>
+        <td><span class="severity low">LOW</span></td>
+        <td>API 2</td>
+        <td>Exclude sector khỏi treemap hoặc hiển thị "—" · Không crash</td>
+      </tr>
+      <tr>
+        <td>Market closed / weekend</td>
+        <td><span class="severity low">LOW</span></td>
+        <td>—</td>
+        <td>Banner "Dữ liệu phiên gần nhất: dd/MM/yyyy" · Không poll</td>
+      </tr>
+      <tr>
+        <td>sizeMetric = 0 / null cho nhiều sectors</td>
+        <td><span class="severity low">LOW</span></td>
+        <td>—</td>
+        <td>Set min value = 0.3% tổng sum · Ô vẫn xuất hiện, ẩn label · Không exclude</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ═══ SECTION 5: QUICK REF ═══ -->
+  <div class="section-title">
+    <span class="num">5</span>
+    Quick Reference — API Endpoints
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="api-block">
+      <div class="api-block-header">
+        <span class="method-badge get">GET</span>
+        <span class="api-path">/api/v1/marketWatch/sectorIndex</span>
+        <span class="api-desc" style="font-weight:700;color:#0052CC">API 1</span>
+      </div>
+      <div class="api-block-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px">
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Request params:</p>
+            <p><code>tradingDate</code> — yyyy-MM-dd HH:mm:ss (optional, default = hôm nay)</p>
+            <p style="margin-top:4px"><code>sortOrder</code> — <code>VSTOCK_ASC</code> | <code>VSTOCK_DESC</code> | <code>CHANGE_ASC</code> | <code>CHANGE_DESC</code></p>
+          </div>
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Key response fields:</p>
+            <p><code>sectorId</code> · <code>sectorName</code> · <code>perChange</code> · <code>tradingValue</code> · <code>tradingVolume</code> · <code>foreignBuyVolume</code> · <code>foreignSellVolume</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-block">
+      <div class="api-block-header">
+        <span class="method-badge get">GET</span>
+        <span class="api-path">/api/v1/marketWatch/sectorDetail</span>
+        <span class="api-desc" style="font-weight:700;color:#006644">API 2</span>
+      </div>
+      <div class="api-block-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px">
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Request params:</p>
+            <p>Không có param từ FE. BE tự hardcode <code>languageID=1</code>.</p>
+          </div>
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Key response fields:</p>
+            <p><code>sectorId</code> · <code>sectorLevel</code> · <code>marketCap</code> · <code>pe</code> · <code>pb</code> · <code>perChange1W</code> · <code>perChange1M</code> · <code>perChange3M</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-block">
+      <div class="api-block-header">
+        <span class="method-badge get">GET</span>
+        <span class="api-path">/api/v1/marketWatch/sectorStocks?sectorId=<em>{id}</em></span>
+        <span class="api-desc" style="font-weight:700;color:#FF8B00">API 3</span>
+      </div>
+      <div class="api-block-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:12px">
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Request params:</p>
+            <p><code>sectorId</code> — <strong>Required</strong> · lấy từ <code>sectorIndex.sectorId</code></p>
+          </div>
+          <div>
+            <p style="font-weight:700;margin-bottom:4px">Key response fields:</p>
+            <p><code>stockCode</code> · <code>stockName</code> · <code>exchange</code> · <code>perChange</code> · <code>tradingValue</code> · <code>tradingVolume</code> · <code>marketCap</code> · <code>foreignBuyVolume</code> · <code>foreignSellVolume</code></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<div class="page-footer">
+  Sector Treemap — FE API Integration Flow · NHSV Pro · Cập nhật 2026-07-02 · Spec: <em>Sector_Treemap_Spec.md</em>
+</div>
+
+</body>
+</html>
