@@ -66,19 +66,55 @@ Line 3 (chỉ khi cell đủ rộng): giá trị metric đang chọn (formatted)
 | Action | Behavior |
 |---|---|
 | Tap tab metric | Animate cell size về metric mới (transition smooth) |
-| Tap vào cell | Mở bottom sheet với chi tiết ngành |
+| Tap vào cell ngành | **Drill-down:** chuyển sang stock treemap của ngành đó (không mở bottom sheet) |
+| Tap vào cell mã CK (drill-down view) | Mở bottom sheet chi tiết mã |
+| Tap nút Back (`< sectorName`) | Quay về sector treemap, giữ nguyên tab đang chọn |
 | Tap nút Toàn màn hình | Chuyển sang landscape, treemap chiếm toàn bộ màn hình |
-| Pull-to-refresh | Refetch cả 2 API song song |
+| Pull-to-refresh | Refetch cả API song song (sector view: 2 APIs; drill-down: thêm API 3) |
 
-### 3.5 Bottom sheet (khi tap cell)
+### 3.5 Drill-down view (Stock treemap trong ngành)
+
+Khi user tap một ô ngành, màn hình chuyển sang **stock-level treemap** của ngành đó.
+
+**Layout:**
 
 ```
-Header:  sectorName · close · change · perChange%
+Header bar:
+  [< sectorName]                    [icon fullscreen]
+  
+Subheader:
+  sectorName · perChange%           ← breadcrumb context
+
+Tabs (sticky): giống sector view, cùng tab đang chọn
+Treemap: các ô = mã CK trong ngành
+```
+
+**Cell rendering (stock):**
+
+- Cell size: cùng metric với tab đang chọn (field lấy từ API 3)
+- Cell color: `perChange` của từng mã (xanh/đỏ)
+- Cell label:
+  - Line 1: `stockCode` (VD: `SHB`, `VCB`)
+  - Line 2: `perChange%`
+- Màu `perChange = 0` ở stock view: **amber/gold** (phân biệt với neutral grey của sector view)
+
+**Behavior:**
+
+- Tab switch trong drill-down view → re-render treemap cùng ngành với metric mới (gọi lại API 3 nếu cần)
+- Back button → trở về sector view, tab giữ nguyên
+
+### 3.6 Bottom sheet — Stock detail (khi tap mã trong drill-down)
+
+```
+Header:  stockCode · sectorName (sub) · perChange%
 Block 1: tradingVolume · tradingValue · foreignBuyVolume · foreignSellVolume
-Block 2: marketCap · pe · pb · eps · roa · roe
-Block 3: perChange1W / perChange1M / perChange3M / perChange6M / perChange52W
-         high52W / low52W
+Block 2: marketCap · pe · pb
+Block 3: (reserved — có thể expand sau)
 ```
+
+### 3.7 Bottom sheet — Sector detail (deprecated)
+
+> ⚠️ **Đã thay bởi drill-down (3.5).** Sector bottom sheet không cần thiết nữa vì tap = drill-down. Sector-level data (pe, pb, lịch sử 1W/1M...) có thể expose qua long-press nếu cần trong tương lai.
 
 ---
 
@@ -194,13 +230,85 @@ Tính năng dùng **2 TradeX endpoints gọi song song** và **merge theo join k
 
 ---
 
-### 4.3 Join strategy
+### 4.3 sectorStocks (API thứ 3 — Drill-down)
+
+**TradeX endpoint:** `GET /api/v1/marketWatch/sectorStocks`
+
+**Data type:** Realtime (polling 15–30s khi market open)
+
+**Architecture — TradeX BE aggregate từ 2 nguồn:**
+
+```text
+Client → GET /api/v1/marketWatch/sectorStocks?sectorId=X
+           │
+           ├─ [1] Vietstock /GetListStockBySector?sectorID=X  (EOD — cache 24h)
+           │       → danh sách StockCode trong ngành
+           │
+           └─ [2] TradeX /rest/api/v2/market/symbol/latest?codes={stockCodes}
+                   → toàn bộ trading metrics realtime (poll 15–30s)
+
+           TradeX BE merge [1] join [2] on stockCode → response
+```
+
+> **Caching:** Source [1] là EOD — stock list trong ngành không đổi trong ngày → cache per `sectorId`, TTL = 24h hoặc đến 18:00 phiên. Source [2] là realtime, poll theo chu kỳ market.
+
+**Request parameters:**
+
+| Param | Type | Required | Description |
+| --- | --- | --- | --- |
+| `sectorId` | number | Yes | ID ngành — lấy từ `sectorIndex.sectorId` |
+
+**Response fields:**
+
+| Field | Type | Source | UI Usage |
+| --- | --- | --- | --- |
+| `stockCode` | string | `[1]` Vietstock `StockCode` | Cell label Line 1 |
+| `stockName` | string | `[1]` Vietstock `FullName` | Bottom sheet header |
+| `exchange` | string | `[1]` Vietstock `Exchange` | Badge (HOSE/HNX/UPCoM) |
+| `perChange` | number (%) | `[2]` TradeX field `ra` | **Cell color** + Line 2 label |
+| `tradingVolume` | number | `[2]` TradeX field `vo` | Cell size — tab **KLGD** |
+| `tradingValue` | number | `[2]` TradeX field `va` | Cell size — tab **GTGD** |
+| `foreignBuyVolume` | number | `[2]` TradeX field `fr.bv` | Cell size — tab **KLNN mua** |
+| `foreignSellVolume` | number | `[2]` TradeX field `fr.sv` | Cell size — tab **KLNN bán** |
+| `marketCap` | number | `[2]` TradeX field `mc` | Cell size — tab **Vốn hóa** |
+
+**BE mapping — Vietstock `/GetListStockBySector` (confirmed từ API doc):**
+
+| Vietstock field | TradeX field | Type | Ghi chú |
+| --- | --- | --- | --- |
+| `StockCode` | `stockCode` | String | Join key với source [2] field `s` |
+| `FullName` | `stockName` | String | Tên công ty đầy đủ |
+| `Exchange` | `exchange` | String | HOSE / HNX / UPCoM |
+| `SectorID` | _(internal)_ | Number | Verify mapping với `sectorIndex.sectorId` |
+| `CatID` | _(internal)_ | Int | 1=HOSE, 2=HNX, 3=UPCoM |
+
+**BE mapping — TradeX `/rest/api/v2/market/symbol/latest` → response:**
+
+| API field | TradeX field | Mô tả |
+| --- | --- | --- |
+| `s` | `stockCode` | Mã chứng khoán (join key) |
+| `ra` | `perChange` | % thay đổi giá |
+| `vo` | `tradingVolume` | KL khớp lệnh |
+| `va` | `tradingValue` | GT khớp lệnh (VND) |
+| `mc` | `marketCap` | Vốn hóa thị trường |
+| `fr.bv` | `foreignBuyVolume` | KL nước ngoài mua |
+| `fr.sv` | `foreignSellVolume` | KL nước ngoài bán |
+| `c` | `close` | Giá đóng cửa / hiện tại |
+| `ch` | `change` | Thay đổi tuyệt đối |
+| `hly[0].h` | `high52W` | Đỉnh 52 tuần |
+| `hly[0].l` | `low52W` | Đáy 52 tuần |
+
+> ⚠️ **Action cần thiết với BE:** Confirm mapping giữa `sectorIndex.sectorId` (từ Vietstock `/sectorindex`) và `sectorID` input của `/GetListStockBySector` — trong API doc, input `sectorID=1` trả stocks với nhiều `SectorID` con khác nhau (6023, 6024...), cần xác nhận ID nào map đúng.
+
+---
+
+### 4.4 Join strategy
 
 - **Join key:** `sectorIndex.sectorId` = `sectorDetail.sectorId`.
 - **Strategy:** Gọi **song song** cả 2 endpoints. Render khi cả 2 hoàn tất, hoặc render sectorIndex trước rồi enrich từ sectorDetail khi sẵn sàng.
 - **Filter mặc định:** `sectorLevel = 1` để tránh double-count đa cấp.
 
-```
+```text
 sectors = sectorIndex.list
 details = sectorDetail.list keyed by sectorId
 
@@ -215,12 +323,14 @@ For each s in sectors where sectorLevel === 1:
     }
 ```
 
-### 4.4 Error handling
+### 4.5 Error handling
 
 | Tình huống | HTTP | TradeX code |
-|---|---|---|
+| --- | --- | --- |
 | sectorIndex timeout / 5xx | 500 | `INTERNAL_SERVER_ERROR` → empty state |
 | sectorDetail timeout / 5xx | 500 | `INTERNAL_SERVER_ERROR` → vẫn render, disable tab Vốn hóa |
+| sectorStocks timeout / 5xx | 500 | `INTERNAL_SERVER_ERROR` → drill-down empty state |
+| sectorStocks trả empty array | 200 | — FE hiển thị "Chưa có dữ liệu mã trong ngành này" |
 | Vietstock trả empty array | 200 | — (FE xử lý empty state) |
 
 ---
@@ -228,21 +338,33 @@ For each s in sectors where sectorLevel === 1:
 ## 5. Tab → Cell Size Mapping
 
 | Tab | TradeX Field | Source endpoint |
-|---|---|---|
+| --- | --- | --- |
 | Giá trị GD | `tradingValue` | sectorIndex |
 | Khối lượng GD | `tradingVolume` | sectorIndex |
 | Vốn hóa | `marketCap` | sectorDetail |
 | KLNN mua | `foreignBuyVolume` | sectorIndex |
 | KLNN bán | `foreignSellVolume` | sectorIndex |
 
-**Cell color (mọi tab):** `sectorIndex.perChange` (gradient red ↔ green).
+**Cell color (mọi tab, sector view):** `sectorIndex.perChange` (gradient red ↔ green).
+
+**Drill-down view — tab → cell size mapping (stock level):**
+
+| Tab | TradeX Field | Source endpoint |
+| --- | --- | --- |
+| Giá trị GD | `tradingValue` | sectorStocks |
+| Khối lượng GD | `tradingVolume` | sectorStocks |
+| Vốn hóa | `marketCap` | sectorStocks |
+| KLNN mua | `foreignBuyVolume` | sectorStocks |
+| KLNN bán | `foreignSellVolume` | sectorStocks |
+
+**Cell color (drill-down, mọi tab):** `sectorStocks.perChange` của từng mã.
 
 ---
 
 ## 6. Edge Cases
 
 | Case | Behavior |
-|---|---|
+| --- | --- |
 | **No data** (cả 2 API trả empty) | Empty state: "Chưa có dữ liệu cho ngày này." |
 | **Market closed / weekend / holiday** | Banner "Dữ liệu phiên gần nhất: dd/MM/yyyy" |
 | **Single sector** | Treemap render 1 ô chiếm toàn bộ vùng vẽ |
@@ -255,8 +377,12 @@ For each s in sectors where sectorLevel === 1:
 | **Mix nhiều `sectorLevel`** | Default filter `sectorLevel = 1` |
 | **Số lượng ngành > 30** | Cân nhắc giới hạn top N hoặc cho phép zoom |
 | **sectorDetail fail** | Vẫn render với tabs Giá trị GD / Khối lượng GD / KLNN; disable tab Vốn hóa |
+| **sectorStocks fail (drill-down)** | Empty state trong drill-down view; back button vẫn hoạt động |
+| **Stock có metric = 0** (ví dụ `foreignBuyVolume = 0`) | Áp min cell size threshold (≥ 8px) hoặc exclude stock đó khỏi treemap |
+| **`perChange = 0` ở stock view** | Cell màu amber/gold (phân biệt với neutral grey sector view) |
+| **sectorId drill-down không có stocks** | Empty state: "Chưa có dữ liệu mã trong ngành này." |
 | **Slow network** | Skeleton treemap; tránh layout shift khi merge data |
 
 ---
 
-Document Status: 📋 Draft | For: FE Dev, BE Dev, QA | Next Steps: Review with tech lead
+Document Status: 🔄 Updated | For: FE Dev, BE Dev, QA | Next Steps: Confirm sectorStocks Vietstock endpoint với BE; Review drill-down UX với design team

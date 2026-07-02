@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Biến động ngành — NHSV Pro Prototype</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #06080f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+}
+
+.device-frame {
+  width: 390px;
+  min-height: 100vh;
+  background: #0b0f1e;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px 8px;
+  min-height: 44px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+}
+
+.back-btn {
+  display: none;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: #60a5fa;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px 4px 0;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.back-btn.visible { display: flex; }
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  flex: 1;
+}
+
+.fullscreen-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+/* ── Breadcrumb context ── */
+.sector-context {
+  display: none;
+  padding: 0 16px 6px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 500;
+}
+.sector-context.visible { display: block; }
+.sector-context .pct { font-weight: 700; }
+.sector-context .pct.up { color: #22c55e; }
+.sector-context .pct.down { color: #f87171; }
+
+/* ── Tabs ── */
+.tabs-wrapper {
+  padding: 0 16px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.tabs-wrapper::-webkit-scrollbar { display: none; }
+
+.tabs { display: flex; gap: 6px; }
+
+.tab-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  background: rgba(255,255,255,0.05);
+  color: #64748b;
+  letter-spacing: 0.1px;
+}
+.tab-btn.active {
+  background: #1d4ed8;
+  color: #fff;
+  border-color: transparent;
+}
+.tab-btn:not(.active):hover {
+  background: rgba(255,255,255,0.1);
+  color: #94a3b8;
+}
+
+/* ── Treemap ── */
+.treemap-wrapper {
+  flex: 1;
+  padding: 0 16px;
+}
+
+#treemap {
+  width: 100%;
+  display: block;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.treemap-cell {
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.treemap-cell:hover rect { opacity: 0.88; }
+.treemap-cell:active rect { opacity: 0.7; }
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px 12px;
+}
+.legend-lbl { font-size: 10px; color: #334155; white-space: nowrap; }
+.legend-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(to right, #7f1d1d, #dc2626, #374151, #16a34a, #14532d);
+}
+
+/* ── Prototype badge ── */
+.proto-badge {
+  text-align: center;
+  padding: 6px 16px 20px;
+  font-size: 10px;
+  color: #1e2d47;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* ── Overlay + Bottom sheet ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 200;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.overlay.open { display: flex; }
+
+.bottom-sheet {
+  width: 390px;
+  background: #131929;
+  border-radius: 20px 20px 0 0;
+  padding: 0 0 48px;
+  max-height: 75vh;
+  overflow-y: auto;
+  animation: slideUp 0.28s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: #263352;
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sheet-title { font-size: 22px; font-weight: 800; color: #f1f5f9; }
+.sheet-subtitle { font-size: 12px; color: #475569; margin-top: 2px; }
+.sheet-pct { font-size: 18px; font-weight: 700; padding-top: 4px; }
+
+.sheet-close {
+  position: absolute;
+  top: 56px; right: 20px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+  border: none; cursor: pointer;
+  color: #64748b; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sheet-section {
+  margin: 12px 20px 0;
+  background: rgba(255,255,255,0.035);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.sheet-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.sheet-row:last-child { border-bottom: none; }
+.sheet-lbl { font-size: 13px; color: #64748b; }
+.sheet-val { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+</style>
+</head>
+<body>
+
+<div class="device-frame">
+  <!-- Status bar -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <span>⚡ Prototype</span>
+    <span>100%</span>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button class="back-btn" id="backBtn" onclick="drillUp()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        <span id="backLabel">Ngành</span>
+      </button>
+      <span class="header-title" id="headerTitle">Biến động ngành</span>
+    </div>
+    <button class="fullscreen-btn" title="Toàn màn hình">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/>
+        <line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Breadcrumb context -->
+  <div class="sector-context" id="sectorCtx"></div>
+
+  <!-- Tabs -->
+  <div class="tabs-wrapper">
+    <div class="tabs" id="tabsEl"></div>
+  </div>
+
+  <!-- Treemap -->
+  <div class="treemap-wrapper">
+    <svg id="treemap" height="424" viewBox="0 0 358 424"></svg>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <span class="legend-lbl">Giảm mạnh</span>
+    <div class="legend-bar"></div>
+    <span class="legend-lbl">Tăng mạnh</span>
+  </div>
+
+  <div class="proto-badge">Mock data · Prototype v1.0</div>
+</div>
+
+<!-- Bottom sheet overlay -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <button class="sheet-close" onclick="closeSheet()">✕</button>
+    <div id="sheetContent"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// TABS CONFIG
+// ================================================================
+const TABS = [
+  { key: 'klnn_buy',  label: 'KLNN mua',  field: 'foreignBuyVolume',  unit: 'tr CP' },
+  { key: 'klnn_sell', label: 'KLNN bán',  field: 'foreignSellVolume', unit: 'tr CP' },
+  { key: 'gtgd',      label: 'GTGD',      field: 'tradingValue',      unit: 'tỷ'    },
+  { key: 'klgd',      label: 'KLGD',      field: 'tradingVolume',     unit: 'tr CP' },
+  { key: 'von_hoa',   label: 'Vốn hoá',   field: 'marketCap',        unit: 'tỷ'    },
+];
+
+// ================================================================
+// MOCK DATA — SECTORS
+// ================================================================
+const SECTORS = [
+  { sectorId:1,  sectorName:'Ngân hàng',             perChange:0.99,  foreignBuyVolume:450, foreignSellVolume:280, tradingValue:8500, tradingVolume:180, marketCap:1200, pe:8.2,  pb:1.4 },
+  { sectorId:2,  sectorName:'Bất động sản',           perChange:2.96,  foreignBuyVolume:280, foreignSellVolume:150, tradingValue:4200, tradingVolume:95,  marketCap:320,  pe:15.8, pb:1.9 },
+  { sectorId:3,  sectorName:'Điện, nước & xăng dầu', perChange:-1.44, foreignBuyVolume:210, foreignSellVolume:195, tradingValue:3800, tradingVolume:85,  marketCap:280,  pe:12.1, pb:1.6 },
+  { sectorId:4,  sectorName:'Hàng & Dịch vụ CN',     perChange:1.37,  foreignBuyVolume:180, foreignSellVolume:120, tradingValue:2900, tradingVolume:72,  marketCap:210,  pe:11.5, pb:1.3 },
+  { sectorId:5,  sectorName:'Thực phẩm & đồ uống',   perChange:0.14,  foreignBuyVolume:145, foreignSellVolume:130, tradingValue:2400, tradingVolume:58,  marketCap:180,  pe:18.2, pb:2.8 },
+  { sectorId:6,  sectorName:'Tài nguyên KS',          perChange:1.53,  foreignBuyVolume:130, foreignSellVolume:95,  tradingValue:1800, tradingVolume:48,  marketCap:150,  pe:9.8,  pb:1.1 },
+  { sectorId:7,  sectorName:'Hóa chất',               perChange:-0.4,  foreignBuyVolume:90,  foreignSellVolume:110, tradingValue:1200, tradingVolume:35,  marketCap:95,   pe:10.4, pb:1.2 },
+  { sectorId:8,  sectorName:'Dịch vụ tài chính',      perChange:-0.1,  foreignBuyVolume:80,  foreignSellVolume:85,  tradingValue:980,  tradingVolume:28,  marketCap:85,   pe:13.6, pb:1.8 },
+  { sectorId:9,  sectorName:'Xây dựng & VL',          perChange:-1.01, foreignBuyVolume:65,  foreignSellVolume:75,  tradingValue:750,  tradingVolume:22,  marketCap:70,   pe:7.9,  pb:0.9 },
+  { sectorId:10, sectorName:'Dầu khí',                perChange:-3.2,  foreignBuyVolume:45,  foreignSellVolume:62,  tradingValue:580,  tradingVolume:18,  marketCap:55,   pe:6.5,  pb:0.8 },
+];
+
+// ================================================================
+// MOCK DATA — STOCKS PER SECTOR
+// ================================================================
+const STOCKS = {
+  1: [ // Ngân hàng
+    { stockCode:'SHB', perChange:0.73,  foreignBuyVolume:80, foreignSellVolume:45, tradingValue:1200, tradingVolume:30, marketCap:95,  pe:8.1,  pb:1.3 },
+    { stockCode:'MBB', perChange:0.19,  foreignBuyVolume:75, foreignSellVolume:55, tradingValue:1100, tradingVolume:28, marketCap:120, pe:7.8,  pb:1.4 },
+    { stockCode:'HDB', perChange:0.0,   foreignBuyVolume:70, foreignSellVolume:60, tradingValue:950,  tradingVolume:25, marketCap:85,  pe:8.5,  pb:1.5 },
+    { stockCode:'VPB', perChange:0.0,   foreignBuyVolume:65, foreignSellVolume:58, tradingValue:880,  tradingVolume:22, marketCap:110, pe:7.2,  pb:1.2 },
+    { stockCode:'CTG', perChange:-0.15, foreignBuyVolume:50, foreignSellVolume:65, tradingValue:820,  tradingVolume:20, marketCap:135, pe:8.9,  pb:1.1 },
+    { stockCode:'ACB', perChange:-0.22, foreignBuyVolume:45, foreignSellVolume:55, tradingValue:750,  tradingVolume:18, marketCap:95,  pe:9.2,  pb:1.6 },
+    { stockCode:'TPB', perChange:-0.9,  foreignBuyVolume:35, foreignSellVolume:48, tradingValue:580,  tradingVolume:15, marketCap:65,  pe:7.5,  pb:1.1 },
+    { stockCode:'SSB', perChange:-0.91, foreignBuyVolume:30, foreignSellVolume:45, tradingValue:520,  tradingVolume:13, marketCap:55,  pe:8.0,  pb:1.2 },
+    { stockCode:'VIB', perChange:-0.3,  foreignBuyVolume:28, foreignSellVolume:40, tradingValue:480,  tradingVolume:12, marketCap:50,  pe:8.3,  pb:1.3 },
+    { stockCode:'VCB', perChange:-0.79, foreignBuyVolume:25, foreignSellVolume:38, tradingValue:440,  tradingVolume:11, marketCap:180, pe:14.2, pb:2.8 },
+  ],
+  2: [ // Bất động sản
+    { stockCode:'VHM', perChange:3.2,  foreignBuyVolume:65, foreignSellVolume:25, tradingValue:1100, tradingVolume:25, marketCap:140, pe:14.8, pb:2.1 },
+    { stockCode:'NVL', perChange:2.5,  foreignBuyVolume:55, foreignSellVolume:20, tradingValue:850,  tradingVolume:20, marketCap:85,  pe:18.2, pb:1.8 },
+    { stockCode:'PDR', perChange:4.1,  foreignBuyVolume:45, foreignSellVolume:18, tradingValue:620,  tradingVolume:15, marketCap:40,  pe:12.5, pb:1.5 },
+    { stockCode:'DXG', perChange:1.8,  foreignBuyVolume:35, foreignSellVolume:22, tradingValue:480,  tradingVolume:12, marketCap:28,  pe:10.2, pb:1.2 },
+    { stockCode:'KDH', perChange:2.1,  foreignBuyVolume:30, foreignSellVolume:15, tradingValue:380,  tradingVolume:10, marketCap:35,  pe:16.5, pb:2.0 },
+    { stockCode:'DIG', perChange:3.8,  foreignBuyVolume:25, foreignSellVolume:12, tradingValue:320,  tradingVolume:9,  marketCap:22,  pe:9.8,  pb:1.1 },
+    { stockCode:'CEO', perChange:1.2,  foreignBuyVolume:20, foreignSellVolume:18, tradingValue:250,  tradingVolume:8,  marketCap:18,  pe:11.2, pb:1.3 },
+    { stockCode:'VRE', perChange:0.5,  foreignBuyVolume:18, foreignSellVolume:20, tradingValue:200,  tradingVolume:7,  marketCap:45,  pe:22.4, pb:2.5 },
+  ],
+  3: [ // Điện, nước & xăng dầu
+    { stockCode:'GAS', perChange:-1.8, foreignBuyVolume:55, foreignSellVolume:62, tradingValue:980,  tradingVolume:22, marketCap:120, pe:11.5, pb:2.1 },
+    { stockCode:'POW', perChange:-1.2, foreignBuyVolume:48, foreignSellVolume:55, tradingValue:720,  tradingVolume:18, marketCap:55,  pe:8.8,  pb:0.9 },
+    { stockCode:'NT2', perChange:-0.8, foreignBuyVolume:38, foreignSellVolume:42, tradingValue:580,  tradingVolume:15, marketCap:38,  pe:7.2,  pb:1.1 },
+    { stockCode:'PGV', perChange:-2.1, foreignBuyVolume:32, foreignSellVolume:38, tradingValue:480,  tradingVolume:12, marketCap:32,  pe:9.5,  pb:1.2 },
+    { stockCode:'REE', perChange:-1.5, foreignBuyVolume:28, foreignSellVolume:35, tradingValue:420,  tradingVolume:11, marketCap:45,  pe:10.2, pb:1.5 },
+    { stockCode:'PC1', perChange:-0.5, foreignBuyVolume:20, foreignSellVolume:25, tradingValue:320,  tradingVolume:9,  marketCap:22,  pe:6.8,  pb:0.8 },
+  ],
+  4: [ // Hàng & DV CN
+    { stockCode:'HAH', perChange:1.5,  foreignBuyVolume:42, foreignSellVolume:28, tradingValue:680,  tradingVolume:18, marketCap:45,  pe:8.5,  pb:1.2 },
+    { stockCode:'GMD', perChange:2.1,  foreignBuyVolume:38, foreignSellVolume:22, tradingValue:580,  tradingVolume:15, marketCap:55,  pe:12.2, pb:1.8 },
+    { stockCode:'DVP', perChange:0.8,  foreignBuyVolume:32, foreignSellVolume:25, tradingValue:480,  tradingVolume:12, marketCap:35,  pe:9.8,  pb:1.4 },
+    { stockCode:'SCS', perChange:1.2,  foreignBuyVolume:28, foreignSellVolume:20, tradingValue:380,  tradingVolume:10, marketCap:42,  pe:14.5, pb:3.2 },
+    { stockCode:'ACV', perChange:0.5,  foreignBuyVolume:25, foreignSellVolume:22, tradingValue:320,  tradingVolume:9,  marketCap:85,  pe:18.5, pb:3.5 },
+    { stockCode:'VTP', perChange:1.8,  foreignBuyVolume:22, foreignSellVolume:15, tradingValue:280,  tradingVolume:8,  marketCap:28,  pe:22.1, pb:4.2 },
+  ],
+  5: [ // Thực phẩm
+    { stockCode:'VNM', perChange:0.3,  foreignBuyVolume:55, foreignSellVolume:50, tradingValue:850,  tradingVolume:20, marketCap:120, pe:20.5, pb:5.2 },
+    { stockCode:'SAB', perChange:-0.2, foreignBuyVolume:40, foreignSellVolume:38, tradingValue:620,  tradingVolume:15, marketCap:180, pe:18.2, pb:4.8 },
+    { stockCode:'MCH', perChange:0.5,  foreignBuyVolume:30, foreignSellVolume:25, tradingValue:480,  tradingVolume:12, marketCap:55,  pe:16.8, pb:3.5 },
+    { stockCode:'MSN', perChange:-0.1, foreignBuyVolume:25, foreignSellVolume:28, tradingValue:380,  tradingVolume:10, marketCap:95,  pe:22.4, pb:3.8 },
+    { stockCode:'KDC', perChange:0.8,  foreignBuyVolume:20, foreignSellVolume:18, tradingValue:280,  tradingVolume:8,  marketCap:35,  pe:15.2, pb:2.8 },
+  ],
+  6: [ // Tài nguyên
+    { stockCode:'HPG', perChange:2.1,  foreignBuyVolume:55, foreignSellVolume:32, tradingValue:920,  tradingVolume:25, marketCap:95,  pe:8.8,  pb:1.1 },
+    { stockCode:'HSG', perChange:0.8,  foreignBuyVolume:38, foreignSellVolume:28, tradingValue:580,  tradingVolume:18, marketCap:35,  pe:7.2,  pb:0.9 },
+    { stockCode:'NKG', perChange:1.5,  foreignBuyVolume:25, foreignSellVolume:18, tradingValue:420,  tradingVolume:12, marketCap:18,  pe:6.5,  pb:0.8 },
+    { stockCode:'TLH', perChange:2.8,  foreignBuyVolume:18, foreignSellVolume:12, tradingValue:320,  tradingVolume:10, marketCap:12,  pe:5.8,  pb:0.7 },
+  ],
+  7: [ // Hóa chất
+    { stockCode:'DGC', perChange:-0.5, foreignBuyVolume:35, foreignSellVolume:42, tradingValue:580,  tradingVolume:15, marketCap:48,  pe:8.5,  pb:1.2 },
+    { stockCode:'CSV', perChange:-0.2, foreignBuyVolume:28, foreignSellVolume:32, tradingValue:380,  tradingVolume:12, marketCap:25,  pe:7.8,  pb:1.1 },
+    { stockCode:'DCM', perChange:-0.8, foreignBuyVolume:20, foreignSellVolume:28, tradingValue:280,  tradingVolume:9,  marketCap:22,  pe:6.9,  pb:0.9 },
+    { stockCode:'DPM', perChange:0.3,  foreignBuyVolume:18, foreignSellVolume:20, tradingValue:220,  tradingVolume:8,  marketCap:20,  pe:7.2,  pb:1.0 },
+  ],
+  8: [ // Dịch vụ tài chính
+    { stockCode:'SSI', perChange:0.2,  foreignBuyVolume:32, foreignSellVolume:30, tradingValue:480,  tradingVolume:12, marketCap:45,  pe:14.2, pb:1.8 },
+    { stockCode:'VND', perChange:-0.5, foreignBuyVolume:25, foreignSellVolume:28, tradingValue:320,  tradingVolume:10, marketCap:28,  pe:12.5, pb:1.5 },
+    { stockCode:'HCM', perChange:-0.3, foreignBuyVolume:20, foreignSellVolume:22, tradingValue:280,  tradingVolume:9,  marketCap:22,  pe:11.8, pb:1.4 },
+  ],
+  9: [ // Xây dựng
+    { stockCode:'VCG', perChange:-1.2, foreignBuyVolume:28, foreignSellVolume:32, tradingValue:380,  tradingVolume:10, marketCap:28,  pe:7.5,  pb:0.9 },
+    { stockCode:'CTD', perChange:-0.8, foreignBuyVolume:22, foreignSellVolume:26, tradingValue:280,  tradingVolume:8,  marketCap:22,  pe:8.2,  pb:1.0 },
+    { stockCode:'HBC', perChange:-1.5, foreignBuyVolume:18, foreignSellVolume:22, tradingValue:220,  tradingVolume:7,  marketCap:15,  pe:6.5,  pb:0.8 },
+    { stockCode:'VCS', perChange:0.5,  foreignBuyVolume:12, foreignSellVolume:15, tradingValue:180,  tradingVolume:6,  marketCap:12,  pe:9.8,  pb:1.2 },
+  ],
+  10: [ // Dầu khí
+    { stockCode:'PVD', perChange:-3.5, foreignBuyVolume:20, foreignSellVolume:28, tradingValue:280,  tradingVolume:9,  marketCap:22,  pe:6.2,  pb:0.8 },
+    { stockCode:'PVS', perChange:-2.8, foreignBuyVolume:15, foreignSellVolume:22, tradingValue:220,  tradingVolume:8,  marketCap:18,  pe:5.8,  pb:0.7 },
+    { stockCode:'BSR', perChange:-3.8, foreignBuyVolume:12, foreignSellVolume:18, tradingValue:180,  tradingVolume:7,  marketCap:15,  pe:5.5,  pb:0.6 },
+  ],
+};
+
+// ================================================================
+// STATE
+// ================================================================
+let activeTab = 'klnn_buy';
+let drillMode = false;
+let activeSector = null;
+const cellMap = {};  // id → data
+const SVG_W = 358, SVG_H = 424, GAP = 2.5;
+
+// ================================================================
+// SQUARIFIED TREEMAP ALGORITHM
+// ================================================================
+function squarify(data, x, y, w, h) {
+  const total = data.reduce((s, d) => s + d._val, 0);
+  if (!total || !w || !h) return [];
+
+  const scale = (w * h) / total;
+  const items = [...data]
+    .filter(d => d._val > 0)
+    .sort((a, b) => b._val - a._val)
+    .map(d => ({ ...d, _area: d._val * scale }));
+
+  const out = [];
+  _sq(items, x, y, w, h, out);
+  return out;
+}
+
+function _sq(items, x, y, w, h, out) {
+  if (!items.length) return;
+  if (items.length === 1) { out.push({ ...items[0], x, y, w, h }); return; }
+
+  let row = [items[0]];
+  let i = 1;
+  while (i < items.length) {
+    const next = [...row, items[i]];
+    if (_worst(row, w, h) >= _worst(next, w, h)) { row = next; i++; }
+    else break;
+  }
+
+  const rowArea = row.reduce((s, d) => s + d._area, 0);
+  const isWide = w >= h;
+  let cx = x, cy = y;
+
+  if (isWide) {
+    const rw = rowArea / h;
+    for (const d of row) {
+      const rh = d._area / rw;
+      out.push({ ...d, x: cx, y: cy, w: rw, h: rh });
+      cy += rh;
+    }
+    _sq(items.slice(row.length), x + rw, y, w - rw, h, out);
+  } else {
+    const rh = rowArea / w;
+    for (const d of row) {
+      const rw = d._area / rh;
+      out.push({ ...d, x: cx, y: cy, w: rw, h: rh });
+      cx += rw;
+    }
+    _sq(items.slice(row.length), x, y + rh, w, h - rh, out);
+  }
+}
+
+function _worst(row, w, h) {
+  if (!row.length) return Infinity;
+  const s = Math.min(w, h);
+  const sum = row.reduce((a, d) => a + d._area, 0);
+  const mx = Math.max(...row.map(d => d._area));
+  const mn = Math.min(...row.map(d => d._area));
+  return Math.max((s * s * mx) / (sum * sum), (sum * sum) / (s * s * mn));
+}
+
+// ================================================================
+// COLOR
+// ================================================================
+function cellColor(pct, isStock) {
+  if (Math.abs(pct) < 0.01) return isStock ? '#b45309' : '#2d3748';
+  if (pct > 0) {
+    if (pct >= 3) return '#14532d';
+    if (pct >= 2) return '#166534';
+    if (pct >= 1) return '#15803d';
+    return '#16a34a';
+  } else {
+    if (pct <= -3) return '#7f1d1d';
+    if (pct <= -2) return '#991b1b';
+    if (pct <= -1) return '#b91c1c';
+    return '#dc2626';
+  }
+}
+
+// ================================================================
+// FORMAT HELPERS
+// ================================================================
+function fmtPct(v) {
+  if (v == null) return '—';
+  return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+}
+function fmtNum(v, unit) {
+  if (v == null) return '—';
+  if (v >= 1000) return (v / 1000).toFixed(1) + 'K ' + unit;
+  if (v >= 100) return v.toFixed(0) + ' ' + unit;
+  return v.toFixed(1) + ' ' + unit;
+}
+function clamp(str, maxW, fs) {
+  const maxCh = Math.floor(maxW / (fs * 0.6));
+  return str.length > maxCh ? str.slice(0, Math.max(1, maxCh - 1)) + '…' : str;
+}
+
+// ================================================================
+// RENDER TABS
+// ================================================================
+function renderTabs() {
+  const el = document.getElementById('tabsEl');
+  el.innerHTML = TABS.map(t =>
+    `<button class="tab-btn${t.key === activeTab ? ' active' : ''}" onclick="setTab('${t.key}')">${t.label}</button>`
+  ).join('');
+}
+
+// ================================================================
+// RENDER TREEMAP
+// ================================================================
+function render() {
+  const svg = document.getElementById('treemap');
+  const tab = TABS.find(t => t.key === activeTab);
+  const field = tab.field;
+  const isStock = drillMode;
+
+  const rawData = isStock
+    ? (STOCKS[activeSector.sectorId] || []).map(s => ({ ...s, _val: s[field] || 0 }))
+    : SECTORS.map(s => ({ ...s, _val: s[field] || 0 }));
+
+  Object.keys(cellMap).forEach(k => delete cellMap[k]);
+  const rects = squarify(rawData, 0, 0, SVG_W, SVG_H);
+
+  let html = '';
+  for (const r of rects) {
+    const rw = Math.max(0, r.w - GAP);
+    const rh = Math.max(0, r.h - GAP);
+    if (rw < 4 || rh < 4) continue;
+
+    const rx = r.x + GAP / 2;
+    const ry = r.y + GAP / 2;
+    const cx = rx + rw / 2;
+    const cy = ry + rh / 2;
+    const color = cellColor(r.perChange, isStock);
+    const minDim = Math.min(rw, rh);
+
+    const showLabel = minDim >= 18;
+    const showSub   = minDim >= 30 && rh >= 38;
+
+    const fsSec = Math.min(Math.max(9, minDim * 0.17), 15);
+    const fsSub = Math.min(Math.max(8, minDim * 0.13), 13);
+
+    const lbY = showSub ? cy - fsSub * 0.7 : cy + fsSec * 0.35;
+    const sbY = lbY + fsSec * 0.5 + fsSub * 0.9;
+
+    const label = isStock ? r.stockCode : clamp(r.sectorName, rw - 6, fsSec);
+    const sub   = fmtPct(r.perChange);
+
+    const id = isStock ? `s_${r.stockCode}` : `sec_${r.sectorId}`;
+    cellMap[id] = r;
+
+    html += `<g class="treemap-cell" onclick="onCell('${id}',${isStock})">
+      <rect x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" width="${rw.toFixed(1)}" height="${rh.toFixed(1)}" fill="${color}" rx="3"/>
+      ${showLabel ? `<text x="${cx.toFixed(1)}" y="${lbY.toFixed(1)}" text-anchor="middle"
+        fill="rgba(255,255,255,0.93)" font-size="${fsSec.toFixed(1)}" font-weight="700"
+        font-family="-apple-system,sans-serif" dominant-baseline="middle">${label}</text>` : ''}
+      ${showSub ? `<text x="${cx.toFixed(1)}" y="${sbY.toFixed(1)}" text-anchor="middle"
+        fill="rgba(255,255,255,0.72)" font-size="${fsSub.toFixed(1)}"
+        font-family="-apple-system,sans-serif" dominant-baseline="middle">${sub}</text>` : ''}
+    </g>`;
+  }
+  svg.innerHTML = html;
+}
+
+// ================================================================
+// CELL CLICK
+// ================================================================
+function onCell(id, isStock) {
+  const d = cellMap[id];
+  if (!d) return;
+  if (!isStock) drillDown(d);
+  else openSheet(d);
+}
+
+// ================================================================
+// DRILL-DOWN
+// ================================================================
+function drillDown(sector) {
+  activeSector = sector;
+  drillMode = true;
+
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('backLabel').textContent = 'Ngành';
+  document.getElementById('headerTitle').textContent = sector.sectorName;
+
+  const ctx = document.getElementById('sectorCtx');
+  const pctCls = sector.perChange >= 0 ? 'up' : 'down';
+  ctx.innerHTML = `${sector.sectorName} &nbsp;<span class="pct ${pctCls}">${fmtPct(sector.perChange)}</span>`;
+  ctx.classList.add('visible');
+
+  render();
+}
+
+function drillUp() {
+  drillMode = false;
+  activeSector = null;
+
+  document.getElementById('backBtn').classList.remove('visible');
+  document.getElementById('headerTitle').textContent = 'Biến động ngành';
+  document.getElementById('sectorCtx').classList.remove('visible');
+
+  render();
+}
+
+// ================================================================
+// TAB
+// ================================================================
+function setTab(key) {
+  activeTab = key;
+  renderTabs();
+  render();
+}
+
+// ================================================================
+// BOTTOM SHEET — stock detail
+// ================================================================
+function openSheet(stock) {
+  const pctColor = stock.perChange > 0 ? '#22c55e' : stock.perChange < 0 ? '#f87171' : '#f59e0b';
+  const tab = TABS.find(t => t.key === activeTab);
+
+  document.getElementById('sheetContent').innerHTML = `
+    <div class="sheet-header">
+      <div>
+        <div class="sheet-title">${stock.stockCode}</div>
+        <div class="sheet-subtitle">${activeSector?.sectorName || ''}</div>
+      </div>
+      <div class="sheet-pct" style="color:${pctColor}">${fmtPct(stock.perChange)}</div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-row"><span class="sheet-lbl">GTGD</span><span class="sheet-val">${fmtNum(stock.tradingValue,'tỷ')}</span></div>
+      <div class="sheet-row"><span class="sheet-lbl">KLGD</span><span class="sheet-val">${fmtNum(stock.tradingVolume,'tr CP')}</span></div>
+      <div class="sheet-row"><span class="sheet-lbl">KLNN mua</span><span class="sheet-val">${fmtNum(stock.foreignBuyVolume,'tr CP')}</span></div>
+      <div class="sheet-row"><span class="sheet-lbl">KLNN bán</span><span class="sheet-val">${fmtNum(stock.foreignSellVolume,'tr CP')}</span></div>
+    </div>
+
+    <div class="sheet-section">
+      <div class="sheet-row"><span class="sheet-lbl">Vốn hóa</span><span class="sheet-val">${fmtNum(stock.marketCap,'tỷ')}</span></div>
+      <div class="sheet-row"><span class="sheet-lbl">P/E</span><span class="sheet-val">${stock.pe?.toFixed(1) ?? '—'}</span></div>
+      <div class="sheet-row"><span class="sheet-lbl">P/B</span><span class="sheet-val">${stock.pb?.toFixed(1) ?? '—'}</span></div>
+    </div>
+
+    <div style="padding:12px 20px 0; font-size:11px; color:#334155; text-align:center;">
+      Metric hiện tại: <strong style="color:#60a5fa">${tab.label}</strong>
+    </div>`;
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('overlay')) closeSheet();
+}
+
+// ================================================================
+// INIT
+// ================================================================
+renderTabs();
+render();
+</script>
+</body>
+</html>

@@ -109,6 +109,10 @@ CREATE TABLE ekyc_attempt_log (
   vnpt_raw_data LONGTEXT COMMENT 'Raw JSON của LOG_OCR — response gốc từ VNPT server (OCR/biometric/fraud). Base64-decoded.',
   sdk_raw_logs  LONGTEXT COMMENT 'Raw JSON gộp của 7 SDK log key còn lại: LOG_LIVENESS_CARD_FRONT, LOG_LIVENESS_CARD_REAR, LOG_LIVENESS_FACE, LOG_MASK_FACE, LOG_COMPARE, LOG_PATH_IMAGE_FRONT, LOG_PATH_IMAGE_BACK — nguyên văn, KHÔNG qua xử lý/lọc field. Đảm bảo audit được cả field SDK trả về mà BE chưa map cột riêng.',
 
+  -- ── Terms Consent (sub-feature 05) ──
+  terms_agreed_at DATETIME    NULL         COMMENT 'Thời điểm khách hàng tick đồng ý điều khoản hợp đồng (UTC). Ghi qua call riêng từ màn hình Xác nhận điều khoản.',
+  terms_version   VARCHAR(20) DEFAULT 'v1' COMMENT 'Phiên bản nội dung điều khoản tại thời điểm đồng ý — cập nhật thủ công khi nội dung điều khoản thay đổi.',
+
   INDEX idx_ekyc_attempt_identifier  (identifier_id),
   INDEX idx_ekyc_attempt_phone       (phone_no),
   INDEX idx_ekyc_attempt_at          (attempt_at),

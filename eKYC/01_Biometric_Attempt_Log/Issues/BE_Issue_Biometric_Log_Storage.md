@@ -56,6 +56,9 @@ Tạo changeset tạo bảng `ekyc_attempt_log` theo schema đầy đủ trong `
 - **Raw audit (2 cột):**
   - `vnpt_raw_data` LONGTEXT — raw JSON `LOG_OCR`
   - `sdk_raw_logs` LONGTEXT — raw JSON gộp 7 SDK log key còn lại
+- **Terms consent (sub-feature 05 — 2 cột):**
+  - `terms_agreed_at` DATETIME NULL — timestamp UTC khi khách hàng tick checkbox "Đồng ý điều khoản"
+  - `terms_version` VARCHAR(20) DEFAULT 'v1' — phiên bản nội dung điều khoản
 - Index: `identifier_id`, `phone_no`, `attempt_at`, `outcome`, `final_ekyc_id`
 
 Schema + Liquibase XML đầy đủ: xem `Backend_Spec.md` Section 0.1 và 0.3.

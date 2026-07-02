@@ -217,7 +217,44 @@ Modal 4 tab cho từng bản ghi:
 - Expandable per-attempt: OCR results, Image Quality, Fraud Flags, fail reason
 - Ảnh CCCD từng lần thử
 
-### 4.9 Admin: Dashboard Analytics (mới)
+### 4.9 Lưu trữ timestamp đồng ý điều khoản (Compliance)
+
+Ghi lại thời điểm khách hàng tick checkbox "Tôi đã đọc và đồng ý với các điều khoản Hợp đồng mở và sử dụng tài khoản tại Chứng khoán NH Việt Nam" tại màn hình **Xác nhận điều khoản hợp đồng** (bước 4/4 trong flow eKYC).
+
+**Mục đích:** Compliance / audit trail — đáp ứng yêu cầu pháp lý về việc chứng minh khách hàng đã đọc và đồng ý điều khoản hợp đồng tại thời điểm mở tài khoản.
+
+**Luồng:**
+
+```
+User tick checkbox
+  → App ghi timestamp ISO 8601 UTC vào local state
+  → User bấm "Tiếp theo"
+  → App gọi POST /ekycs/attempt-log  { identifierId, termsAgreedAt }
+        (reuse endpoint sub-feature 01 — không tạo API mới)
+  → BE update terms_agreed_at trên attempt record hiện có của user
+  → App gọi POST /lotte/ekycs như bình thường (không thay đổi)
+```
+
+**DB changes (bảng `ekyc_attempt_log`):**
+
+| Column | Type | Ghi chú |
+|--------|------|---------|
+| `terms_agreed_at` | DATETIME NULL | Timestamp UTC khi user tick đồng ý |
+| `terms_version` | VARCHAR(20) DEFAULT 'v1' | Phiên bản nội dung điều khoản |
+
+**Đặc điểm kỹ thuật:**
+- Reuse `POST /ekycs/attempt-log` — không tạo endpoint mới, không đụng `POST /lotte/ekycs`
+- Lưu vào `ekyc_attempt_log` (bảng audit trail) thay vì `e_kyc` — toàn bộ lịch sử eKYC ở 1 nơi
+- BE phân biệt "terms-only call" vs "VNPT-log call" qua sự vắng mặt của field `outcome`
+- `terms_version = 'v1'` — cập nhật thủ công khi nội dung điều khoản thay đổi
+
+Chi tiết implementation:
+- [FE Issue](../05_Contract_Terms_Checkbox_Log/Issues/FE_Issue_Checkbox_Analytics_Log.md) — ghi timestamp + gọi attempt-log API
+- [BE Issue](../05_Contract_Terms_Checkbox_Log/Issues/BE_Issue_Checkbox_Consent_Storage.md) — thêm cột + mở rộng service attempt-log
+
+---
+
+### 4.10 Admin: Dashboard Analytics (mới)
 
 **KPI Cards (hàng 1 — 4 cards):**
 
@@ -266,43 +303,59 @@ Modal 4 tab cho từng bản ghi:
 
 ## 6. Phạm vi ảnh hưởng
 
-### Backend (ekyc-admin service)
+### Backend (ekyc-admin service) — Phase 1
 - **Thêm mới:** Entity `EKycAttemptLog` + Repository + Service
-- **Thêm mới:** Liquibase migration cho bảng `ekyc_attempt_log`
-- **Thêm mới:** `POST /ekycs/attempt-log` — nhận pre-submit failure từ App
-- **Thêm mới:** 4 Admin API endpoints (search, journey, attempt detail, dashboard metrics)
+- **Thêm mới:** Liquibase migration cho bảng `ekyc_attempt_log` (bao gồm cột `terms_agreed_at`, `terms_version`)
+- **Thêm mới:** `POST /ekycs/attempt-log` — nhận VNPT log + xử lý terms-consent update
+- **Thêm mới:** Admin API endpoints: search, journey, attempt detail *(không bao gồm dashboard metrics — Phase 2)*
 - **Sửa:** `CustomEKycService.java` — gọi `attemptLogService.save()` trước block duplicate handling
 - **Sửa:** Provisioning handler — cập nhật `final_ekyc_id` khi APPROVED
-- **Tích hợp:** MinIO/S3 upload service cho ảnh CCCD
+- **Sửa:** `EkycAttemptLogService.java` — xử lý terms-only call (update `terms_agreed_at`) *(sub-feature 05)*
+- ~~Tích hợp MinIO/S3~~ *(Phase 2)*
 
-### App Mobile (nhsv-mts-rn)
+### App Mobile (nhsv-mts-rn) — Phase 1
 - **Sửa:** `EKYCScanIdDone.ts` — gọi `POST /ekycs/attempt-log` sau khi nhận kết quả SDK
 - **Sửa:** `OnPressNextInConfirmPolicyScreen.ts` — gửi thêm các trường mở rộng (liveness results, face compare fields, nationality, citizen_id)
+- **Sửa:** `EKYCConfirmPolicyScreen/index.tsx` — ghi `termsAgreedAt` timestamp khi tick checkbox *(sub-feature 05)*
+- **Sửa:** `OnPressNextInConfirmPolicyScreen.ts` — call `POST /ekycs/attempt-log` với `{identifierId, termsAgreedAt}` *(sub-feature 05)*
+- **Sửa:** `src/interfaces/ekyc.ts` — thêm `termsAgreedAt: string` vào `IEKYCConfirmPolicy` *(sub-feature 05)*
+- ~~MRZ Validation cross-check~~ *(Phase 2 — sub-feature 04)*
 
-### Admin Frontend (ekyc-admin UI)
-- **Thêm mới:** Dashboard page (KPI cards + charts)
-- **Sửa:** Danh sách eKYC — thêm cột Lần thử
+### Admin Frontend (ekyc-admin UI) — Phase 1
+- **Sửa:** Danh sách eKYC — thêm cột Lần thử, 2 tab trạng thái
 - **Sửa:** Modal detail — thêm tab "Lịch sử thử", mở rộng VNPT Log section
-- **Tích hợp:** Hiển thị ảnh CCCD từ storage URL
+- ~~Dashboard page (KPI cards + charts)~~ *(Phase 2 — sub-feature 03)*
+- ~~Hiển thị ảnh CCCD từ storage URL~~ *(Phase 2 — phụ thuộc MinIO/S3)*
 
 ---
 
-## 7. Out of scope (v1)
+## 7. Out of scope
 
-- Alert tự động khi phát hiện fraud pattern (threshold-based rule engine) — v3
-- Re-evaluate ngưỡng matching rate tự động — v3
-- Export báo cáo Excel/PDF từ Dashboard — v2
-- Customer journey cross-service (link eKYC → order history) — v3
+### Phase 1 (không triển khai lần này)
+- **Admin Dashboard Analytics** (sub-feature 03) — KPI cards, charts, fraud detection panel → Phase 2
+- **MRZ Validation từ App** (sub-feature 04) — cross-check MRZ vs OCR phía client → Phase 2
+- **Lưu ảnh CCCD lên S3/MinIO** — phụ thuộc infrastructure setup → Phase 2
+- **Dashboard API endpoint** (`GET /api/admin/ekyc/dashboard`) → Phase 2
+
+### Backlog (chưa có timeline)
+- Alert tự động khi phát hiện fraud pattern (threshold-based rule engine)
+- Re-evaluate ngưỡng matching rate tự động
+- Export báo cáo Excel/PDF từ Dashboard
+- Customer journey cross-service (link eKYC → order history)
 
 ---
 
 ## 8. Định nghĩa thành công
 
-- [ ] Ops team tra cứu được lý do fail của bất kỳ case nào sau go-live
-- [ ] Mọi lần submit eKYC được ghi lại, không mất data
+### Phase 1
+- [ ] Ops team tra cứu được lý do fail của bất kỳ case nào sau go-live (theo CCCD / SĐT)
+- [ ] Mọi lần submit eKYC được ghi lại, không mất data khi retry
+- [ ] `terms_agreed_at` có mặt trên mọi record mở tài khoản thành công sau ngày go-live
+- [ ] Admin search theo CCCD/SĐT trả kết quả < 2s
+
+### Phase 2 (bổ sung sau)
 - [ ] Ảnh CCCD của từng lần thử có thể xem từ Admin page
 - [ ] Dashboard hiển thị tỉ lệ fail theo nguyên nhân trong 7 ngày
-- [ ] Admin search theo CCCD/SĐT trả kết quả < 2s
 
 ---
 
