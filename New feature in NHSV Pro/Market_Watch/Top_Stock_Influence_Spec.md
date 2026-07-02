@@ -1,190 +1,366 @@
-# Nhóm dẫn dắt thị trường — Feature Specification
+# Top Stock Influence API Specification
+
+**Document Type:** API Specification  
+**Category:** Market Watch — Nhóm dẫn dắt thị trường  
+**Version:** 1.1  
+**Date:** July 1, 2026
+
+> **Note:** TradeX-native proxy API (Vietstock External). Không qua Lotte/Core. Data type: EOD + polling 15–30s trong giờ giao dịch.
+
+---
 
 ## 1. Overview
 
-Tính năng **Nhóm dẫn dắt thị trường** hiển thị top cổ phiếu có mức độ tác động (đóng góp điểm) mạnh nhất tới chỉ số của một sàn / rổ chỉ số trong một phiên giao dịch. Người dùng có thể nhanh chóng nhận biết những mã đang kéo index lên hoặc kéo index xuống mạnh nhất.
+### 1.1 Purpose
 
-**Business purpose:**
+Top Stock Influence API trả về danh sách cổ phiếu có mức đóng góp điểm (ảnh hưởng) lớn nhất tới một chỉ số/sàn trong phiên giao dịch. FE dùng để render bar chart "Nhóm dẫn dắt thị trường" trên màn hình Market Watch.
 
+**Business context:**
 - Cung cấp insight nhanh về "ai đang dẫn dắt thị trường hôm nay".
-- Hỗ trợ retail investor ra quyết định theo dõi/giao dịch các mã có ảnh hưởng lớn.
-- Là module thường xuyên truy cập trong màn hình Market Watch của NHSV Pro.
+- Hỗ trợ retail investor nhận biết mã kéo index tăng / giảm mạnh nhất.
+- Module thường xuyên truy cập trong Market Watch của NHSV Pro.
 
-**Data source:** Vietstock External API — proxied qua TradeX.
+**Data source:** Vietstock External API — proxied qua TradeX (`rest-proxy` → `market-query-v2` → Vietstock).
 
-**Integration type:** TradeX-native (Vietstock proxy — không qua Lotte/Core).
+### 1.2 API Endpoints
 
----
+| Operation | Method | Endpoint |
+|-----------|--------|----------|
+| Get Top Stock Influence | GET | `/api/v1/marketWatch/topStockInfluence` |
 
-## 2. User Story
+### 1.3 Response Format Standards
 
-> **As an** NHSV Pro retail investor,
-> **I want to** xem nhanh top cổ phiếu có ảnh hưởng mạnh nhất đến VN-Index (hoặc HNX, VN30, UPCOM, HNX30) trong phiên,
-> **so that** tôi biết những mã nào đang dẫn dắt thị trường tăng/giảm và có thể đưa ra quyết định giao dịch phù hợp.
-
-**Acceptance criteria:**
-
-- User chọn được sàn (HOSE / HNX / UPCOM / VN30 / HNX30).
-- User thấy biểu đồ cột với mã cổ phiếu (X-axis) và mức đóng góp điểm vào index (Y-axis).
-- Bar có màu xanh (đóng góp dương) hoặc đỏ (đóng góp âm) phân biệt rõ ràng.
-- Tap vào bar hiển thị chi tiết: giá đóng cửa, % thay đổi, mức điểm ảnh hưởng.
-
----
-
-## 3. UI/UX Behavior
-
-### 3.1 Layout
-
-- Section nằm trong màn hình **Market Watch**, dưới header tổng quan index.
-- Header section:
-  - Title: "Nhóm dẫn dắt thị trường".
-  - **Dropdown sàn** (right-aligned): mặc định `HOSE`, các tuỳ chọn: HOSE, HNX, UPCOM, VN30, HNX30.
-- Body: **Bar chart vertical** chiếm toàn bộ chiều ngang của section.
-
-### 3.2 Bar chart
-
-- **X-axis:** mã cổ phiếu (`stockCode`), sắp xếp theo `row` (BE đã sort theo độ ảnh hưởng giảm dần).
-- **Y-axis:** mức đóng góp điểm vào index (`influenceIndex`). Hỗ trợ giá trị âm — bar đi xuống từ baseline 0.
-- **Bar color:**
-  - `direction = INCREASE` → màu xanh (UP color theo design system NHSV Pro).
-  - `direction = DECREASE` → màu đỏ (DOWN color).
-- **Default:** 20 bar, sàn HOSE, lấy cả tăng và giảm (`influenceType = ALL`).
-
-### 3.3 Interactions
-
-| Action | Behavior |
-|---|---|
-| Chọn sàn từ dropdown | Gọi lại API với `exchange` mới; loading skeleton trong khi chờ |
-| Tap vào bar | Hiển thị tooltip / bottom sheet với chi tiết mã |
-| Pull-to-refresh trên màn Market Watch | Refetch data với param hiện tại |
-| Tap label mã (X-axis) | (Optional) Điều hướng vào chi tiết cổ phiếu |
-
-### 3.4 Tooltip / Detail khi tap bar
-
-```
-stockCode (ví dụ: VCB)
-Đóng góp: +1.25 điểm
-Giá đóng cửa: 92,500 · +1,500 (+1.65%)
-Vốn hóa: 450,000 tỷ
-Trọng số trong index: 12.5%
+**Success (200):**
+```json
+[
+  {
+    "stockCode": "VCB",
+    "closePrice": 92500,
+    "change": 1500,
+    "perChange": 1.65,
+    "influenceIndex": 1.25,
+    "influencePercent": 0.48,
+    "direction": "INCREASE",
+    "marketCap": 450000000000000,
+    "weight": 12.5,
+    "baseIndex": 1265.3,
+    "sharesOutstanding": 4700000000,
+    "row": 1
+  }
+]
 ```
 
+**Error:**
+```json
+{
+  "code": "ERROR_CODE",
+  "message": "Error message"
+}
+```
+
+hoặc validation error:
+```json
+{
+  "code": "INVALID_PARAMETER",
+  "params": [
+    { "code": "FIELD_IS_REQUIRED", "param": "exchange", "messageParams": ["exchange"] }
+  ]
+}
+```
+
+**Principles:**
+- HTTP status = success indicator (200 = success, 4xx/5xx = error)
+- NO `success: true/false` field
+- Response: array trực tiếp (không wrap envelope)
+- Vietstock error message pass-through AS-IS
+
 ---
 
-## 4. API Integration
+## 2. Business Rules
 
-**TradeX endpoint:** `GET /api/v1/marketWatch/topStockInfluence`
+### 2.1 Exchange / Index Enum
 
-**Upstream:** Vietstock `GET https://api-demo.vietstock.vn/demo/topstockinfluence`
+| TradeX `exchange` | Vietstock `CatID` | Mô tả |
+|-------------------|-------------------|-------|
+| `HOSE` | `1` | Sàn TP.HCM (VN-Index) |
+| `HNX` | `2` | Sàn Hà Nội (HNX-Index) |
+| `UPCOM` | `3` | Sàn UPCoM |
+| `VN30` | `4` | Rổ VN30 |
+| `HNX30` | `5` | Rổ HNX30 |
 
-**Data type:** EOD + polling 15–30s trong giờ giao dịch
+### 2.2 InfluenceType Enum
+
+| TradeX `influenceType` | Vietstock `Type` | Mô tả |
+|------------------------|-----------------|-------|
+| `ALL` | `0` | Cả tăng và giảm (default) |
+| `INCREASE` | `1` | Chỉ mã đóng góp dương |
+| `DECREASE` | `2` | Chỉ mã đóng góp âm |
+
+### 2.3 Direction Enum (Response)
+
+| Vietstock `OrderType` | TradeX `direction` | Bar color |
+|-----------------------|-------------------|-----------|
+| `1` | `INCREASE` | Xanh (UP color) |
+| `2` | `DECREASE` | Đỏ (DOWN color) |
+
+### 2.4 Validation Rules
+
+| Rule | Field | Error Code | Condition |
+|------|-------|------------|-----------|
+| Required | `exchange` | `FIELD_IS_REQUIRED` | Missing |
+| Required | `tradingDate` | `FIELD_IS_REQUIRED` | Missing |
+| Enum check | `exchange` | `INVALID_VALUE` | Không thuộc HOSE/HNX/UPCOM/VN30/HNX30 |
+| Enum check | `influenceType` | `INVALID_VALUE` | Không thuộc ALL/INCREASE/DECREASE |
+
+### 2.5 Default Values
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `tradingDate` | Current trading date (yyyy-MM-dd) | FE nên truyền explicit |
+| `top` | `20` | Số mã tối đa trả về |
+| `influenceType` | `ALL` | Lấy cả tăng và giảm |
+
+---
+
+## 3. API: Get Top Stock Influence
+
+### 3.1 Request
+
+**Endpoint:** `GET /api/v1/marketWatch/topStockInfluence`
+
+**Upstream Vietstock:** `GET https://api-demo.vietstock.vn/demo/topstockinfluence`
 
 **Auth:** JWT token (không cần `accountNumber` / `deviceUniqueId`)
 
-### 4.1 Request parameters (TradeX → FE)
-
-| Param | Type | Required | Values | Description |
-|---|---|---|---|---|
-| `exchange` | string | Yes | `HOSE`, `HNX`, `UPCOM`, `VN30`, `HNX30` | Sàn / rổ chỉ số — bind với dropdown UI |
-| `tradingDate` | string | Yes | `yyyy-MM-dd` | Ngày giao dịch; default = current trading date |
-| `top` | number | No | Default `20` | Số lượng mã trả về |
-| `influenceType` | string | No | `ALL`, `INCREASE`, `DECREASE` | Default `ALL` |
-
 **Default call:**
-
 ```
 GET /api/v1/marketWatch/topStockInfluence?exchange=HOSE&tradingDate={today}&top=20&influenceType=ALL
 ```
 
-### 4.2 Response fields (TradeX → FE)
+**Query Parameters:**
 
-| Field | Type | Description | UI Usage |
-|---|---|---|---|
-| `stockCode` | string | Mã cổ phiếu | X-axis label, header tooltip |
-| `closePrice` | number | Giá đóng cửa hiện tại | Tooltip |
-| `change` | number | Thay đổi giá tuyệt đối | Tooltip |
-| `perChange` | number (%) | % thay đổi giá | Tooltip |
-| `sharesOutstanding` | number | Khối lượng CP lưu hành | Tooltip (optional) |
-| `marketCap` | number | Vốn hóa thị trường (VND) | Tooltip |
-| `weight` | number | Trọng số mã trong chỉ số | Tooltip |
-| `baseIndex` | number | Index đóng cửa ngày trước | Tính toán nội bộ |
-| `influencePercent` | number (%) | % ảnh hưởng đến index | Tooltip phụ |
-| `influenceIndex` | number | Số điểm đóng góp vào index | **Y-axis value (bar height)** |
-| `direction` | string | `INCREASE` hoặc `DECREASE` | **Bar color rule** |
-| `row` | number | Sort index | Sort key (ascending) |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `exchange` | String | ✅ | - | Sàn / rổ chỉ số — bind với dropdown UI |
+| `tradingDate` | String | ✅ | - | Ngày giao dịch (yyyy-MM-dd) |
+| `top` | Number | ❌ | `20` | Số lượng mã trả về |
+| `influenceType` | String | ❌ | `ALL` | Loại ảnh hưởng: `ALL`, `INCREASE`, `DECREASE` |
 
-### 4.3 BE mapping — TradeX ↔ Vietstock
+### 3.2 Request Mapping (TradeX → Vietstock)
 
-**Request:**
+| TradeX Field | Type | Required | Vietstock Field | Transform | Description |
+|--------------|------|----------|-----------------|-----------|-------------|
+| `exchange` | String | ✅ | `CatID` | Enum map (§2.1) | Sàn / rổ chỉ số |
+| `tradingDate` | String | ✅ | `TradeDate` | Direct | yyyy-MM-dd |
+| `top` | Number | ❌ | `Top` | Direct | Default 20 |
+| `influenceType` | String | ❌ | `Type` | Enum map (§2.2) | Default `ALL` → `0` |
 
-| TradeX param | Vietstock param | Mapping |
-|---|---|---|
-| `exchange` | `CatID` | `HOSE`→`1`, `HNX`→`2`, `UPCOM`→`3`, `VN30`→`4`, `HNX30`→`5` |
-| `tradingDate` | `TradeDate` | Direct |
-| `top` | `Top` | Direct |
-| `influenceType` | `Type` | `ALL`→`0`, `INCREASE`→`1`, `DECREASE`→`2` |
+### 3.3 Response Mapping (Vietstock → TradeX)
 
-**Response:**
+| Vietstock Field | TradeX Field | Type | Transform | UI Usage |
+|-----------------|--------------|------|-----------|----------|
+| `StockCode` | `stockCode` | String | camelCase | X-axis label, tooltip header |
+| `ClosePrice` | `closePrice` | Number | camelCase | Tooltip — giá đóng cửa |
+| `Change` | `change` | Number | camelCase | Tooltip — Δ giá tuyệt đối |
+| `PerChange` | `perChange` | Number (%) | camelCase | Tooltip — % thay đổi giá |
+| `KLCPLH` | `sharesOutstanding` | Number | Rename | Tooltip (optional) |
+| `MarketCap` | `marketCap` | Number | camelCase | Tooltip — vốn hóa (VND) |
+| `Weight` | `weight` | Number (%) | camelCase | Tooltip — trọng số trong chỉ số |
+| `BasicIndex` | `baseIndex` | Number | Rename | Tính toán nội bộ |
+| `InfluencePercent` | `influencePercent` | Number (%) | camelCase | Tooltip phụ |
+| `InfluenceIndex` | `influenceIndex` | Number | camelCase | **Y-axis value (bar height)** |
+| `OrderType` | `direction` | String | Enum map (§2.3) | **Bar color rule** |
+| `Row` | `row` | Number | camelCase | Sort key ascending |
 
-| Vietstock field | TradeX field | Transform |
-|---|---|---|
-| `StockCode` | `stockCode` | camelCase |
-| `ClosePrice` | `closePrice` | camelCase |
-| `Change` | `change` | camelCase |
-| `PerChange` | `perChange` | camelCase |
-| `KLCPLH` | `sharesOutstanding` | Rename |
-| `MarketCap` | `marketCap` | camelCase |
-| `Weight` | `weight` | camelCase |
-| `BasicIndex` | `baseIndex` | Rename |
-| `InfluencePercent` | `influencePercent` | camelCase |
-| `InfluenceIndex` | `influenceIndex` | camelCase |
-| `OrderType` | `direction` | `1`→`INCREASE`, `2`→`DECREASE` |
-| `Row` | `row` | camelCase |
+### 3.4 Error Mapping
 
-### 4.4 Error handling
+**Validation Error (400) — TradeX:**
 
-| Tình huống | HTTP | TradeX code |
-|---|---|---|
-| Thiếu `exchange` hoặc `tradingDate` | 400 | `INVALID_PARAMETER` + `FIELD_IS_REQUIRED` |
-| `exchange` không hợp lệ | 400 | `INVALID_PARAMETER` + `INVALID_VALUE` |
-| `influenceType` không hợp lệ | 400 | `INVALID_PARAMETER` + `INVALID_VALUE` |
-| Vietstock trả empty array | 200 | — (FE xử lý empty state) |
-| Vietstock timeout / 5xx | 500 | `INTERNAL_SERVER_ERROR` |
+| Field | Error Code | messageParams | Condition |
+|-------|------------|---------------|-----------|
+| `exchange` | `FIELD_IS_REQUIRED` | `["exchange"]` | Missing |
+| `exchange` | `INVALID_VALUE` | `["exchange"]` | Không hợp lệ |
+| `tradingDate` | `FIELD_IS_REQUIRED` | `["tradingDate"]` | Missing |
+| `influenceType` | `INVALID_VALUE` | `["influenceType"]` | Không hợp lệ |
+
+**Auth Error (401/403):**
+
+| Error Code | Message | Condition |
+|------------|---------|-----------|
+| `UNAUTHORIZED` | Token không hợp lệ hoặc đã hết hạn | Invalid JWT |
+| `TOKEN_EXPIRED` | Phiên đăng nhập đã hết hạn | Token expired |
+
+**Upstream Error (500) — Vietstock timeout/5xx:**
+
+| Error Code | Message | Condition |
+|------------|---------|-----------|
+| `INTERNAL_SERVER_ERROR` | Lỗi hệ thống, vui lòng thử lại sau | Vietstock không phản hồi |
 
 ---
 
-## 5. Data Mapping
+## 4. Error Handling Summary
 
-| UI Element | TradeX Field | Note |
-|---|---|---|
-| Dropdown sàn | `exchange` (request) | FE gửi string: `HOSE`, `HNX`... |
-| Bar X-axis label | `stockCode` | |
-| Bar Y-axis value | `influenceIndex` | có thể âm → bar đi xuống |
-| Bar color | `direction` | `INCREASE` → green, `DECREASE` → red |
-| Bar order (left → right) | `row` ascending | |
-| Tooltip — giá đóng cửa | `closePrice` | format `vi-VN` thousand separator |
-| Tooltip — Δ giá | `change` + `perChange` | hiển thị `+/-` + % |
-| Tooltip — vốn hóa | `marketCap` | format `tỷ` / `nghìn tỷ` |
-| Tooltip — trọng số | `weight` | hiển thị dạng % |
-| Tooltip — đóng góp | `influenceIndex` + `influencePercent` | đơn vị: điểm |
+### 4.1 Error Response Format
+
+**Validation Error (400):**
+```json
+{
+  "code": "INVALID_PARAMETER",
+  "params": [
+    { "code": "FIELD_IS_REQUIRED", "param": "exchange", "messageParams": ["exchange"] }
+  ]
+}
+```
+
+**Auth Error (401/403):**
+```json
+{
+  "code": "UNAUTHORIZED",
+  "message": "Token không hợp lệ hoặc đã hết hạn"
+}
+```
+
+**Server Error (500):**
+```json
+{
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "Lỗi hệ thống, vui lòng thử lại sau"
+}
+```
+
+**Empty data (200 — Vietstock trả mảng rỗng):**
+```json
+[]
+```
+→ FE xử lý empty state: "Chưa có dữ liệu cho ngày này."
+
+### 4.2 Error Code Patterns
+
+| Error Source | Code Pattern | Example | HTTP |
+|--------------|--------------|---------|------|
+| TradeX Validation | `INVALID_PARAMETER`, `FIELD_IS_REQUIRED` | Missing required field | 400 |
+| TradeX Auth | `UNAUTHORIZED`, `TOKEN_EXPIRED`, `FORBIDDEN` | Invalid JWT | 401/403 |
+| Vietstock upstream | `INTERNAL_SERVER_ERROR` | Vietstock 5xx/timeout | 500 |
+
+---
+
+## 5. UI/UX Behavior
+
+### 5.1 Layout
+
+- Section nằm trong màn hình **Market Watch**, dưới header tổng quan index.
+- Header section: Title "Nhóm dẫn dắt thị trường" + **Dropdown sàn** (right-aligned).
+- Dropdown default: `HOSE`. Các tuỳ chọn: HOSE, HNX, UPCOM, VN30, HNX30.
+- Body: **Bar chart vertical** chiếm toàn bộ chiều ngang của section.
+
+### 5.2 Bar Chart
+
+- **X-axis:** `stockCode`, sort theo `row` ascending (BE đã sort).
+- **Y-axis:** `influenceIndex`. Hỗ trợ giá trị âm — bar đi xuống từ baseline 0.
+- **Bar color:** `INCREASE` → UP color (xanh) · `DECREASE` → DOWN color (đỏ).
+- **Default:** 20 bar, sàn HOSE, `influenceType = ALL`.
+
+### 5.3 Interactions
+
+| Action | Behavior |
+|--------|----------|
+| Chọn sàn từ dropdown | Gọi lại API với `exchange` mới; skeleton loading trong khi chờ |
+| Tap vào bar | Hiển thị tooltip / bottom sheet với chi tiết mã |
+| Pull-to-refresh | Refetch với param hiện tại |
+| Tap label mã (X-axis) | (Optional v2) Điều hướng vào chi tiết cổ phiếu |
+
+### 5.4 Tooltip Detail khi tap bar
+
+```
+VCB
+Đóng góp: +1.25 điểm  (+0.48%)
+Giá đóng cửa: 92,500  ·  +1,500  (+1.65%)
+Vốn hóa: 450,000 tỷ
+Trọng số trong index: 12.5%
+```
+
+### 5.5 Data → UI Mapping
+
+| UI Element | TradeX Field | Format |
+|------------|--------------|--------|
+| Dropdown sàn | `exchange` (request) | String: `HOSE`, `HNX`... |
+| Bar X-axis label | `stockCode` | Plain string |
+| Bar Y-axis value | `influenceIndex` | Số thực, hỗ trợ âm |
+| Bar color | `direction` | `INCREASE` → green · `DECREASE` → red |
+| Bar order (left → right) | `row` | Ascending |
+| Tooltip — giá đóng cửa | `closePrice` | Format `vi-VN` thousand separator |
+| Tooltip — Δ giá | `change` + `perChange` | `+/-value (+/-x.xx%)` |
+| Tooltip — vốn hóa | `marketCap` | Format `tỷ` / `nghìn tỷ` |
+| Tooltip — trọng số | `weight` | `x.xx%` |
+| Tooltip — đóng góp | `influenceIndex` + `influencePercent` | `+/-x.xx điểm (+/-x.xx%)` |
 
 ---
 
 ## 6. Edge Cases
 
 | Case | Behavior |
-|---|---|
-| **No data** (API trả empty array) | Empty state: "Chưa có dữ liệu cho ngày này." |
-| **Market closed / weekend / holiday** | Banner: "Dữ liệu phiên gần nhất: dd/MM/yyyy"; data theo phiên gần nhất |
-| **Single bar** | Render đầy đủ chart; không vỡ layout |
-| **`influenceIndex` âm** (`influenceType = ALL`) | Y-axis hỗ trợ giá trị âm, baseline 0 |
-| **API timeout / 5xx** | Error state với retry button; giữ snapshot data cũ nếu có |
+|------|----------|
+| **Empty array** (Vietstock trả `[]`) | Empty state: "Chưa có dữ liệu cho ngày này." |
+| **Market closed / weekend / holiday** | Banner: "Dữ liệu phiên gần nhất: dd/MM/yyyy"; load data phiên gần nhất |
+| **Single bar** | Render đầy đủ chart, không vỡ layout |
+| **`influenceIndex` âm** (influenceType = ALL) | Y-axis hỗ trợ giá trị âm, baseline 0 |
+| **API timeout / 5xx** | Error state + retry button; giữ snapshot data cũ nếu có |
 | **Slow network** | Skeleton loading; tránh layout shift khi polling |
-| **`influenceType = INCREASE` nhưng thị trường giảm toàn diện** | Có thể trả ít hơn `top` records hoặc rỗng → empty state |
-| **`tradingDate` là ngày tương lai** | FE disable date picker cho future dates |
-| **Đổi `exchange`** | Invalidate cache theo `(exchange, tradingDate)`; reset `weight` / `baseIndex` |
+| **`influenceType = INCREASE`, thị trường giảm toàn diện** | Trả ít hơn `top` records hoặc rỗng → empty state |
+| **`tradingDate` là ngày tương lai** | FE disable date picker cho future date |
+| **Đổi `exchange`** | Invalidate cache theo `(exchange, tradingDate)`; reset chart state |
 | **`perChange` / `closePrice` null** | FE null-safe: hiển thị `—` thay vì crash |
 
 ---
 
-Document Status: 📋 Draft | For: FE Dev, BE Dev, QA | Next Steps: Review with tech lead
+## 7. Implementation Notes
+
+### 7.1 Service Architecture
+
+| Component | Role |
+|-----------|------|
+| `rest-proxy` | API Gateway, JWT validation, routing |
+| `market-query-v2` | Vietstock proxy, request/response mapping |
+| **Vietstock External API** | Data source upstream |
+
+### 7.2 Key Principles
+
+**1. Validation Strategy:**
+- TradeX validates: Required fields, enum values
+- Vietstock validates: Business rules (data availability)
+- NO duplicate business logic
+
+**2. Data Passthrough:**
+- Response map 1-1 từ Vietstock fields → TradeX camelCase fields
+- TradeX KHÔNG tổng hợp hay tính toán thêm (trừ enum transform `OrderType` → `direction`)
+- FE chịu trách nhiệm format display (thousand separator, đơn vị %, tỷ)
+
+**3. Polling Strategy:**
+- Trong giờ giao dịch (09:00–15:00 VN): FE polling mỗi 15–30s
+- Ngoài giờ: Load 1 lần (EOD data), không polling
+- FE tự quản lý polling lifecycle theo trading session state
+
+**4. Auto-Population:**
+- `tradingDate` default = current trading date nếu không truyền (recommend FE truyền explicit)
+
+**5. Caching:**
+- Cache key: `(exchange, tradingDate, top, influenceType)`
+- Invalidate khi user đổi `exchange` hoặc pull-to-refresh
+
+### 7.3 Acceptance Criteria
+
+- [ ] Tab Market Watch hiển thị section "Nhóm dẫn dắt thị trường" với bar chart + dropdown sàn.
+- [ ] Dropdown default `HOSE`, đổi sàn → gọi lại API + skeleton loading.
+- [ ] Bar chart render đúng `influenceIndex` trên Y-axis, hỗ trợ giá trị âm.
+- [ ] Bar color: `INCREASE` → xanh, `DECREASE` → đỏ (theo NHSV design system).
+- [ ] Bar order: sort theo `row` ascending (trái → phải).
+- [ ] Tap bar → tooltip hiện đủ: `stockCode`, `influenceIndex`, `influencePercent`, `closePrice`, `change`, `perChange`, `marketCap`, `weight`.
+- [ ] Loading state: skeleton placeholder trong card.
+- [ ] Empty state: message "Chưa có dữ liệu cho ngày này." khi array rỗng.
+- [ ] Error state: message + retry button khi API fail; không crash Market Watch.
+- [ ] Pull-to-refresh: refetch với param hiện tại.
+- [ ] Null-safe: `closePrice`, `perChange` null → hiển thị `—`.
+
+---
+
+**Document Status:** 📋 Draft | **For:** FE Dev, BE Dev, QA | **Next Steps:** Review với tech lead trước khi implement
