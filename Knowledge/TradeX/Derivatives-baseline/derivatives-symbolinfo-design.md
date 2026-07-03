@@ -69,7 +69,7 @@
 
 ## 3. Fields đặc thù Derivatives - Mapping từ Lotte API
 
-> **Source:** `[API specs]Lotte_DR.md` - DRMKT-001 & DRMKT-002
+> **Source:** `Lotte_DR_API_Specs.md` - DRMKT-001 & DRMKT-002
 
 ### 3.1 Từ DRMKT-001 (`/dr/stock-board`)
 

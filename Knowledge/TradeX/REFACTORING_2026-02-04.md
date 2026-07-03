@@ -11,7 +11,7 @@
 ### Before Refactoring
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 ├── _index.md
 ├── market-data-channels.md       # ✅ Live production
 ├── symbol-info-api.md            # ✅ Live production
@@ -36,7 +36,7 @@ TradeX Knowledge/
 ### New Structure
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 ├── _index.md                    # ← Navigation hub
 ├── System/                      # ✅ LIVE PRODUCTION
 │   ├── README.md
@@ -241,7 +241,7 @@ System/
 ### For PM Understanding Production
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 └── System/                    ← Go here
     ├── market-data-channels.md
     ├── symbol-info-api.md
@@ -251,7 +251,7 @@ TradeX Knowledge/
 ### For Creating New APIs
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 └── API Standards/             ← Go here
     ├── tradex-api-conventions.md      (read standards)
     ├── tradex-api-spec-template.md    (copy template)
@@ -261,7 +261,7 @@ TradeX Knowledge/
 ### For Planning Features
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 └── Planning/                  ← Go here
     └── regular-order-api-mapping.md   (check existing patterns)
 ```

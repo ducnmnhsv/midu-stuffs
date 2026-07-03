@@ -278,7 +278,7 @@ Job backfill gọi **DRMKT-004** (daily derivatives), map vào **Mongo symbol da
 |--------|---------|--------|
 | `/Derivatives/Planning documentation/Orders/` | Order APIs (Buy/Sell/Cancel/Modify) | ✅ Planning Complete |
 | `/Derivatives/Documentation/` | Lotte API specifications | Reference |
-| `/TradeX Knowledge/` | Cross-market knowledge base | Reference |
+| `/Knowledge/TradeX/` | Cross-market knowledge base | Reference |
 
 ---
 
@@ -352,10 +352,10 @@ derivatives:
 
 | Resource | Location |
 |----------|----------|
-| Lotte DR API Specs | `../../Documentation/[API specs]Lotte_DR.md` |
+| Lotte DR API Specs | `../../Documentation/Lotte_DR_API_Specs.md` |
 | Lotte DR WebSocket | `../../Documentation/Websocket_DR_Lotte.md` |
-| TradeX Init Job | `../../../TradeX Knowledge/init-job.md` |
-| TradeX SymbolInfo API | `../../../TradeX Knowledge/symbol-info-api.md` |
+| TradeX Init Job | `../../../Knowledge/TradeX/init-job.md` |
+| TradeX SymbolInfo API | `../../../Knowledge/TradeX/symbol-info-api.md` |
 | Orders Planning | `../Orders/README.md` |
 
 ---

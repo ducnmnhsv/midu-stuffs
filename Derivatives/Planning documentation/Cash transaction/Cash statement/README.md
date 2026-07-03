@@ -98,7 +98,7 @@ Cash Statement module cho phép tra cứu **lịch sử thanh toán** (payment/s
 | Document | Relationship |
 |----------|--------------|
 | [Cash Transaction README](../README.md) | Parent module |
-| [Lotte API Specs - DRACC-023](../../../Documentation/[API%20specs]Lotte_DR.md) | Nguồn API Lotte (Section 2.1.4) |
+| [Lotte API Specs - DRACC-023](../../../Documentation/Lotte_DR_API_Specs.md) | Nguồn API Lotte (Section 2.1.4) |
 | [VSD Transaction](../VSD%20transaction/README.md) | Giao dịch nộp/rút VSD – có thể xuất hiện trong sao kê |
 | [Internal Transfer](../Internal%20transfer/README.md) | Chuyển nội bộ – có thể xuất hiện trong sao kê |
 

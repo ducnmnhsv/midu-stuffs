@@ -150,7 +150,7 @@ VSD System (for margin transactions)
 
 | Document | Type | Audience | Description |
 |----------|------|----------|-------------|
-| [Lotte API Specs](../../Documentation/[API%20specs]Lotte_DR.md) | API Specs | All | Lotte Derivatives API specifications (Section 2.2) |
+| [Lotte API Specs](../../Documentation/Lotte_DR_API_Specs.md) | API Specs | All | Lotte Derivatives API specifications (Section 2.2) |
 | TradeX API Conventions | Standards | Developers | TradeX API naming & response standards |
 
 ---

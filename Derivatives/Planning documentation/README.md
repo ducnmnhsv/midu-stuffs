@@ -8,9 +8,11 @@
 
 ## 📁 Categories
 
+> 📋 **Status hiện hành: xem [Tracking/kanban.html](../../Tracking/kanban.html)** (filter Area = Derivatives) — nguồn duy nhất `Tracking/tasks.js` (rule C7). Bảng dưới chỉ mô tả scope, KHÔNG maintain status nữa.
+
 | Category | Status | Focus Area |
 |----------|--------|------------|
-| **[Market/](./Market/)** | ✅ Complete | Real-time quotes, charts, WebSocket |
+| **[Market data/](./Market%20data/)** | ✅ Complete | Real-time quotes, charts, WebSocket |
 | **[Order/](./Order/)** | ✅ Complete | Order placement (regular & conditional) |
 | **[Account/](./Account/)** | 📋 Planned | Account info, balance, positions |
 | **[Asset/](./Asset/)** | 📋 Spec Ready | Vị thế mở (DRACC-003), portfolio |
@@ -97,7 +99,7 @@ Each category follows this standard:
 
 ### Creating Implementation Issue
 
-1. **FE (Frontend) issues:** Tạo và lưu tại **[Derivatives/FE Implementation/](../FE%20Implementation/README.md)** (theo module: Order, Market, Cash transaction). Issues trong Planning documentation/Issues/ có thể là redirect hoặc link tới FE Implementation.
+1. **FE (Frontend) issues:** Tạo và lưu tại **`{Category}/Issues/`** trong folder này (Order, Market data, Cash transaction). Chuẩn issue: [ISSUE_STANDARD.md](./ISSUE_STANDARD.md).
 2. **BE / khác:** Create in category Issues/ folder (e.g. Order/Issues/, Market/Issues/).
 3. **Section 1: Executive Summary** - For PM (no code)
 4. **Section 2+: Technical Details** - For developers (code OK)

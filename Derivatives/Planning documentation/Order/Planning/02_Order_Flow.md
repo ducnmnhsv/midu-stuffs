@@ -6,7 +6,7 @@
 **Date:** February 4, 2026
 
 > **📘 API Standards:** This follows TradeX API conventions  
-> Technical details: `@TradeX Knowledge/API Standards/tradex-api-conventions.md`  
+> Technical details: `@Knowledge/TradeX/API Standards/tradex-api-conventions.md`  
 > API Specs: `../Specifications/Regular_Orders_API_Spec.md`
 
 ---

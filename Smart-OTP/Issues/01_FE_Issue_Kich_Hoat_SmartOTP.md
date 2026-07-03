@@ -188,3 +188,7 @@ flowchart TD
 - App handles current-device active, other-device active, and not-activated states.
 - App supports SMS OTP input, PIN creation, confirm PIN, resend OTP, and 5 incorrect OTP attempts.
 - Successful activation binds SmartOTP to the current device and returns user to Smart OTP screen.
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

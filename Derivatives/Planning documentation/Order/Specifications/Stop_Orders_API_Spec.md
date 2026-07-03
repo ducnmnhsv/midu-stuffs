@@ -94,7 +94,7 @@ Stop Order (Lệnh điều kiện) là lệnh mua/bán phái sinh được kích
 
 **Query History (§6):** Required: accountNumber — xem §6.4.
 
-**Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → FE Issues: [Derivatives_Stop_Order_Integration](../../../FE%20Implementation/Order/Issues/Derivatives_Stop_Order_Integration.md), [Stop_Order_Screen_FE_Requirement](../../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
+**Note:** Mapping 1-1 với Lotte. Logic UX (user nhập gì, FE tính gì) → FE Issues: [Derivatives_Stop_Order_Integration](../Issues/Derivatives_Stop_Order_Integration.md), [Stop_Order_Screen_FE_Requirement](../Issues/Stop_Order_Screen_FE_Requirement.md).
 
 **Note:** Business rules (margin, price limits) validated by Lotte Core.
 
@@ -161,7 +161,7 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 - FE **không** gửi `mdm_tp` trong request body.
 - Backend derive từ: `request.channel` → `token.platform` → default.
 - Map qua `getPlatformValueCore(platform)` → 31 (IOS), 32 (Android), 42 (PAAVE/DIFISOFT), `%` (default).
-- Chi tiết: [TradeX API Conventions - mdm_tp](../../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền)
+- Chi tiết: [TradeX API Conventions - mdm_tp](../../../../Knowledge/TradeX/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền)
 
 **orderDate Logic:**
 - Nếu không truyền: dùng ngày hiện tại (yyyyMMdd)
@@ -255,7 +255,7 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 **Endpoint:** `PUT /api/v1/derivatives/stopOrder/cancel`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-cancel-stop-order` (DRORD-025, 026) — xem [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.3.7
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/order/dr-cancel-stop-order` (DRORD-025, 026) — xem [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.3.7
 
 **Request body:** accountNumber, orderNumber.
 
@@ -484,5 +484,5 @@ Core (Lotte) định danh Stop order bằng **hai field**: `date` (yyyyMMdd) + `
 
 **Document Status:** ✅ Draft Complete  
 **For:** BA/Dev  
-**Next Steps:** Implement lotte-bridge routing; Lotte URLs theo [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026).  
+**Next Steps:** Implement lotte-bridge routing; Lotte URLs theo [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (27/02/2026).  
 **Estimated Effort:** 3-5 days (BE) + 2-3 days (FE) + 2 days (QA)

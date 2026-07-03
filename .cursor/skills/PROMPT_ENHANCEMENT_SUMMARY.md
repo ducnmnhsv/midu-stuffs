@@ -83,7 +83,7 @@ and business validation rules.
 4. Business rules
 
 ## Format
-Follow: @TradeX Knowledge/API Standards/tradex-api-spec-template.md
+Follow: @Knowledge/TradeX/API Standards/tradex-api-spec-template.md
 
 ## Reference
 Example: @Derivatives/.../Regular_Orders_API_Spec.md
@@ -113,7 +113,7 @@ Reply "yes" to proceed with enhanced version.
 
 **User input:**
 ```
-Follow @TradeX Knowledge/API Standards/tradex-api-spec-template.md 
+Follow @Knowledge/TradeX/API Standards/tradex-api-spec-template.md 
 to create Order Cancellation API spec with field mappings, 
 error handling, and business rules for DRORD-031.
 ```
@@ -281,15 +281,15 @@ Create API documentation following TradeX standards...
 **Auto-includes relevant context:**
 
 **For API tasks:**
-- Reference: `@TradeX Knowledge/API Standards/`
+- Reference: `@Knowledge/TradeX/API Standards/`
 - Template: `tradex-api-spec-template.md`
 - Standards: `tradex-api-conventions.md`
 
 **For system understanding:**
-- Reference: `@TradeX Knowledge/System/`
+- Reference: `@Knowledge/TradeX/System/`
 
 **For planning:**
-- Reference: `@TradeX Knowledge/Planning/`
+- Reference: `@Knowledge/TradeX/Planning/`
 
 ### With Other Skills
 

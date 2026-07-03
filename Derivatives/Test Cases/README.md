@@ -161,7 +161,7 @@ Bộ test case UAT dành cho phòng ban nghiệp vụ/non-tech để kiểm th�
 | Contract Test | SYS-021 | API indexStockList vs job bridge |
 | Data Quality | SYS-022 | Cross-check app Derivatives vs backend FUTURES |
 
-Tham chiếu kiến trúc: `TradeX Knowledge/System/init-job.md`.
+Tham chiếu kiến trúc: `Knowledge/TradeX/System/init-job.md`.
 
 ### Sheet 7 — Mở tiểu khoản phái sinh (sub 80) — 9 categories
 

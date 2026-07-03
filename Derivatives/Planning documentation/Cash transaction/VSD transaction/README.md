@@ -407,8 +407,8 @@ Following TradeX conventions:
 
 ## Reference Documents
 
-- **Lotte API Specs:** `/Derivatives/Documentation/[API specs]Lotte_DR.md` (Section 2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7)
-- **TradeX API Conventions:** `@TradeX Knowledge/API Standards/tradex-api-conventions.md`
+- **Lotte API Specs:** `/Derivatives/Documentation/Lotte_DR_API_Specs.md` (Section 2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7)
+- **TradeX API Conventions:** `@Knowledge/TradeX/API Standards/tradex-api-conventions.md`
 - **Order API Standards:** Rule `@tradex-order-api-response-standards`
 - **Internal Transfer (Reference):** `../Internal transfer/Internal_Transfer_API_Spec.md`
 

@@ -81,6 +81,11 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 - **C6 — Unblocking sequence:** Không viết spec chi tiết Audit Log / Alert System / Session Management (P1) trước khi STT5 + STT35 Phase 3 xong. Xem Section 7.5 trong README.
 - **C6 — Checklist:** Mỗi issue TT134 mới → chạy qua checklist 7.6 trong `TT134 - UBCK/README.md`.
 
+### Task Tracking — Single Source
+- **C7 — Tracking/tasks.js là nguồn duy nhất** cho status/deadline/priority của mọi task (Derivatives, TT134, Smart OTP, NHSV Pro, eKYC, TradeX-Monitor). Khi status đổi → chỉ sửa `Tracking/tasks.js`. Board: mở `Tracking/kanban.html`.
+- **C7 — README không duplicate status:** README các khu vực chỉ mô tả scope/dependency + link tới board. Không maintain bảng status riêng (kể cả `TT134_Kanban.html` — đã deprecated).
+- **C7 — Task mới:** Tạo doc theo File Routing bên dưới + thêm 1 entry vào `Tracking/tasks.js` (id theo format `{AREA}-{FEATURE}-{seq}`, schema xem `Tracking/README.md`).
+
 ### Tooling
 - **Analytics MCP:** Chỉ dùng NHSV Pro property (`properties/478227972`, account `accounts/345830035`). Không reference property khác (BES, NHSV BES).
 - **Postman:** Test requests → chỉ tạo trong collection **"TradeX QA session"**. Collection **"TradeX API v2"** là reference only — không tạo test request ở đây.
@@ -106,6 +111,7 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 | System knowledge / API standards | Reference | `Knowledge/TradeX/` |
 | Firebase / GA4 analytics reports | Reference | `Analytics/NHSV-Pro/` |
 | NHSV Pro new features (specs, issues, PRDs) | Any | `New feature in NHSV Pro/{FeatureArea}/` |
+| Task tracking / kanban / status | Data + board | `Tracking/` (single source: `tasks.js`) |
 
 **Derivatives category mapping:**
 
@@ -114,8 +120,11 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 | Market data, GTGD, chart, quote | `Market data/` |
 | Order, TP/SL, OCO, stop | `Order/` |
 | Account, margin | `Account/` |
+| Asset, PnL, position | `Asset/` |
 | Cash, nạp rút | `Cash transaction/` |
 | Mở tài khoản phái sinh | `Open_DR_Sub_Account/` |
+
+> Không còn folder `Derivatives/FE Implementation/` — FE issues nằm trong `{Category}/Issues/` cùng BE issues. Chuẩn issue: `Derivatives/Planning documentation/ISSUE_STANDARD.md`.
 
 ---
 

@@ -766,8 +766,8 @@ ConfirmOrdersScreen
 - TT134/2024/TT-BTC Điều 10 — Xử lý giao dịch & xác nhận
 - TT134/2024/TT-BTC Điều 11 — Quản lý rủi ro
 - TT134/2024/TT-BTC Điều 13 — Giám sát & báo cáo
-- [Smart-OTP API Mapping](../../Smart-OTP/Specifications/SmartOTP_API_Mapping.md)
-- [Biometric System draft plan](../Biometric%20System/biometric.html)
+- [Smart-OTP API Mapping](../../../Smart-OTP/Specifications/SmartOTP_API_Mapping.md)
+- [Biometric System draft plan](../../Biometric%20System/Specifications/Biometric_System_Spec.html)
 - [ConfirmOrdersScreen FE](../../../nhsv-mts-rn/src/screens/ConfirmOrdersScreen/)
 
 ---
@@ -781,3 +781,7 @@ ConfirmOrdersScreen
 ---
 
 *Last updated: 2026-06-30 — v1.3: login Smart OTP = session auth (no separate screen/endpoint), hard gate activation, all open questions resolved*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

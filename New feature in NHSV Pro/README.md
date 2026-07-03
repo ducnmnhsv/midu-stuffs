@@ -8,6 +8,8 @@
 
 ## Tổng quan
 
+> 📋 **Status hiện hành: xem [Tracking/kanban.html](../Tracking/kanban.html)** (filter Area = NHSV-Pro) — nguồn duy nhất `Tracking/tasks.js` (rule C7). Bảng dưới chỉ mô tả scope/dependency, KHÔNG maintain status nữa.
+
 | Feature Area | Work items | Docs có sẵn | Status |
 |-------------|-----------|-------------|--------|
 | [Event Calendar](#event_calendar) | 1 | Spec | Todo |

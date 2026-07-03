@@ -1,6 +1,6 @@
 # BE Tasks – Current price screen (statistic, quote abv/asv)
 
-> **Liên quan:** FE Issue [Derivatives_Current_Price_Screen](../../FE%20Implementation/Market/Issues/Derivatives_Current_Price_Screen.md) (MKT.S2)  
+> **Liên quan:** FE Issue [Derivatives_Current_Price_Screen](./Derivatives_Current_Price_Screen.md) (MKT.S2)  
 > **Mục đích:** Bổ sung BE tasks chưa được mention trong 01_Integration_Plan cho màn Current price  
 > **Created:** 2026-02-11
 
@@ -73,5 +73,5 @@ Màn Current price cần 4 nguồn dữ liệu:
 ## Reference
 
 - [01_Integration_Plan.md](../Planning/01_Integration_Plan.md)
-- [symbol-info-api.md](../../../TradeX%20Knowledge/System/symbol-info-api.md)
-- FE Issue: [Derivatives_Current_Price_Screen](../../FE%20Implementation/Market/Issues/Derivatives_Current_Price_Screen.md)
+- [symbol-info-api.md](../../../../Knowledge/TradeX/System/symbol-info-api.md)
+- FE Issue: [Derivatives_Current_Price_Screen](./Derivatives_Current_Price_Screen.md)

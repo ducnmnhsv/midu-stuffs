@@ -947,3 +947,7 @@ grafana-cli admin reset-admin-password <new-password>
 - [Loki Documentation](https://grafana.com/docs/loki/)
 - [Prometheus Exporters](https://prometheus.io/docs/instrumenting/exporters/)
 - [Grafana Dashboard Examples](https://grafana.com/grafana/dashboards/)
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

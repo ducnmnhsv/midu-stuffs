@@ -169,3 +169,7 @@ flowchart TD
 - Old device cannot generate valid SmartOTP after reactivation.
 - Reinstall app is treated as a new device and requires reactivation.
 
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

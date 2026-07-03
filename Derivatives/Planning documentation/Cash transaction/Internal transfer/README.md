@@ -201,8 +201,8 @@ These fields are NOT in request body.
 
 ## Reference Documents
 
-- **Lotte API Specs:** `/Derivatives/Documentation/[API specs]Lotte_DR.md` (Section 2.2.2, 2.2.3)
-- **TradeX API Conventions:** `@TradeX Knowledge/API Standards/tradex-api-conventions.md`
+- **Lotte API Specs:** `/Derivatives/Documentation/Lotte_DR_API_Specs.md` (Section 2.2.2, 2.2.3)
+- **TradeX API Conventions:** `@Knowledge/TradeX/API Standards/tradex-api-conventions.md`
 - **Order API Standards:** Rule `@tradex-order-api-response-standards`
 - **Equity Transfer (Reference):** TradeX MCP Knowledge `/rest-proxy-main/src/app/routes/api/equity/*/Transfer.ts`
 

@@ -9,7 +9,7 @@
 ## 📁 Knowledge Structure
 
 ```
-TradeX Knowledge/
+Knowledge/TradeX/
 ├── System/              # ✅ Production - What's actually running
 ├── API Standards/       # 📘 Conventions - Universal standards
 └── Planning/            # 📋 Future - Features in planning phase

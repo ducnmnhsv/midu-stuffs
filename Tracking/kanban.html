@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanban — tradex-monitoring</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --surface: #ffffff; --surface2: #eef0f3;
+    --ink: #1a1d21; --ink2: #5b6470; --ink3: #8a93a0;
+    --border: #dde1e6; --shadow: 0 1px 3px rgba(20,24,28,.08);
+    --accent: #2563eb;
+    --ok: #157f3d; --ok-bg: #e5f3ea;
+    --warn: #92600a; --warn-bg: #fdf1dc;
+    --danger: #b3261e; --danger-bg: #fbe9e7;
+    --block: #7c3aed; --block-bg: #f1eafd;
+    --chip: #eef0f3;
+  }
+  [data-theme="dark"] {
+    --bg: #14171b; --surface: #1e2228; --surface2: #262b32;
+    --ink: #e8eaed; --ink2: #a8b0ba; --ink3: #78808b;
+    --border: #333a43; --shadow: 0 1px 3px rgba(0,0,0,.4);
+    --accent: #6ba1ff;
+    --ok: #5dc98b; --ok-bg: #17301f;
+    --warn: #e5b567; --warn-bg: #33270f;
+    --danger: #ff8a80; --danger-bg: #3a1a17;
+    --block: #c4a5f5; --block-bg: #2a2040;
+    --chip: #262b32;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); font-size:14px; line-height:1.45; }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+
+  header { padding:18px 24px 0; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  header h1 { font-size:19px; font-weight:700; }
+  header .sub { color:var(--ink2); font-size:12.5px; }
+  .spacer { flex:1; }
+  .btn { border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+  .btn.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+  /* Stat tiles */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; padding:14px 24px 0; }
+  .tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:10px 14px; box-shadow:var(--shadow); }
+  .tile .v { font-size:24px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .tile .l { font-size:11.5px; color:var(--ink2); margin-top:2px; }
+  .tile.danger .v { color:var(--danger); } .tile.warn .v { color:var(--warn); }
+  .tile.block .v { color:var(--block); } .tile.ok .v { color:var(--ok); }
+
+  /* Filters */
+  .filters { display:flex; gap:8px; padding:14px 24px 0; flex-wrap:wrap; align-items:center; }
+  .filters select, .filters input { border:1px solid var(--border); background:var(--surface); color:var(--ink); border-radius:8px; padding:6px 10px; font-size:13px; }
+  .filters input { min-width:200px; }
+  .filters .count { color:var(--ink3); font-size:12px; margin-left:auto; }
+
+  /* Board */
+  .board-wrap { overflow-x:auto; padding:14px 24px 28px; }
+  .board { display:grid; grid-template-columns:repeat(5,minmax(250px,1fr)); gap:12px; min-width:1300px; }
+  .col { background:var(--surface2); border-radius:12px; padding:10px; }
+  .col h2 { font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink2); padding:4px 6px 10px; display:flex; justify-content:space-between; }
+  .col h2 .n { color:var(--ink3); font-weight:600; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--border); border-radius:9px; padding:10px 12px; margin-bottom:9px; box-shadow:var(--shadow); }
+  .card.p-P0 { border-left-color:var(--danger); }
+  .card.p-P1 { border-left-color:var(--warn); }
+  .card.p-GATE { border-left-color:var(--block); }
+  .card .top { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:5px; }
+  .card .id { font-size:10.5px; color:var(--ink3); font-weight:600; letter-spacing:.02em; }
+  .card .title { font-weight:600; font-size:13.5px; margin-bottom:6px; }
+  .card .title a { color:var(--ink); }
+  .badge { font-size:10.5px; padding:1px 7px; border-radius:20px; background:var(--chip); color:var(--ink2); font-weight:600; white-space:nowrap; }
+  .badge.prio-P0 { background:var(--danger-bg); color:var(--danger); }
+  .badge.prio-P1 { background:var(--warn-bg); color:var(--warn); }
+  .badge.prio-GATE { background:var(--block-bg); color:var(--block); }
+  .badge.area { border:1px solid var(--border); background:transparent; }
+  .meta { display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:11.5px; color:var(--ink2); }
+  .dl { font-size:11px; font-weight:700; padding:1px 8px; border-radius:20px; background:var(--chip); color:var(--ink2); }
+  .dl.overdue { background:var(--danger-bg); color:var(--danger); }
+  .dl.soon { background:var(--warn-bg); color:var(--warn); }
+  .dep { font-size:11px; color:var(--block); margin-top:5px; }
+  .note { font-size:11.5px; color:var(--ink2); margin-top:5px; border-top:1px dashed var(--border); padding-top:5px; }
+  .note.flag { color:var(--warn); }
+  .links { margin-top:6px; font-size:11.5px; display:flex; gap:10px; }
+
+  /* Timeline — chart */
+  .timeline { padding:14px 24px 28px; display:none; }
+  .tl-legend { display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:10px; font-size:12px; color:var(--ink2); }
+  .tl-legend .key { display:flex; align-items:center; gap:5px; }
+  .tl-legend .dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex:none; }
+  .tl-legend .hint { margin-left:auto; color:var(--ink3); font-size:11.5px; }
+  .tl-chart-wrap { overflow-x:auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+  .tl-chart-wrap svg { display:block; }
+  .tl-grid { stroke:var(--border); stroke-width:1; }
+  .tl-axis-label { font-size:11px; fill:var(--ink3); }
+  .tl-lane-line { stroke:var(--border); stroke-width:1; }
+  .tl-lane-label { font-size:12px; fill:var(--ink2); font-weight:600; }
+  .tl-today { stroke:var(--accent); stroke-width:1.5; stroke-dasharray:4 3; }
+  .tl-today-label { font-size:10.5px; fill:var(--accent); font-weight:700; }
+  .tl-marker { stroke:var(--surface); stroke-width:2; cursor:pointer; }
+  .tl-marker-label { font-size:10px; fill:var(--ink); font-weight:700; pointer-events:none; }
+  .tl-empty { padding:50px 20px; text-align:center; color:var(--ink3); background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+  .tl-tooltip { position:fixed; z-index:80; background:var(--surface); border:1px solid var(--border); border-radius:9px; padding:9px 11px; box-shadow:var(--shadow); font-size:12px; max-width:280px; pointer-events:none; opacity:0; transition:opacity .08s; }
+  .tl-tooltip.show { opacity:1; }
+  .tl-tooltip .tt-title { font-weight:700; margin-bottom:3px; color:var(--ink); }
+  .tl-tooltip .tt-meta { color:var(--ink2); font-size:11px; line-height:1.5; }
+  .tl-nodate { margin-top:18px; }
+  .tl-nodate h3 { font-size:12.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink2); padding-bottom:8px; border-bottom:1px solid var(--border); margin-bottom:6px; display:flex; justify-content:space-between; }
+  .tl-nodate .trow { display:flex; gap:10px; align-items:baseline; padding:6px 4px; border-bottom:1px dashed var(--border); font-size:12.5px; flex-wrap:wrap; }
+  .tl-nodate .trow a { color:var(--ink); font-weight:600; }
+  .tl-nodate .trow .meta { color:var(--ink2); font-size:11px; }
+  .tl-hint { color:var(--ink3); font-size:11.5px; margin-top:8px; }
+  footer { padding:0 24px 30px; color:var(--ink3); font-size:11.5px; }
+  footer code { background:var(--chip); border-radius:4px; padding:1px 5px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 Kanban — tradex-monitoring</h1>
+  <span class="sub" id="today"></span>
+  <div class="spacer"></div>
+  <button class="btn active" id="tabBoard">Board</button>
+  <button class="btn" id="tabTimeline">Timeline</button>
+  <button class="btn" id="themeToggle">🌓</button>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="filters">
+  <select id="fArea"><option value="">Area — tất cả</option></select>
+  <select id="fPrio"><option value="">Priority — tất cả</option></select>
+  <select id="fType"><option value="">Type — tất cả</option></select>
+  <select id="fFeature"><option value="">Feature — tất cả</option></select>
+  <input id="fSearch" type="search" placeholder="Tìm theo title / id / owner…">
+  <button class="btn" id="fReset">Reset</button>
+  <span class="count" id="count"></span>
+</div>
+
+<div class="board-wrap" id="boardWrap"><div class="board" id="board"></div></div>
+<div class="timeline" id="timeline"></div>
+
+<footer>
+  Nguồn dữ liệu duy nhất: <code>Tracking/tasks.js</code> — sửa status/deadline tại đó rồi reload trang.
+  Quy trình &amp; schema: <code>Tracking/README.md</code>. Deadline đỏ = quá hạn, cam = còn ≤ 14 ngày.
+</footer>
+
+<script src="tasks.js"></script>
+<script>
+(function(){
+  const COLS = [
+    { key:"backlog",     label:"⏸ Backlog" },
+    { key:"ready",       label:"🟢 Ready" },
+    { key:"in_progress", label:"🔄 In Progress" },
+    { key:"blocked",     label:"🔒 Blocked" },
+    { key:"done",        label:"✅ Done" },
+  ];
+  const DAY = 86400000;
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // theme
+  const root = document.documentElement;
+  function setTheme(t){ root.setAttribute("data-theme", t); localStorage.setItem("kb-theme", t); }
+  setTheme(localStorage.getItem("kb-theme") || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  document.getElementById("themeToggle").onclick = () => { setTheme(root.getAttribute("data-theme")==="dark"?"light":"dark"); render(); };
+
+  document.getElementById("today").textContent = "Hôm nay: " + today.toLocaleDateString("vi-VN", {weekday:"long", day:"2-digit", month:"2-digit", year:"numeric"});
+
+  function dlInfo(t){
+    if(!t.deadline || t.status==="done") return null;
+    const d = new Date(t.deadline+"T00:00:00");
+    const diff = Math.round((d - today)/DAY);
+    const label = d.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"});
+    if(diff < 0)  return {cls:"overdue", text:"⚠ quá hạn "+(-diff)+"d · "+label, diff};
+    if(diff <= 14) return {cls:"soon", text:"⏳ còn "+diff+"d · "+label, diff};
+    return {cls:"", text:"📅 "+label, diff};
+  }
+  const esc = s => String(s??"").replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const byId = Object.fromEntries(TASKS.map(t=>[t.id,t]));
+
+  // filters
+  const sel = { area:"", prio:"", type:"", feature:"", q:"" };
+  function opts(id, values){
+    const el = document.getElementById(id);
+    [...new Set(values)].sort().forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; el.appendChild(o); });
+    return el;
+  }
+  opts("fArea", TASKS.map(t=>t.area)).onchange = e=>{ sel.area=e.target.value; refreshFeatures(); render(); };
+  opts("fPrio", TASKS.map(t=>t.priority).filter(Boolean)).onchange = e=>{ sel.prio=e.target.value; render(); };
+  opts("fType", TASKS.map(t=>t.type)).onchange = e=>{ sel.type=e.target.value; render(); };
+  const fFeature = document.getElementById("fFeature");
+  function refreshFeatures(){
+    fFeature.innerHTML = '<option value="">Feature — tất cả</option>';
+    const pool = TASKS.filter(t=>!sel.area || t.area===sel.area);
+    [...new Set(pool.map(t=>t.feature))].sort().forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=v; fFeature.appendChild(o); });
+    sel.feature="";
+  }
+  refreshFeatures();
+  fFeature.onchange = e=>{ sel.feature=e.target.value; render(); };
+  document.getElementById("fSearch").oninput = e=>{ sel.q=e.target.value.toLowerCase(); render(); };
+  document.getElementById("fReset").onclick = ()=>{ sel.area=sel.prio=sel.type=sel.feature=sel.q="";
+    ["fArea","fPrio","fType","fFeature"].forEach(i=>document.getElementById(i).value="");
+    document.getElementById("fSearch").value=""; refreshFeatures(); render(); };
+
+  function filtered(){
+    return TASKS.filter(t =>
+      (!sel.area || t.area===sel.area) &&
+      (!sel.prio || t.priority===sel.prio) &&
+      (!sel.type || t.type===sel.type) &&
+      (!sel.feature || t.feature===sel.feature) &&
+      (!sel.q || (t.title+" "+t.id+" "+(t.owner||"")+" "+(t.note||"")).toLowerCase().includes(sel.q))
+    );
+  }
+
+  function depHtml(t){
+    let h="";
+    if(t.blockedBy && t.blockedBy.length)
+      h += '<div class="dep">🔒 Chờ: '+t.blockedBy.map(b=>byId[b]?byId[b].id:esc(b)).join(", ")+'</div>';
+    if(t.blocks && t.blocks.length)
+      h += '<div class="dep">⛓ Chặn: '+t.blocks.map(b=>byId[b]?byId[b].id:esc(b)).join(", ")+'</div>';
+    return h;
+  }
+
+  function cardHtml(t){
+    const dl = dlInfo(t);
+    const flag = (t.note||"").startsWith("⚠️");
+    return `<div class="card p-${esc(t.priority||"x")}">
+      <div class="top">
+        <span class="id">${esc(t.id)}</span>
+        ${t.priority?`<span class="badge prio-${esc(t.priority)}">${esc(t.priority)}</span>`:""}
+        <span class="badge area">${esc(t.area)}</span>
+        <span class="badge">${esc(t.type)}</span>
+        ${dl?`<span class="dl ${dl.cls}">${dl.text}</span>`:""}
+      </div>
+      <div class="title"><a href="../${encodeURI(t.doc)}" title="${esc(t.doc)}">${esc(t.title)}</a></div>
+      <div class="meta">
+        <span>📁 ${esc(t.feature)}</span>
+        ${t.owner?`<span>· 👤 ${esc(t.owner)}</span>`:""}
+        ${t.jira?`<span>· 🎫 ${esc(t.jira)}</span>`:""}
+      </div>
+      ${depHtml(t)}
+      ${t.note?`<div class="note${flag?" flag":""}">${esc(t.note)}</div>`:""}
+    </div>`;
+  }
+
+  function renderStats(list){
+    const open = list.filter(t=>t.status!=="done");
+    const overdue = open.filter(t=>{const d=dlInfo(t); return d&&d.cls==="overdue";});
+    const soon = open.filter(t=>{const d=dlInfo(t); return d&&d.cls==="soon";});
+    document.getElementById("stats").innerHTML = `
+      <div class="tile"><div class="v">${open.length}</div><div class="l">Task đang mở</div></div>
+      <div class="tile ok"><div class="v">${list.filter(t=>t.status==="ready").length}</div><div class="l">🟢 Ready</div></div>
+      <div class="tile"><div class="v">${list.filter(t=>t.status==="in_progress").length}</div><div class="l">🔄 In Progress</div></div>
+      <div class="tile block"><div class="v">${list.filter(t=>t.status==="blocked").length}</div><div class="l">🔒 Blocked</div></div>
+      <div class="tile danger"><div class="v">${overdue.length}</div><div class="l">⚠ Quá hạn</div></div>
+      <div class="tile warn"><div class="v">${soon.length}</div><div class="l">⏳ Đến hạn ≤ 14 ngày</div></div>`;
+  }
+
+  const prioRank = {GATE:0,P0:1,P1:2,P2:3,P3:4};
+  function sortTasks(a,b){
+    const da=dlInfo(a), db=dlInfo(b);
+    if(!!da !== !!db) return da?-1:1;
+    if(da && db && da.diff!==db.diff) return da.diff-db.diff;
+    return (prioRank[a.priority]??9)-(prioRank[b.priority]??9);
+  }
+
+  function renderBoard(list){
+    document.getElementById("board").innerHTML = COLS.map(c=>{
+      const items = list.filter(t=>t.status===c.key).sort(sortTasks);
+      return `<div class="col"><h2>${c.label} <span class="n">${items.length}</span></h2>${items.map(cardHtml).join("")}</div>`;
+    }).join("");
+  }
+
+  function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function prioColor(p){
+    if(p==="GATE") return cssVar("--block");
+    if(p==="P0")   return cssVar("--danger");
+    if(p==="P1")   return cssVar("--warn");
+    return cssVar("--ink3"); // P2/P3/không set — mức ưu tiên thấp, màu trung tính
+  }
+  function ensureTooltip(){
+    let tip = document.getElementById("tlTooltip");
+    if(!tip){ tip = document.createElement("div"); tip.id="tlTooltip"; tip.className="tl-tooltip"; document.body.appendChild(tip); }
+    return tip;
+  }
+  function hideTooltip(){ const tip=document.getElementById("tlTooltip"); if(tip) tip.classList.remove("show"); }
+
+  const AREA_ORDER = ["Derivatives","TT134","Smart-OTP","NHSV-Pro","eKYC","TradeX-Monitor"];
+
+  function renderNoDateSection(items){
+    if(!items.length) return "";
+    return `<div class="tl-nodate"><h3>Chưa có deadline <span>${items.length} task</span></h3>` +
+      items.slice().sort(sortTasks).map(t=>`<div class="trow">
+        <a href="../${encodeURI(t.doc)}">${esc(t.title)}</a>
+        <span class="meta">${esc(t.id)} · ${esc(t.area)} · ${esc(t.status)}${t.priority?" · "+esc(t.priority):""}</span>
+      </div>`).join("") +
+      `<div class="tl-hint">Việc không có deadline cụ thể — xem chi tiết ở tab Board.</div></div>`;
+  }
+
+  function renderTimeline(list){
+    const container = document.getElementById("timeline");
+    const dated = list.filter(t=>t.deadline).sort((a,b)=>a.deadline<b.deadline?-1:1);
+    const undated = list.filter(t=>!t.deadline);
+
+    if(!dated.length){
+      container.innerHTML = `<div class="tl-empty">Không có task nào có deadline trong bộ lọc hiện tại.</div>` + renderNoDateSection(undated);
+      return;
+    }
+
+    const lanes = AREA_ORDER.filter(a => dated.some(t=>t.area===a));
+    const dateMs = t => new Date(t.deadline+"T00:00:00").getTime();
+    const allMs = dated.map(dateMs);
+    let minT = Math.min(today.getTime(), ...allMs) - 10*DAY;
+    let maxT = Math.max(...allMs) + 12*DAY;
+    if(maxT - minT < 30*DAY) maxT = minT + 30*DAY;
+
+    const margin = { top:30, right:30, bottom:34, left:150 };
+    const laneH = 58;
+    const innerW = Math.max(700, lanes.length ? 1040 : 700);
+    const W = margin.left + innerW + margin.right;
+    const H = margin.top + lanes.length*laneH + margin.bottom;
+    const x = ms => margin.left + (ms-minT)/(maxT-minT) * innerW;
+    const laneY = area => margin.top + lanes.indexOf(area)*laneH + laneH/2;
+
+    // month gridlines
+    const ticks = [];
+    let cur = new Date(minT); cur.setDate(1); cur.setHours(0,0,0,0);
+    while(cur.getTime() <= maxT){ ticks.push(new Date(cur)); cur = new Date(cur.getFullYear(), cur.getMonth()+1, 1); }
+
+    // stack same-lane markers that land too close together (avoid overlap)
+    const posOf = new Map();
+    lanes.forEach(area=>{
+      const items = dated.filter(t=>t.area===area).sort((a,b)=>dateMs(a)-dateMs(b));
+      const placed = [];
+      items.forEach(t=>{
+        const px = x(dateMs(t));
+        let stack = 0;
+        while(placed.some(p=>p.stack===stack && Math.abs(p.x-px)<24)) stack++;
+        placed.push({x:px, stack});
+        posOf.set(t.id, stack);
+      });
+    });
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Timeline theo deadline">`;
+    ticks.forEach(d=>{
+      const gx = x(d.getTime());
+      svg += `<line class="tl-grid" x1="${gx.toFixed(1)}" y1="${margin.top-8}" x2="${gx.toFixed(1)}" y2="${H-margin.bottom+6}"/>`;
+      svg += `<text class="tl-axis-label" x="${gx.toFixed(1)}" y="${H-margin.bottom+20}" text-anchor="middle">Th${d.getMonth()+1}/${String(d.getFullYear()).slice(2)}</text>`;
+    });
+    lanes.forEach(area=>{
+      const ly = laneY(area);
+      svg += `<line class="tl-lane-line" x1="${margin.left}" y1="${ly}" x2="${W-margin.right}" y2="${ly}"/>`;
+      svg += `<text class="tl-lane-label" x="${margin.left-12}" y="${ly+4}" text-anchor="end">${esc(area)}</text>`;
+    });
+    if(today.getTime()>=minT && today.getTime()<=maxT){
+      const tx = x(today.getTime());
+      svg += `<line class="tl-today" x1="${tx.toFixed(1)}" y1="${margin.top-12}" x2="${tx.toFixed(1)}" y2="${H-margin.bottom+6}"/>`;
+      svg += `<text class="tl-today-label" x="${(tx+5).toFixed(1)}" y="${margin.top-16}">Hôm nay</text>`;
+    }
+    dated.forEach(t=>{
+      const px = x(dateMs(t)), stack = posOf.get(t.id)||0, py = laneY(t.area) - stack*15;
+      const color = prioColor(t.priority);
+      const label = (t.priority==="GATE"||t.priority==="P0") ? esc(t.id) : "";
+      svg += `<a href="../${encodeURI(t.doc)}" title="${esc(t.title)}">
+        <circle class="tl-marker" data-id="${esc(t.id)}" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="7" fill="${color}"/>
+      </a>`;
+      if(label) svg += `<text class="tl-marker-label" x="${(px+10).toFixed(1)}" y="${(py-8).toFixed(1)}">${label}</text>`;
+    });
+    svg += `</svg>`;
+
+    const legend = `<div class="tl-legend">
+      <span class="key"><span class="dot" style="background:${prioColor("GATE")}"></span>GATE</span>
+      <span class="key"><span class="dot" style="background:${prioColor("P0")}"></span>P0</span>
+      <span class="key"><span class="dot" style="background:${prioColor("P1")}"></span>P1</span>
+      <span class="key"><span class="dot" style="background:${prioColor("P2")}"></span>P2 / P3</span>
+      <span class="hint">Chấm = deadline · hover để xem chi tiết · click để mở doc</span>
+    </div>`;
+
+    container.innerHTML = legend + `<div class="tl-chart-wrap">${svg}</div>` + renderNoDateSection(undated);
+
+    const tip = ensureTooltip();
+    container.querySelectorAll(".tl-marker").forEach(el=>{
+      const t = byId[el.getAttribute("data-id")];
+      if(!t) return;
+      el.addEventListener("mouseenter", ()=>{
+        const dl = dlInfo(t);
+        tip.innerHTML = `<div class="tt-title">${esc(t.title)}</div>
+          <div class="tt-meta">${esc(t.id)} · ${esc(t.area)} · ${esc(t.priority||"—")}${t.owner?" · "+esc(t.owner):""}</div>
+          <div class="tt-meta">${dl ? dl.text : new Date(t.deadline+"T00:00:00").toLocaleDateString("vi-VN")}</div>
+          ${t.note?`<div class="tt-meta" style="margin-top:4px">${esc(t.note)}</div>`:""}`;
+        tip.classList.add("show");
+      });
+      el.addEventListener("mousemove", e=>{ tip.style.left=(e.clientX+14)+"px"; tip.style.top=(e.clientY+14)+"px"; });
+      el.addEventListener("mouseleave", hideTooltip);
+    });
+  }
+
+  function render(){
+    const list = filtered();
+    renderStats(list);
+    renderBoard(list);
+    renderTimeline(list);
+    document.getElementById("count").textContent = list.length + " / " + TASKS.length + " task";
+  }
+
+  // tabs
+  const tb=document.getElementById("tabBoard"), tt=document.getElementById("tabTimeline");
+  tb.onclick = ()=>{ tb.classList.add("active"); tt.classList.remove("active"); hideTooltip();
+    document.getElementById("boardWrap").style.display=""; document.getElementById("timeline").style.display="none"; };
+  tt.onclick = ()=>{ tt.classList.add("active"); tb.classList.remove("active");
+    document.getElementById("boardWrap").style.display="none"; document.getElementById("timeline").style.display="block"; };
+
+  render();
+})();
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 **Version:** 1.2  
 **Date:** March 23, 2026
 
-> **Note:** Check maximum order quantity before placing order (DRORD-028). Response đồng thời bổ sung **buying power** từ DRACC-031 (`value_withdrawable_collateral_assets`). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5 (DRACC-031), §2.3.8 (DRORD-028).
+> **Note:** Check maximum order quantity before placing order (DRORD-028). Response đồng thời bổ sung **buying power** từ DRACC-031 (`value_withdrawable_collateral_assets`). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.5 (DRACC-031), §2.3.8 (DRORD-028).
 
 ---
 

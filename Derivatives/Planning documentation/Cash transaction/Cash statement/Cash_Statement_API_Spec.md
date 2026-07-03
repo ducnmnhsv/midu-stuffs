@@ -5,7 +5,7 @@
 **Version:** 1.7  
 **Date:** April 7, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu **các giao dịch tiền phát sinh** trên tài khoản (monetary transactions) theo khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) **§2.1.6 DRACC-035** — `dr-monetary-transaction`.
+> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu **các giao dịch tiền phát sinh** trên tài khoản (monetary transactions) theo khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) **§2.1.6 DRACC-035** — `dr-monetary-transaction`.
 
 ---
 
@@ -522,7 +522,7 @@ function mapMonetaryTransaction(item: LotteDataResponse, requestTransactionType:
 ---
 
 **Document Status:** ✅ Complete (mapped to DRACC-035)  
-**Lotte Reference:** [API specs]Lotte_DR.md §2.1.6 DRACC-035 — dr-monetary-transaction  
+**Lotte Reference:** Lotte_DR_API_Specs.md §2.1.6 DRACC-035 — dr-monetary-transaction  
 **For:** BA/Dev  
 **Next Steps:** BE: map 1-1 §2.5.2 + pagination passthrough; Core xác nhận đúng nghiệp vụ từng mã `03`, `10`–`15` và nhãn hiển thị  
 **Estimated Effort:** ~2 days (BE) + 1-2 days (FE) + 1-2 days (QA)

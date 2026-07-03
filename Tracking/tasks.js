@@ -1,0 +1,643 @@
+// ============================================================================
+// TRACKING — SINGLE SOURCE OF TRUTH cho toàn bộ task tradex-monitoring
+// ============================================================================
+// Quy tắc (CLAUDE.md C7):
+//   - Mọi thay đổi status/deadline/priority → CHỈ sửa file này.
+//   - README các khu vực KHÔNG duplicate status.
+//   - Board: mở Tracking/kanban.html (đọc file này qua <script src>).
+//
+// Schema (chi tiết: Tracking/README.md):
+//   id        : "{AREA}-{FEATURE}-{seq}" — không đổi sau khi tạo
+//   title     : tên task
+//   area      : "Derivatives" | "TT134" | "Smart-OTP" | "NHSV-Pro" | "eKYC" | "TradeX-Monitor"
+//   feature   : sub-category / feature area
+//   type      : "BE" | "FE" | "PRD" | "Spec" | "Decision" | "Project"
+//   status    : "backlog" | "ready" | "in_progress" | "blocked" | "done"
+//   priority  : "P0" | "P1" | "P2" | "P3" | "GATE" | null
+//   deadline  : "YYYY-MM-DD" | null
+//   owner     : string
+//   jira      : string | null  (vd "NHMTS-682")
+//   doc       : đường dẫn tương đối từ repo root tới file doc
+//   blocks    : [id...] — task này chặn các task khác
+//   blockedBy : [id... hoặc mô tả external blocker]
+//   note      : ghi chú ngắn
+// ============================================================================
+
+const TASKS = [
+
+  // ==========================================================================
+  // TT134 - UBCK (compliance) — deadline P0: 14/08 & 28/08, P1/P2: 30/10
+  // ==========================================================================
+  {
+    id: "TT134-GATE", title: "★ GATE — BOM Decision: C06 vs VNPT Vendor",
+    area: "TT134", feature: "Biometric System", type: "Decision",
+    status: "in_progress", priority: "GATE", deadline: "2026-06-30",
+    owner: "BOM / Ms Nhai + IT", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: ["TT134-STT8", "TT134-STT10", "TT134-STT12", "TT134-STT14B", "TT134-STT40"], blockedBy: [],
+    note: "QUÁ HẠN 30/06 — block 5 cards biometric. Mỗi ngày trễ = trễ deadline 28/08.",
+  },
+  {
+    id: "TT134-STT7", title: "[P0-01] OTP TTL Compliance — SMS OTP ≤5p / Smart OTP ≤2p",
+    area: "TT134", feature: "Order 2FA", type: "BE",
+    status: "ready", priority: "P0", deadline: "2026-08-14",
+    owner: "BE Lead + FE Lead", jira: null,
+    doc: "TT134 - UBCK/Order 2FA/Issues/OTP_TTL_Compliance_Issue.md",
+    blocks: ["TT134-STT14A"], blockedBy: [],
+    note: "9 BE + 6 FE + 5 Core tasks. Bắt đầu được ngay.",
+  },
+  {
+    id: "TT134-BE7", title: "[BE-7] Smart OTP Biometric Activation — Điều 8.5b",
+    area: "TT134", feature: "Order 2FA", type: "BE",
+    status: "ready", priority: "P0", deadline: "2026-08-14",
+    owner: "BE Lead + FE Lead + Pháp chế", jira: null,
+    doc: "TT134 - UBCK/Order 2FA/Issues/BE7_SmartOTP_Biometric_Activation.md",
+    blocks: [], blockedBy: ["AAA biometric flag enable", "FE RSA Keystore confirm", "TT134-STT7"],
+    note: "Chờ FE confirm RSA Keystore implementation.",
+  },
+  {
+    id: "TT134-STT35", title: "[P0-02] Device ID Logging — GDCK & Rút tiền (Điều 18)",
+    area: "TT134", feature: "Device Fingerprinting", type: "BE",
+    status: "ready", priority: "P0", deadline: "2026-08-28",
+    owner: "BE Lead + FE Lead + DBA", jira: null,
+    doc: "TT134 - UBCK/Device Fingerprinting/Issues/Device_ID_Logging_Issue.md",
+    blocks: ["TT134-SESS-IMPL", "TT134-ALERT-SPEC", "TT134-AUDIT-SPEC"], blockedBy: [],
+    note: "1 DB migration chung với STT5 (t_order_log + t_withdrawal_log) — không tách 2 PR.",
+  },
+  {
+    id: "TT134-STT5", title: "[P0-04] Session Auth v1.3 — Login Smart OTP = session auth",
+    area: "TT134", feature: "Order 2FA", type: "BE",
+    status: "ready", priority: "P0", deadline: "2026-08-28",
+    owner: "BE Lead + FE Lead + Smart OTP team", jira: null,
+    doc: "TT134 - UBCK/Order 2FA/Specifications/Order_2FA_Integration_Spec.md",
+    blocks: ["TT134-STT14A", "TT134-SESS-IMPL", "TT134-AUDIT-SPEC"], blockedBy: ["SOTP-LOGIN-BE"],
+    note: "Prerequisite: Smart OTP Login go-live. BE-SA-1 merge chung PR với Smart OTP Login Task 4 (rule C6).",
+  },
+  {
+    id: "TT134-STT14A", title: "[P0-03] Rút tiền <10M — merged vào STT5 Session Auth",
+    area: "TT134", feature: "Order 2FA", type: "BE",
+    status: "done", priority: "P0", deadline: "2026-08-28",
+    owner: "—", jira: null,
+    doc: "TT134 - UBCK/Order 2FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md",
+    blocks: [], blockedBy: [],
+    note: "SCOPE CLOSED (rule C6): không assign dev riêng, scope nằm trong STT5.",
+  },
+  {
+    id: "TT134-STT9", title: "STT 9 — PAD Certification (FIDO Alliance)",
+    area: "TT134", feature: "Biometric System", type: "Project",
+    status: "done", priority: "P0", deadline: null,
+    owner: "VNPT", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: [], blockedBy: [], note: "",
+  },
+  {
+    id: "TT134-STT36", title: "STT 36 — Mobile security: 1 device/TK, anti-tampering",
+    area: "TT134", feature: "Device Fingerprinting", type: "BE",
+    status: "backlog", priority: "P1", deadline: "2026-10-30",
+    owner: "BE + FE Lead", jira: null,
+    doc: "TT134 - UBCK/Device Fingerprinting/README.md",
+    blocks: [], blockedBy: [],
+    note: "Internal — có thể kickoff song song với P0 nếu có resource. Plan tháng 8.",
+  },
+  {
+    id: "TT134-STT8", title: "STT 8 — Sinh trắc học FIDO: FAR <0.01%, FRR <5%, PAD",
+    area: "TT134", feature: "Biometric System", type: "BE",
+    status: "blocked", priority: "P2", deadline: "2026-10-30",
+    owner: "IT + BE + FE", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: ["TT134-STT12", "TT134-STT14B"], blockedBy: ["TT134-GATE"],
+    note: "Nếu VNPT: kịp 28/08. Nếu C06: KHÔNG kịp 28/08.",
+  },
+  {
+    id: "TT134-STT10", title: "STT 10 — Biometric rules: lock ≤10 lần, timeout 3p, verify CSDL QG",
+    area: "TT134", feature: "Biometric System", type: "BE",
+    status: "blocked", priority: "P2", deadline: null,
+    owner: "BE + C06/VNPT", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: [], blockedBy: ["TT134-GATE"], note: "",
+  },
+  {
+    id: "TT134-STT12", title: "STT 12 — GDCK online: sinh trắc học giao dịch đầu/phiên",
+    area: "TT134", feature: "Biometric System", type: "BE",
+    status: "blocked", priority: "P2", deadline: "2026-10-30",
+    owner: "BE + FE + C06/VNPT", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: [], blockedBy: ["TT134-GATE", "TT134-STT8"], note: "",
+  },
+  {
+    id: "TT134-STT14B", title: "STT 14 — Rút tiền ≥10M: sinh trắc học bắt buộc",
+    area: "TT134", feature: "Biometric System", type: "BE",
+    status: "blocked", priority: "P2", deadline: null,
+    owner: "BE + FE + C06/VNPT", jira: null,
+    doc: "TT134 - UBCK/Biometric System/README.md",
+    blocks: [], blockedBy: ["TT134-GATE", "TT134-STT8"],
+    note: "28/08 nếu chọn VNPT.",
+  },
+  {
+    id: "TT134-STT40", title: "STT 40 — Lưu trữ, bảo quản thông tin sinh trắc học KH",
+    area: "TT134", feature: "Data Security", type: "BE",
+    status: "blocked", priority: "P3", deadline: null,
+    owner: "IT + BE + C06", jira: null,
+    doc: "TT134 - UBCK/Data Security/README.md",
+    blocks: [], blockedBy: ["TT134-GATE"], note: "",
+  },
+  {
+    id: "TT134-STT3", title: "STT 3 — Xác minh SĐT thuộc quyền sử dụng hợp pháp của KH",
+    area: "TT134", feature: "Service Agreement", type: "Spec",
+    status: "backlog", priority: "P3", deadline: null,
+    owner: "PO + IT", jira: null,
+    doc: "TT134 - UBCK/Service Agreement/Specifications/Service_Agreement_API_Spec.md",
+    blocks: [], blockedBy: ["Vendor TBD"],
+    note: "Research — chưa có vendor.",
+  },
+  {
+    id: "TT134-SESS-IMPL", title: "Session Management — implementation (spec đã xong)",
+    area: "TT134", feature: "Session Management", type: "BE",
+    status: "blocked", priority: "P1", deadline: "2026-10-30",
+    owner: "BE Lead", jira: null,
+    doc: "TT134 - UBCK/Session Management/Specifications/Session_Management_API_Spec.md",
+    blocks: [], blockedBy: ["TT134-STT5", "TT134-STT35"],
+    note: "Rule C6: không impl trước khi STT5 + STT35 Phase 3 xong.",
+  },
+  {
+    id: "TT134-AUDIT-SPEC", title: "Audit Log — viết spec (chờ unblock)",
+    area: "TT134", feature: "Audit Log", type: "Spec",
+    status: "blocked", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "TT134 - UBCK/Audit Log/README.md",
+    blocks: [], blockedBy: ["TT134-STT5", "TT134-STT35"],
+    note: "Rule C6 unblocking sequence: không viết spec chi tiết trước khi STT5+STT35 Phase 3 xong.",
+  },
+  {
+    id: "TT134-ALERT-SPEC", title: "Alert System — viết spec (chờ unblock)",
+    area: "TT134", feature: "Alert System", type: "Spec",
+    status: "blocked", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "TT134 - UBCK/Alert System/README.md",
+    blocks: [], blockedBy: ["TT134-STT35"],
+    note: "Phụ thuộc event stream từ STT35 Device ID Logging.",
+  },
+  {
+    id: "TT134-RISK-SPEC", title: "Risk Controls — viết spec (README stub)",
+    area: "TT134", feature: "Risk Controls", type: "Spec",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "TT134 - UBCK/Risk Controls/README.md",
+    blocks: [], blockedBy: [], note: "",
+  },
+  {
+    id: "TT134-COMPL-SPEC", title: "Compliance Reporting — viết spec (README stub)",
+    area: "TT134", feature: "Compliance Reporting", type: "Spec",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "TT134 - UBCK/Compliance Reporting/README.md",
+    blocks: [], blockedBy: [], note: "P2 — sau P0/P1.",
+  },
+
+  // ==========================================================================
+  // Derivatives (NHMTS-682, go-live milestone) — ĐÃ HOÀN THÀNH, trừ TP/SL (backlog)
+  // ==========================================================================
+  // --- Market data ---
+  {
+    id: "DRV-MKT-S1", title: "FE: Derivatives Market Display (Search, Home, Market lists, Price table)",
+    area: "Derivatives", feature: "Market data", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Market data/Issues/Derivatives_Market_Display.md",
+    blocks: [], blockedBy: [], note: "Epic DR-FE-MKT · Story MKT.S1. Released.",
+  },
+  {
+    id: "DRV-MKT-S2", title: "FE: Derivatives Current Price Screen (Bid/Ask, Thống kê lệnh)",
+    area: "Derivatives", feature: "Market data", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Market data/Issues/Derivatives_Current_Price_Screen.md",
+    blocks: [], blockedBy: [], note: "Epic DR-FE-MKT · Story MKT.S2. Released.",
+  },
+  {
+    id: "DRV-MKT-B1", title: "BE: Chart API Implementation",
+    area: "Derivatives", feature: "Market data", type: "BE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "BE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Market data/Issues/Chart_API_Implementation.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  {
+    id: "DRV-MKT-B2", title: "BE: Current Price Screen BE Tasks",
+    area: "Derivatives", feature: "Market data", type: "BE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "BE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Market data/Issues/Current_Price_Screen_BE_Tasks.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  {
+    id: "DRV-MKT-B3", title: "BE: Historical Daily Lotte Backfill",
+    area: "Derivatives", feature: "Market data", type: "BE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "BE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Market data/Issues/Historical_Daily_Lotte_Backfill_Implementation.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  {
+    id: "DRV-MKT-B4", title: "BE: Active Volume Fields (asv/asb)",
+    area: "Derivatives", feature: "Market data", type: "BE",
+    status: "done", priority: "P2", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "Derivatives/Planning documentation/Market data/Issues/BE_Active_Volume_Fields_asv_asb.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  {
+    id: "DRV-MKT-B5", title: "BE: Market Quote Fields Enhancement",
+    area: "Derivatives", feature: "Market data", type: "BE",
+    status: "done", priority: "P2", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "Derivatives/Planning documentation/Market data/Issues/BE_Market_Quote_Fields_Enhancement.md",
+    blocks: [], blockedBy: [], note: "Validated.",
+  },
+  // --- Order ---
+  {
+    id: "DRV-ORD-S1", title: "FE: Order Availability Check Integration (max quantity)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Order_Availability_Check_Integration.md",
+    blocks: [], blockedBy: [], note: "Epic DR-FE-ORD · Story ORD.S1. Released.",
+  },
+  {
+    id: "DRV-ORD-S2", title: "FE: Derivatives Order Entry Integration (đặt/hủy/sửa/unmatch)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Derivatives_Order_Entry_Integration.md",
+    blocks: [], blockedBy: [], note: "Story ORD.S2. Released.",
+  },
+  {
+    id: "DRV-ORD-S2B", title: "FE: Trade Screen (Normal/Quick, real-time price, max buy/sell)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Trade_Screen_FE_Requirement.md",
+    blocks: [], blockedBy: [], note: "Story ORD.S2b. Released.",
+  },
+  {
+    id: "DRV-ORD-S2C", title: "FE: Max Buy / Max Sell Integration (checkAvailability)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Max_Buy_Max_Sell_Integration.md",
+    blocks: [], blockedBy: [], note: "Story ORD.S2c. Released.",
+  },
+  {
+    id: "DRV-ORD-S3", title: "FE: TP/SL UI Copy & validation (EN/VI)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/TP_SL_UI_Copy_Implementation.md",
+    blocks: [], blockedBy: ["DRV-ORD-DISC"],
+    note: "Story ORD.S3 — phần còn lại của Derivatives đã done, riêng TP/SL ở backlog (chờ TPSL tracking discussion).",
+  },
+  {
+    id: "DRV-ORD-S4", title: "FE: Stop Order Place/Modify/Cancel Integration",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Derivatives_Stop_Order_Integration.md",
+    blocks: [], blockedBy: [], note: "Story ORD.S4. Released.",
+  },
+  {
+    id: "DRV-ORD-S4B", title: "FE: Stop Order Screen (Figma, date picker, validation)",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Stop_Order_Screen_FE_Requirement.md",
+    blocks: [], blockedBy: [], note: "Story ORD.S4b. Released.",
+  },
+  {
+    id: "DRV-ORD-MOD", title: "FE: Modify Normal & Stop Order",
+    area: "Derivatives", feature: "Order", type: "FE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Order/Issues/Modify_Normal_And_Stop_Order_FE_Requirement.md",
+    blocks: [], blockedBy: [],
+    note: "Released. ⚠️ Housekeeping còn nợ: 3 doc overlap (Modify_Normal / Modify_Stop / bản gộp) — Midu quyết bản canonical, archive 2 bản lẻ.",
+  },
+  {
+    id: "DRV-ORD-DISC", title: "Discussion: TP/SL Tracking Mechanism",
+    area: "Derivatives", feature: "Order", type: "Spec",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "PO + BE", jira: null,
+    doc: "Derivatives/Planning documentation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md",
+    blocks: ["DRV-ORD-S3"], blockedBy: ["Core/BE decision"],
+    note: "Paused — duy nhất còn mở trong Derivatives (cùng DRV-ORD-S3).",
+  },
+  {
+    id: "DRV-ORD-WS", title: "Spec: OrderStatus WebSocket",
+    area: "Derivatives", feature: "Order", type: "Spec",
+    status: "done", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "Derivatives/Planning documentation/Order/Specifications/OrderStatus_WebSocket_Spec.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  {
+    id: "DRV-ORD-AVAIL", title: "Spec: Order Availability Check API (v1.2)",
+    area: "Derivatives", feature: "Order", type: "Spec",
+    status: "done", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "Derivatives/Planning documentation/Order/Specifications/Order_Availability_Check_API_Spec.md",
+    blocks: [], blockedBy: [], note: "v1.2 — hoàn thành.",
+  },
+  // --- Cash transaction ---
+  {
+    id: "DRV-CASH-S1", title: "FE: VSD Transaction (Balance, Deposit, Withdraw, History)",
+    area: "Derivatives", feature: "Cash transaction", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Cash transaction/Issues/VSD_Transaction_FE_Requirement.md",
+    blocks: [], blockedBy: [], note: "Story CASH.S1. Released.",
+  },
+  {
+    id: "DRV-CASH-S2", title: "FE: Internal Transfer (sub 80)",
+    area: "Derivatives", feature: "Cash transaction", type: "FE",
+    status: "done", priority: "P0", deadline: null,
+    owner: "FE team", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/Cash transaction/Issues/Internal_Transfer_FE_Requirement.md",
+    blocks: [], blockedBy: [], note: "Story CASH.S2. Released.",
+  },
+  // --- Open DR Sub Account ---
+  {
+    id: "DRV-ACC-PRD", title: "PRD: Mở tiểu khoản phái sinh online (v2)",
+    area: "Derivatives", feature: "Open_DR_Sub_Account", type: "PRD",
+    status: "done", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "Derivatives/Planning documentation/Open_DR_Sub_Account/Planning/PRD_Open_Derivatives_Sub_Account_Online_v2.md",
+    blocks: [], blockedBy: [], note: "Approved. v1 đã archive.",
+  },
+  {
+    id: "DRV-ACC-BE", title: "BE: Jira Backlog — Sub Account Online",
+    area: "Derivatives", feature: "Open_DR_Sub_Account", type: "BE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "Derivatives/Planning documentation/Open_DR_Sub_Account/Issues/BE_Jira_Backlog_Sub_Account_Online.md",
+    blocks: [], blockedBy: [], note: "Released.",
+  },
+  // --- Specs đã xong (context cho cột Done) ---
+  {
+    id: "DRV-SPEC-DONE", title: "Specs Complete: Regular/Stop/TPSL/Advance Orders + 6 Asset + 3 Cash",
+    area: "Derivatives", feature: "Order", type: "Spec",
+    status: "done", priority: "P0", deadline: null,
+    owner: "PO", jira: "NHMTS-682",
+    doc: "Derivatives/Planning documentation/README.md",
+    blocks: [], blockedBy: [],
+    note: "13 API specs ✅ Complete — chi tiết trong từng Specifications/ folder.",
+  },
+
+  // ==========================================================================
+  // Smart-OTP (pending 3rd party handoff)
+  // ==========================================================================
+  {
+    id: "SOTP-LOGIN-PRD", title: "PRD: Login bằng Smart OTP",
+    area: "Smart-OTP", feature: "Login", type: "PRD",
+    status: "ready", priority: "P0", deadline: null,
+    owner: "PO", jira: null,
+    doc: "Smart-OTP/Planning/06_PRD_Login_SmartOTP.md",
+    blocks: [], blockedBy: [], note: "Ready for sign-off.",
+  },
+  {
+    id: "SOTP-LOGIN-BE", title: "BE Task: Login Smart OTP",
+    area: "Smart-OTP", feature: "Login", type: "BE",
+    status: "ready", priority: "P0", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "Smart-OTP/Issues/07_BE_Task_Login_SmartOTP.md",
+    blocks: ["TT134-STT5"], blockedBy: [],
+    note: "Task 4 merge chung PR với TT134 STT5 BE-SA-1 (rule C6).",
+  },
+  {
+    id: "SOTP-LOGIN-FE", title: "FE Issue: Login Smart OTP",
+    area: "Smart-OTP", feature: "Login", type: "FE",
+    status: "ready", priority: "P0", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/08_FE_Issue_Login_SmartOTP.md",
+    blocks: [], blockedBy: [], note: "Ready for FE dev.",
+  },
+  {
+    id: "SOTP-FE-01", title: "FE: Kích hoạt Smart OTP",
+    area: "Smart-OTP", feature: "Activation", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/01_FE_Issue_Kich_Hoat_SmartOTP.md",
+    blocks: [], blockedBy: ["3rd party integration"], note: "Overview flow: Issues/00.",
+  },
+  {
+    id: "SOTP-FE-02", title: "FE: Lấy mã Smart OTP",
+    area: "Smart-OTP", feature: "Activation", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/02_FE_Issue_Lay_Ma_SmartOTP.md",
+    blocks: [], blockedBy: ["3rd party integration"], note: "",
+  },
+  {
+    id: "SOTP-FE-03", title: "FE: Reset PIN Smart OTP",
+    area: "Smart-OTP", feature: "PIN", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/03_FE_Issue_Reset_PIN_SmartOTP.md",
+    blocks: [], blockedBy: ["3rd party integration"], note: "",
+  },
+  {
+    id: "SOTP-FE-04", title: "FE: Change PIN Smart OTP",
+    area: "Smart-OTP", feature: "PIN", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/04_FE_Issue_Change_PIN_SmartOTP.md",
+    blocks: [], blockedBy: ["3rd party integration"], note: "",
+  },
+  {
+    id: "SOTP-FE-05", title: "FE: Kích hoạt lại Smart OTP",
+    area: "Smart-OTP", feature: "Activation", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "Smart-OTP/Issues/05_FE_Issue_Kich_Hoat_Lai_SmartOTP.md",
+    blocks: [], blockedBy: ["3rd party integration"], note: "",
+  },
+  {
+    id: "SOTP-API-MAP", title: "Spec: Smart OTP API Mapping",
+    area: "Smart-OTP", feature: "Login", type: "Spec",
+    status: "in_progress", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "Smart-OTP/Specifications/SmartOTP_API_Mapping.md",
+    blocks: [], blockedBy: [], note: "Draft.",
+  },
+
+  // ==========================================================================
+  // NHSV-Pro — New features (sprint Q2/Q3)
+  // ==========================================================================
+  {
+    id: "NHP-GTGD-PRD", title: "PRD: GTGD Chart (Market Watch)",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "PRD",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/GTGD_Chart/PRD.md",
+    blocks: [], blockedBy: [], note: "Ready for dev.",
+  },
+  {
+    id: "NHP-GTGD-BE", title: "BE: GTGD Chart (cumulative trading value va)",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "BE",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/GTGD_Chart/BE_Issue.md",
+    blocks: ["NHP-GTGD-FE"], blockedBy: [], note: "Revised — va đã expose trong /tradingview/history.",
+  },
+  {
+    id: "NHP-GTGD-FE", title: "FE: GTGD Chart Market Watch",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/GTGD_Chart/Issues/FE_GTGD_Chart_Market_Watch.md",
+    blocks: [], blockedBy: ["NHP-GTGD-BE"], note: "Draft.",
+  },
+  {
+    id: "NHP-TREEMAP", title: "Spec: Sector Treemap (Market Watch)",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "Spec",
+    status: "in_progress", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/Sector_Treemap_Spec.md",
+    blocks: [], blockedBy: [], note: "Đang iterate — có prototype + FE API flow HTML.",
+  },
+  {
+    id: "NHP-TOPINF", title: "Spec: Top Stock Influence (Market Watch)",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "Spec",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/Top_Stock_Influence_Spec.md",
+    blocks: [], blockedBy: [], note: "Draft.",
+  },
+  {
+    id: "NHP-EVENT-PRD", title: "PRD: Event Calendar",
+    area: "NHSV-Pro", feature: "Event_Calendar", type: "PRD",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/Event_Calendar/PRD.md",
+    blocks: ["NHP-EVENT-BE", "NHP-EVENT-FE"], blockedBy: [], note: "Draft.",
+  },
+  {
+    id: "NHP-EVENT-BE", title: "BE: Event Calendar",
+    area: "NHSV-Pro", feature: "Event_Calendar", type: "BE",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "New feature in NHSV Pro/Event_Calendar/Issues/BE_Event_Calendar.md",
+    blocks: [], blockedBy: ["NHP-EVENT-PRD"], note: "Draft.",
+  },
+  {
+    id: "NHP-EVENT-FE", title: "FE: Event Calendar",
+    area: "NHSV-Pro", feature: "Event_Calendar", type: "FE",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "New feature in NHSV Pro/Event_Calendar/Issues/FE_Event_Calendar.md",
+    blocks: [], blockedBy: ["NHP-EVENT-PRD"], note: "Draft.",
+  },
+  {
+    id: "NHP-EVENT-PUSH", title: "Spec: Push Notification (Event Calendar)",
+    area: "NHSV-Pro", feature: "Event_Calendar", type: "Spec",
+    status: "done", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/Event_Calendar/Push_Notification/Push_Notification_Spec.md",
+    blocks: [], blockedBy: [], note: "Approved.",
+  },
+  {
+    id: "NHP-KHUYENNGHI", title: "PRD: Khuyến Nghị (NHSV Channel)",
+    area: "NHSV-Pro", feature: "NHSV_Channel", type: "PRD",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/NHSV_Channel/Khuyen_Nghi/PRD.md",
+    blocks: [], blockedBy: [], note: "Draft + Design draft HTML.",
+  },
+  {
+    id: "NHP-RESEARCH", title: "PRD: NH Research (NHSV Channel)",
+    area: "NHSV-Pro", feature: "NHSV_Channel", type: "PRD",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/NHSV_Channel/NH_Research/PRD.md",
+    blocks: [], blockedBy: [], note: "Draft + admin demo + jira-issues.md.",
+  },
+  {
+    id: "NHP-CHANNEL-PUSH", title: "Spec: Push Notification (NHSV Channel)",
+    area: "NHSV-Pro", feature: "NHSV_Channel", type: "Spec",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO", jira: null,
+    doc: "New feature in NHSV Pro/NHSV_Channel/Push_Notification/Push_Notification_Spec.md",
+    blocks: [], blockedBy: [], note: "Draft.",
+  },
+
+  // ==========================================================================
+  // eKYC (VNPT integration — Phase 1)
+  // ==========================================================================
+  {
+    id: "EKYC-01-BE", title: "BE: Biometric Attempt Log Storage",
+    area: "eKYC", feature: "01_Biometric_Attempt_Log", type: "BE",
+    status: "done", priority: "P1", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "eKYC/01_Biometric_Attempt_Log/Issues/BE_Issue_Biometric_Log_Storage.md",
+    blocks: ["EKYC-02-FE", "EKYC-03-FE"], blockedBy: [], note: "Complete.",
+  },
+  {
+    id: "EKYC-01-SPEC", title: "Spec: Biometric Attempt Log Backend (v2.0)",
+    area: "eKYC", feature: "01_Biometric_Attempt_Log", type: "Spec",
+    status: "in_progress", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "eKYC/01_Biometric_Attempt_Log/Specifications/Backend_Spec.md",
+    blocks: [], blockedBy: [], note: "Draft v2.0 — vừa fix schema conflict.",
+  },
+  {
+    id: "EKYC-02-FE", title: "FE: Admin Attempt History",
+    area: "eKYC", feature: "02_Admin_Attempt_History", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE/Admin team", jira: null,
+    doc: "eKYC/02_Admin_Attempt_History/Issues/FE_Issue_Admin_Attempt_History.md",
+    blocks: [], blockedBy: ["EKYC-01-BE"], note: "Pending — BE đã xong, sẵn sàng kickoff.",
+  },
+  {
+    id: "EKYC-03-FE", title: "FE: Admin Dashboard Analytics",
+    area: "eKYC", feature: "03_Admin_Dashboard_Analytics", type: "FE",
+    status: "backlog", priority: "P1", deadline: null,
+    owner: "FE/Admin team", jira: null,
+    doc: "eKYC/03_Admin_Dashboard_Analytics/Issues/FE_Issue_Dashboard_Analytics.md",
+    blocks: [], blockedBy: ["EKYC-01-BE"], note: "Spec API ✅ Complete. Demo: demos/admin-ui-demo.html.",
+  },
+  {
+    id: "EKYC-04-FE", title: "FE: MRZ Validation Cross-check",
+    area: "eKYC", feature: "04_MRZ_Validation", type: "FE",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "eKYC/04_MRZ_Validation/Issues/FE_Issue_MRZ_Validation_CrossCheck.md",
+    blocks: [], blockedBy: [], note: "Draft.",
+  },
+  {
+    id: "EKYC-05-BE", title: "BE: Checkbox Consent Storage (Contract Terms)",
+    area: "eKYC", feature: "05_Contract_Terms_Checkbox_Log", type: "BE",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "eKYC/05_Contract_Terms_Checkbox_Log/Issues/BE_Issue_Checkbox_Consent_Storage.md",
+    blocks: [], blockedBy: [], note: "Ready for Dev.",
+  },
+  {
+    id: "EKYC-05-FE", title: "FE: Checkbox Analytics Log (Contract Terms)",
+    area: "eKYC", feature: "05_Contract_Terms_Checkbox_Log", type: "FE",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "FE team", jira: null,
+    doc: "eKYC/05_Contract_Terms_Checkbox_Log/Issues/FE_Issue_Checkbox_Analytics_Log.md",
+    blocks: [], blockedBy: [], note: "Ready for Dev.",
+  },
+
+  // ==========================================================================
+  // TradeX-Monitor (infra project)
+  // ==========================================================================
+  {
+    id: "TXM-01", title: "TradeX Monitoring Dashboard — implementation",
+    area: "TradeX-Monitor", feature: "Monitoring", type: "Project",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "PO + Infra", jira: null,
+    doc: "TradeX-Monitor/prd.md",
+    blocks: [], blockedBy: [],
+    note: "Full doc set có sẵn (prd, task, jira_stories, sprint_breakdown) — chưa kickoff.",
+  },
+];

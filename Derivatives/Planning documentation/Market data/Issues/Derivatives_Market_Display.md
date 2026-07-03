@@ -97,7 +97,7 @@ Dữ liệu từ `symbol_static.json` và API symbolInfo/latest. Nhận diện D
 
 - **Nguồn:** Init job → `symbol_static.json`; API `/api/v2/market/symbol/latest`, `/api/v2/market/symbolInfo`.
 - **Nhận diện Derivatives:** `t === "FUTURES"` hoặc `m in ["INDEX","BOND"]`.
-- **Planning:** [Market/Planning/01_Integration_Plan.md](../../../Planning%20documentation/Market/Planning/01_Integration_Plan.md) — 4.1.2.1, 5.4.
+- **Planning:** [Market/Planning/01_Integration_Plan.md](../Planning/01_Integration_Plan.md) — 4.1.2.1, 5.4.
 
 ---
 
@@ -189,4 +189,4 @@ Nguồn: WebSocket `market.quote.dr.{code}` hoặc symbolInfo/quote API. Thứ t
 | **Figma – Price table** | [node-id=40005162-207007](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005162-207007) |
 | **Figma – Price table options** | [node-id=40005162-208618](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005162-208618) |
 | **Figma – Price table Error** | [node-id=40005162-206999](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005162-206999) |
-| **Planning** | [Market/Planning/01_Integration_Plan.md](../../../Planning%20documentation/Market/Planning/01_Integration_Plan.md) |
+| **Planning** | [Market/Planning/01_Integration_Plan.md](../Planning/01_Integration_Plan.md) |

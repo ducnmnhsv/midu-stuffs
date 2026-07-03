@@ -155,3 +155,7 @@ flowchart TD
 - Incorrect current PIN does not change PIN.
 - New PIN can be used to get SmartOTP code after success.
 
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

@@ -546,3 +546,7 @@ T-0: [Session hết hạn]
 ---
 
 *Last updated: 2026-06-13*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

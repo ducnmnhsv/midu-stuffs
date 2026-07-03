@@ -3,7 +3,7 @@
 ## Reference
 
 - Design spec: [`docs/superpowers/specs/2026-06-04-smart-otp-login-design.md`](../../docs/superpowers/specs/2026-06-04-smart-otp-login-design.md)
-- PRD: [`Smart OTP - multi channels/Issues/06_PRD_Login_SmartOTP.md`](./06_PRD_Login_SmartOTP.md)
+- PRD: [`Smart OTP - multi channels/Issues/06_PRD_Login_SmartOTP.md`](../Planning/06_PRD_Login_SmartOTP.md)
 - API Mapping: [`Smart OTP - multi channels/Specifications/SmartOTP_API_Mapping.md`](../Specifications/SmartOTP_API_Mapping.md)
 
 ## Objective

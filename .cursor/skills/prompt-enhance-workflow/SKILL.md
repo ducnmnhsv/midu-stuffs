@@ -124,7 +124,7 @@ Optimized instruction: [enhanced version]
 
 **Already clear:**
 ```
-✅ "Follow @TradeX Knowledge/API Standards/ to create 
+✅ "Follow @Knowledge/TradeX/API Standards/ to create 
     Order Cancellation API spec with field mappings"
 ```
 
@@ -198,15 +198,15 @@ Reply with:
 When enhancing prompts, automatically include relevant context:
 
 **For API tasks:**
-- Reference: `@TradeX Knowledge/API Standards/`
+- Reference: `@Knowledge/TradeX/API Standards/`
 - Template: `tradex-api-spec-template.md`
 - Standards: `tradex-api-conventions.md`
 
 **For system understanding:**
-- Reference: `@TradeX Knowledge/System/`
+- Reference: `@Knowledge/TradeX/System/`
 
 **For planning:**
-- Reference: `@TradeX Knowledge/Planning/`
+- Reference: `@Knowledge/TradeX/Planning/`
 
 ## Example Workflows
 
@@ -254,7 +254,7 @@ for a trading account.
    - Success criteria
 
 ## Format
-Follow template: @TradeX Knowledge/API Standards/tradex-api-spec-template.md
+Follow template: @Knowledge/TradeX/API Standards/tradex-api-spec-template.md
 
 ## Reference
 Similar spec: @Derivatives/.../Regular_Orders_API_Spec.md
@@ -320,8 +320,8 @@ value, technical requirements, and implementation approach.
 
 ## Reference Materials
 - Lotte API specs: Check DRORD-005, DRORD-006, DRORD-023-026
-- Existing patterns: @TradeX Knowledge/Planning/regular-order-api-mapping.md
-- System architecture: @TradeX Knowledge/System/
+- Existing patterns: @Knowledge/TradeX/Planning/regular-order-api-mapping.md
+- System architecture: @Knowledge/TradeX/System/
 
 ## Output Format
 ### Feature Analysis: Conditional Orders

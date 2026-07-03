@@ -1,6 +1,6 @@
 # Market Data Channels
 
-> **Part of:** [TradeX Knowledge Base](./_index.md)  
+> **Part of:** [TradeX Knowledge Base](../_index.md)  
 > **Topic:** Real-time Market Data via WebSocket  
 > **Last Updated:** 2025-01-28
 
@@ -10,7 +10,7 @@
 
 | Document | Relationship |
 |----------|--------------|
-| [_index.md](./_index.md) | Parent - System overview |
+| [_index.md](../_index.md) | Parent - System overview |
 | [symbol-info-api.md](./symbol-info-api.md) | Related - API uses same data sources |
 | [init-job.md](./init-job.md) | Related - Daily init populates initial data |
 | *(coming soon)* order-flow.md | Related - Order affects market data |
@@ -333,7 +333,7 @@ Cung cấp **sổ lệnh (order book)** với các mức giá bid/ask và khối
 
 Hệ thống xác định loại phiên giao dịch dựa trên **control code** từ Lotte.
 
-> **See also:** [Trading Sessions](./_index.md#trading-sessions-hose) trong _index.md
+> **See also:** [Trading Sessions](../_index.md#trading-sessions-hose) trong _index.md
 
 ### 5.2 Control Code Mapping
 
@@ -466,4 +466,4 @@ Hệ thống xác định loại phiên giao dịch dựa trên **control code**
 
 ---
 
-**Navigation:** [← Back to Index](./_index.md)
+**Navigation:** [← Back to Index](../_index.md)

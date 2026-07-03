@@ -8,7 +8,7 @@
 
 **Tài liệu tham chiếu Lotte DR (mới nhất):**  
 - **PDF:** `18032026_Tai_lieu_dac_ta_API2.0_Tsolution-Detail-NHSV_Derivaties.pdf` (18/03/2026)  
-- **Đồng bộ trong repo:** `Derivatives/Documentation/[API specs]Lotte_DR.md`  
+- **Đồng bộ trong repo:** `Derivatives/Documentation/Lotte_DR_API_Specs.md`  
 - Trong PDF: **Mục 4** = Kết nối WebSocket nhận dữ liệu REALTIME thị trường; **4.1** = Cấu trúc dữ liệu REALTIME (Order events `sub/bos.evt.ord.sts.*/`, Account events `sub/bos.evt.acc.inf.*/`, JSON).  
 - **Market data WebSocket** (giá, sổ lệnh: `auto.dr.qt`, `auto.dr.bo`, pipe-separated) không mô tả trong mục 4.1 của PDF; định dạng trong doc này (§4.3.2) tham chiếu từ **message thực tế** Lotte gửi.
 
@@ -1371,11 +1371,11 @@ derivatives:
 
 | Document | Location |
 |----------|----------|
-| Lotte DR API Specs | `Derivatives/Documentation/[API specs]Lotte_DR.md` |
+| Lotte DR API Specs | `Derivatives/Documentation/Lotte_DR_API_Specs.md` |
 | Lotte DR WebSocket | `Derivatives/Documentation/Websocket_DR_Lotte.md` |
-| TradeX Init Job Knowledge | `TradeX Knowledge/init-job.md` |
-| TradeX SymbolInfo API Knowledge | `TradeX Knowledge/symbol-info-api.md` |
-| TradeX Market Data Channels | `TradeX Knowledge/market-data-channels.md` |
+| TradeX Init Job Knowledge | `Knowledge/TradeX/init-job.md` |
+| TradeX SymbolInfo API Knowledge | `Knowledge/TradeX/symbol-info-api.md` |
+| TradeX Market Data Channels | `Knowledge/TradeX/market-data-channels.md` |
 
 ---
 
@@ -1392,3 +1392,7 @@ derivatives:
 ---
 
 *Document End*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

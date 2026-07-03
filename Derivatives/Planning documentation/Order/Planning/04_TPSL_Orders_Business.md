@@ -529,3 +529,7 @@ Cần xử lý ngay!
 - Hệ thống tự động gửi lệnh MTL khi kích hoạt
 - Nhận thông báo realtime qua WebSocket + Push
 - Không cần theo dõi màn hình liên tục
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

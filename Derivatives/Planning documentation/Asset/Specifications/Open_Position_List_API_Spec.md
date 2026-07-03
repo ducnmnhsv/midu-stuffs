@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Query open positions with real-time P&L. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) §2.1.1.
+> **Note:** Lotte-integrated API for **Derivatives only**. Query open positions with real-time P&L. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (27/02/2026) §2.1.1.
 
 ---
 
@@ -97,7 +97,7 @@ or
 
 **Endpoint:** `GET /api/v1/derivatives/asset/openPositions`
 
-**Lotte (DRACC-003):** [Lotte_DR.md §2.1.1](../../../Documentation/[API%20specs]Lotte_DR.md) — URL: `[Root URL APIKEY]/tuxsvc/der/account/dr-open-positions`; Method: POST; Request body: `acnt`, `next_data`, `hts_user_id`.
+**Lotte (DRACC-003):** [Lotte_DR.md §2.1.1](../../../Documentation/Lotte_DR_API_Specs.md) — URL: `[Root URL APIKEY]/tuxsvc/der/account/dr-open-positions`; Method: POST; Request body: `acnt`, `next_data`, `hts_user_id`.
 
 **Query Parameters (TradeX):**
 

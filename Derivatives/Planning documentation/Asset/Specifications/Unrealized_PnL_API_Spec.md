@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Query unrealized P&L for open positions with summary. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — dữ liệu có thể lấy từ DRACC-031 (dr-balance-securities-info) hoặc API chuyên biệt nếu Lotte cung cấp.
+> **Note:** Lotte-integrated API for **Derivatives only**. Query unrealized P&L for open positions with summary. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (27/02/2026) — dữ liệu có thể lấy từ DRACC-031 (dr-balance-securities-info) hoặc API chuyên biệt nếu Lotte cung cấp.
 
 ---
 

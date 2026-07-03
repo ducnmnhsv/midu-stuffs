@@ -414,12 +414,12 @@ Tuân thủ `tradex-api-naming` (Rule C1):
 
 ## 9. References
 
-- [Biometric System Spec](../Biometric%20System/biometric.html) — Biometric device binding
-- [Session Management Spec](../Session%20Management/) — Device list in session UX
-- [Alert System Spec](../Alert%20System/) — New device push notification
-- [Audit Log Spec](../Audit%20Log/) — Fingerprint ID in audit events
-- [AAA Service — BiometricService](../../Knowledge/TradeX-MCP/aaa-main/src/services/BiometricService.ts) — Current deviceId usage
-- [AAA Service — TokenService](../../Knowledge/TradeX-MCP/aaa-main/src/services/TokenService.ts) — JWT structure
+- [Biometric System Spec](../../Biometric%20System/Specifications/Biometric_System_Spec.html) — Biometric device binding
+- [Session Management Spec](../../Session%20Management/) — Device list in session UX
+- [Alert System Spec](../../Alert%20System/) — New device push notification
+- [Audit Log Spec](../../Audit%20Log/) — Fingerprint ID in audit events
+- [AAA Service — BiometricService](../../../Knowledge/TradeX-MCP/aaa-main/src/services/BiometricService.ts) — Current deviceId usage
+- [AAA Service — TokenService](../../../Knowledge/TradeX-MCP/aaa-main/src/services/TokenService.ts) — JWT structure
 
 ---
 

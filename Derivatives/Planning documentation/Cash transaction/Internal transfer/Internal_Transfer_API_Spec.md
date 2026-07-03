@@ -6,7 +6,7 @@
 **Date:** February 9, 2026  
 **Updated:** February 27, 2026 (thêm API Available Balance – DRACC-xxx)
 
-> **Note:** Internal cash transfer between derivatives sub-accounts (DRACC-019, DRACC-020). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) — §2.2.2, 2.2.3.
+> **Note:** Internal cash transfer between derivatives sub-accounts (DRACC-019, DRACC-020). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (27/02/2026) — §2.2.2, 2.2.3.
 
 ---
 
@@ -120,7 +120,7 @@ or
 
 **Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` (DRACC-031)
 
-**Lotte Doc:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5 – Method **POST**, Request Data: `account_no`, `inquiry_date`, `hts_user_id`. Response: `data_list` (Object/DataResponse) chứa field `available_balance`. **Không có field `sub_no` trong Lotte API.**
+**Lotte Doc:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.5 – Method **POST**, Request Data: `account_no`, `inquiry_date`, `hts_user_id`. Response: `data_list` (Object/DataResponse) chứa field `available_balance`. **Không có field `sub_no` trong Lotte API.**
 
 **Headers:**
 - `Authorization: Bearer {JWT}`
@@ -216,7 +216,7 @@ GET /api/v1/derivatives/account/availableBalance?accountNumber=039C101991&inquir
 
 **Endpoint:** `POST /api/v1/derivatives/transfer/cash`
 
-**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/...` (DRACC-019 — chi tiết xem [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.2.2; Lotte doc gốc có request: `snd_actn`, `snd_sub`, `rcv_actn`, `rcv_sub`, `amount`, `remark`)
+**Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/...` (DRACC-019 — chi tiết xem [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.2.2; Lotte doc gốc có request: `snd_actn`, `snd_sub`, `rcv_actn`, `rcv_sub`, `amount`, `remark`)
 
 **Headers:**
 - `Authorization: Bearer {JWT}`
@@ -599,8 +599,8 @@ Follow TradeX API Naming Conventions (rule `@tradex-api-naming`):
 
 | Document | Location | Description |
 |----------|----------|-------------|
-| Lotte API Specs | `/Derivatives/Documentation/[API specs]Lotte_DR.md` | Section 2.2.2 (DRACC-019), 2.2.3 (DRACC-020) |
-| TradeX API Conventions | `@TradeX Knowledge/API Standards/tradex-api-conventions.md` | API naming & response standards |
+| Lotte API Specs | `/Derivatives/Documentation/Lotte_DR_API_Specs.md` | Section 2.2.2 (DRACC-019), 2.2.3 (DRACC-020) |
+| TradeX API Conventions | `@Knowledge/TradeX/API Standards/tradex-api-conventions.md` | API naming & response standards |
 | Order API Standards | Rule `@tradex-order-api-response-standards` | Response format patterns |
 | Equity Transfer (Reference) | TradeX MCP Knowledge | Similar patterns for Equity market |
 | Regular Orders API Spec | `../Order/Specifications/Regular_Orders_API_Spec.md` | API specification format reference |

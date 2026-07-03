@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** March 9, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu trạng thái tài khoản và số tiền cần bổ sung khi vi phạm tỷ lệ MU (margin call). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.7 — DRACC-036 (dr-mu-breach-account).
+> **Note:** Lotte-integrated API for **Derivatives only**. Tra cứu trạng thái tài khoản và số tiền cần bổ sung khi vi phạm tỷ lệ MU (margin call). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.7 — DRACC-036 (dr-mu-breach-account).
 
 ---
 

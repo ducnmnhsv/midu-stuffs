@@ -1,6 +1,6 @@
 # Thay đổi TradeX API (Planning documentation) sau cập nhật Lotte spec 04/03/2026
 
-**Mục đích:** Liệt kê các cập nhật cần thực hiện trong Planning documentation để đồng bộ với [Lotte_DR.md](../Documentation/[API%20specs]Lotte_DR.md) phiên bản mới nhất (PDF 04/03/2026, doc sync 05/03/2026).
+**Mục đích:** Liệt kê các cập nhật cần thực hiện trong Planning documentation để đồng bộ với [Lotte_DR.md](../Documentation/Lotte_DR_API_Specs.md) phiên bản mới nhất (PDF 04/03/2026, doc sync 05/03/2026).
 
 **Tham chiếu thay đổi Lotte:** Xem bảng "LỊCH SỬ THAY ĐỔI TÀI LIỆU" trong Lotte_DR.md § đầu tài liệu.
 

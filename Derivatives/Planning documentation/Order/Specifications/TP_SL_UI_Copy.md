@@ -92,3 +92,6 @@
 - Warning: màu vàng – không chặn thao tác
 - Error: màu đỏ – chặn xác nhận
 - Pro warnings: hiển thị trong phần “Nâng cao” hoặc “Tìm hiểu thêm”
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

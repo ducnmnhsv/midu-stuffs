@@ -14,7 +14,7 @@ Derivatives/
 │   └── Patterns đã phân tích
 │
 ├── Documentation/
-│   ├── [API specs]Lotte_DR.md    ← Lotte API specs
+│   ├── Lotte_DR_API_Specs.md    ← Lotte API specs
 │   └── Websocket_DR_Lotte.md     ← Lotte WS specs
 │
 └── Planning documentation/
@@ -55,10 +55,10 @@ Derivatives/
 
 | Need | Go to |
 |------|-------|
-| Planning docs | [Planning documentation/_index.md](../Planning%20documentation/_index.md) |
-| Market Data module | [Planning documentation/Market data/](../Planning%20documentation/Market%20data/) |
-| Lotte API specs | [Documentation/[API specs]Lotte_DR.md](../Documentation/[API%20specs]Lotte_DR.md) |
-| Lotte WS specs | [Documentation/Websocket_DR_Lotte.md](../Documentation/Websocket_DR_Lotte.md) |
+| Planning docs | [Planning documentation/README.md](../../../Derivatives/Planning%20documentation/README.md) |
+| Market Data module | [Planning documentation/Market data/](../../../Derivatives/Planning%20documentation/Market%20data/) |
+| Lotte API specs | [Documentation/Lotte_DR_API_Specs.md](../../../Derivatives/Documentation/Lotte_DR_API_Specs.md) |
+| Lotte WS specs | [Documentation/Websocket_DR_Lotte.md](../../../Derivatives/Documentation/Websocket_DR_Lotte.md) |
 
 ---
 

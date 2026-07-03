@@ -5,7 +5,7 @@
 **Version:** 1.2  
 **Date:** April 8, 2026
 
-> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (04/03/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
+> **Note:** VSD margin deposit/withdrawal transactions (DRACC-009, DRACC-021, DRACC-032, DRACC-033, DRACC-034). **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (04/03/2026) — §2.2.1, 2.2.4, 2.2.5, 2.2.6, 2.2.7.
 
 ---
 
@@ -1032,9 +1032,9 @@ async function depositMargin(request: DepositRequest): Promise<DepositResponse> 
 
 | Document | Location | Description |
 |----------|----------|-------------|
-| Lotte API Specs | `/Derivatives/Documentation/[API specs]Lotte_DR.md` | §2.2.1 (DRACC-009), 2.2.4 (DRACC-021), 2.2.5 (DRACC-032), 2.2.6 (DRACC-033), 2.2.7 (DRACC-034). **Sync:** 04/03/2026 — URL DRACC-009 `tsol/apikey/...`, request `is_acnt_no`/`is_cnte`, response `target_acnt`, `scrt_err_msg`. |
+| Lotte API Specs | `/Derivatives/Documentation/Lotte_DR_API_Specs.md` | §2.2.1 (DRACC-009), 2.2.4 (DRACC-021), 2.2.5 (DRACC-032), 2.2.6 (DRACC-033), 2.2.7 (DRACC-034). **Sync:** 04/03/2026 — URL DRACC-009 `tsol/apikey/...`, request `is_acnt_no`/`is_cnte`, response `target_acnt`, `scrt_err_msg`. |
 | Internal Transfer API Spec | `../Internal transfer/Internal_Transfer_API_Spec.md` | Similar patterns for cash transaction |
-| TradeX API Conventions | `@TradeX Knowledge/API Standards/tradex-api-conventions.md` | API naming & response standards |
+| TradeX API Conventions | `@Knowledge/TradeX/API Standards/tradex-api-conventions.md` | API naming & response standards |
 | Order API Standards | Rule `@tradex-order-api-response-standards` | Response format patterns |
 | Regular Orders API Spec | `../Order/Specifications/Regular_Orders_API_Spec.md` | API specification format reference |
 

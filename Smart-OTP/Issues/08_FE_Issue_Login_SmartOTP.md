@@ -3,7 +3,7 @@
 ## Reference
 
 - Design spec: [`docs/superpowers/specs/2026-06-04-smart-otp-login-design.md`](../../docs/superpowers/specs/2026-06-04-smart-otp-login-design.md)
-- PRD: [`Smart OTP - multi channels/Issues/06_PRD_Login_SmartOTP.md`](./06_PRD_Login_SmartOTP.md)
+- PRD: [`Smart OTP - multi channels/Issues/06_PRD_Login_SmartOTP.md`](../Planning/06_PRD_Login_SmartOTP.md)
 - BE Task: [`Smart OTP - multi channels/Issues/07_BE_Task_Login_SmartOTP.md`](./07_BE_Task_Login_SmartOTP.md)
 - FE Overview: [`Smart OTP - multi channels/Issues/00_FE_Overview_SmartOTP_End_To_End_Flow.md`](./00_FE_Overview_SmartOTP_End_To_End_Flow.md)
 

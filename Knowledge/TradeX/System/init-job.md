@@ -1,6 +1,6 @@
 # Init Job - Lấy Giá Đầu Ngày
 
-> **Related:** [Symbol Info API](./symbol-info-api.md) | [Market Data Channels](./market-data-channels.md) | [Index](./_index.md)
+> **Related:** [Symbol Info API](./symbol-info-api.md) | [Market Data Channels](./market-data-channels.md) | [Index](../_index.md)
 
 ---
 

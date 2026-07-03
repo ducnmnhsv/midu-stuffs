@@ -22,7 +22,7 @@ eKYC/
 │   ├── Issues/
 │   │   └── BE_Issue_Biometric_Log_Storage.md   ← 7 BE tasks cho developer
 │   └── demos/
-│       └── [FE]eKYC-analysis.html              ← Phân tích VNPT SDK data
+│       └── FE_eKYC_Analysis.html              ← Phân tích VNPT SDK data
 │
 ├── 02_Admin_Attempt_History/                   🔵 Blocked — chờ sub-feature 01
 │   └── Issues/
@@ -48,7 +48,7 @@ eKYC/
 │   ├── Issues/
 │   │   └── FE_Issue_MRZ_Validation_CrossCheck.md ← Phased: chờ Phase 2
 │   └── demos/
-│       └── [FE]eKYC-MRZ.html                  ← MRZ analysis demo
+│       └── FE_eKYC_MRZ.html                  ← MRZ analysis demo
 │
 └── 06_Image_Storage/                           ⬜ Scope TBD
     (chờ PM confirm)
@@ -57,6 +57,8 @@ eKYC/
 ---
 
 ## Status Tracker
+
+> 📋 **Status hiện hành: xem [Tracking/kanban.html](../Tracking/kanban.html)** (filter Area = eKYC) — nguồn duy nhất `Tracking/tasks.js` (rule C7). Bảng dưới chỉ mô tả scope/phase, KHÔNG maintain status nữa.
 
 **Phase 1 — Current scope:**
 
@@ -71,7 +73,7 @@ eKYC/
 | Sub-feature | Lý do defer | Demo |
 |-------------|------------|------|
 | 03 Admin Dashboard Analytics | PM quyết định defer — triển khai phase sau | [admin-ui-demo.html](03_Admin_Dashboard_Analytics/demos/admin-ui-demo.html) |
-| 04 MRZ Validation (App) | PM quyết định defer — triển khai phase sau | [[FE]eKYC-MRZ.html](04_MRZ_Validation/demos/[FE]eKYC-MRZ.html) |
+| 04 MRZ Validation (App) | PM quyết định defer — triển khai phase sau | [FE_eKYC_MRZ.html](04_MRZ_Validation/demos/FE_eKYC_MRZ.html) |
 
 **Scope TBD:**
 

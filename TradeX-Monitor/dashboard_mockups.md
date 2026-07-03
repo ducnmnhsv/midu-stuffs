@@ -499,3 +499,7 @@ TradeX Monitoring/
 - [Grafana Panel Plugins](https://grafana.com/grafana/plugins/?type=panel)
 - [PromQL Query Examples](https://prometheus.io/docs/prometheus/latest/querying/examples/)
 - [Grafana Alerting](https://grafana.com/docs/grafana/latest/alerting/)
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

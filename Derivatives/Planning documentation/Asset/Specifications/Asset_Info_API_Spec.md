@@ -5,7 +5,7 @@
 **Version:** 1.0  
 **Date:** February 13, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Map 1-1 với Lotte DRACC-031 (dr-balance-securities-info) – không tổng hợp, không thêm/bớt field. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) (27/02/2026) §2.1.5 — DRACC-031 có thêm field `margin_asset_utilization_ratio`, `deposit_nhsv_require`, `net_assets`.
+> **Note:** Lotte-integrated API for **Derivatives only**. Map 1-1 với Lotte DRACC-031 (dr-balance-securities-info) – không tổng hợp, không thêm/bớt field. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) (27/02/2026) §2.1.5 — DRACC-031 có thêm field `margin_asset_utilization_ratio`, `deposit_nhsv_require`, `net_assets`.
 
 ---
 
@@ -54,7 +54,7 @@ or
 
 ### 2.1 Lotte DataResponse (1-1, không tổng hợp)
 
-Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5 DRACC-031):
+Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.5 DRACC-031):
 
 | Lotte Field | TradeX Field | Type | Transform | Mô tả (Lotte) |
 |-------------|--------------|------|-----------|---------------|
@@ -141,7 +141,7 @@ Lotte trả về `data_list` – mỗi item có đầy đủ fields sau (theo [L
 
 **Lotte Endpoint:** `[Root URL APIKEY]/tuxsvc/der/account/dr-balance-securities-info` (DRACC-031)
 
-**Lotte Doc:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.5
+**Lotte Doc:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.5
 
 **Query Parameters:**
 

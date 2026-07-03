@@ -143,3 +143,7 @@ Enable derivatives (phái sinh) market data display in NHSV Pro App to support f
 
 - **Technical Requirements:** [03_Technical_Requirements.md](./03_Technical_Requirements.md)
 - **Integration Plan:** [01_Integration_Plan.md](./01_Integration_Plan.md)
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

@@ -1,6 +1,6 @@
 # Symbol Info API
 
-> **Part of:** [TradeX Knowledge Base](./_index.md)  
+> **Part of:** [TradeX Knowledge Base](../_index.md)  
 > **Topic:** API `/api/v2/market/symbol/latest` & SymbolInfo aggregation  
 > **Last Updated:** 2025-01-28
 
@@ -10,7 +10,7 @@
 
 | Document | Relationship |
 |----------|--------------|
-| [_index.md](./_index.md) | Parent - System overview |
+| [_index.md](../_index.md) | Parent - System overview |
 | [symbolinfo-api-fields-guide.md](./symbolinfo-api-fields-guide.md) | **Field reference** — Giải thích từng field response symbolInfo/symbol/latest |
 | [market-data-channels.md](./market-data-channels.md) | Related - Real-time data sources |
 | [init-job.md](./init-job.md) | Related - Daily init job, initial data population |
@@ -453,4 +453,4 @@ HGET realtime_mapSymbolInfo VCB
 
 ---
 
-**Navigation:** [← Back to Index](./_index.md) | [Market Data Channels](./market-data-channels.md)
+**Navigation:** [← Back to Index](../_index.md) | [Market Data Channels](./market-data-channels.md)

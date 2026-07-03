@@ -8,8 +8,8 @@ Links và tài liệu tham chiếu cho FE khi implement issue thuộc module Mar
 
 | Tài liệu | Mô tả |
 |----------|--------|
-| [Market/Planning/01_Integration_Plan](../../../Planning%20documentation/Market/Planning/01_Integration_Plan.md) | Init job, symbol_static.json, danh sách mã Derivatives (`t`, `m`) |
-| [Market/README](../../../Planning%20documentation/Market/README.md) | Tổng quan Market Data, data flow, SymbolInfo |
+| [Market/Planning/01_Integration_Plan](../Planning/01_Integration_Plan.md) | Init job, symbol_static.json, danh sách mã Derivatives (`t`, `m`) |
+| [Market/README](../README.md) | Tổng quan Market Data, data flow, SymbolInfo |
 
 ---
 

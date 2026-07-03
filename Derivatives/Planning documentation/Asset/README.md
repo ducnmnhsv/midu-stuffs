@@ -112,7 +112,7 @@ Each API spec follows Regular Orders template:
 
 ## Navigation
 
-- **Parent:** [Derivatives Planning Documentation](../../README.md)
+- **Parent:** [Derivatives Planning Documentation](../README.md)
 - **Planning Folder:** [Planning/](./Planning/)
 - **Specifications Folder:** [Specifications/](./Specifications/)
 

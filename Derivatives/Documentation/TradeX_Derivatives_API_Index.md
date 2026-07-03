@@ -2,7 +2,7 @@
 
 **Mục đích:** Tổng hợp tất cả API TradeX cho module Phái sinh (Derivatives) đã được đặc tả trong Planning documentation.  
 **Đối tượng:** PM, BE, FE — tra cứu nhanh endpoint và mapping Lotte.  
-**Cập nhật:** 2026-03-04 — Các spec trong Planning documentation đã đồng bộ tham chiếu Lotte theo [Lotte_DR.md](./[API%20specs]Lotte_DR.md) (27/02/2026).
+**Cập nhật:** 2026-03-04 — Các spec trong Planning documentation đã đồng bộ tham chiếu Lotte theo [Lotte_DR.md](./Lotte_DR_API_Specs.md) (27/02/2026).
 
 ---
 
@@ -11,7 +11,7 @@
 | Ký hiệu | Ý nghĩa |
 |--------|----------|
 | **Base path** | `/api/v1/derivatives/...` (qua rest-proxy, JWT) |
-| **Lotte** | API phía Lotte Tsolution (xem [\[API specs\]Lotte_DR.md](./[API%20specs]Lotte_DR.md)) |
+| **Lotte** | API phía Lotte Tsolution (xem [\[API specs\]Lotte_DR.md](./Lotte_DR_API_Specs.md)) |
 | **TradeX-native** | Không gọi Lotte, xử lý trong TradeX |
 
 ---
@@ -71,7 +71,7 @@
 
 | Operation | Method | TradeX Endpoint | Ghi chú | Spec |
 |-----------|--------|------------------|---------|------|
-| Dữ liệu chart (candlestick) | GET | `/tradingview/history` | API hiện có, mở rộng cho mã phái sinh | [Chart_API_Spec](../Planning%20documentation/Market/Specifications/Chart_API_Spec.md) |
+| Dữ liệu chart (candlestick) | GET | `/tradingview/history` | API hiện có, mở rộng cho mã phái sinh | [Chart_API_Spec](../Planning%20documentation/Market%20data/Specifications/Chart_API_Spec.md) |
 
 *Các API thị trường realtime (bảng giá, quote) thường qua WebSocket — xem [Websocket_DR_Lotte.md](./Websocket_DR_Lotte.md).*
 
@@ -126,7 +126,7 @@ GET    /tradingview/history   (mở rộng symbol phái sinh)
 
 | Tài liệu | Mô tả |
 |----------|--------|
-| [\[API specs\]Lotte_DR.md](./[API%20specs]Lotte_DR.md) | Đặc tả API Lotte Tsolution (DRACC-, DRORD-, DRMKT-) |
+| [\[API specs\]Lotte_DR.md](./Lotte_DR_API_Specs.md) | Đặc tả API Lotte Tsolution (DRACC-, DRORD-, DRMKT-) |
 | [Websocket_DR_Lotte.md](./Websocket_DR_Lotte.md) | WebSocket kênh thị trường phái sinh |
 | [Derivatives/Planning documentation/](../Planning%20documentation/README.md) | Thư mục gốc Planning — README, cấu trúc category |
 

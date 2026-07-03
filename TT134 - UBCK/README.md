@@ -54,26 +54,27 @@ TT134 - UBCK/
 
 ## 2. Master Tracking — Issues
 
-ID = card ID trong Kanban. Status sync với Kanban CARDS data.
+> 📋 **Status / deadline / dependency: xem board trung tâm [`Tracking/kanban.html`](../Tracking/kanban.html)** — nguồn duy nhất là `Tracking/tasks.js` (rule C7 CLAUDE.md). Filter Area = TT134.
+> README này KHÔNG maintain status nữa. Bảng dưới chỉ là **index doc theo ID**.
 
-| ID | Title | Pri | Status | Deadline | Folder | Blocks | Blocked by |
-|---|---|---|---|---|---|---|---|
-| `stt7` | **TT134-P0-01** OTP TTL Compliance | 🔴 P0 | 🟡 Ready | 14/08/2026 | [Order 2FA](./Order%202FA/Issues/OTP_TTL_Compliance_Issue.md) | stt14a · be7 | — |
-| `stt35` | **TT134-P0-02** Device ID Logging | 🔴 P0 | 🟡 Ready | 28/08/2026 | [Device Fingerprinting](./Device%20Fingerprinting/Issues/Device_ID_Logging_Issue.md) | session · alert · audit | — |
-| `stt14a` | **TT134-P0-03** Rút tiền &lt;10M — **scope merged vào STT5** | 🔴 P0 | ✅ Merged→STT5 | 28/08/2026 | [Order 2FA](./Order%202FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md) | — | STT5 Session Auth |
-| `be7` | **BE-7** Smart OTP Biometric Activation (Điều 8.5b) | 🔴 P0 | 📋 Draft | 14/08/2026 | [Order 2FA](./Order%202FA/Issues/BE7_SmartOTP_Biometric_Activation.md) | — | AAA biometric flag · FE RSA Keystore · stt7 |
-| `stt5` | **TT134-P0-04** Session Auth — Login Smart OTP = sAm/sAt embedded; Hard gate activation | 🔴 P0 | 🟡 Ready | 28/08/2026 | [Order 2FA/Spec](./Order%202FA/Specifications/Order_2FA_Integration_Spec.md) | stt14a (merged) | Smart OTP go-live |
-| `stt36` | Mobile security: 1 device/TK + anti-tampering | 🟡 P1 | 📦 Backlog | 30/10/2026 | [Device Fingerprinting](./Device%20Fingerprinting/) | — | — |
-| `stt8` | Sinh trắc học FIDO (FAR &lt;0.01%, FRR &lt;5%, PAD) | 🟢 P2 | 🔒 Blocked GATE | 30/10/2026 | [Biometric System](./Biometric%20System/) | — | BOM GATE |
-| `stt10` | Biometric rules: lock ≤10, timeout 3p, verify CSDL QG | 🟢 P2 | 🔒 Blocked GATE | TBD | [Biometric System](./Biometric%20System/) | — | BOM GATE |
-| `stt12` | GDCK online: biometric đầu/phiên | 🟢 P2 | 🔒 Blocked GATE | 30/10/2026 | [Biometric System](./Biometric%20System/) | — | BOM GATE |
-| `stt14b` | Rút tiền ≥10M: biometric bắt buộc | 🟢 P2 | 🔒 Blocked GATE | TBD | [Biometric System](./Biometric%20System/) | — | BOM GATE |
-| `stt40` | Lưu trữ thông tin sinh trắc học KH | ⚪ P3 | 🔒 Blocked GATE | TBD | [Data Security](./Data%20Security/) | — | BOM GATE |
-| `stt3` | Xác minh SĐT thuộc quyền sử dụng hợp pháp KH | ⚪ P3 | 🔍 Research | TBD | [Service Agreement](./Service%20Agreement/) | — | Vendor TBD |
-| `gate` | **★ GATE** BOM Decision: C06 vs VNPT | 🟣 GATE | ⏳ Pending | 30/06/2026 | (BOM/IT) | stt8 · stt10 · stt12 · stt14b · stt40 | — |
-| `stt9` | PAD Certification | ✅ DONE | ✅ Done | — | [Biometric System](./Biometric%20System/) | — | — |
+| ID (board) | Title | Doc |
+|---|---|---|
+| `TT134-STT7` | **TT134-P0-01** OTP TTL Compliance | [Order 2FA](./Order%202FA/Issues/OTP_TTL_Compliance_Issue.md) |
+| `TT134-STT35` | **TT134-P0-02** Device ID Logging | [Device Fingerprinting](./Device%20Fingerprinting/Issues/Device_ID_Logging_Issue.md) |
+| `TT134-STT14A` | **TT134-P0-03** Rút tiền &lt;10M — **scope merged vào STT5** | [Order 2FA](./Order%202FA/Issues/Withdraw_Under10M_SmartOTP_Issue.md) |
+| `TT134-BE7` | **BE-7** Smart OTP Biometric Activation (Điều 8.5b) | [Order 2FA](./Order%202FA/Issues/BE7_SmartOTP_Biometric_Activation.md) |
+| `TT134-STT5` | **TT134-P0-04** Session Auth — Login Smart OTP = sAm/sAt embedded | [Order 2FA/Spec](./Order%202FA/Specifications/Order_2FA_Integration_Spec.md) |
+| `TT134-STT36` | Mobile security: 1 device/TK + anti-tampering | [Device Fingerprinting](./Device%20Fingerprinting/) |
+| `TT134-STT8` | Sinh trắc học FIDO (FAR &lt;0.01%, FRR &lt;5%, PAD) | [Biometric System](./Biometric%20System/) |
+| `TT134-STT10` | Biometric rules: lock ≤10, timeout 3p, verify CSDL QG | [Biometric System](./Biometric%20System/) |
+| `TT134-STT12` | GDCK online: biometric đầu/phiên | [Biometric System](./Biometric%20System/) |
+| `TT134-STT14B` | Rút tiền ≥10M: biometric bắt buộc | [Biometric System](./Biometric%20System/) |
+| `TT134-STT40` | Lưu trữ thông tin sinh trắc học KH | [Data Security](./Data%20Security/) |
+| `TT134-STT3` | Xác minh SĐT thuộc quyền sử dụng hợp pháp KH | [Service Agreement](./Service%20Agreement/) |
+| `TT134-GATE` | **★ GATE** BOM Decision: C06 vs VNPT | (BOM/IT) |
+| `TT134-STT9` | PAD Certification | [Biometric System](./Biometric%20System/) |
 
-**Lưu ý sync:** Khi update status/deadline → update **đồng thời** ở README này + Kanban `CARDS` object trong `TT134_Kanban.html`.
+**Lưu ý sync:** Khi update status/deadline → chỉ sửa `Tracking/tasks.js`. `TT134_Kanban.html` cũ đã **deprecated** — giữ lại để tra task breakdown chi tiết (BE/FE/Core tasks per card), không update status ở đó nữa.
 
 ---
 

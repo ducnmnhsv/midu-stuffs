@@ -7,7 +7,7 @@
 **Version:** 1.0
 
 > **Note:** This spec follows **TradeX API Conventions**  
-> See: `@TradeX Knowledge/tradex-api-conventions.md`
+> See: `@Knowledge/TradeX/tradex-api-conventions.md`
 
 ---
 
@@ -358,9 +358,9 @@ Content-Type: application/json
 
 | Document | Location | Description |
 |----------|----------|-------------|
-| TradeX API Conventions | `@TradeX Knowledge/tradex-api-conventions.md` | Standard patterns for all APIs |
-| API Quick Reference | `@TradeX Knowledge/api-conventions.md` | Quick lookup |
-| How to Create Specs | `@TradeX Knowledge/tradex-how-to-create-api-specs.md` | Step-by-step guide |
+| TradeX API Conventions | `@Knowledge/TradeX/tradex-api-conventions.md` | Standard patterns for all APIs |
+| API Quick Reference | `@Knowledge/TradeX/api-conventions.md` | Quick lookup |
+| How to Create Specs | `@Knowledge/TradeX/tradex-how-to-create-api-specs.md` | Step-by-step guide |
 | [Other Related Spec] | `./[Other].md` | Related feature in same project |
 | Lotte API Specs | Ask team | Original Lotte documentation |
 

@@ -7,8 +7,8 @@
 **Version:** 1.7  
 **Author:** BA/PM Team
 
-> **Tham chiếu Lotte:** `Derivatives/Documentation/[API specs]Lotte_DR.md` — §3.1.1 Order events, event_code `F15303`  
-> **Tham chiếu WS pattern:** `TradeX Knowledge/System/market-data-channels.md`
+> **Tham chiếu Lotte:** `Derivatives/Documentation/Lotte_DR_API_Specs.md` — §3.1.1 Order events, event_code `F15303`  
+> **Tham chiếu WS pattern:** `Knowledge/TradeX/System/market-data-channels.md`
 
 ---
 
@@ -1058,11 +1058,11 @@ TradeX WS payload (minh họa theo contract §4.1.3.1 / §5.2):
 
 | Document | Location |
 |----------|----------|
-| Lotte DR API Specs (F15303) | `Derivatives/Documentation/[API specs]Lotte_DR.md` §3.1.1 |
+| Lotte DR API Specs (F15303) | `Derivatives/Documentation/Lotte_DR_API_Specs.md` §3.1.1 |
 | Websocket DR Lotte (market data channels) | `Derivatives/Documentation/Websocket_DR_Lotte.md` |
 | Regular Orders API Spec | `Derivatives/Planning documentation/Order/Specifications/Regular_Orders_API_Spec.md` |
-| TradeX API Conventions | `TradeX Knowledge/API Standards/tradex-api-conventions.md` |
-| Market Data Channels (WS pattern tham chiếu) | `TradeX Knowledge/System/market-data-channels.md` |
+| TradeX API Conventions | `Knowledge/TradeX/API Standards/tradex-api-conventions.md` |
+| Market Data Channels (WS pattern tham chiếu) | `Knowledge/TradeX/System/market-data-channels.md` |
 
 ---
 

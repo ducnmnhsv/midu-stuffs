@@ -5,7 +5,7 @@
 **Version:** 1.1  
 **Date:** March 30, 2026
 
-> **Note:** Lotte-integrated APIs for **Derivatives only**. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) — §2.3.14 DRORD-034, §2.3.15 DRORD-035, §2.3.16 DRORD-036, §2.3.17 DRORD-037, §2.3.18 DRORD-038. So sánh lệnh thường: [Regular_Orders_API_Spec.md](./Regular_Orders_API_Spec.md) (DRORD-029–033).
+> **Note:** Lotte-integrated APIs for **Derivatives only**. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) — §2.3.14 DRORD-034, §2.3.15 DRORD-035, §2.3.16 DRORD-036, §2.3.17 DRORD-037, §2.3.18 DRORD-038. So sánh lệnh thường: [Regular_Orders_API_Spec.md](./Regular_Orders_API_Spec.md) (DRORD-029–033).
 
 ---
 
@@ -251,7 +251,7 @@ TradeX: derive từ JWT; client **không** truyền tên field Lotte — BE map 
 | *(Header)* | — | — | `lang_code` | Map (§2.7) | V/E/K |
 | — | — | — | `row_count` | Optional / default | Theo Lotte |
 | — | — | — | `next_key` | Optional / empty first | Theo Lotte |
-| — | — | — | `mdm_tp` | **Derived** | Nếu Lotte yêu cầu — giống [Regular §3.2 — mdm_tp](../../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền) |
+| — | — | — | `mdm_tp` | **Derived** | Nếu Lotte yêu cầu — giống [Regular §3.2 — mdm_tp](../../../../Knowledge/TradeX/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền) |
 
 ### 3.3 Response Mapping
 
@@ -416,7 +416,7 @@ API này map **DRORD-037** — tra cứu **danh sách lệnh đặt trước** t
 
 **Endpoint:** `GET /api/v1/derivatives/advanceOrder/history`
 
-**Lotte (DRORD-037):** [Lotte_DR.md §2.3.17](../../../Documentation/[API%20specs]Lotte_DR.md) — `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-history`
+**Lotte (DRORD-037):** [Lotte_DR.md §2.3.17](../../../Documentation/Lotte_DR_API_Specs.md) — `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-history`
 
 **Headers:** `Authorization: Bearer {JWT}`, `Content-Type: application/json`, `Accept-Language` (optional)
 
@@ -646,7 +646,7 @@ API map **DRORD-038** — danh sách lệnh đặt trước **có thể huỷ**;
 
 **Endpoint:** `GET /api/v1/derivatives/advanceOrder/cancellable`
 
-**Lotte (DRORD-038):** [Lotte_DR.md §2.3.18](../../../Documentation/[API%20specs]Lotte_DR.md) — `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-able-can`
+**Lotte (DRORD-038):** [Lotte_DR.md §2.3.18](../../../Documentation/Lotte_DR_API_Specs.md) — `[Root URL APIKEY]/tuxsvc/der/order/get-dr-order-adv-able-can`
 
 **Headers:** giống §5.1
 
@@ -881,7 +881,7 @@ Giống §5.4 — prefix có thể `ORDER_CANCELLABLE_LIST_1005` hoặc dùng ch
 | Document | Relation |
 |----------|----------|
 | [Regular_Orders_API_Spec.md](./Regular_Orders_API_Spec.md) | Lệnh thường, `mdm_tp`, pattern mutation/query |
-| [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) | Source Lotte §2.3.14–18 |
+| [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) | Source Lotte §2.3.14–18 |
 
 ---
 

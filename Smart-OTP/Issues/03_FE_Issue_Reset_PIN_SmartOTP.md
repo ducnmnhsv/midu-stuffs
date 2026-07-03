@@ -127,3 +127,7 @@ flowchart TD
 - Reset success clears local SmartOTP state and navigates directly to activation flow.
 - Reset failure does not clear local state.
 - No extra "need reactivation" dialog is shown after reset success.
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

@@ -114,4 +114,8 @@ Prod: `https://file.nhsvpro.nhsv.vn/market/symbol_static.json` | UAT: `https://f
 
 ---
 
-*Tạo: 2025-02-24 | NHMTS-657 | Tham chiếu: [init-job.md](../../TradeX%20Knowledge/System/init-job.md)*
+*Tạo: 2025-02-24 | NHMTS-657 | Tham chiếu: [init-job.md](../Knowledge/TradeX/System/init-job.md)*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

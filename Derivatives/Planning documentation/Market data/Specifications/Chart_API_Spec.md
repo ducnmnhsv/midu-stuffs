@@ -657,9 +657,13 @@ derivatives:
 | Document | Description |
 |----------|-------------|
 | [02_BE_REQUIREMENTS_SPEC.md](./02_BE_REQUIREMENTS_SPEC.md) | Main BE Requirements |
-| [Lotte DR API Specs](../../Documentation/[API%20specs]Lotte_DR.md) | DRMKT-003 specification |
-| `TradeX Knowledge/init-job.md` | Current Init Job mechanism |
+| [Lotte DR API Specs](../../../Documentation/Lotte_DR_API_Specs.md) | DRMKT-003 specification |
+| `Knowledge/TradeX/init-job.md` | Current Init Job mechanism |
 
 ---
 
 *End of Chart API Requirements*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

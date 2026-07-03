@@ -581,3 +581,7 @@ User sees updated price
 ---
 
 *Document End - Use Cases & Test Scenarios v1.0*
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

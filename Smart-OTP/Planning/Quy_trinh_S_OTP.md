@@ -36,19 +36,19 @@
 
 1.  <span id="_Toc100937245" class="anchor"></span>**Login và kích hoạt S-OTP**
 
-![](media/media/image1.emf)
+![](../media/media/image1.emf)
 
 2.  <span id="_Toc100937246" class="anchor"></span>**Tạo S-OTP**
 
-    ![](media/media/image2.emf)
+    ![](../media/media/image2.emf)
 
 3.  <span id="_Toc100937247" class="anchor"></span>**Thay đổi Pin S-OTP**
 
-![](media/media/image3.emf)
+![](../media/media/image3.emf)
 
 4.  <span id="_Toc100937248" class="anchor"></span>**Reset Pin S-OTP**
 
-![](media/media/image4.emf) **  **
+![](../media/media/image4.emf) **  **
 
 2.  <span id="_Toc100937249" class="anchor"></span>**Luồng quy trình thực hiện**
 

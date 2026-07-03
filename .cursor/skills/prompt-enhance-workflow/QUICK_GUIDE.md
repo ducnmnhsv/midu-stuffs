@@ -101,7 +101,7 @@ Create API specification for Order Cancellation endpoint...
 - Business rules
 
 ## Format
-Follow @TradeX Knowledge/API Standards/tradex-api-spec-template.md
+Follow @Knowledge/TradeX/API Standards/tradex-api-spec-template.md
 
 Reply "yes" to proceed.
 ```
@@ -116,7 +116,7 @@ Reply "yes" to proceed.
 
 **You:**
 ```
-Follow @TradeX Knowledge/API Standards/tradex-api-spec-template.md 
+Follow @Knowledge/TradeX/API Standards/tradex-api-spec-template.md 
 to create Order Cancellation API spec with:
 - Field mappings
 - Error handling

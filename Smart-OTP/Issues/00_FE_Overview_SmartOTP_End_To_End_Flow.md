@@ -243,3 +243,7 @@ Read these issue files for implementation detail:
 3. `03_FE_Issue_Reset_PIN_SmartOTP.md`
 4. `04_FE_Issue_Change_PIN_SmartOTP.md`
 5. `05_FE_Issue_Kich_Hoat_Lai_SmartOTP.md`
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

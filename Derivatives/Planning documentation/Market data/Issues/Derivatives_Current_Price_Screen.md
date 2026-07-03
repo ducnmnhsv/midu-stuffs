@@ -124,5 +124,5 @@ Các phần sau cần xác nhận với BE; nếu chưa có thì bổ sung task:
 - **Figma – Tab Quote:** [Current price Quote (node 40004829-278373)](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004829-278373&t=7ET4YMgEP2r0vrEW-11)
 - **Figma – Tab Matched:** [Current price Matched (node 40004829-287260)](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004829-287260&t=7ET4YMgEP2r0vrEW-11)
 - **Figma – Tab Chart:** [Current price Chart (node 40004829-287157)](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004829-287157&t=7ET4YMgEP2r0vrEW-11) – timeframes: 1m, 5m, 15m, 30m
-- **Planning:** [Market/Planning/01_Integration_Plan.md](../../../Planning%20documentation/Market/Planning/01_Integration_Plan.md) – symbolInfo, WebSocket channels
-- **Chart API:** [Chart_API_Implementation.md](../../../Planning%20documentation/Market/Issues/Chart_API_Implementation.md) – TradingView history cho derivatives
+- **Planning:** [Market/Planning/01_Integration_Plan.md](../Planning/01_Integration_Plan.md) – symbolInfo, WebSocket channels
+- **Chart API:** [Chart_API_Implementation.md](./Chart_API_Implementation.md) – TradingView history cho derivatives

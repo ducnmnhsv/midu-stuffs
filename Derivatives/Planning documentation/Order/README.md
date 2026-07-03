@@ -133,31 +133,31 @@ Enable traders to execute derivatives orders (regular and conditional) through N
 - [Order Status WebSocket Spec](./Specifications/OrderStatus_WebSocket_Spec.md) — **Real-time order status** (F15303): Lotte → BE collector → ws-v2 → App
 
 **📘 TradeX-Wide API Standards:**
-- [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)
-- [API Spec Template](../../../TradeX%20Knowledge/API%20Standards/tradex-api-spec-template.md) - Copy for new specs
+- [TradeX API Conventions](../../../Knowledge/TradeX/API%20Standards/tradex-api-conventions.md) - Complete guide (standards + how-to)
+- [API Spec Template](../../../Knowledge/TradeX/API%20Standards/tradex-api-spec-template.md) - Copy for new specs
 
-**⚠️ mdm_tp (Kênh thực hiện):** Khi Lotte yêu cầu `mdm_tp`, Backend **derive** từ platform/channel (giống Equity) – FE **không** gửi. Xem [tradex-api-conventions.md §1.1](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền).
+**⚠️ mdm_tp (Kênh thực hiện):** Khi Lotte yêu cầu `mdm_tp`, Backend **derive** từ platform/channel (giống Equity) – FE **không** gửi. Xem [tradex-api-conventions.md §1.1](../../../Knowledge/TradeX/API%20Standards/tradex-api-conventions.md#11-mdm_tp-kênh-thực-hiện--derived-fe-không-truyền).
 
 ### Active Issues (Ready for Development)
 
-**FE Implementation issues** (Trade, Stop order, Max buy/Max sell, TP/SL tracking) đã chuyển sang **Derivatives/FE Implementation/** – xem [FE Implementation README](../../FE%20Implementation/README.md).
+**FE issues** (Trade, Stop order, Max buy/Max sell, TP/SL tracking) nằm tại [./Issues/](./Issues/) — chuẩn issue xem [ISSUE_STANDARD.md](../ISSUE_STANDARD.md).
 
 | Issue | Location | Status | Priority |
 |-------|----------|--------|----------|
-| [Trade Screen FE Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
-| [Stop Order Screen FE Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
-| [Max Buy/Max Sell Integration](../../FE%20Implementation/Order/Issues/Max_Buy_Max_Sell_Integration.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
-| [Modify Normal Order FE Requirement](../../FE%20Implementation/Order/Issues/Modify_Normal_Order_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
-| [Modify Stop Order FE Requirement](../../FE%20Implementation/Order/Issues/Modify_Stop_Order_FE_Requirement.md) | FE Implementation/Order/Issues/ | 📋 Ready | High |
-| [TP/SL Tracking Mechanism](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md) | FE Implementation/Order/Issues/ | 🔴 BLOCKED | High |
+| [Trade Screen FE Requirement](./Issues/Trade_Screen_FE_Requirement.md) | Order/Issues/ | 📋 Ready | High |
+| [Stop Order Screen FE Requirement](./Issues/Stop_Order_Screen_FE_Requirement.md) | Order/Issues/ | 📋 Ready | High |
+| [Max Buy/Max Sell Integration](./Issues/Max_Buy_Max_Sell_Integration.md) | Order/Issues/ | 📋 Ready | High |
+| [Modify Normal Order FE Requirement](./Issues/Modify_Normal_Order_FE_Requirement.md) | Order/Issues/ | 📋 Ready | High |
+| [Modify Stop Order FE Requirement](./Issues/Modify_Stop_Order_FE_Requirement.md) | Order/Issues/ | 📋 Ready | High |
+| [TP/SL Tracking Mechanism](./Issues/TPSL_Tracking_Mechanism_Discussion.md) | Order/Issues/ | 🔴 BLOCKED | High |
 | [Stop Order: TradeX-Native Design](./Issues/Stop_Order_TradeX_Native_Design.md) | Planning documentation/Order/Issues/ | 📋 Đề xuất | High |
 
 **Issue Summary:**
-- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma. → [Trade_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Trade_Screen_FE_Requirement.md).
-- **Stop Order Screen FE:** Màn đặt lệnh Stop order – Normal/Quick mode, trigger price, date picker, validation. → [Stop_Order_Screen_FE_Requirement](../../FE%20Implementation/Order/Issues/Stop_Order_Screen_FE_Requirement.md).
-- **Modify Normal Order FE:** Màn sửa lệnh thường từ Orderbook (Edit → Modify); Price (trần–sàn), Quantity/Max (checkAvailability), order/modify. → [Modify_Normal_Order_FE_Requirement](../../FE%20Implementation/Order/Issues/Modify_Normal_Order_FE_Requirement.md).
-- **Modify Stop Order FE:** Màn sửa lệnh điều kiện từ Orderbook; Trigger price, Order price (CE–RE), Quantity, Affected date (date picker, một ngày), order/modify. → [Modify_Stop_Order_FE_Requirement](../../FE%20Implementation/Order/Issues/Modify_Stop_Order_FE_Requirement.md).
-- **TP/SL:** Cần track order lifecycle (cancel, modify) – Core chưa cung cấp events. → [TPSL_Tracking_Mechanism_Discussion](../../FE%20Implementation/Order/Issues/TPSL_Tracking_Mechanism_Discussion.md).
+- **Trade Screen FE:** Màn Trade Derivatives với 2 mode UI (Lệnh thường / Lệnh nhanh) theo Figma. → [Trade_Screen_FE_Requirement](./Issues/Trade_Screen_FE_Requirement.md).
+- **Stop Order Screen FE:** Màn đặt lệnh Stop order – Normal/Quick mode, trigger price, date picker, validation. → [Stop_Order_Screen_FE_Requirement](./Issues/Stop_Order_Screen_FE_Requirement.md).
+- **Modify Normal Order FE:** Màn sửa lệnh thường từ Orderbook (Edit → Modify); Price (trần–sàn), Quantity/Max (checkAvailability), order/modify. → [Modify_Normal_Order_FE_Requirement](./Issues/Modify_Normal_Order_FE_Requirement.md).
+- **Modify Stop Order FE:** Màn sửa lệnh điều kiện từ Orderbook; Trigger price, Order price (CE–RE), Quantity, Affected date (date picker, một ngày), order/modify. → [Modify_Stop_Order_FE_Requirement](./Issues/Modify_Stop_Order_FE_Requirement.md).
+- **TP/SL:** Cần track order lifecycle (cancel, modify) – Core chưa cung cấp events. → [TPSL_Tracking_Mechanism_Discussion](./Issues/TPSL_Tracking_Mechanism_Discussion.md).
 - **Stop Order (TradeX-Native):** Đề xuất thiết kế khi Lotte thiếu API. → [Stop_Order_TradeX_Native_Design](./Issues/Stop_Order_TradeX_Native_Design.md).
 
 **Future Issues:**
@@ -246,7 +246,7 @@ Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← �
 **Start with:**
 1. Read [Planning/02_Order_Flow](./Planning/02_Order_Flow.md) - System architecture
 2. Read [Specifications/Regular_Orders_API_Spec](./Specifications/Regular_Orders_API_Spec.md) - Complete API mapping
-3. Follow [TradeX API Conventions](../../../TradeX%20Knowledge/API%20Standards/tradex-api-conventions.md) - Coding standards
+3. Follow [TradeX API Conventions](../../../Knowledge/TradeX/API%20Standards/tradex-api-conventions.md) - Coding standards
 4. Check [Active Issues](#-active-issues) - Implementation tasks
 
 **Code Examples:** All in Specifications/ folder
@@ -277,8 +277,8 @@ Trader ← Notification ← System ← ← ← ← ← ← ← ← ← ← ← �
 
 | Resource | Location | Description |
 |----------|----------|-------------|
-| Lotte API Specs | `../Documentation/[API specs]Lotte_DR.md` | Complete Lotte API documentation |
-| TradeX Knowledge | `/TradeX Knowledge/Planning/regular-order-api-mapping.md` | General order patterns |
+| Lotte API Specs | `../Documentation/Lotte_DR_API_Specs.md` | Complete Lotte API documentation |
+| TradeX Knowledge | `/Knowledge/TradeX/Planning/regular-order-api-mapping.md` | General order patterns |
 | Project Rules | `/AGENTS.md` | AI agent instructions and skills |
 
 ---

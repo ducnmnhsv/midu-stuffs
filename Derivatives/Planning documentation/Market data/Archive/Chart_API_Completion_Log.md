@@ -209,7 +209,7 @@ queryTradingViewHistory(request) {
 | `06_CHART_API_REQUIREMENTS.md` | Detailed technical specifications |
 | `02_BE_REQUIREMENTS_SPEC.md` | Overall backend requirements |
 | `04_USE_CASES_AND_TEST_SCENARIOS.md` | General test scenarios |
-| `/Derivatives/Documentation/[API specs]Lotte_DR.md` | Lotte DRMKT-003 API |
+| `/Derivatives/Documentation/Lotte_DR_API_Specs.md` | Lotte DRMKT-003 API |
 
 ---
 

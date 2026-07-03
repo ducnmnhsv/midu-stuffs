@@ -43,7 +43,7 @@ Use this skill when:
 **Version:** 2.0  
 **Date:** February 5, 2026
 
-> **Note:** Lotte-integrated APIs for **Derivatives only**. For Equity orders, see `@TradeX Knowledge/Planning/regular-order-api-mapping.md`
+> **Note:** Lotte-integrated APIs for **Derivatives only**. For Equity orders, see `@Knowledge/TradeX/Planning/regular-order-api-mapping.md`
 
 ---
 ```

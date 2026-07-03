@@ -61,7 +61,7 @@
 | **Sổ lệnh (Bid/Ask)** | `market.bidoffer.{symbol}` | **`bb`** (bestBids), **`bo`** (bestOffers) – giá từng level (`p`), KL (`v`) để hiển thị bảng Bid/Ask và **tap-to-fill** vào Price. |
 | **CE / REF / FL** | Từ SymbolInfo (REST hoặc cache từ init/quote) | `ceilingPrice` (CE), `floorPrice` (FL), `referencePrice` (REF) – dùng để validate khoảng giá và hiển thị CE/REF/FL trên UI. |
 
-Chi tiết: [Regular_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md), [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md), [TradeX Knowledge – Market Data Channels](../../../../TradeX%20Knowledge/System/market-data-channels.md), [Symbol Info API](../../../../TradeX%20Knowledge/System/symbol-info-api.md).
+Chi tiết: [Regular_Orders_API_Spec](../../../Planning%20documentation/Order/Specifications/Regular_Orders_API_Spec.md), [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md), [TradeX Knowledge – Market Data Channels](../../../../Knowledge/TradeX/System/market-data-channels.md), [Symbol Info API](../../../../Knowledge/TradeX/System/symbol-info-api.md).
 
 ---
 
@@ -112,9 +112,9 @@ Xây dựng màn hình **Trade** cho Derivatives (Lệnh thường) trên NHSV P
 | Sửa / Hủy lệnh | `PUT .../order/modify`, `.../order/cancel` | Cùng spec trên |
 | Lệnh chờ (unmatch) | `GET .../order/todayUnmatch` | Cùng spec trên |
 | **Sức mua / sức bán** (Max buy, Max sell, validate quantity) | `GET /api/v1/derivatives/order/checkAvailability` | [Order_Availability_Check_API_Spec](../../../Planning%20documentation/Order/Specifications/Order_Availability_Check_API_Spec.md) |
-| **Giá real-time** (field Price từ giá hiện tại) | WebSocket `market.quote.{symbol}` → field **`c`** | [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) |
-| **CE / REF / FL** (khoảng giá, tap CE/REF/FL) | SymbolInfo: `ceilingPrice`, `floorPrice`, `referencePrice` (REST hoặc cache) | [symbol-info-api.md](../../../../TradeX%20Knowledge/System/symbol-info-api.md) |
-| **Bid/Ask** (sổ lệnh, tap giá fill Price) | WebSocket `market.bidoffer.{symbol}` → `bb`, `bo` (p, v) | [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) |
+| **Giá real-time** (field Price từ giá hiện tại) | WebSocket `market.quote.{symbol}` → field **`c`** | [market-data-channels.md](../../../../Knowledge/TradeX/System/market-data-channels.md) |
+| **CE / REF / FL** (khoảng giá, tap CE/REF/FL) | SymbolInfo: `ceilingPrice`, `floorPrice`, `referencePrice` (REST hoặc cache) | [symbol-info-api.md](../../../../Knowledge/TradeX/System/symbol-info-api.md) |
+| **Bid/Ask** (sổ lệnh, tap giá fill Price) | WebSocket `market.bidoffer.{symbol}` → `bb`, `bo` (p, v) | [market-data-channels.md](../../../../Knowledge/TradeX/System/market-data-channels.md) |
 | **Open position & Unrealized PnL** (block dưới Bid/Ask) | `GET /api/v1/derivatives/asset/openPositions` (optional `symbol`) | [Open_Position_List_API_Spec](../../../Planning%20documentation/Asset/Specifications/Open_Position_List_API_Spec.md) |
 
 **Gợi ý cho FE:**  
@@ -153,8 +153,8 @@ Xây dựng màn hình **Trade** cho Derivatives (Lệnh thường) trên NHSV P
 | [Open_Position_List_API_Spec](../../../Planning%20documentation/Asset/Specifications/Open_Position_List_API_Spec.md) | Open position & Unrealized PnL (block dưới Bid/Ask) |
 | [01_Regular_Orders_Business](../../../Planning%20documentation/Order/Planning/01_Regular_Orders_Business.md) | Business rules, user stories |
 | [Order README](../../../Planning%20documentation/Order/README.md) | Tổng quan Order, implementation status |
-| [market-data-channels.md](../../../../TradeX%20Knowledge/System/market-data-channels.md) | WebSocket quote/bidoffer, field `c`, `bb`, `bo` |
-| [symbol-info-api.md](../../../../TradeX%20Knowledge/System/symbol-info-api.md) | CE/REF/FL (ceilingPrice, floorPrice, referencePrice) |
+| [market-data-channels.md](../../../../Knowledge/TradeX/System/market-data-channels.md) | WebSocket quote/bidoffer, field `c`, `bb`, `bo` |
+| [symbol-info-api.md](../../../../Knowledge/TradeX/System/symbol-info-api.md) | CE/REF/FL (ceilingPrice, floorPrice, referencePrice) |
 | Figma – Lệnh thường | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40004971-124721&t=Hkbonf9r1expHBzf-11) |
 | Figma – Lệnh nhanh | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005168-209023&t=Hkbonf9r1expHBzf-11) |
 | Figma – Order confirmation (Buy) | [Link](https://www.figma.com/design/7KYJfVHawWie4n8v12JtXm/NHSV-Pro?node-id=40005409-14865&t=Hkbonf9r1expHBzf-11) |

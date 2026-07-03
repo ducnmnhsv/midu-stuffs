@@ -507,7 +507,7 @@ GET /tradingview/history?symbol=VCB&resolution=D&from=1704067200&to=1738713600
 |----------|---------|
 | [../Specifications/Chart_API_Spec.md](../Specifications/Chart_API_Spec.md) | Detailed technical spec |
 | [../Planning/03_Technical_Requirements.md](../Planning/03_Technical_Requirements.md) | Overall technical requirements |
-| [../../Documentation/[API specs]Lotte_DR.md](../../Documentation/[API%20specs]Lotte_DR.md) | Lotte DRMKT-003 API |
+| [../../../Documentation/Lotte_DR_API_Specs.md](../../../Documentation/Lotte_DR_API_Specs.md) | Lotte DRMKT-003 API |
 
 ---
 

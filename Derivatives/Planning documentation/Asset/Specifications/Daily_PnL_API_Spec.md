@@ -5,7 +5,7 @@
 **Version:** 1.4  
 **Date:** April 8, 2026
 
-> **Note:** Lotte-integrated API for **Derivatives only**. Query lãi/lỗ theo ngày (realized + unrealized + fee + tax) trong khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/[API%20specs]Lotte_DR.md) §2.1.8 — DRACC-037 (dr-daily-profit-loss).
+> **Note:** Lotte-integrated API for **Derivatives only**. Query lãi/lỗ theo ngày (realized + unrealized + fee + tax) trong khoảng thời gian. **Tham chiếu Lotte:** [Lotte_DR.md](../../../Documentation/Lotte_DR_API_Specs.md) §2.1.8 — DRACC-037 (dr-daily-profit-loss).
 
 ---
 

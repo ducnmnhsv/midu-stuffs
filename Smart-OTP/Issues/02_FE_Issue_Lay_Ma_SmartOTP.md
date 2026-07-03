@@ -194,3 +194,7 @@ flowchart TD
 - Correct PIN displays SmartOTP code with 60-second countdown.
 - Incorrect PIN threshold follows partner logic.
 - Code refresh behavior follows partner logic for both after-login and pre-login flows.
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

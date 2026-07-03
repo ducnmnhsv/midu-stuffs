@@ -68,3 +68,7 @@ Add the VSD flow in Cash Transaction (Derivatives): **VSD Balance** + **Deposit*
 
 - **API spec:** [VSD_Transaction_API_Spec.md](../../../Planning%20documentation/Cash%20transaction/VSD%20transaction/VSD_Transaction_API_Spec.md)
 - **FE repo (reference):** `nhsv-mts-rn` → `src/screens/CashFlowScreen/` (HeaderCashFlow, BodyCashFlow, InternalTransferRequest, WithdrawRequest, WithdrawHistory). Add VSD tab/section and VSD Balance, Deposit, Withdraw, History components.
+
+---
+
+Document Status: 📋 | For: PM/Dev | Next Steps: Review nội dung, cập nhật status trên Tracking/tasks.js

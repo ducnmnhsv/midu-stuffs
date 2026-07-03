@@ -273,7 +273,7 @@ Same as Buy Order
 | **Endpoint** | `[RootURL]/tuxsvc/der/order/dr-buy-by-user` |
 | **Method** | POST |
 | **Authentication** | API KEY |
-| **Lotte Doc** | `[API specs]Lotte_DR.md` lines 628-653 |
+| **Lotte Doc** | `Lotte_DR_API_Specs.md` lines 628-653 |
 
 #### Request Structure
 
@@ -345,7 +345,7 @@ Same as Buy Order
 | **Endpoint** | `[RootURL]/tuxsvc/der/order/dr-sell-by-user` |
 | **Method** | POST |
 | **Authentication** | API KEY |
-| **Lotte Doc** | `[API specs]Lotte_DR.md` lines 655-680 |
+| **Lotte Doc** | `Lotte_DR_API_Specs.md` lines 655-680 |
 
 #### Request Structure
 
@@ -373,7 +373,7 @@ Same as Buy Order
 | **Endpoint** | `[RootURL]/tuxsvc/der/order/dr-can-by-user` |
 | **Method** | POST |
 | **Authentication** | API KEY |
-| **Lotte Doc** | `[API specs]Lotte_DR.md` lines 682-706 |
+| **Lotte Doc** | `Lotte_DR_API_Specs.md` lines 682-706 |
 
 #### Request Structure
 
@@ -442,7 +442,7 @@ Same as Buy Order
 | **Endpoint** | `[RootURL]/tuxsvc/der/order/dr-mod-by-user` |
 | **Method** | POST |
 | **Authentication** | API KEY |
-| **Lotte Doc** | `[API specs]Lotte_DR.md` lines 708-735 |
+| **Lotte Doc** | `Lotte_DR_API_Specs.md` lines 708-735 |
 
 #### Request Structure
 
@@ -519,7 +519,7 @@ Same as Buy Order
 | **Endpoint** | `[RootURL]/tuxsvc/der/order/dr-nmth-order` |
 | **Method** | POST |
 | **Authentication** | API KEY |
-| **Lotte Doc** | `[API specs]Lotte_DR.md` lines 483-513 |
+| **Lotte Doc** | `Lotte_DR_API_Specs.md` lines 483-513 |
 
 #### Request Structure
 
@@ -710,7 +710,7 @@ All Lotte APIs return:
 | Route (VCSC) | `rest-proxy-main/src/app/routes/api/derivatives/vcsc/Order.ts` |
 | Route (KIS) | `rest-proxy-main/src/app/routes/api/derivatives/kis/Order.ts` |
 | Model | `rest-proxy-main/src/app/models/api/derivatives/kis/Order.ts` |
-| Lotte Documentation | `Derivatives/Documentation/[API specs]Lotte_DR.md` |
+| Lotte Documentation | `Derivatives/Documentation/Lotte_DR_API_Specs.md` |
 
 ### Documentation
 
@@ -726,10 +726,10 @@ All Lotte APIs return:
 
 ## Related Documents
 
-- [TradeX Knowledge Index](../TradeX%20Knowledge/_index.md)
-- [Market Data Channels](../TradeX%20Knowledge/market-data-channels.md)
-- [Order V2 Documentation](../TradeX%20MCP/Knowledge%20based/order-v2-main/ORDER_V2_DOCUMENTATION.md) (Conditional Orders)
-- [Lotte DR API Specs](../Derivatives/Documentation/[API%20specs]Lotte_DR.md)
+- [TradeX Knowledge Index](../_index.md)
+- [Market Data Channels](../System/market-data-channels.md)
+- [Order V2 Documentation](../../TradeX-MCP/order-v2-main/ORDER_V2_DOCUMENTATION.md) (Conditional Orders)
+- [Lotte DR API Specs](../../../Derivatives/Documentation/Lotte_DR_API_Specs.md)
 
 ---
 

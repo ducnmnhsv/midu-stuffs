@@ -88,7 +88,7 @@ the API behavior, field mappings, and error handling.
 - Explain auto-populated fields
 
 ## Format
-Use standard TradeX API spec template from @TradeX Knowledge/API Standards/
+Use standard TradeX API spec template from @Knowledge/TradeX/API Standards/
 
 ## Reasoning
 Walk through each section systematically, explaining your choices.
@@ -341,9 +341,9 @@ Optimize to:
 ## Related Resources
 
 For PM/BA domain knowledge:
-- TradeX conventions: `@TradeX Knowledge/API Standards/`
-- System mechanisms: `@TradeX Knowledge/System/`
-- Planning patterns: `@TradeX Knowledge/Planning/`
+- TradeX conventions: `@Knowledge/TradeX/API Standards/`
+- System mechanisms: `@Knowledge/TradeX/System/`
+- Planning patterns: `@Knowledge/TradeX/Planning/`
 
 ---
 
