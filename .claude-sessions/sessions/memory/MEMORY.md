@@ -1,9 +1,7 @@
-# Memory Index — tradex-monitoring
+# Memory Index
 
-- [TradeX Project Overview](project_tradex_overview.md) — System architecture, microservices, Kafka flow, Jira context for NHSV Pro
-- [Knowledge Locations](project_knowledge_locations.md) — Where to find docs, specs, source code, FE repo, personal tracking
-- [User Role & Context](user_role_context.md) — BA/PM role, Vietnamese securities domain, communication & delivery preferences
-- [Doc Only Feedback](feedback_doc_only.md) — Chỉ tạo tài liệu trong tradex-monitoring, không implement code thực tế vào source files
-- [NHSV Pro Design System](reference_nhsv_design_system.md) — Full design tokens, colors, typography, radii, shadows, chart palette, figma-cli var: names. Non-negotiables: Lato only, white cards on #EBECF0 bg, teal→mint gradient header only, Vietnam market colors (green up/red down)
-- [Figma Tooling Feedback](feedback_figma_tooling.md) — Dùng figma-cli (đã cài sẵn), không dùng Figma MCP authenticate flow
-- [API Spec Format](feedback_api_spec_format.md) — Chuẩn trình bày spec: header metadata, 7 sections, ✅/❌ required, JSON examples, enum tables riêng, không dùng User Story format
+- [Ngôn ngữ phản hồi](feedback_language.md) — Luôn dùng tiếng Việt, không dùng tiếng Hàn dù skill/CLAUDE.md có nội dung tiếng Hàn
+- [PM HTML Preference](user_pm_html_preference.md) — User là PM, ưa HTML cho tracking/overview docs; giữ lại HTML files, không replace bằng .md
+- [NHSV New Features Sprint](project_nhsv_new_features.md) — Scope, folder structure, improvements đã confirm, backlog, và việc còn dang dở
+- [TradeX Knowledge First](feedback_tradex_knowledge_first.md) — Đọc Knowledge/TradeX/ trước khi viết/review bất kỳ spec/PRD/API/issue nào liên quan TradeX
+- [TT134 Overlap Rules](project_tt134_overlap_rules.md) — Rules ngăn duplicate middleware/migration/task khi làm issue TT134; checklist 4 câu hỏi trước khi viết issue mới
