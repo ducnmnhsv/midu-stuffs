@@ -1,60 +1,67 @@
-# Validator Report — BE Market Quote Fields Enhancement
+# Validator Report — eKYC Biometric Log
 
-## Result: PASS_WITH_WARNINGS
-
-Draft validated against CLAUDE.md conventions and the authoritative `TradeX Knowledge/System/symbolinfo-api-fields-guide.md`. One correctness bug found and fixed; remaining items are open clarify-questions for BE grooming (not doc defects).
-
----
-
-## Checklist
-
-### Structure
-- [x] Issues/ template: Executive Summary present with all 5 subsections (Problem Statement, Current vs Target, Solution Approach, Timeline, Success Criteria)
-- [x] Executive Summary: NO code blocks (prose + tables only) — C3 PM-Readability Gate passed
-- [x] Technical sections marked "(PM CAN SKIP)" — both Technical Background and Detailed Requirements
-- [x] Footer present: `**Document Status:** | **For:** | **Next Steps:**`
-
-### Content
-- [x] Issue 1 (basis/`bs`): 41I1→VN30, 41I2→VN100 mapping present; ATO/ATC handling (expectedPrice vs currentPrice) covered; field name `bs` confirmed against guide
-- [x] Issue 2 (asv/abv): aggressor logic, session reset, REST+socket all covered
-- [x] Acceptance criteria present for both issues (Success Criteria 1–7)
-- [x] No Lotte internal terms exposed without explanation (raw `parts[24]` only in Technical section, explained)
-
-### Naming
-- [x] Filename PascalCase, no brackets, no special prefixes: `BE_Market_Quote_Fields_Enhancement.md`
-- [x] Field names verified against `symbolinfo-api-fields-guide.md`: `bs`=basis, `asv`=accumulatedSellVolume, `abv`=accumulatedBidVolume, `bc`=baseCode — all correct
-- [x] Brief's `asb` → correctly mapped to convention `abv` (flagged for FE)
+**Date:** 2026-07-01
+**Validator:** tradex-validator
+**Pipeline stage:** Phase 3 — Convention Check & Finalize
 
 ---
 
-## Issues found and FIXED
+## Spec file: `eKYC/Specifications/Biometric_Log_Spec.md`
 
-### 🔴 CRITICAL (fixed): Aggressor-side mapping was reversed
-- **Draft had:** `mb=ASK → mua chủ động → abv`, `mb=BID → bán chủ động → asv`
-- **Authoritative guide (line 94) says:** `ASK = bên bán chủ động`, `BID = bên mua chủ động`
-- **Correct mapping:** `mb=ASK → asv` (aggressive sell), `mb=BID → abv` (aggressive buy)
-- **Fix applied:** Corrected the aggressor-side table; added an inline warning noting the FE brief had it backwards and that the Knowledge guide is authoritative (C4 Knowledge-First).
-- **Follow-on:** Added a new clarify-question (#2) so FE is explicitly asked to confirm direction; renumbered subsequent questions (now 7 total); updated header count and Next Steps footer.
+**Result:** PASS_WITH_WARNINGS
 
-### Minor (fixed): Status line
-- Changed footer status from "🟡 Draft — chờ validator review" to "✅ Validated — sẵn sàng cho BE grooming".
+### Checks
+
+| Check | Result | Ghi chú |
+|-------|--------|---------|
+| File naming (PascalCase + underscore) | PASS | `Biometric_Log_Spec.md` đúng convention |
+| API fields camelCase TradeX | PASS | Tất cả request/response fields dùng camelCase TradeX (`identifierId`, `vnptStatusCode`, v.v.) — không có Lotte field names |
+| DB table/column name snake_case | PASS | `ekyc_attempt_log`, tất cả cột snake_case nhất quán |
+| Integration type khai báo rõ | PASS | `TradeX-native (internal DB only — không qua Lotte/Core)` ở đầu file |
+| Mutation response `{ id }` | PASS | `POST /ekycs/attempt-log` trả `{ "id": 1042 }` — đúng chuẩn TradeX-native |
+| Query response có envelope | PASS | `GET /api/admin/ekyc/attempts/search` có `{ totalCount, attempts[] }` |
+| Error codes SCREAMING_SNAKE_CASE | PASS | `INVALID_PARAMETER`, `OBJECT_NOT_FOUND`, `TOKEN_EXPIRED`, `FORBIDDEN`, `INTERNAL_SERVER_ERROR` |
+| Footer C5 format | PASS | `Document Status: ✅ Complete \| For: BE Dev (ekyc-admin team) \| Next Steps: ...` |
+| URL camelCase (TradeX convention) | PASS | `/ekycs/attempt-log`, `/api/admin/ekyc/attempts/search` — đúng pattern JHipster của ekyc-admin |
+| `identifierId` required trong POST | PASS | Ghi rõ **Y** trong Request Fields table, có note riêng |
+| Admin API filter params hợp lý | PASS | `identifierId`, `attemptResult`, `fromDate`, `toDate`, `hasEkycId`, `page`, `size` — đầy đủ |
+| VNPT fields tách thành cột riêng | PASS | 30+ cột riêng, INDEX trên `identifier_id`, `attempt_result`, `e_kyc_id`, `created_at` |
+| Table of Contents anchor typo | FIXED | Sửa `ekcyattemptssearch` → `ekyattemptssearch` trong 2 anchor links |
+| `vnpt_raw_data LONGTEXT` trong schema | WARNING | Không có cột này trong `ekyc_attempt_log` — thiết kế intentional: raw blob giữ ở `ekyc_ext.raw_data` (không xóa), bảng mới chỉ lưu structured fields. Justify rõ ở Section 2 và 9. Hợp lệ nhưng khác checklist validator ban đầu — PM confirm nếu cần thêm redundant raw column. |
+
+### Fixes đã áp dụng
+
+- **Typo Table of Contents (dòng 21-22):** Sửa anchor links từ `#...ekcyattemptssearch` / `#...ekcyattemptsid` thành đúng spelling `eky`.
 
 ---
 
-## Warnings (no action — open questions for BE, correctly surfaced in doc)
+## Issue file: `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md`
 
-These are legitimately unresolved and are listed as clarify-questions, not doc errors:
-1. `41I1`/`41I2` → VN30/VN100 prefix rule unverified in TradeX Knowledge (came from FE spec).
-2. `market.quote.dr` channel suffix not in Knowledge.
-3. VN100 futures existence unconfirmed.
-4. REST derivatives field-group exposure unconfirmed.
+**Result:** PASS
 
-FE codebase `nhsv-mts-rn` was not accessible during analysis — FE references unverified (already disclosed in the doc's source note).
+### Checks
 
-C2 (Order API response standards) correctly NOT applied — this is market data, not an Order API.
+| Check | Result | Ghi chú |
+|-------|--------|---------|
+| File naming | PASS | `BE_Issue_Biometric_Log_Storage.md` — PascalCase + underscore |
+| Integration type khai báo | PASS | `TradeX-native` ở header |
+| Footer C5 format | PASS | Đúng format — đầy đủ Status/For/Next Steps |
+| Tasks khớp spec | PASS | Task 1-7 cover đầy đủ: Liquibase, Entity, Repository, Service, Resource, CustomEKycService hook, Admin REST |
+| Acceptance Criteria rõ ràng | PASS | 12 criteria cụ thể, testable, khớp từng task |
+| Code snippets Java hợp lệ | PASS | Repository interface, Resource controller, CustomEKycService hook — đúng JHipster pattern |
+| No Lotte field names | PASS | Không reference Lotte fields (`acnt_no`, v.v.) |
+| Folder placement | PASS | `eKYC/Issues/` — đúng file routing |
+| `attemptLogId` linking flow | PASS | Task 6 mô tả rõ: App gửi `attemptLogId` vào `POST /lotte/ekycs`, BE link `e_kyc_id` sau APPROVED |
 
 ---
 
-## Final file path
+## Overall: PASS_WITH_WARNINGS
 
-`/Users/ducnguyen/Documents/project/tradex-monitoring/Derivatives/Planning documentation/Market data/Issues/BE_Market_Quote_Fields_Enhancement.md`
+Cả 2 files đạt chuẩn convention TradeX. Warning duy nhất về `vnpt_raw_data` là thiết kế intentional và được justify rõ trong spec — không phải lỗi convention. Files ready for handoff to BE Dev.
+
+---
+
+## Files đã lưu
+
+- `eKYC/Specifications/Biometric_Log_Spec.md` — PASS_WITH_WARNINGS (1 typo anchor đã fix)
+- `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md` — PASS (không thay đổi)

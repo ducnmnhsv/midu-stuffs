@@ -1,67 +1,83 @@
-# Validator Report — eKYC Biometric Log
+# Validator Report
 
-**Date:** 2026-07-01
-**Validator:** tradex-validator
-**Pipeline stage:** Phase 3 — Convention Check & Finalize
-
----
-
-## Spec file: `eKYC/Specifications/Biometric_Log_Spec.md`
-
-**Result:** PASS_WITH_WARNINGS
-
-### Checks
-
-| Check | Result | Ghi chú |
-|-------|--------|---------|
-| File naming (PascalCase + underscore) | PASS | `Biometric_Log_Spec.md` đúng convention |
-| API fields camelCase TradeX | PASS | Tất cả request/response fields dùng camelCase TradeX (`identifierId`, `vnptStatusCode`, v.v.) — không có Lotte field names |
-| DB table/column name snake_case | PASS | `ekyc_attempt_log`, tất cả cột snake_case nhất quán |
-| Integration type khai báo rõ | PASS | `TradeX-native (internal DB only — không qua Lotte/Core)` ở đầu file |
-| Mutation response `{ id }` | PASS | `POST /ekycs/attempt-log` trả `{ "id": 1042 }` — đúng chuẩn TradeX-native |
-| Query response có envelope | PASS | `GET /api/admin/ekyc/attempts/search` có `{ totalCount, attempts[] }` |
-| Error codes SCREAMING_SNAKE_CASE | PASS | `INVALID_PARAMETER`, `OBJECT_NOT_FOUND`, `TOKEN_EXPIRED`, `FORBIDDEN`, `INTERNAL_SERVER_ERROR` |
-| Footer C5 format | PASS | `Document Status: ✅ Complete \| For: BE Dev (ekyc-admin team) \| Next Steps: ...` |
-| URL camelCase (TradeX convention) | PASS | `/ekycs/attempt-log`, `/api/admin/ekyc/attempts/search` — đúng pattern JHipster của ekyc-admin |
-| `identifierId` required trong POST | PASS | Ghi rõ **Y** trong Request Fields table, có note riêng |
-| Admin API filter params hợp lý | PASS | `identifierId`, `attemptResult`, `fromDate`, `toDate`, `hasEkycId`, `page`, `size` — đầy đủ |
-| VNPT fields tách thành cột riêng | PASS | 30+ cột riêng, INDEX trên `identifier_id`, `attempt_result`, `e_kyc_id`, `created_at` |
-| Table of Contents anchor typo | FIXED | Sửa `ekcyattemptssearch` → `ekyattemptssearch` trong 2 anchor links |
-| `vnpt_raw_data LONGTEXT` trong schema | WARNING | Không có cột này trong `ekyc_attempt_log` — thiết kế intentional: raw blob giữ ở `ekyc_ext.raw_data` (không xóa), bảng mới chỉ lưu structured fields. Justify rõ ở Section 2 và 9. Hợp lệ nhưng khác checklist validator ban đầu — PM confirm nếu cần thêm redundant raw column. |
-
-### Fixes đã áp dụng
-
-- **Typo Table of Contents (dòng 21-22):** Sửa anchor links từ `#...ekcyattemptssearch` / `#...ekcyattemptsid` thành đúng spelling `eky`.
+**Date:** 2026-07-03
+**Draft reviewed:** `_workspace/02_creator_draft.md`
+**Target file:** `New feature in NHSV Pro/Market_Watch/GTGD_Chart/BE_Issue.md` (UPDATE existing)
 
 ---
 
-## Issue file: `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md`
-
-**Result:** PASS
-
-### Checks
-
-| Check | Result | Ghi chú |
-|-------|--------|---------|
-| File naming | PASS | `BE_Issue_Biometric_Log_Storage.md` — PascalCase + underscore |
-| Integration type khai báo | PASS | `TradeX-native` ở header |
-| Footer C5 format | PASS | Đúng format — đầy đủ Status/For/Next Steps |
-| Tasks khớp spec | PASS | Task 1-7 cover đầy đủ: Liquibase, Entity, Repository, Service, Resource, CustomEKycService hook, Admin REST |
-| Acceptance Criteria rõ ràng | PASS | 12 criteria cụ thể, testable, khớp từng task |
-| Code snippets Java hợp lệ | PASS | Repository interface, Resource controller, CustomEKycService hook — đúng JHipster pattern |
-| No Lotte field names | PASS | Không reference Lotte fields (`acnt_no`, v.v.) |
-| Folder placement | PASS | `eKYC/Issues/` — đúng file routing |
-| `attemptLogId` linking flow | PASS | Task 6 mô tả rõ: App gửi `attemptLogId` vào `POST /lotte/ekycs`, BE link `e_kyc_id` sau APPROVED |
+## Status: PASS_WITH_WARNINGS
 
 ---
 
-## Overall: PASS_WITH_WARNINGS
+## Checklist Results
 
-Cả 2 files đạt chuẩn convention TradeX. Warning duy nhất về `vnpt_raw_data` là thiết kế intentional và được justify rõ trong spec — không phải lỗi convention. Files ready for handoff to BE Dev.
+### 1. Technical accuracy — PASS
+
+- `va` semantic mô tả đúng: **cumulative day trading value** (từ đầu phiên đến `t[i]`), khớp analyst findings (Lotte `parts[21]` snapshot cumulative, không phải per-minute delta).
+- Draft phân biệt rõ:
+  - `v[]` = `periodTradingVolume` = **volume delta per-minute** (giữ nguyên chuẩn TradingView SDK).
+  - `va[]` = `tradingValue` = **cumulative** (khớp WS `market.quote.{s}` field `va`).
+- Fallback `null → 0` cho record cũ (line 210, 225) — hợp lý, tránh throw error.
+
+### 2. Backward compatibility — PASS
+
+- `v[]` không đổi semantic (lines 21, 24, 50, 96, 124).
+- `va[]` là field mới, additive → client cũ ignore field lạ, không break.
+- TradingView Advanced Charts SDK chỉ đọc `s/t/o/h/l/c/v` → an toàn (line 257).
+- Type `TradingViewHistoryResponse` bổ sung `va?: number[]` optional (line 151) — backward-compat.
+
+### 3. Consistency với FE Issue — PASS_WITH_WARNINGS
+
+- FE Issue (line 106) đã dùng `va` từ WS `market.quote.{s}` với semantic "cumulative trading value trong ngày — đã cumulative sẵn, không cần cumsum". **Khớp với BE draft** cho luồng realtime.
+- BE draft (line 232-233) ghi rõ: "FE KHÔNG cần cumsum khi dùng `va` từ history" và naming consistency giữa history API + WS.
+
+**⚠️ WARNING (out-of-scope for validator, ghi nhận để team-lead xử lý):**
+
+- FE Issue line 90 vẫn ghi `v: FE cumsum` — nay đã lỗi thời sau khi BE thêm `va[]`. FE nên cập nhật để đọc `va[]` từ history response thay vì cumsum từ `v[]`.
+- FE Issue line 98 note đề xuất endpoint mới `/tradingValue/intraday` — BE draft chọn cách khác (bổ sung `va` vào endpoint hiện có). Note này nên xoá/cập nhật khi FE Issue được revise.
+
+**Không sửa FE Issue trong scope task này** — chỉ flag để team-lead quyết định.
+
+### 4. Format — PASS
+
+- **C3 (PM-readability):** Executive Summary (lines 10-54) KHÔNG có code block, chỉ prose + bảng ✅. Code blocks nằm trong "Technical Background" và "Detailed Requirements" (có header note "PM CAN SKIP").
+- **C5 (Derivatives doc footer):** Lines 293-295 có đủ `Document Status | For | Next Steps` ✅.
+- **Markdown ATX headers:** Toàn bộ dùng `#`, `##`, `###` ✅.
+- **Fenced code blocks có language ID:** `typescript`, `json`, plain text — ✅ đủ.
+
+### 5. Completeness — PASS
+
+- Response JSON example (lines 237-248) có cả `v` (volume delta) và `va` (cumulative) ✅.
+- BE changes rõ ràng:
+  - `market-query-v2`: sửa `parseSymbolQuoteMinuteList` + `parseTradingviewDailyPeriodList` (line 103-131).
+  - `realtime-v2`: **verify only, không sửa code** (line 159-167) — hợp lệ vì `tradingValue` đã persist.
+- Symbol code inconsistency (`VNINDEX` vs `VN`) đã note ở REQ-BE-GTGD-01 (line 200-208) — analyst gap được surface đúng.
+
+### 6. Convention TradeX naming — PASS
+
+- Dùng field name TradeX: `tradingValue`, `periodTradingVolume`, `accountNumber` (không có ở đây), `va` (TradeX-native).
+- KHÔNG có field name Lotte (`ord_qty`, `stk_cd`, `acnt_no`, ...).
+- Naming `va` khớp WS channel `market.quote.{s}` → consistency chéo giữa 2 nguồn (history + realtime).
 
 ---
 
-## Files đã lưu
+## Issues found
 
-- `eKYC/Specifications/Biometric_Log_Spec.md` — PASS_WITH_WARNINGS (1 typo anchor đã fix)
-- `eKYC/Issues/BE_Issue_Biometric_Log_Storage.md` — PASS (không thay đổi)
+**None (blocking).**
+
+**Non-blocking warnings:**
+
+1. FE Issue (`Issues/FE_GTGD_Chart_Market_Watch.md`) line 90, 98 chưa cập nhật để phản ánh cách mới đọc `va` từ history response. **Recommendation:** team-lead giao ticket riêng cho tradex-creator update FE Issue sau khi BE_Issue này được approve.
+
+---
+
+## Changes made to draft
+
+**None.**
+
+Draft đạt chất lượng finalize, không cần chỉnh sửa nội dung. Ghi thẳng vào `BE_Issue.md`.
+
+---
+
+**Document Status:** ✅ Validated (PASS_WITH_WARNINGS) | For: team-lead | Next Steps: team-lead xử lý warning về FE Issue update

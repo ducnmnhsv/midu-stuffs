@@ -12,7 +12,7 @@
 ## Table of Contents
 
 - [Backend (8 stories)](#backend)
-- [Mobile FE (6 stories)](#mobile-fe)
+- [Mobile FE (7 stories)](#mobile-fe)
 - [Admin FE (5 stories)](#admin-fe)
 
 ---
@@ -647,6 +647,39 @@ Comprehensive error and edge case coverage across all NH Research screens to ens
 
 ---
 
+### MOB-07 · Deeplink — Navigate to NH Research tab / Article detail
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Mobile FE |
+| **Priority** | Medium |
+| **Labels** | `nh-research`, `mobile`, `deeplink` |
+
+**Description**
+
+App cần xử lý deeplink để mở thẳng tab NH Research hoặc màn Article Detail — dùng chung cho push notification (X-03), universal link, và share link trong tương lai. Đăng ký route handler trong deeplink router hiện có của app (không tạo router riêng cho NH Research).
+
+**Deeplink scheme**
+
+| Đích đến | Deeplink |
+|---|---|
+| Tab NH Research (theo danh mục) | `nhsvpro://channel/nh-research?category={category}` |
+| Chi tiết 1 bài viết | `nhsvpro://channel/nh-research?articleId={articleId}` |
+
+**Acceptance Criteria**
+
+- [ ] Deeplink `nhsvpro://channel/nh-research?category={category}` mở app → tab NH Research, chọn đúng pill category tương ứng (mặc định MARKET nếu `category` không hợp lệ/thiếu)
+- [ ] Deeplink `nhsvpro://channel/nh-research?articleId={articleId}` mở app → thẳng màn Article Detail (MOB-04) của `articleId` đó, không qua màn list trước
+- [ ] Nếu có cả `category` và `articleId` → ưu tiên mở Article Detail
+- [ ] Gọi `GET /api/v1/nhResearch/articles/{articleId}` để lấy data; loading state trong lúc chờ
+- [ ] `articleId` không tồn tại / bài đã `DISABLED`/`DELETED` (API trả 404) → hiển thị error state theo MOB-06 ("Article not found" + back button), không crash app
+- [ ] Back từ Article Detail (mở qua deeplink) → về Home screen (không có màn list trong stack vì user chưa qua đó)
+- [ ] App đang ở background/foreground khi nhận deeplink đều xử lý đúng (không chỉ cold start)
+- [ ] Test cả 2 case: app chưa mở (cold start) và app đang chạy nền
+
+---
+
 ## Admin FE
 
 ### ADM-01 · Add NH Research section to nhsv-admin sidebar
@@ -825,9 +858,9 @@ Shared components used across create and edit forms: the PDF upload widget and t
 | Layer | Stories | Priority breakdown |
 |---|---|---|
 | Backend | 8 | 8 High |
-| Mobile FE | 6 | 4 High · 2 Medium |
+| Mobile FE | 7 | 4 High · 3 Medium |
 | Admin FE | 5 | 4 High · 1 Medium |
-| **Total** | **19** | |
+| **Total** | **20** | |
 
 **Blocked stories:** BE-07 and BE-08 depend on storage provider decision (Open Q #2 in PRD).  
 **Recommended start:** BE-01 (DB schema) → BE-02/03 (Mobile APIs) in parallel → MOB-01~04 can start once BE-02/03 are deployed to UAT.

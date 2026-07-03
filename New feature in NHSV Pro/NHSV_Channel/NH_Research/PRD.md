@@ -64,6 +64,17 @@ Màn hình chi tiết hiển thị toàn bộ nội dung bài viết theo ngôn 
 
 Khi Phòng Phân tích publish bài mới, user nhận notification. Tap vào notification deeplink thẳng vào tab NH Research (`nhsvpro://channel/nh-research?category={category}`). Tính năng này chỉ available sau khi X-03 (Push Notification Infrastructure) hoàn thành.
 
+#### Deeplink
+
+Ngoài deeplink từ push notification, app cần hỗ trợ 2 loại deeplink cho NH Research (dùng chung cho notification, universal link, share link, v.v.):
+
+| Đích đến | Deeplink |
+|---|---|
+| Tab NH Research (theo danh mục) | `nhsvpro://channel/nh-research?category={category}` |
+| Chi tiết 1 bài viết | `nhsvpro://channel/nh-research?articleId={articleId}` |
+
+Khi app nhận deeplink có `articleId` → mở thẳng màn Article Detail (MOB-04), gọi `GET /api/v1/nhResearch/articles/{articleId}`. Nếu bài không tồn tại hoặc đã bị ẩn/xóa → hiển thị lại error state của MOB-06 ("Article not found"), không crash app.
+
 ### 4.2 Admin Tool — Phòng Phân tích
 
 #### Upload và publish bài viết
