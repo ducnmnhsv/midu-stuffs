@@ -1,346 +1,276 @@
-# Analyst Findings — `va` field in `/tradingview/history`
+# eKYC Journey Logging — Analyst Findings
 
-**Analyst:** Claude (analyst subagent)
-**Date:** 2026-07-03
-**Scope:** Trace luồng dữ liệu market data để trả lời câu hỏi có thể thêm `va` (trading value) vào `/tradingview/history` không, và nếu có thì BE cần sửa gì.
-
-**Verdict tổng:** ✅ Feasible. `tradingValue` (nguồn của WS `va`) **đã có sẵn** ở cả 3 tầng (Kafka minute payload, Redis SymbolQuoteMinute, và model MongoDB `ISymbolQuoteMinutes` interface trong query service). Cần chỉnh 2 chỗ ở code + 1 verify ở model Java realtime-v2.
-
----
-
-## 1. `/tradingview/history` — Luồng hiện tại
-
-### 1.1 Endpoint
-
-| Property | Value |
-|---|---|
-| **URI** | `/api/v2/tradingview/history` |
-| **Service** | `market-query-v2` |
-| **File** | `src/consumers/RequestHandler.ts` (line 149) → `FeedService.queryTradingViewHistory()` |
-| **Kafka topic** | `market-v2` |
-
-### 1.2 Branching theo resolution
-
-`FeedService.queryTradingViewHistory()` (`src/services/FeedService.ts:50-61`) split theo `RESOLUTION_MINUTE = ['1','3','5','10','15','30','60']`:
-
-- **Intraday (`1..60`):** → `getQuoteMinuteHistory()` → `CommonService.actualQueryQuoteMinuteHistory()` → **Redis + Mongo** (`c_symbol_quote_minute`)
-- **Daily/Weekly/Monthly (`1D/1W/1M/6M`):** → `getDailyPeriodHistory()` → Mongo `c_symbol_daily` (+ Redis overlay cho hôm nay)
-
-Vì use case GTGD Chart = per-minute, chỉ quan tâm nhánh intraday.
-
-### 1.3 Luồng đọc theo ngày (nhánh `getQuoteMinuteHistory`)
-
-Trong `CommonService.actualQueryQuoteMinuteHistory()` (`src/services/common/CommonService.ts:137-271`), logic quyết định Redis vs Mongo dựa trên **so sánh ngày**:
-
-```
-fromTimeDayBase = floor(fromTime / 86400000)   // day epoch của from
-nowDayBase      = floor(now / 86400000)         // day epoch của hôm nay
-toTimeDayBase   = floor(newToTime / 86400000)   // day epoch của to (clamp về now)
-
-nếu toTimeDayBase == nowDayBase:
-   → đọc REDIS trước: LRANGE  realtime_listQuoteMinute_{code}  0 -1
-                       filter by (item.date <= toTime && item.date >= fromTime)
-
-nếu fromTimeDayBase < nowDayBase  hoặc  finalResults.length < countBack:
-   → query MONGO: c_symbol_quote_minute  (SYMBOL_QUOTE_MINUTES repo)
-                  filter: { date: { $lte: min(newToTime, startOfToday),
-                                    $gte: fromTime },
-                             code: symbol }
-```
-
-Tóm tắt:
-
-| Query range | Data source |
-|---|---|
-| Ngày HÔM NAY | **Redis** `realtime_listQuoteMinute_{code}` (`SYMBOL_QUOTE_MINUTE` prefix trong `constants/index.ts:32` + `services/RedisService.ts:27`) |
-| Ngày QUÁ KHỨ | **MongoDB** collection `c_symbol_quote_minute` (`COLLECTIONS_NAME.SYMBOL_QUOTE_MINUTE`) |
-| Mixed range (chứa cả hôm nay + hôm qua) | Redis (cho phần hôm nay) + Mongo (cho phần quá khứ) — merge trong `processItem()` |
-
-### 1.4 Response format hiện tại
-
-`parseSymbolQuoteMinuteList()` (`src/utils/ResponseUtils.ts:725-764`):
-
-```ts
-return {
-  t: [],  // Unix timestamp / 1000  (từ item.date)
-  o: [],  // item.open
-  h: [],  // item.high
-  l: [],  // item.low
-  c: [],  // item.last                ← NOTE: field DB tên là "last", không phải "close"
-  v: [],  // item.periodTradingVolume ← per-minute VOLUME delta (không phải value!)
-  s: 'ok' | 'no_data',
-  nextTime,
-  noData,
-};
-```
-
-- **`t`** = Unix timestamp seconds (giây), zero-out ms + seconds → align đến phút.
-- **`v`** = `periodTradingVolume` = **volume delta trong phút** (đã accumulate qua nhiều update trong cùng phút, xem `processItem` line 174: `placeHolderRecord.periodTradingVolume = placeHolderRecord.periodTradingVolume + current.periodTradingVolume`).
-- **KHÔNG có `va` (trading value)** trong response, dù model `ISymbolQuoteMinutes` (line 9) đã có field `tradingValue`.
-
-⚠️ **Điểm quan trọng**: BE_Issue.md hiện tại nói *"v trong response chính là trading value"* — điều này **KHÔNG đúng với code hiện tại**. Code đang set `v = periodTradingVolume` (volume, không phải value). Cần fix mô tả trong doc hoặc BE cần đổi hành vi.
+**Analyst:** Claude (tradex-pipeline)
+**Date:** 2026-07-04
+**Sources verified:**
+- `Knowledge/TradeX-MCP/lotte-bridge-main/src/services/EkycService.ts`
+- `Knowledge/TradeX-MCP/lotte-bridge-main/src/consumers/RequestHandler.ts`
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/consumers/RequestHandler.java`
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/models/request/*.java`
+- `Knowledge/TradeX-MCP/documents-main/API_spec_docs/TradeX API - Addons.yaml`
 
 ---
 
-## 2. EOD Flush Job (realtime-v2)
+## 1. Service Mapping
 
-### 2.1 Trigger
+| # | API | HTTP | Owner Service | Kafka Topic | Backend Method | Notes |
+|---|-----|------|---------------|-------------|----------------|-------|
+| 1 | `/api/v1/lotte/ekycs/create` | POST | **ekyc-admin** | `ekyc-admin` | `LotteEKycService.createEKycLotte()` | Kafka URI in code is `/api/v1/ekycs/create` — rest-proxy chuyển từ `/lotte/ekycs/create` → topic ekyc-admin. Trả `eKycId`. |
+| 2 | `/api/v1/ekyc-admin/sendOtp` | POST | **ekyc-admin** | `ekyc-admin` | `OTPService.generateAndSendOtp()` | OTP tới phoneNo |
+| 3 | `/api/v1/ekyc-admin/verifyOtp` | POST | **ekyc-admin** | `ekyc-admin` | `OTPService.VerifyOtp()` | Trả `otpKey` để confirm bước sau |
+| 4 | `/api/v1/lotte/ekycs` | POST | **ekyc-admin** | `ekyc-admin` | Kafka URI `/api/v1/ekycs` → `customEKycService.addEKyc()` (chain sang Lotte + FPT eContract) | Submit toàn bộ form eKYC |
+| 5 | `/api/v1/ekycs/banks` | GET | **lotte-bridge** | `lotte-bridge` | `EkycService.getBankList()` | Query Lotte code_tp=`bank_cd_off` |
+| 6 | `/api/v1/ekycs/branch` | GET | **lotte-bridge** | `lotte-bridge` | `EkycService.getListBranch()` | Query Lotte code_tp=`brch_cd` (NHSV branches) |
+| 7 | `/api/v1/ekycs/banks/{id}/branches` | GET | **lotte-bridge** | `lotte-bridge` | `EkycService.getBanksListBranch()` | Query Lotte code_tp=`bank_brch`, bank_code=id |
+| 8 | `/api/v1/ekycs/partner` | GET | **lotte-bridge** | `lotte-bridge` | `EkycService.getPartnerName()` | Validate NHSV staff (partnerId) |
+| 9 | `/api/v1/ekycs/account/exist` | GET | **lotte-bridge** | `lotte-bridge` | `EkycService.checkAccountOpeningStatus()` | Check trạng thái mở account tại Lotte (không có trong Addons.yaml — chỉ có trong source) |
+| 10 | `/api/v1/equity/account/checkNationalId` | POST | **lotte-bridge** | `lotte-bridge` | `EkycService.checkNationalId()` | 2 bước: query `ekyc-admin` (internal) rồi Lotte |
+| 11 | `/api/v1/equity/account/contracts` | GET | **ekyc-admin** | `ekyc-admin` | `EContractCustomService.signEContract()` | Trả FPT eContract webView URL (envelopeId, cookieValue…) |
 
-| Property | Value |
-|---|---|
-| **File** | `src/main/java/com/techx/tradex/realtime/services/JobService.java` (line 88-91) |
-| **Method** | `JobService.saveRedisToDatabase()` |
-| **Schedule** | `@Scheduled(cron = "${app.schedulers.saveRedisToDatabase}")` — cron string từ config, **không hard-code 15:30 trong code**. Team ops confirm value trong config Vault/environment (Knowledge docs nói "15:30"). |
-| **Ngoài scheduler** | Có thể trigger manual qua Kafka: `/job/saveRedisToDatabase` (`JobHandler.java:39`) |
-
-### 2.2 Đọc gì từ Redis
-
-`RedisService.saveRedisToDatabase()` (`src/main/java/.../services/RedisService.java:126`, block `if (isSaveQuoteMinute)` line 242-254):
-
-```java
-for (int i = 0; i < size; i++) {
-    SymbolInfo symbolInfo = symbolInfoList.get(i);
-    List<SymbolQuoteMinute> symbolQuoteMinuteList =
-        redisDao.getAllSymbolQuoteMinute(symbolInfo.getCode());
-    MongoBulkUtils.updateInBulk(mongoTemplate, 200, symbolQuoteMinuteList, SymbolQuoteMinute.class);
-}
-```
-
-- Loop qua **tất cả `symbolInfo`** (bao gồm index như `VNINDEX`, `HNXINDEX`, `HNXUpcomIndex` — index cũng là symbol trong `SymbolInfo` list).
-- `redisDao.getAllSymbolQuoteMinute(code)` = `LRANGE realtime_listQuoteMinute_{code} 0 -1` (theo constant `Constants.REDIS_KEY_SYMBOL_QUOTE_MINUTE = "realtime_listQuoteMinute"`).
-- `MongoBulkUtils.updateInBulk(...)` upsert **toàn bộ list** thẳng vào collection `symbolQuoteMinutes` (tên MongoDB Java-mapping — tương ứng `c_symbol_quote_minute` trong query service).
-
-### 2.3 Lưu gì xuống MongoDB
-
-Toàn bộ **object `SymbolQuoteMinute`** được persist. Class `SymbolQuoteMinute` không nằm trong mirror (thuộc package third-party `com.difisoft.market.common`), nhưng dựa vào:
-
-- **Model Kafka tương đương** `MarketStockQuoteMinuteResponse.java` (`tradex-common-java-main/.../MarketStockQuoteMinuteResponse.java`):
-
-```java
-private String code;
-private String time;
-private int last;
-private int open;
-private int high;
-private int low;
-private long tradingVolume;
-private long tradingValue;       // ← có
-private long lastValue;
-private long periodTradingVolume;
-```
-
-- **Model tương đương ở query service** `ISymbolQuoteMinutes.ts:1-14`:
-
-```ts
-{ code, last, open, high, low, tradingVolume, tradingValue?, periodTradingVolume?, date, milliseconds, refCode }
-```
-
-- **Bằng chứng runtime**: `ConvertUtils.fromSymbolQuote(newSymbolQuoteMinute, symbolQuote)` (`QuoteService.java:364`) copy từ `StockQuoteUpdate.tradingValue` (line 24 model) sang `SymbolQuoteMinute`. Ngoài ra `ChartService.ts:230` **đã đang** đọc `quoteMinute.tradingValue` từ Mongo cho GTGD Chart hôm-nay-trước đó → chứng minh field này persist thành công.
-
-### 2.4 Kết luận `tradingValue` trong MongoDB
-
-✅ **Field `tradingValue` ĐÃ được lưu** xuống MongoDB `symbolQuoteMinutes` — cả nhánh Redis (real-time write bởi QuoteService) và nhánh EOD flush (đơn giản dump toàn bộ Redis object sang Mongo).
-
-Tên field trong MongoDB = **`tradingValue`** (không phải `cv` như BE_Issue.md draft đang đề xuất). ChartService của market-query-v2 đọc trực tiếp field này (`symbolQuoteMinutes.tradingValue` → `[minute, quoteMinute.tradingValue]`).
-
-⚠️ **Cần verify runtime**: mở MongoDB check một document sample của `c_symbol_quote_minute` từ ngày hôm qua → confirm field `tradingValue` > 0 và increment theo phút. Nếu record cũ không có field này, các record trước ngày deploy có thể `tradingValue = null / 0`.
+**Rest-proxy** đóng vai gateway: nhận REST → publish Kafka message tới topic tương ứng. Route/topic mapping xác định bằng URI của message.
 
 ---
 
-## 3. WS quote channel — field `va`
+## 2. API Details
 
-### 3.1 Nguồn
+### 1. POST `/api/v1/lotte/ekycs/create`
+- **Service:** `ekyc-admin` — `LotteEKycService.createEKycLotte(txId, EKycAddReq)`
+- **Kafka URI (in-service):** `/api/v1/ekycs/create`
+- **Purpose:** Tạo eKycId mới (application number) trên Lotte Core; validate phoneNo chưa tồn tại.
+- **Auth:** JWT — thường dùng `grant_type=client_credentials` (demo account, chưa có user thật)
+- **Request:**
+  | Field | Type | Required | Ghi chú |
+  |---|---|---|---|
+  | `groupType` | enum `idv`/`org` | ✅ | idv=cá nhân, org=tổ chức |
+  | `phoneNo` | string | ✅ | Số điện thoại (dùng cho OTP) |
+  | `email` | string | ✅ | Email KH |
+- **Response:** `{ eKycId: string }`
+- **Errors:** 400 nếu phoneNo đã tồn tại (Lotte trả message tiếng Việt).
 
-- WS channel: `market.quote.{symbol}` (topic Kafka: `quoteUpdate`).
-- Publisher: `ws-v2-main` (Node.js) — `parser.js` compress field names khi push ra client.
+### 2. POST `/api/v1/ekyc-admin/sendOtp`
+- **Service:** `ekyc-admin` — `OTPService.generateAndSendOtp(SendOtpRequest)`
+- **Purpose:** Trigger gửi OTP tới phone.
+- **Request:**
+  | Field | Type | Required | Enum |
+  |---|---|---|---|
+  | `id` | string | ✅ | phone number, format ví dụ `+849198139801` |
+  | `idType` | enum | ✅ | `PHONE_NO` |
+  | `txType` | enum | ✅ | `E_KYC` |
+- **Response:** `{ otpId: string, expiredTime: string (yyyyMMddHHmmss) }`
+- **Errors:** `PHONENO_LOCK_INCORRECT_OTP_MAX`
 
-### 3.2 Mapping
+### 3. POST `/api/v1/ekyc-admin/verifyOtp`
+- **Service:** `ekyc-admin` — `OTPService.VerifyOtp(VerifyOtpRequest)`
+- **Request:**
+  | Field | Type | Required |
+  |---|---|---|
+  | `otpId` | string | ✅ (từ sendOtp) |
+  | `otpValue` | string | ✅ (6 digit) |
+- **Response:** `{ otpKey: string, expiredTime: string }`
+- **Errors:** `INCORRECT_OTP`, `OTP_EXPIRED`, `INCORRECT_OTP_MAX`
 
-`ws-v2-main/parser.js` line 287 và 354:
+### 4. POST `/api/v1/lotte/ekycs`
+- **Service:** `ekyc-admin` — Kafka URI `/api/v1/ekycs` → `customEKycService.addEKyc(txId, EKycAddReq)` (chain: lưu DB `EKyc` entity → gọi Lotte add → gọi FPT eContract create envelope)
+- **Purpose:** Submit form eKYC hoàn chỉnh sau khi user đã pass biometric (VNPT), verify OTP, chọn ngân hàng, tick TnC.
+- **Request (fields chính, xem `EKycAddReq.java`):**
+  - Identity: `eKycId`, `identifierId` (CCCD), `fullName`, `birthDay`, `gender`, `type` (CC/CMND), `issueDate`, `issuePlace`
+  - Contact: `phoneNo`, `email`, `permanentAddress`, `contactAddress`, `permanentProvince/District`, `contactProvince/District`
+  - Business: `branch` (NHSV branch code), `marginInclued`, `onlineTrading`, `authenMethod` (otp/token), `otpReceiveMethod` (email/express), `advancedCashIncluded`, `smsMethod` (basic/advanced), `emailNotification`, `derivativesIncluded`
+  - Bank list: `bankList[]` — max 3 items: `{ bankId, bankName, bankAccNo, ownerName, branchId }`
+  - Referral: `referral` (1-4), `partnerId`, `partnerName`, `customerSupport`, `csPartnerId`, `csName`
+  - Images (VNPT upload URLs): `frontImageUrl`, `backImageUrl`, `portraitImageUrl`, `signatureImageUrl`, `tradingCodeImageUrl`
+  - VNPT metadata: `matchingRate` (biometric score, min 80), `dataSign`, `dataBase64`, `ocrLogId`, `cardLivenessLogId`, `cardRearLogId`, `compareLogId`, `faceLivenessLogId`, `faceMaskLogId`
+  - Compliance: `fatca`, `taxNo`, `beneficiaryOwner`, `investmentExperience` (goal/risk/experienced + publicCoop + blockholder)
+  - Device: `deviceUniqueId`
+- **Response:** `{ status: "success" }`
+- **Errors:** `INVALID_PARAMETERS`, `MAX_BANKS_3`, `PUBLIC_COOP_MAX_*`, `BLOCKHOLDER_MAX_*`
 
-```js
-if (data.tradingValue != null) result.va = data.tradingValue;
-```
+### 5. GET `/api/v1/ekycs/banks`
+- **Service:** `lotte-bridge` — `EkycService.getBankList(ctx)`
+- **Backend call:** `LotteBankDao.getBankList({ code_tp: 'bank_cd_off' })`
+- **Response:** `Array<{ bankCode: string, bankName: string }>`
+- **Ví dụ:** `[{ bankCode: "0202", bankName: "BIDV" }, ...]`
 
-Cả 2 dòng đều nằm trong function convert quote/futures snapshot ra shape publish V2.
+### 6. GET `/api/v1/ekycs/branch`
+- **Service:** `lotte-bridge` — `EkycService.getListBranch(ctx)`
+- **Backend call:** `LotteBankDao.getBankList({ code_tp: 'brch_cd' })`
+- **Response:** `Array<{ branchCode: string, branchName: string }>` — danh sách chi nhánh NHSV.
 
-### 3.3 Bản chất cumulative hay per-minute?
+### 7. GET `/api/v1/ekycs/banks/{id}/branches`
+- **Service:** `lotte-bridge` — `EkycService.getBanksListBranch(request, ctx)`
+- **Path param:** `id` = bankCode (từ `/ekycs/banks`)
+- **Backend call:** `LotteBankDao.getBanksListBranch({ code_tp: 'bank_brch', bank_code: id })`
+- **Response:** `Array<{ branchCode: string, branchName: string }>` — chi nhánh của ngân hàng đó.
+- ⚠️ **Note:** Trong Addons.yaml path param được viết là `{bankCode}`, code lotte-bridge routing dùng `{id}` — nội dung vẫn là bank code.
 
-**Cumulative day-level (tích lũy từ 09:00).**
+### 8. GET `/api/v1/ekycs/partner`
+- **Service:** `lotte-bridge` — `EkycService.getPartnerName(request, ctx)`
+- **Query:** `partnerId` (required)
+- **Backend call:** `LotteBankDao.getPartnerName({ emp_no: partnerId, [brch_cd?] })`
+- **Response 200:** `{ name: string }`
+- **Errors:** `PARTNER_NOT_FOUND`
+- **Dùng khi:** `referral = 1` (Nhân viên/CTV) — validate NHSV staff ID.
 
-Bằng chứng:
+### 9. GET `/api/v1/ekycs/account/exist`
+- **Service:** `lotte-bridge` — `EkycService.checkAccountOpeningStatus(request, ctx)`
+- **Query:** `identifierId` (required)
+- **Backend call:** `LotteBankDao.checkAccountOpeningStatus({ idno: identifierId })`
+- **Response:** `{ exist: boolean }` — `true` nếu Lotte error_code=`0000` (đã có), `false` nếu `1005` (chưa có).
+- ⚠️ **Không có trong Addons.yaml** — chỉ có trong source `lotte-bridge/src/services/EkycService.ts` line 140.
 
-1. **Nguồn Lotte** (`market-data-channels.md` section 3.4): `va` = "Giá trị giao dịch (VND)" — Lotte cung cấp cumulative day trading value trên channel `auto.qt`. Không có concept per-tick value.
-2. **Mapping raw** (`market-data-channels.md` section 3.5): `parts[21] → tradingValue` (không phải delta).
-3. **StockUpdateData.java** (`market-collector-lotte-main/.../StockUpdateData.java:79`): `this.setTradingValue(stockAutoItem.getValue().getValue() * 1000000)` — set trực tiếp giá trị Lotte, không tính diff.
-4. **StockQuoteUpdate** Kafka model (`tradex-common-java-main/.../StockQuoteUpdate.java:24`): `private long tradingValue;` — snapshot cumulative.
-5. **Trong minute record**: `ConvertUtils.updateByQuote(symbolQuoteMinute, symbolQuote)` (`QuoteService.java:367`) — mỗi tick trong cùng phút overwrite `tradingValue` bằng cumulative mới nhất. Điều này còn thể hiện rõ ở `CommonService.ts:180-181`: khi merge nhiều record cùng phút, `tradingValue = current.tradingValue` (lấy latest, KHÔNG cộng dồn) — vì đã là cumulative.
+### 10. POST `/api/v1/equity/account/checkNationalId`
+- **Service:** `lotte-bridge` — `EkycService.checkNationalId(id, ctx)`
+- **Flow:** 2 bước
+  1. Kafka call sang `ekyc-admin` topic, URI `internal:/api/v1/ekycs/get` với `{ identifierId, headers }` → kiểm tra record eKYC pending trong DB ekyc-admin. Nếu status = `WAITING_CONFIRMATION` → throw `EKYC_WAITING_CONFIRMATION`.
+  2. Gọi Lotte `LotteOrderDao.checkAccountExist({ idno: identifierId })`.
+- **Request:** `{ identifierId: string }`
+- **Response 200:** `{ exist: false }` (nếu Lotte trả `0000` — nghĩa là chưa có account, có thể đăng ký).
+- **Errors:** Nếu Lotte trả code ≠ 0000 → throw code Lotte (VD `V3101` — đã có tài khoản, liên hệ hotline).
 
-Đối chiếu với `periodTradingVolume` — field per-minute delta — được cộng dồn (`CommonService.ts:174`, `MarketStockQuoteMinuteResponse.java:26-28` set method `Math.abs` để normalize). Đây là bằng chứng contrast: `tradingValue` không có set method special, không được cộng dồn → khẳng định cumulative.
-
-### 3.4 Tên đầy đủ
-
-- WS output field: `va` (compressed)
-- Kafka + Redis + Mongo full name: `tradingValue`
-
----
-
-## 4. Redis `SYMBOL_QUOTE_MINUTE_{code}`
-
-### 4.1 Full key
-
-- Prefix constant: `realtime_listQuoteMinute` (`RedisService.ts:27`, `Constants.java:11`)
-- Full key: `realtime_listQuoteMinute_{code}` — ví dụ `realtime_listQuoteMinute_VNINDEX`, `realtime_listQuoteMinute_VCB`.
-- Data type: **Redis LIST** (đọc bằng `LRANGE 0 -1`).
-
-### 4.2 Field `tradingValue` trong record
-
-✅ **Có**. Mỗi item trong list là 1 `SymbolQuoteMinute` object, contain:
-
-```
-{ code, date, time, milliseconds, open, high, low, last, tradingVolume, tradingValue, periodTradingVolume, ... }
-```
-
-### 4.3 Format của `tradingValue` trong record minute
-
-**Cumulative (snapshot cuối phút).**
-
-Logic tạo/update minute (`QuoteService.java:348-376`):
-
-- Nếu quote mới rơi vào **phút mới** → tạo record mới, copy toàn bộ field từ `SymbolQuote` (bao gồm cumulative `tradingValue`).
-- Nếu quote mới trong **cùng phút** → `ConvertUtils.updateByQuote()` overwrite các field cumulative, cộng dồn `periodTradingVolume`.
-
-⇒ `tradingValue` trong 1 minute record = **cumulative day trading value tính đến thời điểm quote cuối cùng trong phút đó**. Cùng bản chất với WS `va`. Không phải per-minute delta.
-
-Confirm cross-service: `market-query-v2/src/services/common/CommonService.ts:180` khi group minute cũng lấy `tradingValue = current.tradingValue` (latest), không sum.
-
----
-
-## 5. Thay đổi cần thiết để thêm `va` vào `/tradingview/history` response
-
-### 5.1 Nhận định về deltas so với BE_Issue.md hiện tại
-
-BE_Issue.md hiện tại đang giả định:
-
-- (a) `tradingValue` **chưa** được lưu vào MongoDB → cần sửa EOD flush.
-- (b) Cần thêm field mới tên `cv` vào Mongo schema.
-- (c) Cần đổi ý nghĩa của `v` trong response từ volume → value ("v là GTGD, không phải volume — convention riêng của TradeX").
-
-**Cả 3 giả định trên đều CẦN REVIEW LẠI:**
-
-- (a) ❌ Sai — `tradingValue` đã có trong minute object và được EOD flush upsert nguyên xi vào Mongo (`RedisService.java:249`). Xác nhận qua `ChartService.ts:230` đã đọc `quoteMinute.tradingValue` từ Mongo cho ngày quá khứ.
-- (b) ❌ Không cần — field tên trong Mongo đã là `tradingValue`. Thêm `cv` sẽ tạo trùng lặp không cần thiết. Nếu muốn short name để tiết kiệm bytes network, làm ở layer response (map `tradingValue → va`) chứ đừng đổi schema.
-- (c) ⚠️ Risky — hiện tại `v = periodTradingVolume` (volume). Nếu đổi ý nghĩa `v` sang value, sẽ **break** mọi client hiện đang đọc `v` như volume (bao gồm chart cũ, TradingView SDK default binding — TradingView spec chuẩn: `v = volume`). Nên **thêm field mới `va`** thay vì overload `v`.
-
-### 5.2 Đề xuất giải pháp
-
-**Chỉ cần sửa 1 chỗ (market-query-v2). Realtime-v2 không cần sửa gì.**
-
-#### 5.2.1 market-query-v2
-
-**File:** `src/utils/ResponseUtils.ts`, function `parseSymbolQuoteMinuteList()` (line 725-764)
-
-Thêm mảng `va` và push `item.tradingValue`:
-
-```ts
-const parseSymbolQuoteMinuteList = (symbolQuoteMinuteList, nextTime = null, noData = false) => {
-  const t = [], o = [], h = [], l = [], c = [], v = [];
-  const va = [];   // ← ADD
-
-  ...
-  for (const item of sortedList) {
-    ...
-    v.push(Utils.round(item.periodTradingVolume));
-    va.push(Utils.round(item.tradingValue || 0));   // ← ADD (fallback 0 cho record cũ)
+### 11. GET `/api/v1/equity/account/contracts`
+- **Service:** `ekyc-admin` — `EContractCustomService.signEContract(FptECSignRequest)`
+- **Purpose:** Trả webView URL của FPT eContract để user ký hợp đồng mở tài khoản.
+- **Query:**
+  - `eKycId` (optional) — bắt buộc khi đang trong flow eKYC (login `client_credentials`); nếu user đã login bằng NHSV account thì lấy CCCD từ accessToken.
+- **Response:** Envelope + webView payload:
+  ```
+  {
+    timestamp, status, message,
+    data: {
+      items: [{
+        envelopeId, envelopeStatus (processing/completed/rejected/voided),
+        recipientStatus (processing/signed/rejected),
+        contractInfo: { contractName, contractNo, createdDate, submittedFrom },
+        webView: { url, cookieName, cookieValue, expireIn, iframeUrl }
+      }]
+    }
   }
-  ...
-  return { t, o, h, l, c, v, va, s, nextTime, noData };  // ← ADD va
-};
+  ```
+
+---
+
+## 3. eKYC Account-Opening Journey (End-to-End)
+
+Dựa trên spec Addons.yaml + code + `PRD_eKYC_v2.md`:
+
+### Bước 0 — Client credentials login
+- App login với `grant_type=client_credentials` (demo account, chưa có user thật) để có JWT truy cập các API eKYC.
+
+### Bước 1 — Nhập số điện thoại + OTP
+1. User nhập **phoneNo** + email + groupType (idv/org) trên form.
+2. Gọi `POST /api/v1/lotte/ekycs/create` → nhận `eKycId`.
+3. Gọi `POST /api/v1/ekyc-admin/sendOtp` với `{id: phone, idType: PHONE_NO, txType: E_KYC}` → nhận `otpId`.
+4. User nhận OTP SMS, nhập 6-digit → `POST /api/v1/ekyc-admin/verifyOtp` → nhận `otpKey` (dùng cho các bước sau).
+
+### Bước 2 — VNPT Biometric (client-side SDK)
+- User quét CCCD/CMND mặt trước + mặt sau + chân dung (portrait) + optional signature.
+- VNPT SDK chạy: OCR (`ocrLogId`), card liveness (`cardLivenessLogId`), card rear (`cardRearLogId`), face compare (`compareLogId`), face liveness (`faceLivenessLogId`), mask check (`faceMaskLogId`).
+- Kết quả gồm: OCR fields (identifierId, fullName, birthDay, issueDate, issuePlace, permanentAddress...), `matchingRate` (%), `dataSign`, `dataBase64`, images upload URL (`frontImageUrl`, `backImageUrl`, `portraitImageUrl`).
+- Từ `PRD_eKYC_v2.md`: `matchingRate < 80` → BE reject. `CustomEKycService.java:211` hiện tại xóa record PENDING cũ khi retry → mất audit trail (đây là core problem eKYC v2 muốn fix).
+
+### Bước 3 — Check National ID
+5. Gọi `POST /api/v1/equity/account/checkNationalId` với `{identifierId}` → verify CCCD chưa có tài khoản NHSV.
+   - BE query `ekyc-admin` internal + Lotte song song. Nếu Lotte `V3101` (đã có TK) → chặn.
+
+### Bước 4 — Điền form + chọn Bank/Partner
+6. Load bank list: `GET /api/v1/ekycs/banks` → dropdown.
+7. Với bank được chọn: `GET /api/v1/ekycs/banks/{bankCode}/branches` → chọn chi nhánh.
+8. Load NHSV branch: `GET /api/v1/ekycs/branch`.
+9. Nếu `referral=1` (Nhân viên/CTV): `GET /api/v1/ekycs/partner?partnerId=xxx` → validate và fill `partnerName`.
+10. User điền form: personal info còn thiếu, address, `marginInclued`, `onlineTrading`, `authenMethod`, `otpReceiveMethod`, `smsMethod`, `advancedCashIncluded`, `emailNotification`, `derivativesIncluded`, `fatca`, `taxNo`.
+11. Thêm bank account(s) (max 3): `bankId`, `bankAccNo`, `ownerName`, `branchId`.
+12. Investment experience: `investmentGoal`, `risk`, `experienced` + `publicCoop[]`, `blockholder[]` (compliance UBCK).
+13. Beneficiary owner (nếu có).
+
+### Bước 5 — Terms & Conditions
+14. User tick các TnC checkbox (điều khoản mở TK, cam kết thông tin đúng, cam kết TT134/UBCK...).
+    - Đây là điểm eKYC v2 muốn log lại (sub-feature `05_Contract_Terms_Checkbox_Log`).
+
+### Bước 6 — Submit
+15. `POST /api/v1/lotte/ekycs` với toàn bộ form + VNPT metadata + images URL + deviceUniqueId.
+    - BE flow: lưu `EKyc` entity trong DB ekyc-admin → gọi Lotte createEKyc (upload images sang Lotte per `callUploadImage`) → gọi FPT eContract create envelope.
+16. Response `{ status: "success" }`.
+
+### Bước 7 — Ký hợp đồng điện tử (FPT eContract)
+17. `GET /api/v1/equity/account/contracts?eKycId=xxx` → nhận webView URL + JWT cookie.
+18. App mở iframe/webView, user ký trên FPT platform.
+19. Poll status: `GET /api/v1/lotte/equity/account/contractStatus` (COMPLETED / PROCESSING / REJECTED / UNKNOWN).
+
+### Bước 8 — Chờ approval + VSD
+20. `GET /api/v1/lotte/equity/account/vsdStatus?accountNumber=...&subAccount=...` (PENDING / APPROVED / REJECTED / UNKNOWN).
+21. Khi APPROVED: NHSV cấp `accountNumber` chính thức, user có thể login bằng account thật thay vì client_credentials.
+
+---
+
+## 4. Sequence tổng quát
+
+```
+[App] ──login client_credentials──> [rest-proxy] ──> [aaa]
+
+[App] ─POST /lotte/ekycs/create ──> [rest-proxy] ─Kafka ekyc-admin (/api/v1/ekycs/create)─> [ekyc-admin]
+       ← eKycId ──────────────────────────────────────────────────────────────
+
+[App] ─POST /ekyc-admin/sendOtp ──> [rest-proxy] ─Kafka ekyc-admin (/api/v1/ekyc-admin/sendOtp)─> [ekyc-admin]
+       ← { otpId, expiredTime }
+[App] ─POST /ekyc-admin/verifyOtp ──> [ekyc-admin]
+       ← { otpKey, expiredTime }
+
+[App] ─VNPT SDK biometric locally─> [VNPT] (upload images to S3, get URLs + dataSign)
+
+[App] ─POST /equity/account/checkNationalId ──> [lotte-bridge]
+                                                    │ Kafka internal /api/v1/ekycs/get ─> [ekyc-admin] DB check
+                                                    │ Lotte /account-exist                             │
+       ← { exist: false } (nếu OK)                  └────────────────────────────────────────────────────
+
+[App] ─GET /ekycs/banks, /ekycs/branch, /ekycs/banks/{id}/branches ──> [lotte-bridge] ──> [Lotte Core]
+[App] ─GET /ekycs/partner?partnerId=xxx ──> [lotte-bridge]
+[App] ─GET /ekycs/account/exist?identifierId=xxx ──> [lotte-bridge]
+
+[App] ─POST /lotte/ekycs (form đầy đủ) ──> [rest-proxy] ─Kafka ekyc-admin (/api/v1/ekycs)─> [ekyc-admin]
+                                                        │ Save EKyc entity DB
+                                                        │ Call Lotte createEKyc (with images upload)
+                                                        │ Call FPT eContract create envelope
+       ← { status: "success" }
+
+[App] ─GET /equity/account/contracts?eKycId=xxx ──> [ekyc-admin] ─> [FPT] ─> webView URL
+[App] ─mở iframe FPT eContract, user ký
+
+[App] ─GET /lotte/equity/account/contractStatus ──> [lotte-bridge]
+[App] ─GET /lotte/equity/account/vsdStatus ──> [lotte-bridge]
 ```
 
-Đồng thời cần cân nhắc thêm `va` vào `parseTradingviewDailyPeriodList()` (line 766-799) cho nhánh `1D/1W/1M/6M` — data source là `SymbolPeriodResponse` (đã có field `tradingValue` per period, xem `manualCalculateWeeklyMonthly` line 546-576).
+---
 
-**Contract type**: `TradingViewHistoryResponse` được declare trong package `tradex-models-market` (external). Cần update type để thêm optional `va?: number[]`. Nếu package do team maintain, PR update type; nếu không, dùng runtime object và cast.
+## 5. Kafka topic summary (theo tradex-monitoring CLAUDE.md)
 
-#### 5.2.2 realtime-v2
-
-**KHÔNG cần thay đổi.**
-
-Verify checklist (không phải sửa):
-
-- ✅ `SymbolQuoteMinute` object đã carry `tradingValue` field (xác nhận qua `MarketStockQuoteMinuteResponse.java:22` + `QuoteService.java:364`).
-- ✅ EOD flush job đã upsert nguyên object vào MongoDB (`RedisService.java:249`).
-- ⚠️ Cần **verify trên Mongo prod** rằng record hiện tại có non-null `tradingValue` (không bị lỗi serialization / null column). Nếu có sample record cũ với `tradingValue = null` → fallback trong response (`va.push(item.tradingValue || 0)`) sẽ handle.
-
-### 5.3 `va` nên là cumulative hay per-minute?
-
-**Cumulative — align với WS `va`.**
-
-Lý do:
-
-1. **Consistency**: WS `market.quote.{symbol}.va` là cumulative day. Nếu history trả delta, FE sẽ có 2 semantics khác nhau cho cùng field name `va` → confusion cực lớn.
-2. **Data source**: Redis + Mongo hiện đang lưu `tradingValue` cumulative sẵn. Nếu cần delta, tính ở client: `delta[i] = va[i] - va[i-1]` (không tốn compute BE).
-3. **Use case GTGD Chart phiên trước**: FE cần vẽ đường cumulative tăng dần → cần cumulative, không phải delta. Match với PRD "GTGD phiên trước tăng dần trong ngày".
-
-### 5.4 Effort estimate revised
-
-| Task | Effort | Note |
+| Topic | Service | eKYC APIs handled |
 |---|---|---|
-| Update `parseSymbolQuoteMinuteList` (add `va[]`) | 0.5 ngày | Trivial |
-| Update `parseTradingviewDailyPeriodList` (add `va[]` cho 1D/1W/1M/6M) | 0.5 ngày | Optional — chỉ cần nếu FE dùng resolution daily |
-| Update type `TradingViewHistoryResponse` trong `tradex-models-market` | 0.5 ngày | Nếu package internal thì cần PR + version bump |
-| Verify MongoDB có `tradingValue` non-null cho record cũ | 0.5 ngày | Chạy `db.c_symbol_quote_minute.findOne({code: 'VNINDEX', date: {...}})` |
-| Test | 0.5 ngày | |
-| **Tổng** | **~2 ngày** | Bằng ~½ estimate cũ (3-4 ngày) vì bỏ được phần realtime-v2 flush + Mongo schema migration |
+| `ekyc-admin` | ekyc-admin (Java JHipster) | `/api/v1/lotte/ekycs/create`, `/api/v1/ekyc-admin/sendOtp`, `/api/v1/ekyc-admin/verifyOtp`, `/api/v1/lotte/ekycs`, `/api/v1/equity/account/contracts`, `internal:/api/v1/ekycs/get` |
+| `lotte-bridge` | lotte-bridge (Node.js) | `/api/v1/ekycs/banks`, `/api/v1/ekycs/branch`, `/api/v1/ekycs/banks/{id}/branches`, `/api/v1/ekycs/partner`, `/api/v1/ekycs/account/exist`, `/api/v1/equity/account/checkNationalId` |
+
+**Rest-proxy** không "own" business logic — chỉ route REST → Kafka topic.
 
 ---
 
-## 6. Gaps / Cần xác minh
+## 6. Gaps / Unknown
 
-### 6.1 Verify runtime
-
-- [ ] Query MongoDB prod: `db.c_symbol_quote_minute.findOne({code: "VNINDEX", date: {$gte: yesterdayStart, $lt: yesterdayEnd}})` — check field `tradingValue` có value > 0 hay không.
-- [ ] Query MongoDB prod cho index HNX và UPCOM (code chuẩn xác trong `MARKET_INDEX_ENUM = { HOSE: 'VN', HNX: 'HNX', UPCOM: 'UPCOM' }` — check ChartService.ts:189 dùng `MARKET_INDEX_ENUM[market]` → chỉ số HOSE lưu dưới code `'VN'` chứ không phải `'VNINDEX'`. Cần confirm với dev BE realtime-v2).
-- [ ] Check cron config value `app.schedulers.saveRedisToDatabase` trong env config — confirm giờ chạy job (Knowledge docs nói 15:30, code không hard-code).
-
-### 6.2 Contract & compatibility
-
-- [ ] Kiểm tra `tradex-models-market` package: nếu package do team maintain (chung monorepo) → thêm `va?: number[]` vào interface `TradingViewHistoryResponse`. Nếu third-party frozen → phải trả object với extra property + type assertion.
-- [ ] TradingView SDK expect gì? Endpoint `/tradingview/history` phục vụ cả `TradingView Advanced Charts SDK` (chuẩn: `s, t, o, h, l, c, v`) và custom GTGD chart. Nếu chỉ chart GTGD dùng `va` → OK. Nếu SDK chart cũng consume → SDK sẽ ignore field lạ, an toàn.
-
-### 6.3 Điều chỉnh BE_Issue.md
-
-BE_Issue.md hiện tại có 2 điểm cần sửa:
-
-1. **Section "Thay đổi cần làm" - Service 1 (realtime-v2)**: Bỏ hoàn toàn phần thêm field `cv` — không cần thay đổi realtime-v2. Thay bằng "Verify MongoDB đã có tradingValue cho ngày quá khứ".
-2. **Section "Thay đổi cần làm" - Service 2 (market-query-v2)**: Thay logic *"map cv → v"* bằng *"thêm mảng `va` mới bên cạnh `v`, không đè `v`"*. Kèm warning về TradingView SDK convention `v = volume`.
-3. **Section "Response format giữ nguyên"**: Không giữ nguyên — cần thêm `va: number[]`. Cập nhật example JSON.
-4. **Success criteria checkbox 1**: đổi từ "database có đủ dữ liệu GTGD từng phút" (đã có sẵn) → "verify database đã có dữ liệu GTGD từng phút cho ngày quá khứ".
+1. **`/api/v1/ekycs/account/exist`** — có trong source `lotte-bridge`, nhưng **không có** trong `TradeX API - Addons.yaml`. Cần confirm với BE lead: đây là API internal chưa được publish hay là public endpoint bị miss trong docs.
+2. **Path param mismatch:** Addons.yaml viết `/api/v1/ekycs/banks/{bankCode}/branches`, code lotte-bridge routing dùng URI pattern `/api/v1/ekycs/banks/{id}/branches`. Cần đồng nhất khi tạo spec mới.
+3. **rest-proxy routing files** (`src/app/routes/api/equity/Account.ts`) trong `Knowledge/TradeX-MCP/rest-proxy-main` là **file rỗng (0-1 lines)** — không tìm được implementation route lớp thứ nhất trong snapshot. Chỉ có Kafka handler ở lotte-bridge/ekyc-admin cho biết URI. Có thể snapshot rest-proxy chưa đủ, cần confirm với BE lead nếu cần chi tiết middleware auth/validation.
+4. **rest-proxy chuyển URI** `POST /api/v1/lotte/ekycs/create` → Kafka topic `ekyc-admin`, URI `/api/v1/ekycs/create` (không giữ prefix `/lotte`). Tương tự `/api/v1/lotte/ekycs` → `/api/v1/ekycs`. Đây là mapping ngầm chỉ suy ra được từ RequestHandler.java của ekyc-admin. Nếu doc cần liệt kê exact mapping cần confirm rest-proxy route file thực tế.
+5. **FPT eContract create envelope** (bước sau khi `POST /lotte/ekycs`) — chi tiết chưa trace trong scope này. Nếu cần cho Journey Logging, cần dive vào `LotteEKycService.createEKycLotte` + `EContractCustomService`.
+6. **VNPT biometric log** (bước 2) là **client-side SDK**, không có API TradeX nào tương ứng — dữ liệu (matchingRate, logIds, dataSign) chỉ được gửi lên BE khi submit `POST /lotte/ekycs`. Đây chính là core insight của `PRD_eKYC_v2.md`: cần thêm endpoint `POST /ekycs/attempt-log` để log từng attempt biometric (kể cả retry) trước khi user submit.
 
 ---
 
-## Appendix: Source File Reference
+## 7. Files cần đọc thêm khi cần chi tiết
 
-| Concern | File | Lines |
-|---|---|---|
-| `/tradingview/history` route | `market-query-v2/src/consumers/RequestHandler.ts` | 149 |
-| Query entrypoint | `market-query-v2/src/services/FeedService.ts` | 50–61 |
-| Intraday branch (Redis+Mongo) | `market-query-v2/src/services/FeedService.ts` | 63–122 |
-| Redis vs Mongo split logic | `market-query-v2/src/services/common/CommonService.ts` | 137–271 |
-| Response shape | `market-query-v2/src/utils/ResponseUtils.ts` | 725–764 (minute), 766–799 (daily) |
-| Redis key constant | `market-query-v2/src/services/RedisService.ts` | 27 |
-| Mongo collection constant | `market-query-v2/src/constants/index.ts` | 32 |
-| Minute record type (query) | `market-query-v2/src/models/db/ISymbolQuoteMinutes.ts` | 1–14 |
-| Kafka minute payload type | `tradex-common-java-main/.../MarketStockQuoteMinuteResponse.java` | 9–29 |
-| Kafka quote payload type | `tradex-common-java-main/.../StockQuoteUpdate.java` | 24 |
-| Redis write (minute create/update) | `realtime-v2/src/main/java/.../services/QuoteService.java` | 348–376 |
-| Mongo flush (EOD) | `realtime-v2/src/main/java/.../services/RedisService.java` | 242–254 |
-| Flush schedule | `realtime-v2/src/main/java/.../services/JobService.java` | 88–91 |
-| Redis key constant (realtime) | `realtime-v2/src/main/java/.../constants/Constants.java` | 11 |
-| WS `va` compression | `ws-v2-main/parser.js` | 287, 354 |
-| Lotte raw → tradingValue | `market-collector-lotte-main/.../StockUpdateData.java` | 79 |
-| Existing GTGD Chart consumer (Mongo tradingValue) | `market-query-v2/src/services/ChartService.ts` | 180–236 |
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/service/CustomEKycService.java` — flow `addEKyc()` (chain Lotte + FPT)
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/service/LotteEKycService.java` — line 72-220 `createEKycLotte`, `callUploadImage`
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/service/EContractCustomService.java` — FPT integration
+- `Knowledge/TradeX-MCP/ekyc-admin/src/main/java/com/techx/tradex/ekycadmin/service/OTPService.java` — OTP generation/verify
+- `eKYC/Planning/PRD_eKYC_v2.md` — yêu cầu nghiệp vụ eKYC v2 (Biometric Attempt Log)
 
 ---
 
-**Document Status:** ✅ Complete | For: Creator (next in pipeline) | Next Steps: Creator update `BE_Issue.md` để reflect findings — bỏ phần realtime-v2 flush, thay `cv` → `va` (thêm array mới, không overload `v`).
+**Status:** ✅ Complete | For: creator (next phase) | Next Steps: creator dùng bảng service mapping + journey flow để viết Planning doc `eKYC Journey Logging`
