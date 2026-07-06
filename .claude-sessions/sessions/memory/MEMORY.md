@@ -7,3 +7,4 @@
 - [NHSV Pro Design System](reference_nhsv_design_system.md) — Full design tokens, colors, typography, radii, shadows, chart palette, figma-cli var: names. Non-negotiables: Lato only, white cards on #EBECF0 bg, teal→mint gradient header only, Vietnam market colors (green up/red down)
 - [Figma Tooling Feedback](feedback_figma_tooling.md) — Dùng figma-cli (đã cài sẵn), không dùng Figma MCP authenticate flow
 - [API Spec Format](feedback_api_spec_format.md) — Chuẩn trình bày spec: header metadata, 7 sections, ✅/❌ required, JSON examples, enum tables riêng, không dùng User Story format
+- [FE Issue Format](feedback_fe_issue_format.md) — Viết FE issue theo góc nhìn PO: User Story + yêu cầu chức năng (được nêu API/field, không nêu code/Redux/file path) + AC, không chia Task theo layer kỹ thuật
