@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>eKYC Enhancement — Store Log | Tổng hợp</title>
+<title>eKYC — Compliance &amp; Attempt Logging (Phase 1) | Tổng hợp</title>
 <style>
   :root {
     --blue: #2563eb; --blue-light: #dbeafe; --blue-dark: #1e40af;
@@ -45,6 +45,8 @@
   .card-grid { display: grid; gap: 16px; }
   .card-grid.col2 { grid-template-columns: 1fr 1fr; }
   .card-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
+  .card.muted { opacity: .8; }
+  .card.deferred { border-style: dashed; background: #fafafa; }
 
   /* Badges */
   .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -55,11 +57,6 @@
   .badge-gray { background: var(--gray-light); color: var(--gray); }
   .badge-purple { background: var(--purple-light); color: var(--purple); }
   .badge-yellow { background: var(--yellow-light); color: var(--yellow); }
-
-  /* Status pill */
-  .status-done { background: var(--green-light); color: var(--green); }
-  .status-pending { background: var(--gray-light); color: var(--gray); }
-  .status-block { background: var(--red-light); color: var(--red); }
 
   /* Tables */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -84,8 +81,6 @@
   code { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 4px; padding: 1px 6px; font-family: 'SF Mono', Menlo, monospace; font-size: 12px; color: #be123c; }
   pre { background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 16px; font-size: 12px; overflow-x: auto; line-height: 1.7; margin: 12px 0; }
   pre code { background: none; border: none; color: inherit; padding: 0; }
-  .kw { color: #7dd3fc; } .str { color: #86efac; } .cmt { color: #64748b; }
-  .fn { color: #fde68a; } .type { color: #c4b5fd; }
 
   /* Alert */
   .alert { border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; border-left: 4px solid; font-size: 13px; }
@@ -103,6 +98,7 @@
   .tl-dot.red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
   .tl-dot.blue { background: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
   .tl-dot.orange { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .tl-dot.gray { background: var(--gray); box-shadow: 0 0 0 2px var(--gray); }
   .tl-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; }
   .tl-body { font-size: 12px; color: var(--text-muted); }
 
@@ -133,6 +129,7 @@
   .check-list li::before { content: '✅'; flex-shrink: 0; }
   .check-list li.pending::before { content: '🔲'; }
   .check-list li.block::before { content: '🔴'; }
+  .check-list li.deferred::before { content: '⏸'; }
 
   /* two-column problem/solution */
   .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -146,6 +143,13 @@
   .compare-box ul li { font-size: 12px; padding: 3px 0; color: var(--text); }
   .compare-now ul li::before { content: '✗ '; color: var(--red); }
   .compare-after ul li::before { content: '✓ '; color: var(--green); }
+
+  .scope-in { background: #dcfce7; }
+  .scope-in h4 { color: #14532d; }
+  .scope-out { background: #f3f4f6; }
+  .scope-out h4 { color: #374151; }
+  .scope-out ul li::before { content: '⏸ '; color: var(--gray); }
+  .scope-in ul li::before { content: '✓ '; color: var(--green); }
 
   /* Column layout for DB */
   .col-group { margin-bottom: 16px; }
@@ -166,28 +170,26 @@
 <!-- Sidebar -->
 <nav class="sidebar">
   <div class="sidebar-logo">
-    <h2>eKYC Enhancement</h2>
-    <p>Store Log — v2.0</p>
+    <h2>eKYC — Attempt &amp; Journey Log</h2>
+    <p>Phase 1 — Backend/DB only · v2.2</p>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Tổng quan</div>
     <a href="#overview" class="nav-link"><span class="dot" style="background:#2563eb"></span>Giới thiệu</a>
-    <a href="#problem" class="nav-link"><span class="dot" style="background:#dc2626"></span>Vấn đề & Mục tiêu</a>
+    <a href="#problem" class="nav-link"><span class="dot" style="background:#dc2626"></span>Vấn đề &amp; Mục tiêu</a>
+    <a href="#scope" class="nav-link"><span class="dot" style="background:#7c3aed"></span>Scope Phase 1 vs Phase 2</a>
     <a href="#flow" class="nav-link"><span class="dot" style="background:#16a34a"></span>Luồng hệ thống</a>
-    <a href="#scope" class="nav-link"><span class="dot" style="background:#7c3aed"></span>Phạm vi ảnh hưởng</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Backend</div>
-    <a href="#db" class="nav-link"><span class="dot" style="background:#ea580c"></span>DB Schema</a>
+    <div class="nav-group-label">Backend (Phase 1)</div>
+    <a href="#db" class="nav-link"><span class="dot" style="background:#ea580c"></span>DB Schema (2 bảng)</a>
     <a href="#apis" class="nav-link"><span class="dot" style="background:#2563eb"></span>API Endpoints</a>
     <a href="#service" class="nav-link"><span class="dot" style="background:#7c3aed"></span>Service Logic</a>
-    <a href="#image" class="nav-link"><span class="dot" style="background:#16a34a"></span>Image Storage</a>
+    <a href="#journey" class="nav-link"><span class="dot" style="background:#be123c"></span>Compliance Journey Log</a>
   </div>
   <div class="nav-group">
-    <div class="nav-group-label">Frontend</div>
-    <a href="#admin-journey" class="nav-link"><span class="dot" style="background:#2563eb"></span>Admin: Journey</a>
-    <a href="#admin-dashboard" class="nav-link"><span class="dot" style="background:#ea580c"></span>Admin: Dashboard</a>
-    <a href="#app-mrz" class="nav-link"><span class="dot" style="background:#dc2626"></span>App: MRZ Validation</a>
+    <div class="nav-group-label">Phase 2 — Deferred</div>
+    <a href="#deferred" class="nav-link"><span class="dot" style="background:#9ca3af"></span>Admin UI · Dashboard · MRZ</a>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Delivery</div>
@@ -201,13 +203,13 @@
 
   <!-- Hero -->
   <div class="hero">
-    <h1>eKYC Enhancement — Store Log</h1>
-    <p>Lưu trữ toàn bộ lịch sử các lần thử eKYC, tra cứu hành trình mở tài khoản, và Dashboard phân tích tỉ lệ fail theo nguyên nhân.</p>
+    <h1>eKYC — Compliance &amp; Attempt Logging</h1>
+    <p>Phase 1: lưu trữ toàn bộ lịch sử lần thử eKYC (VNPT biometric) và toàn bộ hành trình mở tài khoản (11 API call), phục vụ audit/compliance. <strong>Thuần backend/DB — không có màn hình admin nào ở giai đoạn này.</strong></p>
     <div class="hero-meta">
-      <div class="hero-meta-item"><div class="label">Version</div><div class="value">v2.0</div></div>
+      <div class="hero-meta-item"><div class="label">Version</div><div class="value">v2.2</div></div>
       <div class="hero-meta-item"><div class="label">Service</div><div class="value">ekyc-admin</div></div>
-      <div class="hero-meta-item"><div class="label">Trạng thái</div><div class="value">Ready to Dev</div></div>
-      <div class="hero-meta-item"><div class="label">Ảnh hưởng</div><div class="value">BE · Admin UI · App</div></div>
+      <div class="hero-meta-item"><div class="label">Trạng thái</div><div class="value">Phase 1 scope locked</div></div>
+      <div class="hero-meta-item"><div class="label">Ảnh hưởng</div><div class="value">Backend · App (data capture only)</div></div>
     </div>
   </div>
 
@@ -217,55 +219,25 @@
     <div class="card-grid col3">
       <div class="card">
         <h3>🔍 Vấn đề</h3>
-        <p>Mỗi lần user submit lại eKYC, hệ thống <strong>xóa bản ghi PENDING cũ</strong>. Không truy vết được user fail bao nhiêu lần, fail ở bước nào.</p>
+        <p>Mỗi lần user submit lại eKYC, hệ thống <strong>xóa bản ghi PENDING cũ</strong>. Không truy vết được user fail bao nhiêu lần, fail ở bước nào. Ngoài ra, hệ thống cũng chưa ghi lại toàn bộ chuỗi API trong hành trình mở tài khoản — thiếu bằng chứng compliance khi cần truy vết.</p>
       </div>
       <div class="card">
-        <h3>🎯 Giải pháp</h3>
-        <p>Tạo bảng <code>ekyc_attempt_log</code> lưu <strong>mọi lần thử</strong> (append-only). Ảnh CCCD mỗi lần fail được upload S3/MinIO.</p>
+        <h3>🎯 Giải pháp (Phase 1)</h3>
+        <p>Hai bảng riêng biệt: <code>ekyc_attempt_log</code> (mọi lần thử VNPT, append-only, giữ vĩnh viễn) và <code>ekyc_journey_log</code> (11 API call, chỉ giữ vĩnh viễn cho hành trình mở tài khoản <strong>thành công</strong>). Cả hai đều là dữ liệu backend thuần túy — không hiển thị UI.</p>
       </div>
       <div class="card">
         <h3>👥 Ai hưởng lợi</h3>
-        <p><strong>Ops/CS</strong> — tra cứu case. <strong>BA/PM</strong> — phân tích Dashboard. <strong>Security</strong> — phát hiện fraud. <strong>Dev</strong> — debug production.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Problem -->
-  <section id="problem">
-    <h2>Vấn đề & Mục tiêu</h2>
-    <div class="compare">
-      <div class="compare-box compare-now">
-        <h4>Hiện tại — Vấn đề</h4>
-        <ul>
-          <li><code>CustomEKycService.java:211</code> xóa record PENDING cũ khi retry</li>
-          <li>App không gửi data VNPT khi fail trước khi gọi BE (blur, liveness...)</li>
-          <li><code>ekyc_ext.raw_data</code> lưu JSON thô, không query được</li>
-          <li>Ảnh CCCD từng lần thử không được lưu</li>
-          <li>Không có Dashboard số liệu</li>
-          <li><code>default: break</code> trong switch → cho pass qua warning không biết</li>
-        </ul>
-      </div>
-      <div class="compare-box compare-after">
-        <h4>Sau khi hoàn thành</h4>
-        <ul>
-          <li>Mọi lần thử được ghi vào <code>ekyc_attempt_log</code> — không bao giờ xóa</li>
-          <li>App gọi <code>POST /ekycs/attempt-log</code> ngay khi SDK fail</li>
-          <li>46 cột structured — query theo fraud flags, quality score</li>
-          <li>Ảnh CCCD upload S3/MinIO per attempt, Admin xem được</li>
-          <li>Dashboard KPI 7 cards + 4 charts</li>
-          <li>MRZ validation + cross-check chặn giả mạo</li>
-        </ul>
+        <p><strong>Dev/DBA</strong> — tra cứu qua SQL khi debug hoặc điều tra case. <strong>Compliance/Legal</strong> — có bằng chứng đầy đủ khi UBCK/NHNN yêu cầu. <strong>Ops/BA/Security</strong> — hưởng lợi từ Phase 2 (Admin UI, Dashboard) khi scope đó được mở lại.</p>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Phân loại kết quả (outcome)</h3>
+      <h3>Phân loại kết quả (outcome) — cho <code>ekyc_attempt_log</code></h3>
       <div class="table-wrap" style="margin-top:10px">
         <table>
           <thead><tr><th>Outcome</th><th>Ý nghĩa</th><th>Failure Step</th></tr></thead>
           <tbody>
             <tr><td><span class="badge badge-red">VNPT_FAILED</span></td><td>VNPT trả lỗi (OCR, liveness, quality)</td><td><code>VNPT_OCR</code> / <code>VNPT_LIVENESS</code></td></tr>
-            <tr><td><span class="badge badge-orange">MRZ_FAILED</span></td><td>MRZ checksum sai hoặc MRZ ↔ OCR không khớp</td><td><code>MRZ_VALIDATION</code> / <code>MRZ_CROSS_CHECK</code></td></tr>
             <tr><td><span class="badge badge-red">FACE_COMPARE_FAILED</span></td><td>Matching rate dưới ngưỡng (&lt; 80%)</td><td><code>FACE_COMPARE</code></td></tr>
             <tr><td><span class="badge badge-orange">LOTTE_REJECTED</span></td><td>Lotte từ chối khi submit</td><td><code>LOTTE_SUBMIT</code></td></tr>
             <tr><td><span class="badge badge-gray">USER_ABANDONED</span></td><td>Không ký HĐ trong 48h sau APPROVED</td><td><code>CONTRACT_SIGN</code></td></tr>
@@ -273,7 +245,67 @@
           </tbody>
         </table>
       </div>
+      <p style="margin-top:8px;font-size:12px">Lưu ý: <code>MRZ_FAILED</code> thuộc sub-feature 04 (App MRZ Validation) — Phase 2, chưa áp dụng ở Phase 1.</p>
     </div>
+  </section>
+
+  <!-- Problem / Goals -->
+  <section id="problem">
+    <h2>Vấn đề &amp; Mục tiêu</h2>
+    <div class="compare">
+      <div class="compare-box compare-now">
+        <h4>Hiện tại — Vấn đề</h4>
+        <ul>
+          <li><code>CustomEKycService.java:211</code> xóa record PENDING cũ khi retry</li>
+          <li>App không gửi data VNPT khi fail trước khi gọi BE (blur, liveness...)</li>
+          <li><code>ekyc_ext.raw_data</code> lưu JSON thô, không query được</li>
+          <li>Không ghi lại chuỗi API trong hành trình mở tài khoản — thiếu bằng chứng compliance</li>
+        </ul>
+      </div>
+      <div class="compare-box compare-after">
+        <h4>Sau Phase 1</h4>
+        <ul>
+          <li>Mọi lần thử VNPT ghi vào <code>ekyc_attempt_log</code> — không bao giờ xóa</li>
+          <li>App gọi <code>POST /ekycs/attempt-log</code> ngay khi SDK fail</li>
+          <li>Toàn bộ 11 API trong hành trình mở TK ghi real-time vào <code>ekyc_journey_log</code></li>
+          <li>Hành trình thành công giữ vĩnh viễn; hành trình fail/bỏ dở tự xóa</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-yellow" style="margin-top:16px">
+      <strong>Đánh đổi đã ghi nhận (2026-07-06):</strong> vì hành trình không thành công bị xóa khỏi <code>ekyc_journey_log</code>, hai mục tiêu ban đầu — <strong>phân tích friction/drop-off</strong> và <strong>phát hiện fraud pattern</strong> dựa trên dữ liệu hành trình — không còn khả thi với thiết kế này. PM chấp nhận đánh đổi này để đơn giản hóa storage ở Phase 1.
+    </div>
+  </section>
+
+  <!-- Scope Phase 1 vs Phase 2 -->
+  <section id="scope">
+    <h2>Scope Phase 1 vs Phase 2 (chốt 2026-07-06)</h2>
+    <div class="compare">
+      <div class="compare-box scope-in">
+        <h4>✅ Phase 1 — Trong scope</h4>
+        <ul>
+          <li>Backend: lưu mọi lần thử VNPT vào <code>ekyc_attempt_log</code> (sub-feature 01)</li>
+          <li>Backend: lưu <code>terms_agreed_at</code> khi user tick điều khoản (sub-feature 05)</li>
+          <li>Backend: ghi real-time 11 API call hành trình mở TK vào <code>ekyc_journey_log</code> (mới)</li>
+          <li>Backend: cleanup job xóa <code>ekyc_journey_log</code> của hành trình không thành công</li>
+          <li>App: gọi <code>POST /ekycs/attempt-log</code> + gửi các trường VNPT mở rộng</li>
+          <li>Truy vấn nội bộ: SQL/tool DBA khi cần điều tra case</li>
+        </ul>
+      </div>
+      <div class="compare-box scope-out">
+        <h4>⏸ Phase 2 — Ngoài scope lần này</h4>
+        <ul>
+          <li>Bất kỳ hiển thị log nào trên admin page (sub-feature 02 — 3 màn hình tra cứu hành trình)</li>
+          <li>Cột "Lần thử" trong Danh sách eKYC hiện có (mục 4.7 PRD)</li>
+          <li>Tab "Lịch sử thử" trong Modal detail hiện có (mục 4.8 PRD)</li>
+          <li>Admin Dashboard Analytics — KPI, charts, fraud panel (sub-feature 03)</li>
+          <li>MRZ Validation từ App (sub-feature 04)</li>
+          <li>Lưu ảnh CCCD lên S3/MinIO + hiển thị ảnh trên Admin (sub-feature 06)</li>
+        </ul>
+      </div>
+    </div>
+    <p style="margin-top:12px;font-size:12px">Chi tiết đầy đủ: <code>Planning/PRD_eKYC_v2.md</code> mục 7 (Out of scope) và <code>README.md</code> Status Tracker.</p>
   </section>
 
   <!-- Flow -->
@@ -287,7 +319,7 @@
         <div class="flow-arrow">→</div>
         <div class="flow-box">VNPT SDK</div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box red">Fail (blur / liveness / MRZ)</div>
+        <div class="flow-box red">Fail (blur / liveness)</div>
         <div class="flow-arrow">→</div>
         <div class="flow-box orange">POST /ekycs/attempt-log <br><small style="font-weight:400">outcome: VNPT_FAILED</small></div>
         <div class="flow-arrow">→</div>
@@ -322,67 +354,27 @@
     </div>
 
     <div class="card" style="margin-top:12px">
-      <h3>Luồng dữ liệu ảnh CCCD</h3>
+      <h3>Luồng 3 — Compliance Journey Log (mới, chốt 2026-07-06)</h3>
       <div class="flow" style="margin-top:12px">
-        <div class="flow-box">VNPT SDK trả<br><code>imgs.img_front</code><br><code>imgs.img_back</code><br><small style="font-weight:400">(base64)</small></div>
+        <div class="flow-box">User đi qua 11 API<br><small style="font-weight:400">create → OTP → banks → submit → contracts</small></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box">BE nhận base64</div>
+        <div class="flow-box blue">Backend ghi real-time<br>vào <code>ekyc_journey_log</code></div>
         <div class="flow-arrow">→</div>
-        <div class="flow-box orange">Upload S3/MinIO<br><small style="font-weight:400">ekyc/{id}/attempt-N-front.jpg</small></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box green">Lưu URL vào<br><code>image_front_url</code><br><code>image_back_url</code></div>
-        <div class="flow-arrow">→</div>
-        <div class="flow-box purple">Admin UI<br>xem ảnh</div>
+        <div class="flow-box purple">Submit trả HTTP 200<br>+ eKycId + status:success?</div>
       </div>
-    </div>
-  </section>
-
-  <!-- Scope -->
-  <section id="scope">
-    <h2>Phạm vi ảnh hưởng</h2>
-    <div class="card-grid col3">
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-size:24px">⚙️</span>
-          <div><h3 style="margin:0">Backend (ekyc-admin)</h3><span class="badge badge-orange">Java / Spring Boot</span></div>
-        </div>
-        <ul class="check-list">
-          <li>Entity <code>EKycAttemptLog</code> + Repository</li>
-          <li>Service <code>EKycAttemptLogService</code></li>
-          <li>Liquibase migration (bảng mới + 2 cột <code>e_kyc</code>)</li>
-          <li>API <code>POST /ekycs/attempt-log</code></li>
-          <li>4 Admin API endpoints</li>
-          <li>Update <code>final_ekyc_id</code> khi APPROVED</li>
-          <li>Interface <code>ImageStorageService</code> + MinIO impl</li>
-        </ul>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-box" style="opacity:0;pointer-events:none">placeholder</div>
+        <div class="flow-arrow" style="opacity:0">→</div>
+        <div class="flow-box" style="opacity:0;pointer-events:none">placeholder</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box green">✅ Có → giữ vĩnh viễn</div>
       </div>
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-size:24px">📱</span>
-          <div><h3 style="margin:0">App (nhsv-mts-rn)</h3><span class="badge badge-blue">React Native</span></div>
-        </div>
-        <ul class="check-list">
-          <li>Gọi <code>POST /ekycs/attempt-log</code> sau SDK</li>
-          <li>Fix <code>default: break</code> → block + analytics</li>
-          <li>Validate <code>mrz_valid_score</code></li>
-          <li>MRZ cross-check với OCR visual</li>
-          <li>Gửi MRZ + liveness + face compare lên BE</li>
-          <li>Thêm 3 i18n keys cảnh báo MRZ</li>
-        </ul>
-      </div>
-      <div class="card">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <span style="font-size:24px">🖥️</span>
-          <div><h3 style="margin:0">Admin UI (ekyc-admin)</h3><span class="badge badge-purple">Web</span></div>
-        </div>
-        <ul class="check-list">
-          <li>Trang Dashboard Analytics (mới)</li>
-          <li>Màn hình Tìm kiếm (mới)</li>
-          <li>Màn hình Customer Journey (mới)</li>
-          <li>Màn hình Chi tiết lần thử (mới)</li>
-          <li>Cột "Lần thử" trong danh sách eKYC</li>
-          <li>Tab "Lịch sử thử" trong Modal detail</li>
-        </ul>
+      <div class="flow" style="margin-top:10px">
+        <div class="flow-box" style="opacity:0;pointer-events:none">placeholder</div>
+        <div class="flow-arrow" style="opacity:0">→</div>
+        <div class="flow-box" style="opacity:0;pointer-events:none">placeholder</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-box red">❌ Không (fail rõ ràng, hoặc bỏ dở &gt; 24–48h) → xóa toàn bộ log session đó</div>
       </div>
     </div>
   </section>
@@ -391,17 +383,17 @@
 
   <!-- DB -->
   <section id="db">
-    <h2>DB Schema</h2>
+    <h2>DB Schema — 2 bảng riêng biệt</h2>
 
-    <div class="alert alert-blue">
-      <strong>Nguyên tắc append-only:</strong> <code>ekyc_attempt_log</code> không bao giờ bị UPDATE hay DELETE. Mọi lần thử đều được lưu vĩnh viễn.
+    <div class="alert alert-red">
+      <strong>Quyết định quan trọng (2026-07-06):</strong> <code>ekyc_journey_log</code> là <strong>bảng riêng</strong>, không mở rộng chung <code>ekyc_attempt_log</code>. Lý do: <code>ekyc_attempt_log</code> phải append-only/never-delete (giữ mọi lần thử VNPT kể cả fail), trong khi <code>ekyc_journey_log</code> phải xóa bản ghi của hành trình không thành công — hai chính sách retention xung đột trực tiếp nếu share bảng.
     </div>
 
     <div class="card">
-      <h3>Bảng mới: <code>ekyc_attempt_log</code> (46+ cột)</h3>
+      <h3>Bảng 1: <code>ekyc_attempt_log</code> — VNPT biometric (append-only, không bao giờ xóa)</h3>
       <div style="margin-top:12px">
         <div class="col-group">
-          <div class="col-group-title">Định danh & Kết quả</div>
+          <div class="col-group-title">Định danh &amp; Kết quả</div>
           <div class="col-tags">
             <span class="col-tag">id PK</span>
             <span class="col-tag">identifier_id NOT NULL</span>
@@ -412,112 +404,61 @@
             <span class="col-tag">outcome NOT NULL</span>
             <span class="col-tag">failure_step</span>
             <span class="col-tag">failure_code</span>
-            <span class="col-tag">failure_message</span>
           </div>
         </div>
         <div class="col-group">
-          <div class="col-group-title">VNPT OCR Results</div>
+          <div class="col-group-title">VNPT OCR + Fraud + Liveness (rút gọn — xem Backend_Spec.md)</div>
           <div class="col-tags">
             <span class="col-tag">vnpt_status_code</span>
             <span class="col-tag">vnpt_citizen_id</span>
             <span class="col-tag">vnpt_name</span>
-            <span class="col-tag">vnpt_card_type</span>
-            <span class="col-tag">vnpt_citizen_id_prob</span>
-            <span class="col-tag">vnpt_mrz_valid_score</span>
-            <span class="col-tag">vnpt_nationality</span>
-            <span class="col-tag">vnpt_citizen_id_chip</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">Fraud Detection</div>
-          <div class="col-tags">
             <span class="col-tag">vnpt_is_tampered</span>
-            <span class="col-tag">vnpt_id_fake_warning</span>
-            <span class="col-tag">vnpt_id_fake_prob</span>
-            <span class="col-tag">vnpt_duplication_warning</span>
-            <span class="col-tag">vnpt_dob_fake_warning</span>
-            <span class="col-tag">vnpt_address_fake_warning</span>
-            <span class="col-tag">vnpt_issuedate_fake_warning</span>
-            <span class="col-tag">vnpt_name_fake_warning</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">Card Integrity (mặt trước + mặt sau)</div>
-          <div class="col-tags">
-            <span class="col-tag">vnpt_front_recaptured</span>
-            <span class="col-tag">vnpt_front_edited_prob</span>
-            <span class="col-tag">vnpt_front_photocopied</span>
-            <span class="col-tag">vnpt_back_recaptured</span>
-            <span class="col-tag">vnpt_back_edited_prob</span>
-            <span class="col-tag">vnpt_back_photocopied</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">Image Quality</div>
-          <div class="col-tags">
-            <span class="col-tag">vnpt_front_blur_score</span>
-            <span class="col-tag">vnpt_front_luminance_score</span>
-            <span class="col-tag">vnpt_back_blur_score</span>
-            <span class="col-tag">vnpt_back_luminance_score</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">MRZ (Machine Readable Zone)</div>
-          <div class="col-tags">
-            <span class="col-tag">mrz_line1</span>
-            <span class="col-tag">mrz_line2</span>
-            <span class="col-tag">mrz_overall_prob</span>
-            <span class="col-tag">mrz_cross_check</span>
-            <span class="col-tag">mrz_check_id</span>
-            <span class="col-tag">mrz_check_dob</span>
-            <span class="col-tag">mrz_check_gender</span>
-            <span class="col-tag">mrz_check_expiry</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">Liveness (từ SDK)</div>
-          <div class="col-tags">
-            <span class="col-tag">liveness_card_front_result</span>
-            <span class="col-tag">liveness_card_rear_result</span>
             <span class="col-tag">liveness_face_result</span>
-            <span class="col-tag">face_mask_result</span>
-            <span class="col-tag">fake_liveness_prob</span>
-            <span class="col-tag">fake_print_photo_prob</span>
-          </div>
-        </div>
-        <div class="col-group">
-          <div class="col-group-title">Face Compare + Ảnh Storage</div>
-          <div class="col-tags">
-            <span class="col-tag">face_compare_msg</span>
             <span class="col-tag">face_compare_prob</span>
-            <span class="col-tag">image_front_url</span>
-            <span class="col-tag">image_back_url</span>
             <span class="col-tag">vnpt_raw_data LONGTEXT</span>
           </div>
         </div>
+        <div class="col-group">
+          <div class="col-group-title">Terms Consent (sub-feature 05)</div>
+          <div class="col-tags">
+            <span class="col-tag">terms_agreed_at DATETIME NULL</span>
+            <span class="col-tag">terms_version VARCHAR(20)</span>
+          </div>
+        </div>
       </div>
+      <p style="margin-top:8px;font-size:12px">Chi tiết đầy đủ 46+ cột: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code>. Ảnh CCCD (<code>image_front_url</code>/<code>image_back_url</code>) — cột đã dự trù nhưng upload S3/MinIO là Phase 2.</p>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Thay đổi bảng <code>e_kyc</code> — thêm 2 cột</h3>
-      <div class="col-tags" style="margin-top:10px">
-        <span class="col-tag">total_attempts INT NULL</span>
-        <span class="col-tag">first_attempt_at DATETIME NULL</span>
+      <h3>Bảng 2 (mới): <code>ekyc_journey_log</code> — 11 API call hành trình mở TK</h3>
+      <div style="margin-top:12px">
+        <div class="col-group">
+          <div class="col-group-title">Cột</div>
+          <div class="col-tags">
+            <span class="col-tag">id PK</span>
+            <span class="col-tag">eKycId</span>
+            <span class="col-tag">phoneNo</span>
+            <span class="col-tag">identifierId</span>
+            <span class="col-tag">journey_step (enum)</span>
+            <span class="col-tag">endpoint</span>
+            <span class="col-tag">http_method</span>
+            <span class="col-tag">http_status</span>
+            <span class="col-tag">response_summary JSON</span>
+            <span class="col-tag">created_at</span>
+          </div>
+        </div>
       </div>
-      <p style="margin-top:8px;font-size:12px">Backward compatible — nullable, không ảnh hưởng code cũ.</p>
+      <p style="margin-top:8px;font-size:12px">Không có cột <code>finalized</code>/<code>finalized_at</code> — bản ghi không đạt tiêu chí thành công bị <strong>xóa thẳng</strong> thay vì đánh dấu. Liên kết <code>ekyc_attempt_log</code> / <code>e_kyc</code> qua <code>eKycId</code> (không FK cứng).</p>
     </div>
 
     <div class="card" style="margin-top:16px">
       <h3>Indexes</h3>
       <div class="table-wrap" style="margin-top:10px">
         <table>
-          <thead><tr><th>Index</th><th>Cột</th><th>Mục đích</th></tr></thead>
+          <thead><tr><th>Bảng</th><th>Index</th><th>Mục đích</th></tr></thead>
           <tbody>
-            <tr><td><code>idx_ekyc_attempt_identifier</code></td><td><code>identifier_id</code></td><td>Search theo CCCD — query chính của Admin</td></tr>
-            <tr><td><code>idx_ekyc_attempt_phone</code></td><td><code>phone_no</code></td><td>Search theo SĐT</td></tr>
-            <tr><td><code>idx_ekyc_attempt_at</code></td><td><code>attempt_at</code></td><td>Filter theo thời gian, Dashboard metrics</td></tr>
-            <tr><td><code>idx_ekyc_attempt_outcome</code></td><td><code>outcome</code></td><td>Filter theo kết quả</td></tr>
-            <tr><td><code>idx_ekyc_attempt_final_ekyc</code></td><td><code>final_ekyc_id</code></td><td>FK lookup</td></tr>
+            <tr><td><code>ekyc_attempt_log</code></td><td><code>identifier_id</code>, <code>phone_no</code>, <code>attempt_at</code>, <code>outcome</code></td><td>Phục vụ SQL tra cứu nội bộ + Phase 2 admin search</td></tr>
+            <tr><td><code>ekyc_journey_log</code></td><td><code>eKycId</code>, <code>(phoneNo, created_at)</code>, <code>identifierId</code></td><td>Tra cứu theo hành trình + job cleanup theo "last activity"</td></tr>
           </tbody>
         </table>
       </div>
@@ -526,7 +467,7 @@
 
   <!-- APIs -->
   <section id="apis">
-    <h2>API Endpoints</h2>
+    <h2>API Endpoints (Phase 1)</h2>
 
     <div class="card">
       <h3>App → TradeX</h3>
@@ -537,54 +478,30 @@
             <span class="endpoint-path">/ekycs/attempt-log</span>
           </div>
           <div>
-            <div class="endpoint-desc">Ghi nhận lần thử eKYC (pre-submit failure và post-submit). App gọi cho MỌI lần thử.</div>
+            <div class="endpoint-desc">Ghi nhận lần thử eKYC (pre-submit failure và post-submit) + terms-consent update. App gọi cho MỌI lần thử.</div>
             <div style="margin-top:4px"><span class="badge badge-green">201 → { attemptId }</span> <span class="badge badge-red">400 → INVALID_PARAMETER</span></div>
           </div>
         </div>
       </div>
-
-      <div class="alert alert-yellow" style="margin-top:10px">
-        <strong>Request Body quan trọng:</strong> Trường <code>imageFrontBase64</code> + <code>imageBackBase64</code> là <strong>bắt buộc</strong> khi <code>failureStep = VNPT_OCR</code>. Max 5MB mỗi ảnh sau decode.
-      </div>
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>Admin UI → BE</h3>
+      <h3>11 API hành trình mở tài khoản — ghi log tự động phía Backend (không phải endpoint mới)</h3>
+      <p style="font-size:12px;margin-top:4px">Journey Log KHÔNG cần App gọi thêm API nào — một interceptor/aspect ở Backend tự ghi lại mỗi lần 1 trong 11 API dưới đây được gọi. Danh sách: <code>lotte/ekycs/create</code>, <code>ekyc-admin/sendOtp</code>, <code>ekyc-admin/verifyOtp</code>, <code>lotte/ekycs</code> (submit), <code>ekycs/banks</code>, <code>ekycs/branch</code>, <code>ekycs/banks/{id}/branches</code>, <code>ekycs/partner</code>, <code>ekycs/account/exist</code>, <code>equity/account/checkNationalId</code>, <code>equity/account/contracts</code>. Chi tiết: <code>Planning/PRD_eKYC_v2.md</code> mục 4.10.</p>
+    </div>
+
+    <div class="card deferred" style="margin-top:16px">
+      <h3>⏸ Admin API — Phase 2 (chưa triển khai)</h3>
+      <p style="font-size:12px">Trong Phase 1 <strong>không có API GET admin-facing nào</strong>. Các endpoint dưới đây (đã spec sẵn cho Phase 2) chỉ tham chiếu:</p>
       <div style="margin-top:10px">
         <div class="endpoint-row">
-          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/search</span></div>
-          <div><div class="endpoint-desc">Tìm kiếm theo <code>?identifierId=</code> hoặc <code>&phoneNo=</code></div></div>
-        </div>
-        <div class="endpoint-row">
-          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/{identifierId}</span></div>
-          <div><div class="endpoint-desc">Danh sách tất cả lần thử của 1 khách hàng</div></div>
-        </div>
-        <div class="endpoint-row">
-          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/{identifierId}/{attemptNumber}</span></div>
-          <div><div class="endpoint-desc">Chi tiết đầy đủ 1 lần thử (VNPT flags, liveness, fraud, ảnh)</div></div>
+          <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/attempts/list</span></div>
+          <div><div class="endpoint-desc">Danh sách phân trang + 2 tab (Đã mở TK / Chưa mở TK) — sub-feature 02, Phase 2</div></div>
         </div>
         <div class="endpoint-row">
           <div><span class="method method-get">GET</span><span class="endpoint-path">/api/admin/ekyc/dashboard</span></div>
-          <div><div class="endpoint-desc">Metrics Dashboard: KPI, outcome breakdown, failure step breakdown, daily trend, fraud stats. Params: <code>?fromDate=&toDate=</code></div></div>
+          <div><div class="endpoint-desc">Metrics Dashboard — sub-feature 03, Phase 2</div></div>
         </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>Outcome → failureStep mapping (hướng dẫn App)</h3>
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>Scenario</th><th>outcome</th><th>failureStep</th><th>Ảnh bắt buộc?</th></tr></thead>
-          <tbody>
-            <tr><td>SDK trả blur/warning OCR</td><td><span class="badge badge-red">VNPT_FAILED</span></td><td><code>VNPT_OCR</code></td><td>✅ Có</td></tr>
-            <tr><td>MRZ checksum fail</td><td><span class="badge badge-orange">MRZ_FAILED</span></td><td><code>MRZ_VALIDATION</code></td><td>✅ Có (mặt sau)</td></tr>
-            <tr><td>MRZ ↔ OCR mismatch</td><td><span class="badge badge-orange">MRZ_FAILED</span></td><td><code>MRZ_CROSS_CHECK</code></td><td>✅ Có</td></tr>
-            <tr><td>Liveness card fail</td><td><span class="badge badge-red">VNPT_FAILED</span></td><td><code>VNPT_LIVENESS</code></td><td>❌ Không</td></tr>
-            <tr><td>Face compare NOMATCH</td><td><span class="badge badge-red">FACE_COMPARE_FAILED</span></td><td><code>FACE_COMPARE</code></td><td>❌ Không</td></tr>
-            <tr><td>Lotte từ chối</td><td><span class="badge badge-orange">LOTTE_REJECTED</span></td><td><code>LOTTE_SUBMIT</code></td><td>❌ Không</td></tr>
-            <tr><td>Thành công</td><td><span class="badge badge-green">SUCCESS</span></td><td>—</td><td>❌ Không</td></tr>
-          </tbody>
-        </table>
       </div>
     </div>
   </section>
@@ -609,254 +526,97 @@
           <div class="tl-item">
             <div class="tl-dot blue"></div>
             <div class="tl-title">3. Extract VNPT fields</div>
-            <div class="tl-body">Nếu có <code>vnptRawData</code> → parse base64 JSON → map 30+ fields vào entity</div>
-          </div>
-          <div class="tl-item">
-            <div class="tl-dot blue"></div>
-            <div class="tl-title">4. Upload ảnh S3/MinIO</div>
-            <div class="tl-body">Chỉ khi có <code>imageFrontBase64</code> / <code>imageBackBase64</code> trong request</div>
+            <div class="tl-body">Nếu có <code>vnptRawData</code> → parse base64 JSON → map fields vào entity</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot green"></div>
-            <div class="tl-title">5. Insert vào DB</div>
+            <div class="tl-title">4. Insert vào DB</div>
             <div class="tl-body">Append-only INSERT — không bao giờ UPDATE record này</div>
           </div>
         </div>
       </div>
       <div class="card">
-        <h3>CustomEKycService — cập nhật khi APPROVED</h3>
+        <h3>Journey Log interceptor + Cleanup job (mới)</h3>
         <div class="timeline" style="margin-top:12px">
           <div class="tl-item">
-            <div class="tl-dot orange"></div>
-            <div class="tl-title">Khi Lotte reject</div>
-            <div class="tl-body">Repository <code>updateOutcome()</code> cập nhật <code>outcome = LOTTE_REJECTED</code> cho attempt record mới nhất</div>
+            <div class="tl-dot blue"></div>
+            <div class="tl-title">Mỗi lời gọi trong 11 API</div>
+            <div class="tl-body">Ghi real-time 1 dòng vào <code>ekyc_journey_log</code>, không buffer/flush cuối luồng</div>
           </div>
           <div class="tl-item">
             <div class="tl-dot green"></div>
-            <div class="tl-title">Khi account APPROVED</div>
-            <div class="tl-body">
-              1. <code>updateFinalEkycId()</code> — link toàn bộ attempt về <code>e_kyc.id</code> thành công<br>
-              2. Cập nhật <code>e_kyc.total_attempts</code> + <code>e_kyc.first_attempt_at</code>
-            </div>
+            <div class="tl-title">Submit thành công (HTTP 200 + eKycId + status:success)</div>
+            <div class="tl-body">Không cần thao tác gì thêm — record đã tồn tại, giữ vĩnh viễn theo mặc định</div>
           </div>
-        </div>
-        <div class="alert alert-green" style="margin-top:12px">
-          Logic duplicate handling PENDING cũ <strong>giữ nguyên hoàn toàn</strong> — không break luồng hiện tại.
+          <div class="tl-item">
+            <div class="tl-dot red"></div>
+            <div class="tl-title">Fail rõ ràng</div>
+            <div class="tl-body">Xóa toàn bộ record của <code>eKycId</code> đó ngay sau khi xác định outcome</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot gray"></div>
+            <div class="tl-title">Cleanup job định kỳ</div>
+            <div class="tl-body">Xóa record của <code>eKycId</code> không có activity mới sau ngưỡng timeout (đề xuất 24–48h, chờ BE Lead chốt)</div>
+          </div>
         </div>
       </div>
     </div>
+    <div class="alert alert-green" style="margin-top:16px">
+      Logic duplicate handling PENDING cũ của <code>CustomEKycService</code> <strong>giữ nguyên hoàn toàn</strong> — không break luồng hiện tại.
+    </div>
   </section>
 
-  <!-- Image Storage -->
-  <section id="image">
-    <h2>Image Storage</h2>
+  <!-- Compliance Journey Log detail -->
+  <section id="journey">
+    <h2>Compliance Journey Log — chi tiết storage strategy</h2>
     <div class="card">
-      <div class="card-grid col2">
-        <div>
-          <h3>Storage path convention</h3>
-          <pre><code>ekyc/{identifierId}/attempt-{N}-front.jpg
-ekyc/{identifierId}/attempt-{N}-back.jpg</code></pre>
-          <h3 style="margin-top:16px">Retention policy</h3>
-          <p>Giữ tối thiểu <strong>90 ngày</strong></p>
-        </div>
-        <div>
-          <h3>Bảo mật</h3>
-          <ul class="check-list">
-            <li>Bucket <strong>private</strong> — không public-read</li>
-            <li>Trả về <strong>presigned URL</strong> có TTL (1 giờ)</li>
-            <li>Hoặc Admin UI gọi endpoint riêng <code>GET .../image-url?type=front</code></li>
-            <li>Không lưu base64 vào DB — chỉ lưu URL sau upload thành công</li>
-          </ul>
-        </div>
+      <h3>Tiêu chí "thành công" (điểm chốt duy nhất)</h3>
+      <pre><code>POST /api/v1/lotte/ekycs  → HTTP 200
+Response: { "eKycId": "...", "status": "success" }</code></pre>
+      <p>Không phụ thuộc bước ký hợp đồng điện tử hay VSD APPROVED (ngoài phạm vi log).</p>
+      <div class="alert alert-yellow" style="margin-top:10px">
+        ⚠️ Hệ quả: một hồ sơ sau đó bị <strong>Ops reject</strong> ở bước duyệt vẫn được tính "thành công" theo tiêu chí này và giữ log vĩnh viễn — vì mốc chốt nằm ở bước submit, không phải bước duyệt cuối.
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Retention</h3>
+      <div class="table-wrap" style="margin-top:10px">
+        <table>
+          <thead><tr><th>Trạng thái hành trình</th><th>Xử lý log</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-green">Thành công</span></td><td>Giữ <strong>vĩnh viễn</strong>, không bao giờ xóa</td></tr>
+            <tr><td><span class="badge badge-red">Fail rõ ràng</span> (lỗi submit, hoặc chặn luồng trước đó)</td><td>Xóa <strong>ngay</strong> sau khi xác định outcome</td></tr>
+            <tr><td><span class="badge badge-gray">Bỏ dở (abandon)</span></td><td>Xóa sau ngưỡng timeout <strong>24–48h</strong> không có activity mới (đề xuất — chờ BE Lead chốt số giờ)</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
 
   <hr class="divider">
 
-  <!-- Admin Journey -->
-  <section id="admin-journey">
-    <h2>FE Issue — Admin: Tra cứu Hành trình</h2>
-    <div class="card-grid col3">
-      <div class="card" style="border-top:3px solid var(--blue)">
-        <h3>Màn hình 1: Tìm kiếm</h3>
-        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts</code></p>
-        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
-          <li>Input: Số CCCD hoặc SĐT</li>
-          <li>Kết quả: họ tên, tổng lần thử, trạng thái TK</li>
-          <li>Nút [Xem hành trình →]</li>
-          <li>Empty state khi không tìm thấy</li>
-        </ul>
+  <!-- Phase 2 Deferred (condensed) -->
+  <section id="deferred">
+    <h2>Phase 2 — Deferred (tham khảo, chưa triển khai)</h2>
+    <p>Ba hạng mục dưới đây đã có demo/spec sẵn nhưng <strong>không nằm trong Phase 1</strong>. Giữ lại làm tham chiếu khi mở scope Phase 2.</p>
+
+    <div class="card-grid col3" style="margin-top:12px">
+      <div class="card deferred">
+        <h3>⏸ 02 — Admin Attempt History</h3>
+        <p style="font-size:12px">3 màn hình: Danh sách + tra cứu (2 tab) → Customer Journey Timeline → Chi tiết lần thử. Spec đầy đủ: <code>02_Admin_Attempt_History/Issues/FE_Issue_Admin_Attempt_History.md</code></p>
       </div>
-      <div class="card" style="border-top:3px solid var(--orange)">
-        <h3>Màn hình 2: Customer Journey</h3>
-        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts/:identifierId</code></p>
-        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
-          <li>Header: tên, CCCD, SĐT, tổng lần thử</li>
-          <li>Timeline: Lần 1 → Lần 2 → Lần N</li>
-          <li>Badge màu: SUCCESS/FAILED/REJECTED</li>
-          <li>Link sang chi tiết TK đã mở</li>
-        </ul>
+      <div class="card deferred">
+        <h3>⏸ 03 — Admin Dashboard Analytics</h3>
+        <p style="font-size:12px">7 KPI cards + 4 charts (donut, bar, line, fraud). Spec: <code>03_Admin_Dashboard_Analytics/Specifications/Dashboard_API_Spec.md</code>. Demo: <code>admin-ui-demo.html</code></p>
       </div>
-      <div class="card" style="border-top:3px solid var(--purple)">
-        <h3>Màn hình 3: Chi tiết lần thử</h3>
-        <p style="font-size:12px">Route: <code>/admin/ekyc/attempts/:id/:attemptN</code></p>
-        <ul style="font-size:12px;margin-top:8px;padding-left:16px;color:var(--text-muted)">
-          <li>Section OCR: số CCCD, tên, loại thẻ</li>
-          <li>Section Chất lượng ảnh: blur + luminance score</li>
-          <li>Section Kiểm tra giả mạo: 7 flags</li>
-          <li>Section Khớp 2 mặt: id/name/dob/expiry</li>
-          <li>Section Lý do thất bại (highlight đỏ)</li>
-        </ul>
+      <div class="card deferred">
+        <h3>⏸ 04 — MRZ Validation (App)</h3>
+        <p style="font-size:12px">3 phase: fix <code>default: break</code> → đọc/validate MRZ → gửi lên BE. Spec: <code>04_MRZ_Validation/Issues/FE_Issue_MRZ_Validation_CrossCheck.md</code></p>
       </div>
     </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>Outcome badge colors</h3>
-      <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-        <span class="badge badge-green">SUCCESS — xanh lá</span>
-        <span class="badge badge-red">VNPT_FAILED — đỏ</span>
-        <span class="badge badge-red">MRZ_FAILED — đỏ</span>
-        <span class="badge badge-orange">LOTTE_REJECTED — cam</span>
-        <span class="badge badge-gray">USER_ABANDONED — xám</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Admin Dashboard -->
-  <section id="admin-dashboard">
-    <h2>FE Issue — Admin: Dashboard Analytics <span class="badge badge-blue" style="margin-left:8px;font-size:11px">Mới</span></h2>
-
-    <div class="alert alert-blue">
-      Route: <code>/admin/ekyc/dashboard</code> | Filter: 7 ngày qua / 30 ngày / Tùy chọn | Load time SLA: &lt; 3s
-    </div>
-
-    <div class="card">
-      <h3>Hàng 1 — 4 KPI Cards</h3>
-      <div class="card-grid col2" style="margin-top:10px">
-        <div style="background:var(--blue-light);border-radius:8px;padding:14px">
-          <div style="font-size:11px;color:var(--blue-dark);font-weight:700">TỔNG EKYC</div>
-          <div style="font-size:28px;font-weight:800;color:var(--blue-dark)">312</div>
-          <div style="font-size:11px;color:var(--blue)">lượt trong 7 ngày</div>
-        </div>
-        <div style="background:var(--green-light);border-radius:8px;padding:14px">
-          <div style="font-size:11px;color:var(--green);font-weight:700">TỈ LỆ THÀNH CÔNG</div>
-          <div style="font-size:28px;font-weight:800;color:var(--green)">79.5%</div>
-          <div style="font-size:11px;color:var(--green)">approved / total</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>4 Charts</h3>
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>Chart</th><th>Loại</th><th>Dữ liệu</th></tr></thead>
-          <tbody>
-            <tr><td><strong>Tỉ lệ kết quả eKYC</strong></td><td>Donut</td><td>APPROVED / REJECTED / PENDING — màu xanh/đỏ/vàng</td></tr>
-            <tr><td><strong>Nguyên nhân thất bại</strong></td><td>Horizontal bar</td><td>Breakdown theo failure step, sort desc, label tiếng Việt</td></tr>
-            <tr><td><strong>Xu hướng theo ngày</strong></td><td>Line chart</td><td>2 đường: Tổng vs Thành công (7 ngày), hover tooltip</td></tr>
-            <tr><td><strong>Fraud Detection</strong></td><td>Bar + counter</td><td>Breakdown theo loại fraud: id_fake, tampering, duplication</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>Bảng: Top khách hàng nhiều lần thử</h3>
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>Cột</th><th>Ghi chú</th></tr></thead>
-          <tbody>
-            <tr><td>Họ tên + Số CCCD</td><td>—</td></tr>
-            <tr><td>Số lần thử</td><td>Badge đỏ nếu ≥ 3</td></tr>
-            <tr><td>Kết quả</td><td>Pill APPROVED / PENDING / REJECTED</td></tr>
-            <tr><td>Nguyên nhân fail chính</td><td>Label tiếng Việt</td></tr>
-            <tr><td>Hành trình</td><td>Nút [Xem →] link sang màn hình Journey</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- App MRZ -->
-  <section id="app-mrz">
-    <h2>FE Issue — App: MRZ Validation &amp; Cross-Check <span class="badge badge-red" style="margin-left:8px;font-size:11px">Security</span></h2>
-
-    <div class="alert alert-red">
-      <strong>Lỗ hổng hiện tại:</strong> <code>default: break</code> trong switch xử lý VNPT warning → bất kỳ warning code không biết đều cho user <strong>pass qua</strong>. MRZ hoàn toàn không được đọc dù SDK đã trả về.
-    </div>
-
-    <div class="card">
-      <h3>3 Phases implement</h3>
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>Phase</th><th>Nội dung</th><th>Estimate</th><th>Phụ thuộc</th></tr></thead>
-          <tbody>
-            <tr>
-              <td><strong>Phase 1</strong></td>
-              <td>Fix <code>default: break</code> → block + analytics log</td>
-              <td>0.5 ngày</td>
-              <td><span class="badge badge-green">Bắt đầu ngay</span></td>
-            </tr>
-            <tr>
-              <td><strong>Phase 2</strong></td>
-              <td>Đọc & validate MRZ (<code>valid_score</code> + cross-check 4 trường)</td>
-              <td>1 ngày</td>
-              <td><span class="badge badge-red">Chờ VNPT confirm threshold</span></td>
-            </tr>
-            <tr>
-              <td><strong>Phase 3</strong></td>
-              <td>Gửi MRZ data lên BE qua <code>POST /ekycs/attempt-log</code></td>
-              <td>0.5 ngày</td>
-              <td><span class="badge badge-yellow">Chờ BE deploy</span></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>MRZ Cross-Check — 4 trường so sánh</h3>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
-        <div style="background:var(--blue-light);border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px">🆔</div>
-          <div style="font-size:12px;font-weight:700;color:var(--blue-dark)">Số CCCD</div>
-          <div style="font-size:11px;color:var(--blue)">MRZ pos 0-8 vs OCR id</div>
-        </div>
-        <div style="background:var(--green-light);border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px">🎂</div>
-          <div style="font-size:12px;font-weight:700;color:var(--green)">Ngày sinh</div>
-          <div style="font-size:11px;color:var(--green)">MRZ YYMMDD vs OCR DD/MM/YYYY</div>
-        </div>
-        <div style="background:var(--orange-light);border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px">⚤</div>
-          <div style="font-size:12px;font-weight:700;color:var(--orange)">Giới tính</div>
-          <div style="font-size:11px;color:var(--orange)">MRZ M/F vs OCR</div>
-        </div>
-        <div style="background:var(--purple-light);border-radius:8px;padding:12px 16px;text-align:center">
-          <div style="font-size:20px">📅</div>
-          <div style="font-size:12px;font-weight:700;color:var(--purple)">Ngày hết hạn</div>
-          <div style="font-size:11px;color:var(--purple)">MRZ YYMMDD vs OCR</div>
-        </div>
-      </div>
-      <p style="font-size:12px;margin-top:10px">Nếu bất kỳ trường nào MISMATCH → <strong>block user</strong>, hiển thị cảnh báo, gọi <code>POST /ekycs/attempt-log</code> với <code>outcome: MRZ_FAILED</code>.</p>
-    </div>
-
-    <div class="card" style="margin-top:16px">
-      <h3>Files cần thay đổi trong nhsv-mts-rn</h3>
-      <div class="table-wrap" style="margin-top:10px">
-        <table>
-          <thead><tr><th>File</th><th>Thay đổi</th></tr></thead>
-          <tbody>
-            <tr><td><code>src/sagas/authentication/EKYCScanIdDone.ts</code></td><td>Fix <code>default: break</code>, thêm MRZ validate + cross-check</td></tr>
-            <tr><td><code>src/sagas/authentication/OnPressNextInConfirmPolicyScreen.ts</code></td><td>Gọi <code>POST /ekycs/attempt-log</code> sau Lotte response</td></tr>
-            <tr><td><code>src/reduxs/authentication/ekyc/reducer.ts</code></td><td>Thêm 6 MRZ state fields</td></tr>
-            <tr><td><code>src/interfaces/authentication.ts</code></td><td>Thêm MRZ fields vào request interface</td></tr>
-            <tr><td><code>src/i18n/vi.json</code> + <code>en.json</code></td><td>3 warning keys: MRZ_INVALID, MRZ_OCR_MISMATCH, MRZ_LOW_CONFIDENCE</td></tr>
-          </tbody>
-        </table>
-      </div>
+    <div class="card deferred" style="margin-top:16px">
+      <h3>⏸ 06 — Image Storage (S3/MinIO)</h3>
+      <p style="font-size:12px">Upload ảnh CCCD base64 → S3/MinIO, lưu URL vào <code>image_front_url</code>/<code>image_back_url</code>, presigned URL TTL 1 giờ cho Admin xem. Phụ thuộc infrastructure setup — chưa có timeline.</p>
     </div>
   </section>
 
@@ -864,26 +624,24 @@ ekyc/{identifierId}/attempt-{N}-back.jpg</code></pre>
 
   <!-- Checklist -->
   <section id="checklist">
-    <h2>Delivery Checklist</h2>
+    <h2>Delivery Checklist (Phase 1)</h2>
     <div class="card-grid col2">
       <div class="card">
         <h3>Tài liệu</h3>
         <ul class="check-list">
-          <li>PRD v2.0 — yêu cầu nghiệp vụ đầy đủ</li>
-          <li>DB Schema Spec — SQL + Liquibase XML</li>
-          <li>Backend Spec — Entity, Service, Repository, APIs</li>
-          <li>FE Issue: Admin Journey (3 màn hình)</li>
-          <li>FE Issue: Admin Dashboard Analytics</li>
-          <li>FE Issue: App MRZ Validation (3 phases)</li>
+          <li>PRD v2.2 — scope Phase 1 đã chốt (thuần backend/DB)</li>
+          <li>PRD_eKYC_v2.md mục 4.10 — chi tiết storage strategy Journey Log</li>
+          <li>Backend Spec (sub-feature 01) — Entity, Service, Repository</li>
+          <li class="deferred">FE Issue Admin Journey / Dashboard / MRZ — giữ tham khảo, chưa triển khai</li>
         </ul>
       </div>
       <div class="card">
-        <h3>Kỹ thuật — cần làm trước khi implement</h3>
+        <h3>Kỹ thuật — cần chốt trước khi implement</h3>
         <ul class="check-list">
-          <li class="block">Q1: VNPT confirm <code>mrz_valid_score</code> threshold — chặn Phase 2 MRZ</li>
-          <li class="block">Confirm MinIO bucket name và credentials (dev/staging)</li>
-          <li class="pending">Review presigned URL TTL phù hợp với Admin workflow</li>
-          <li class="pending">Estimate effort từ BE dev lead → phân task Sprint</li>
+          <li class="pending">Ngưỡng timeout xác định "bỏ dở" cho Journey Log (đề xuất 24–48h) — BE Lead chốt</li>
+          <li class="pending">Định nghĩa "cùng một hành trình" khi user retry sau khi đóng app — cần trace App hoặc hỏi FE team</li>
+          <li class="pending">Compliance review Nghị định 13/2023 (PDPD) cho dữ liệu giữ vĩnh viễn (case thành công)</li>
+          <li class="pending">API GET dropdown (banks/branch/bank-branches) — log lần đầu mỗi session hay bỏ qua?</li>
         </ul>
       </div>
     </div>
@@ -891,34 +649,34 @@ ekyc/{identifierId}/attempt-{N}-back.jpg</code></pre>
 
   <!-- Open Questions -->
   <section id="openq">
-    <h2>Open Questions</h2>
+    <h2>Open Questions còn lại</h2>
     <div class="table-wrap">
       <table>
         <thead><tr><th>#</th><th>Câu hỏi</th><th>Người trả lời</th><th>Mức chặn</th></tr></thead>
         <tbody>
           <tr>
-            <td>Q1</td>
-            <td><code>mrz_valid_score</code> range là bao nhiêu? Ngưỡng hợp lệ để block user là gì?</td>
-            <td>VNPT SDK team</td>
-            <td><span class="badge badge-red">Chặn Phase 2 MRZ</span></td>
+            <td>1</td>
+            <td>Ngưỡng timeout chính xác để coi một hành trình là "bỏ dở" trước khi xóa <code>ekyc_journey_log</code>?</td>
+            <td>BE Lead</td>
+            <td><span class="badge badge-yellow">Cần chốt trước implement</span></td>
           </tr>
           <tr>
-            <td>Q2</td>
-            <td>CCCD 12 số vs 9 số trong MRZ: dùng <code>startsWith</code> hay so sánh full để cross-check?</td>
-            <td>BE / VNPT</td>
-            <td><span class="badge badge-yellow">Cần làm rõ</span></td>
+            <td>2</td>
+            <td>Định nghĩa "cùng một hành trình" khi user đóng app và mở lại sau vài giờ — dùng eKycId cũ hay tạo mới? Liên kết bằng gì?</td>
+            <td>FE team / BE Lead</td>
+            <td><span class="badge badge-red">Ảnh hưởng độ chính xác cleanup job</span></td>
           </tr>
           <tr>
-            <td>Q3</td>
-            <td><code>mrz_probs</code> (array per-character confidence) có cần lưu BE không?</td>
-            <td>BE team</td>
+            <td>3</td>
+            <td>API GET dropdown (banks/branch/bank-branches) có thực sự cần log trong Journey Log không?</td>
+            <td>BE Lead / Ops</td>
             <td><span class="badge badge-gray">Không chặn</span></td>
           </tr>
           <tr>
-            <td>Q4</td>
-            <td>Presigned URL TTL cho ảnh CCCD: 1 giờ là đủ với workflow Ops không?</td>
-            <td>Ops team</td>
-            <td><span class="badge badge-gray">Không chặn</span></td>
+            <td>4</td>
+            <td>Compliance review Nghị định 13/2023 (PDPD) cho dữ liệu nhạy cảm giữ vĩnh viễn (case thành công)</td>
+            <td>Legal/Compliance</td>
+            <td><span class="badge badge-yellow">Cần review trước go-live</span></td>
           </tr>
         </tbody>
       </table>
@@ -926,7 +684,7 @@ ekyc/{identifierId}/attempt-{N}-back.jpg</code></pre>
   </section>
 
   <div style="text-align:center;padding:32px 0;color:var(--text-muted);font-size:12px">
-    eKYC Enhancement — Store Log v2.0 · Generated 2026-06-01 · For: Dev Team + BA + Ops
+    eKYC — Compliance &amp; Attempt Logging (Phase 1) · v2.2 · Cập nhật 2026-07-06 · For: Dev Team + BA + Compliance
   </div>
 
 </main>

@@ -103,9 +103,11 @@ Field `Note` từ Vietstock (VD: "1,000 đồng/CP", "tỷ lệ 1:1") dùng làm
 
 Trả danh sách sự kiện cổ tức trong cửa sổ 14 ngày tới.
 
-**Query params:** `exchange` (optional) — `HOSE | HNX | UPCOM`. Null hoặc không truyền = không filter.
+**Query params:**
+- `exchange` (optional) — `HOSE | HNX | UPCOM`. Null hoặc không truyền = không filter.
+- `type` (optional) — `CASH_DIVIDEND | STOCK_DIVIDEND | RIGHTS_ISSUE`. Null hoặc không truyền = không filter (All).
 
-**DB query:** `WHERE gdkhq_date >= CURDATE() AND gdkhq_date <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)`. Nếu có exchange filter thêm `AND exchange = ?`. Sort: `gdkhq_date ASC, stock_code ASC`.
+**DB query:** `WHERE gdkhq_date >= CURDATE() AND gdkhq_date <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)`. Nếu có exchange filter thêm `AND exchange = ?`. Nếu có type filter thêm `AND event_type = ?`. Sort: `gdkhq_date ASC, stock_code ASC`.
 
 **Response 200:**
 ```
@@ -133,9 +135,9 @@ Trả danh sách sự kiện cổ tức trong cửa sổ 14 ngày tới.
 
 **Empty response:** trả `{"asOfDate":"...","events":[],"totalCount":0}` — không trả 404.
 
-**Cache:** Response có thể cache 30 phút (TTL). Dữ liệu chỉ thay đổi sau sync job 06:00.
+**Cache:** Response có thể cache 30 phút (TTL), key theo tổ hợp `exchange + type`. Dữ liệu chỉ thay đổi sau sync job 06:00.
 
-**Errors:** `401 UNAUTHORIZED`, `403 FORBIDDEN`, `500 INTERNAL_SERVER_ERROR`.
+**Errors:** `401 UNAUTHORIZED`, `403 FORBIDDEN`, `400 INVALID_PARAMETER` (giá trị `exchange`/`type` không thuộc enum hợp lệ), `500 INTERNAL_SERVER_ERROR`.
 
 ---
 

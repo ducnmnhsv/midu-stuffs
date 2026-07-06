@@ -1,7 +1,13 @@
 # PRD: eKYC Attempt History — Tra cứu Hành trình & Dashboard Analytics
 
-**Version:** 2.1 | **Date:** 2026-07-04 | **Status:** Updated Draft
+**Version:** 2.2 | **Date:** 2026-07-06 | **Status:** Updated Draft — Phase 1 scope locked
 
+> **Changelog v2.2 (2026-07-06) — Chốt scope Phase 1:**
+> - **Phase 1 giờ chỉ gồm backend/DB logging, KHÔNG có bất kỳ màn hình admin nào.** Loại khỏi Phase 1: sub-feature `02_Admin_Attempt_History` (toàn bộ 3 màn hình tra cứu), mục 4.7 (cột "Lần thử" trong Danh sách eKYC), mục 4.8 (tab "Lịch sử thử" trong Modal detail) — tất cả chuyển sang Phase 2 cùng với `03_Admin_Dashboard_Analytics` và `04_MRZ_Validation` (đã defer từ trước).
+> - **Compliance Journey Log (4.10) chốt lại chi tiết storage:** ghi log real-time; tiêu chí thành công = `POST /lotte/ekycs` trả HTTP 200 kèm `eKycId` + `status: "success"`; hành trình không đạt tiêu chí này (fail rõ ràng hoặc bỏ dở quá ngưỡng timeout) → **xóa hoàn toàn**, không giữ lại như bản nháp trước (từng đề xuất giữ tạm 7 ngày).
+> - **Quyết định kỹ thuật mới: Journey Log dùng bảng riêng `ekyc_journey_log`, KHÔNG mở rộng chung bảng `ekyc_attempt_log`.** Lý do: `ekyc_attempt_log` (sub-feature 01) phải append-only, không bao giờ xóa (Goal 1, mục 5 NFR) — nếu Journey Log share bảng và áp dụng chính sách xóa-khi-fail, sẽ xóa luôn dữ liệu biometric fail cần giữ vĩnh viễn. Việc tách bảng giải quyết dứt điểm mâu thuẫn này (trước đây là Open Question chưa chốt ở 4.10).
+> - Ghi nhận đánh đổi: mục tiêu phân tích friction/fraud-pattern từ Journey Log không còn khả thi do dữ liệu fail bị xóa (xem 4.10).
+>
 > **Changelog v2.1:**
 > - Thêm **Compliance Journey Log** (section 4.10) — log 11 API call trong hành trình mở tài khoản, lưu DB vĩnh viễn, phục vụ audit/compliance, không hiển thị admin UI
 >
@@ -49,20 +55,24 @@ User chọn loại giấy tờ
 
 ## 2. Mục tiêu
 
-| # | Mục tiêu | Phạm vi |
-|---|---------|--------|
-| 1 | **Lưu trữ đầy đủ** mọi lần thử eKYC (fail và thành công) | Backend |
-| 2 | **Lưu ảnh OCR** (mặt trước + mặt sau CCCD) mỗi lần thử | Backend + Storage |
-| 3 | **Admin tra cứu hành trình** theo CCCD/SĐT | Backend + Admin UI |
-| 4 | **Dashboard Analytics** — tỉ lệ lỗi, breakdown nguyên nhân, fraud detection | Admin UI |
-| 5 | **Link bản ghi thành công** (`e_kyc`) với toàn bộ lần thử trước | Backend |
-| 6 | **Compliance Journey Log** — audit trail đầy đủ 11 API call, lưu vĩnh viễn, phục vụ truy vết pháp lý | Backend (DB only) |
+| # | Mục tiêu | Phạm vi | Phase |
+|---|---------|--------|-------|
+| 1 | **Lưu trữ đầy đủ** mọi lần thử eKYC (fail và thành công) | Backend | **Phase 1** |
+| 2 | **Lưu ảnh OCR** (mặt trước + mặt sau CCCD) mỗi lần thử | Backend + Storage | Phase 2 (phụ thuộc MinIO/S3) |
+| 3 | **Admin tra cứu hành trình** theo CCCD/SĐT | Backend + Admin UI | Phase 2 (không có màn hình admin ở Phase 1) |
+| 4 | **Dashboard Analytics** — tỉ lệ lỗi, breakdown nguyên nhân, fraud detection | Admin UI | Phase 2 |
+| 5 | **Link bản ghi thành công** (`e_kyc`) với toàn bộ lần thử trước | Backend | **Phase 1** |
+| 6 | **Compliance Journey Log** — audit trail 11 API call, chỉ giữ vĩnh viễn cho hành trình thành công, phục vụ truy vết pháp lý | Backend (DB only, không có admin UI) | **Phase 1** |
+
+> Phase 1 hiện tại = **thuần backend/DB**, không triển khai bất kỳ màn hình admin nào (kể cả tra cứu, dashboard, hay cải tiến hiển thị badge/log trên trang admin hiện có). Xem mục 7 Out of scope.
 
 ---
 
 ## 3. Người dùng mục tiêu
 
-| Người dùng | Nhu cầu chính | Màn hình sử dụng |
+> **Lưu ý Phase 1:** chưa có màn hình admin nào — cột "Màn hình sử dụng" dưới đây là đích đến ở **Phase 2**. Ở Phase 1, các nhu cầu này chỉ được đáp ứng qua **SQL trực tiếp / tool nội bộ DBA** (xem 4.10).
+
+| Người dùng | Nhu cầu chính | Màn hình sử dụng (Phase 2) |
 |-----------|-------------|----------------|
 | **Team Ops / CS** | Tra cứu case lỗi, hỗ trợ khách hàng | Danh sách eKYC + Detail modal |
 | **BA / PM** | Phân tích tỷ lệ fail, identify cải tiến UX | Dashboard + Danh sách |
@@ -187,7 +197,9 @@ Authorization: Bearer {token}
 - Khi tài khoản được mở thành công, BE cập nhật `final_ekyc_id` trong tất cả attempt records của cùng `identifier_id`
 - `e_kyc` table bổ sung: `total_attempts`, `first_attempt_at`
 
-### 4.7 Admin: Danh sách eKYC (cải tiến)
+### 4.7 Admin: Danh sách eKYC (cải tiến) — ⏸ Phase 2
+
+> **Out of scope Phase 1 (2026-07-06):** đây là một hình thức "hiển thị log trên admin page" — PM đã chốt không triển khai bất kỳ hiển thị nào lên admin UI ở Phase 1. Nội dung dưới đây giữ lại làm tham chiếu cho Phase 2.
 
 Ngoài các cột hiện có, thêm cột **Lần thử** hiển thị:
 - Badge tổng số lần thử (xanh)
@@ -196,7 +208,9 @@ Ngoài các cột hiện có, thêm cột **Lần thử** hiển thị:
 
 Chi tiết xem màn hình demo: `eKYC enhancement - store log/admin-ui-demo.html` → page "Danh sách eKYC"
 
-### 4.8 Admin: Modal chi tiết (cải tiến)
+### 4.8 Admin: Modal chi tiết (cải tiến) — ⏸ Phase 2
+
+> **Out of scope Phase 1 (2026-07-06):** cùng lý do với 4.7 — hiển thị log lên admin UI, chuyển sang Phase 2.
 
 Modal 4 tab cho từng bản ghi:
 
@@ -264,6 +278,22 @@ Chi tiết implementation:
 
 Ghi lại toàn bộ chuỗi lời gọi API trong hành trình mở tài khoản eKYC — ngoài VNPT biometric log (sub-feature 01) và TnC checkbox log (sub-feature 05) đã có kế hoạch. Mục tiêu chính là **compliance và audit trail**: cung cấp bằng chứng đầy đủ khi cơ quan quản lý (UBCK, NHNN) yêu cầu truy vết hồ sơ, hoặc khi khách hàng khiếu nại về quá trình mở tài khoản. Log này **không hiển thị trên admin UI** — chỉ tồn tại trong DB, truy cập thủ công qua SQL hoặc tool nội bộ khi cần điều tra.
 
+> **⚠️ Đánh đổi đã ghi nhận (2026-07-06):** vì hành trình không thành công bị xóa (xem Storage strategy bên dưới), hai khả năng vốn được kỳ vọng ban đầu — **phân tích friction/drop-off** và **phát hiện fraud pattern** dựa trên dữ liệu Journey Log — **không còn khả thi**, do dữ liệu nguồn không còn tồn tại để phân tích. Đây là đánh đổi được PM chấp nhận để đơn giản hóa scope; nếu cần lại các phân tích này, phải mở scope riêng ở giai đoạn sau.
+
+#### Hành trình mở tài khoản (bối cảnh từng bước)
+
+Tóm lược góc độ user và trình tự API call, giúp hiểu rõ 11 API dưới đây khớp vào đâu trong luồng thực tế:
+
+- **Bước 0 — Khởi tạo phiên.** App login bằng `client_credentials` (tài khoản demo dùng chung cho user chưa có tài khoản NHSV) để lấy JWT truy cập nhóm API eKYC.
+- **Bước 1 — Nhập liên hệ, xác thực OTP.** User nhập SĐT/email → `POST /lotte/ekycs/create` tạo `eKycId` (identifier chính) → `POST /ekyc-admin/sendOtp` → user nhập OTP → `POST /ekyc-admin/verifyOtp` trả `otpKey`.
+- **Bước 2 — Quét giấy tờ + nhận diện khuôn mặt (VNPT SDK).** Chạy phía client, không có API TradeX tương ứng cho tới bước submit — dữ liệu VNPT (OCR, liveness, face compare) chỉ đẩy về server ở bước 6. Đây là phạm vi sub-feature 01.
+- **Bước 3 — Kiểm tra CCCD đã có tài khoản chưa.** `POST /equity/account/checkNationalId` — query song song DB `ekyc-admin` (case pending) và Lotte Core (case đã mở).
+- **Bước 4 — Điền form, chọn ngân hàng.** `GET /ekycs/banks`, `GET /ekycs/branch`, `GET /ekycs/banks/{id}/branches`; nếu có referral CTV → `GET /ekycs/partner`.
+- **Bước 5 — Chấp nhận điều khoản.** User tick checkbox T&C — phạm vi sub-feature 05 (`terms_agreed_at`).
+- **Bước 6 — Submit hồ sơ.** `POST /lotte/ekycs` gửi toàn bộ form + VNPT metadata + `deviceUniqueId`. Đây là **điểm chốt "thành công"** của Journey Log (xem Storage strategy bên dưới).
+- **Bước 7 — Ký hợp đồng điện tử.** `GET /equity/account/contracts` lấy webView FPT. Sau ký, App poll trạng thái hợp đồng/VSD — **ngoài phạm vi log**.
+- **Bước 8 — Chờ approval.** Ops duyệt, VSD cấp số tài khoản chính thức — **ngoài phạm vi log**.
+
 #### 11 API cần log
 
 | STT | Endpoint | Mô tả bước | Trường log quan trọng |
@@ -286,30 +316,46 @@ Mỗi API call được ghi với các trường: `eKycId` (identifier chính), 
 
 Không log: OTP value, webView URL đầy đủ kèm cookie, raw base64 ảnh VNPT, toàn bộ form eKYC (đã có ở entity `EKyc`).
 
-#### Storage strategy
+#### Storage strategy (chốt 2026-07-06)
 
-**Trigger finalized:** `POST /api/v1/lotte/ekycs` trả về thành công (submit sang Lotte OK). Đây là điểm duy nhất xác định hành trình hoàn tất — không phụ thuộc VSD APPROVED hay trạng thái downstream.
+**Ghi log real-time.** Mọi lời gọi trong 11 API được ghi ngay tại tầng backend xử lý request đó — không buffer rồi flush cuối luồng (tránh mất dữ liệu nếu service crash giữa chừng).
 
-Retention theo hai trạng thái:
+**Tiêu chí "thành công" (điểm chốt duy nhất).** `POST /api/v1/lotte/ekycs` (API 4 — submit form) trả về **HTTP 200** kèm response chứa `eKycId` + `"status": "success"`. Không phụ thuộc bước ký hợp đồng điện tử hay VSD APPROVED (đều ngoài phạm vi log).
 
-- **Finalized:** toàn bộ bản ghi thuộc `eKycId` đó được đánh `finalized = true` — giữ **vĩnh viễn**.
-- **Abandoned (user quit giữa chừng):** bản ghi chưa finalized **không cần giữ lại** — dọn dẹp định kỳ bằng job cleanup (ví dụ: xóa bản ghi chưa finalized sau 7 ngày kể từ lời gọi cuối cùng trong hành trình đó).
+> ⚠️ Hệ quả cần lưu ý: một hồ sơ sau đó bị **Ops reject** ở bước duyệt (ngoài phạm vi log) vẫn được tính "thành công" theo tiêu chí này và giữ log vĩnh viễn — vì mốc chốt nằm ở bước submit, không phải bước duyệt cuối.
 
-Hệ quả: log chỉ có ý nghĩa khi hành trình thành công. Case fail giữa chừng do user tự bỏ không cần audit trail — chỉ cần giữ VNPT biometric attempt (đã xử lý ở sub-feature 01) nếu có.
+**Nếu không đạt tiêu chí thành công → xóa toàn bộ log của session/`eKycId` đó**, không giữ lại:
+- **Fail rõ ràng** (submit trả lỗi, hoặc bị chặn luồng trước đó, vd. CCCD đã có tài khoản) → xóa ngay sau khi xác định outcome.
+- **Bỏ dở (abandon)** — user không bao giờ gọi submit, hoặc gọi rồi thoát trước khi có response → cần **ngưỡng timeout** để hệ thống coi như fail. Đề xuất **24–48 giờ không có API call mới trên cùng `eKycId`** (ngắn hơn nhiều so với đề xuất 7 ngày ở bản nháp trước, vì mục tiêu giờ chỉ là "chờ xác nhận outcome" chứ không phải "giữ để điều tra case fail" — mục tiêu đó đã bị loại theo đánh đổi ở trên). **BE Lead cần chốt số giờ cụ thể.**
 
-#### DB và admin visibility
+Hệ quả: log chỉ tồn tại vĩnh viễn cho hành trình thành công. Case fail/bỏ dở giữa chừng không có audit trail ở Journey Log — nếu cần trace VNPT biometric attempt riêng lẻ (không phụ thuộc outcome mở tài khoản), đã có sub-feature 01 xử lý độc lập (xem điểm DB bên dưới).
 
-Ưu tiên mở rộng bảng `ekyc_attempt_log` (thêm cột `journey_step`, `endpoint`, `http_status`, `response_summary`, `finalized`, `finalized_at`) thay vì tạo bảng mới — giữ mọi dữ liệu hành trình liên kết qua cùng `eKycId`. Nếu schema bảng attempt_log không phù hợp để mở rộng, tạo bảng anh em `ekyc_journey_log` với FK chung `eKycId` — quyết định BE Lead.
+#### DB — bắt buộc dùng bảng riêng, không share với `ekyc_attempt_log`
 
-Log **không hiển thị trên bất kỳ màn hình admin nào**. Không cần API GET public. Truy cập bằng SQL hoặc tool nội bộ (role riêng biệt với admin thường) khi Ops/Legal cần điều tra.
+**Quyết định (2026-07-06):** Journey Log dùng bảng mới **`ekyc_journey_log`**, liên kết `ekyc_attempt_log` / `e_kyc` qua khóa `eKycId` — **không mở rộng chung bảng `ekyc_attempt_log`** như đề xuất ở bản nháp trước.
+
+**Lý do:** `ekyc_attempt_log` (sub-feature 01) phải là **append-only, không bao giờ UPDATE/DELETE** (xem Goal 1 mục 2, NFR mục 5) — nó có nhiệm vụ giữ lại *mọi* lần thử VNPT kể cả fail, vĩnh viễn, để trace nguyên nhân fail. Nếu Journey Log mở rộng chung bảng đó và áp dụng chính sách "xóa khi hành trình không thành công", thao tác xóa sẽ **xóa luôn dữ liệu biometric fail** mà sub-feature 01 bắt buộc phải giữ — vi phạm trực tiếp nguyên tắc gốc của PRD. Tách bảng loại bỏ hoàn toàn xung đột này.
+
+Cột đề xuất cho `ekyc_journey_log`: `eKycId`, `phoneNo`, `identifierId`, `journey_step` (enum), `endpoint`, `http_method`, `http_status`, `response_summary` (JSON), `created_at`. Không cần cột `finalized`/`finalized_at` dạng đánh dấu — vì bản ghi không đạt tiêu chí thành công sẽ bị xóa thẳng thay vì đánh dấu.
+
+Log **không hiển thị trên bất kỳ màn hình admin nào** (Phase 1 không có admin UI nào cho cả 01, 05, và 4.10 — xem mục 7 Out of scope). Không cần API GET public ở Phase 1. Truy cập bằng SQL hoặc tool nội bộ (role riêng biệt với admin thường) khi Ops/Legal cần điều tra.
+
+#### Ai ghi log? (producer)
+
+- **Backend-side logging** là phương án chính — mỗi service (`ekyc-admin` Java, `lotte-bridge` Node.js) tự ghi log ngay sau khi xử lý xong request thuộc 1 trong 11 API. Ưu điểm: chính xác về outcome/error code, không phụ thuộc client.
+- Một số bước không có backend call rõ ràng (vd. bước 5 — tick checkbox) đã có phương án App gọi `POST /ekycs/attempt-log` (sub-feature 01) — có thể mở rộng cùng endpoint này cho event pure-client.
+- **Vì 2 service cùng ghi vào 1 bảng `ekyc_journey_log`, cần thống nhất producer** — trực tiếp DB (đơn giản, latency thấp, nhưng 2 service phải cùng chuẩn schema) hay qua Kafka topic chung (giảm coupling, tăng độ trễ, cần thêm consumer). Quyết định thuộc BE Lead.
 
 #### Open questions
 
-- ~~Định nghĩa "finalized"~~ → **Đã chốt:** submit sang Lotte thành công (`POST /lotte/ekycs` OK).
-- ~~Bản ghi bỏ dở giữ bao lâu~~ → **Đã chốt:** không cần giữ, cleanup job xóa sau 7 ngày không có activity.
+- ~~Định nghĩa "thành công"~~ → **Đã chốt:** `POST /lotte/ekycs` trả HTTP 200 kèm `eKycId` + `status: "success"`.
+- ~~Bản ghi không thành công giữ bao lâu~~ → **Đã chốt:** không giữ, xóa hoàn toàn (fail rõ ràng: xóa ngay; bỏ dở: xóa sau ngưỡng timeout).
+- ~~Dùng chung hay tách bảng với `ekyc_attempt_log`~~ → **Đã chốt:** tách bảng riêng `ekyc_journey_log` (xem trên).
+- **Ngưỡng timeout xác định "bỏ dở" chính xác là bao nhiêu giờ?** Đề xuất 24–48h — cần BE Lead chốt số cụ thể.
+- **Định nghĩa "cùng một hành trình" khi user retry sau khi đóng app.** Ảnh hưởng trực tiếp đến độ chính xác của job xóa — xóa nhầm nếu không nhận diện đúng session còn hoạt động. Cần trace behavior App hoặc hỏi FE team.
+- **Producer ghi log: direct-DB-write hay Kafka?** `ekyc-admin` (Java) và `lotte-bridge` (Node.js) đều tham gia ghi vào `ekyc_journey_log` — cần thống nhất cơ chế để đảm bảo consistency/ordering (xem "Ai ghi log?" ở trên). Ảnh hưởng độ trễ và độ phức tạp vận hành.
 - API GET dropdown (5, 6, 7) có thực sự cần log? Đề xuất: chỉ log lần đầu mỗi session, hoặc bỏ qua nếu Ops không thấy giá trị.
-- Cleanup job: cần BE define cơ chế detect "last activity" của một eKycId (timestamp lời gọi cuối) để job có thể xóa đúng.
-- Compliance review Nghị định 13/2023 (PDPD) cần thực hiện trước khi triển khai — lưu vĩnh viễn dữ liệu nhạy cảm (CCCD, SĐT, IP) có thể mâu thuẫn với quyền xóa dữ liệu (right to erasure).
+- Compliance review Nghị định 13/2023 (PDPD) cho case thành công (lưu vĩnh viễn CCCD, SĐT, IP) — rủi ro cho case fail đã giảm nhiều vì log các case đó giờ bị xóa thay vì giữ vĩnh viễn.
 
 ---
 
@@ -349,29 +395,32 @@ Log **không hiển thị trên bất kỳ màn hình admin nào**. Không cần
 
 ## 5. Yêu cầu phi chức năng
 
-| Yêu cầu | Mức độ | Chi tiết |
-|--------|--------|---------|
-| Backward compatible | Bắt buộc | Không break luồng user hiện tại |
-| Log bền vững | Bắt buộc | Ghi log ngay cả khi Lotte call fail |
-| Query performance | Khuyến nghị | Admin search < 2s cho CCCD/SĐT lookup |
-| Image storage | Bắt buộc | Access-controlled, retention ≥ 90 ngày |
-| Dashboard load | Khuyến nghị | Dashboard metrics < 3s (có thể cache) |
-| Append-only | Bắt buộc | `ekyc_attempt_log` không bao giờ UPDATE/DELETE |
+| Yêu cầu | Mức độ | Chi tiết | Phase |
+|--------|--------|---------|-------|
+| Backward compatible | Bắt buộc | Không break luồng user hiện tại | Phase 1 |
+| Log bền vững | Bắt buộc | Ghi log ngay cả khi Lotte call fail | Phase 1 |
+| Append-only | Bắt buộc | `ekyc_attempt_log` (sub-feature 01) không bao giờ UPDATE/DELETE | Phase 1 |
+| Xóa đúng hạn | Bắt buộc | `ekyc_journey_log` (mục 4.10) phải xóa sạch bản ghi của hành trình không thành công — không rò rỉ dữ liệu qua ngưỡng timeout | Phase 1 |
+| Query performance | Khuyến nghị | Admin search < 2s cho CCCD/SĐT lookup | Phase 2 (không có admin API ở Phase 1) |
+| Image storage | Bắt buộc | Access-controlled, retention ≥ 90 ngày | Phase 2 (phụ thuộc MinIO/S3) |
+| Dashboard load | Khuyến nghị | Dashboard metrics < 3s (có thể cache) | Phase 2 |
 
 ---
 
 ## 6. Phạm vi ảnh hưởng
 
 ### Backend (ekyc-admin service) — Phase 1
-- **Thêm mới:** Entity `EKycAttemptLog` + Repository + Service
-- **Thêm mới:** Liquibase migration cho bảng `ekyc_attempt_log` (bao gồm cột `terms_agreed_at`, `terms_version`, `journey_step`, `endpoint`, `http_status`, `response_summary`, `finalized`, `finalized_at`)
-- **Thêm mới:** `POST /ekycs/attempt-log` — nhận VNPT log + xử lý terms-consent update
-- **Thêm mới:** Admin API endpoints: search, journey, attempt detail *(không bao gồm dashboard metrics — Phase 2)*
-- **Thêm mới:** Journey log interceptor/aspect — ghi log 11 API call vào `ekyc_attempt_log` (hoặc `ekyc_journey_log`) phía BE, không phụ thuộc client *(sub-feature compliance log)*
-- **Sửa:** `CustomEKycService.java` — gọi `attemptLogService.save()` trước block duplicate handling; đánh `finalized = true` khi submit thành công
+- **Thêm mới:** Entity `EKycAttemptLog` + Repository + Service *(sub-feature 01)*
+- **Thêm mới:** Liquibase migration cho bảng `ekyc_attempt_log` (bao gồm cột `terms_agreed_at`, `terms_version` — sub-feature 05)
+- **Thêm mới:** Liquibase migration cho bảng **riêng** `ekyc_journey_log` (`eKycId`, `phoneNo`, `identifierId`, `journey_step`, `endpoint`, `http_method`, `http_status`, `response_summary`) — **không** thêm các cột này vào `ekyc_attempt_log` (xem 4.10 lý do tách bảng)
+- **Thêm mới:** `POST /ekycs/attempt-log` — nhận VNPT log + xử lý terms-consent update *(sub-feature 01 + 05)*
+- **Thêm mới:** Journey log interceptor/aspect — ghi log real-time 11 API call vào `ekyc_journey_log`, không phụ thuộc client *(4.10)*
+- **Thêm mới:** Cleanup job — xóa bản ghi `ekyc_journey_log` của hành trình không đạt tiêu chí thành công sau ngưỡng timeout (đề xuất 24–48h, chờ BE Lead chốt) *(4.10)*
+- **Sửa:** `CustomEKycService.java` — gọi `attemptLogService.save()` trước block duplicate handling
 - **Sửa:** Provisioning handler — cập nhật `final_ekyc_id` khi APPROVED
 - **Sửa:** `EkycAttemptLogService.java` — xử lý terms-only call (update `terms_agreed_at`) *(sub-feature 05)*
 - ~~Tích hợp MinIO/S3~~ *(Phase 2)*
+- ~~Admin API endpoints: search, journey, attempt detail, dashboard metrics~~ *(Phase 2 — không có admin UI nào ở Phase 1, xem mục 7)*
 
 ### App Mobile (nhsv-mts-rn) — Phase 1
 - **Sửa:** `EKYCScanIdDone.ts` — gọi `POST /ekycs/attempt-log` sau khi nhận kết quả SDK
@@ -381,21 +430,33 @@ Log **không hiển thị trên bất kỳ màn hình admin nào**. Không cần
 - **Sửa:** `src/interfaces/ekyc.ts` — thêm `termsAgreedAt: string` vào `IEKYCConfirmPolicy` *(sub-feature 05)*
 - ~~MRZ Validation cross-check~~ *(Phase 2 — sub-feature 04)*
 
-### Admin Frontend (ekyc-admin UI) — Phase 1
-- **Sửa:** Danh sách eKYC — thêm cột Lần thử, 2 tab trạng thái
-- **Sửa:** Modal detail — thêm tab "Lịch sử thử", mở rộng VNPT Log section
-- ~~Dashboard page (KPI cards + charts)~~ *(Phase 2 — sub-feature 03)*
-- ~~Hiển thị ảnh CCCD từ storage URL~~ *(Phase 2 — phụ thuộc MinIO/S3)*
+### Admin Frontend (ekyc-admin UI) — ⏸ Toàn bộ chuyển sang Phase 2
+
+**Không có bất kỳ thay đổi admin UI nào ở Phase 1** (quyết định 2026-07-06). Danh sách dưới đây đều là Phase 2:
+- ~~Danh sách eKYC — thêm cột Lần thử, 2 tab trạng thái~~ *(mục 4.7)*
+- ~~Modal detail — thêm tab "Lịch sử thử", mở rộng VNPT Log section~~ *(mục 4.8)*
+- ~~3 màn hình Tra cứu Hành trình (Tìm kiếm / Journey Timeline / Chi tiết lần thử)~~ *(sub-feature 02)*
+- ~~Dashboard page (KPI cards + charts)~~ *(sub-feature 03)*
+- ~~Hiển thị ảnh CCCD từ storage URL~~ *(phụ thuộc MinIO/S3, Phase 2)*
 
 ---
 
 ## 7. Out of scope
 
-### Phase 1 (không triển khai lần này)
+### Phase 1 (không triển khai lần này) — chốt lại 2026-07-06
+
 - **Admin Dashboard Analytics** (sub-feature 03) — KPI cards, charts, fraud detection panel → Phase 2
 - **MRZ Validation từ App** (sub-feature 04) — cross-check MRZ vs OCR phía client → Phase 2
+- **Hiển thị log trên bất kỳ trang admin nào** — bao gồm:
+  - Sub-feature `02_Admin_Attempt_History` — cả 3 màn hình (Tìm kiếm/Danh sách, Journey Timeline, Chi tiết lần thử)
+  - Mục 4.7 — cột "Lần thử" trong Danh sách eKYC hiện có
+  - Mục 4.8 — tab "Lịch sử thử" trong Modal detail hiện có
+  - Bất kỳ API GET admin nào phục vụ các màn hình trên (`/api/admin/ekyc/attempts/*`)
+  → tất cả để **scope sau**; Phase 1 chỉ lưu dữ liệu dưới DB, truy cập qua SQL/tool nội bộ khi cần điều tra
 - **Lưu ảnh CCCD lên S3/MinIO** — phụ thuộc infrastructure setup → Phase 2
 - **Dashboard API endpoint** (`GET /api/admin/ekyc/dashboard`) → Phase 2
+
+> **Tóm lại:** Phase 1 = thuần backend/DB (sub-feature 01 + 05 + Compliance Journey Log mục 4.10). Không có bất kỳ màn hình hoặc API GET admin-facing nào.
 
 ### Backlog (chưa có timeline)
 - Alert tự động khi phát hiện fraud pattern (threshold-based rule engine)
@@ -407,15 +468,16 @@ Log **không hiển thị trên bất kỳ màn hình admin nào**. Không cần
 
 ## 8. Định nghĩa thành công
 
-### Phase 1
-- [ ] Ops team tra cứu được lý do fail của bất kỳ case nào sau go-live (theo CCCD / SĐT)
-- [ ] Mọi lần submit eKYC được ghi lại, không mất data khi retry
+### Phase 1 (thuần backend/DB — không có tiêu chí phụ thuộc admin UI)
+- [ ] Mọi lần submit eKYC được ghi lại vào `ekyc_attempt_log`, không mất data khi retry (append-only, verify bằng SQL trực tiếp)
 - [ ] `terms_agreed_at` có mặt trên mọi record mở tài khoản thành công sau ngày go-live
-- [ ] Admin search theo CCCD/SĐT trả kết quả < 2s
-- [ ] Toàn bộ 11 API call trong hành trình mở tài khoản được ghi vào DB với `eKycId` làm khóa liên kết
-- [ ] Bản ghi hành trình của case thành công được đánh `finalized = true`, không bao giờ bị xóa
+- [ ] Toàn bộ 11 API call trong hành trình mở tài khoản được ghi vào `ekyc_journey_log` với `eKycId` làm khóa liên kết
+- [ ] Bản ghi Journey Log của hành trình thành công (submit trả HTTP 200 + `eKycId` + `status: success`) được giữ vĩnh viễn, không bao giờ bị xóa
+- [ ] Bản ghi Journey Log của hành trình fail rõ ràng hoặc bỏ dở quá ngưỡng timeout bị xóa hoàn toàn — verify bằng SQL sau go-live (không còn record nào quá ngưỡng mà chưa xóa)
+- [ ] Dev/DBA tra cứu được toàn bộ hành trình của một `eKycId` qua SQL trong vài phút khi cần điều tra case (không cần màn hình admin)
 
 ### Phase 2 (bổ sung sau)
+- [ ] Ops tự tra cứu được lý do fail qua Admin page (theo CCCD/SĐT), không cần hỏi Dev
 - [ ] Ảnh CCCD của từng lần thử có thể xem từ Admin page
 - [ ] Dashboard hiển thị tỉ lệ fail theo nguyên nhân trong 7 ngày
 
@@ -466,6 +528,6 @@ Xem trực tiếp tại: `http://localhost:4321/admin-ui-demo.html`
 
 ---
 
-**Document Status:** Updated Draft v2.1
-**For:** Dev Team (Backend + Frontend + App), BA, Ops, Compliance/Legal
-**Next Steps:** Chốt open questions section 4.10 (finalized trigger + PDPD compliance review) → Review với Dev Lead → estimate effort → phân task Sprint
+**Document Status:** Updated Draft v2.2 — Phase 1 scope locked (thuần backend/DB, không có admin UI)
+**For:** Dev Team (Backend + App), BA, Ops, Compliance/Legal
+**Next Steps:** Chốt các open question còn lại ở 4.10 (ngưỡng timeout bỏ dở, định nghĩa "cùng hành trình" khi retry, PDPD compliance review) → Review với Dev Lead → estimate effort → phân task Sprint. Phase 2 (Admin UI, Dashboard, MRZ, Image Storage) chờ mở lại scope riêng sau khi Phase 1 go-live.
