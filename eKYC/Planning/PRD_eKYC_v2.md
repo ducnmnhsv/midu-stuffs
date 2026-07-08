@@ -1,12 +1,13 @@
 # PRD: Ghi nhận Lịch sử Xác thực & Nhật ký Hành trình Mở tài khoản eKYC
 
-**Phiên bản:** 2.4 | **Ngày:** 2026-07-08 | **Trạng thái:** Đã chốt scope Phase 1
+**Phiên bản:** 2.5 | **Ngày:** 2026-07-08 | **Trạng thái:** Đã chốt scope Phase 1
 
 **Lịch sử thay đổi chính:**
 
 | Ngày | Thay đổi |
 |---|---|
-| 2026-07-08 | Bổ sung mô tả các tín hiệu chống gian lận mới phát hiện được khi đối chiếu với sample log thực tế từ đối tác VNPT (đối chiếu QR trên CCCD, phát hiện nhiều khuôn mặt trong ảnh, phát hiện đổi mặt/deepfake) vào mục 4.2 và 4.3 — không đổi phạm vi hay Phase, chỉ làm rõ hơn dữ liệu đã có sẵn từ VNPT mà mục 4.2 bản trước mô tả chung chung |
+| 2026-07-08 (b) | Tạo tài liệu kỹ thuật `07_Compliance_Journey_Log/Specifications/Journey_API_Reference.md` — danh sách đầy đủ 11 API cần log trong hành trình mở tài khoản, đã đối chiếu trực tiếp với source code app thực tế (không phải suy đoán). Đây là phần chi tiết kỹ thuật lẽ ra phải được chuyển sang tài liệu riêng khi PRD viết lại prose-only (2026-07-07) nhưng bị bỏ sót cho mục Nhật ký Hành trình — nay đã bổ sung |
+| 2026-07-08 (a) | Bổ sung mô tả các tín hiệu chống gian lận mới phát hiện được khi đối chiếu với sample log thực tế từ đối tác VNPT (đối chiếu QR trên CCCD, phát hiện nhiều khuôn mặt trong ảnh, phát hiện đổi mặt/deepfake) vào mục 4.2 và 4.3 — không đổi phạm vi hay Phase, chỉ làm rõ hơn dữ liệu đã có sẵn từ VNPT mà mục 4.2 bản trước mô tả chung chung |
 | 2026-07-07 | Viết lại toàn bộ tài liệu theo hướng dễ đọc cho người không chuyên kỹ thuật — chuyển chi tiết kỹ thuật (schema, API, field mapping) sang tài liệu tham chiếu riêng, chỉ giữ yêu cầu nghiệp vụ ở đây |
 | 2026-07-06 | Chốt scope Phase 1 chỉ gồm lưu trữ dữ liệu (không có màn hình admin nào); chốt quy tắc lưu/xóa Nhật ký Hành trình; quyết định tách riêng nơi lưu trữ cho hai loại nhật ký |
 | 2026-07-04 | Thêm yêu cầu Nhật ký Hành trình mở tài khoản (phục vụ compliance) |
@@ -199,11 +200,12 @@ Tài liệu này tập trung vào yêu cầu nghiệp vụ, không đi sâu vào
 - Thiết kế kỹ thuật đầy đủ cho nhật ký lần thử xác thực (mục 4.1–4.3) — nằm trong hồ sơ đặc tả của sub-feature "Biometric Attempt Log"
 - Danh sách task triển khai cho developer của sub-feature trên
 - Task triển khai cho việc ghi thời điểm đồng ý điều khoản (mục 4.4) — nằm trong hồ sơ của sub-feature "Contract Terms Checkbox Log"
+- Danh sách đầy đủ các API cần log cho Nhật ký Hành trình (mục 4.5) — `07_Compliance_Journey_Log/Specifications/Journey_API_Reference.md`, đã đối chiếu trực tiếp với source code app
 - Bản tổng hợp trực quan (sơ đồ luồng, bảng dữ liệu) cho ai muốn xem nhanh cả góc nhìn kỹ thuật
 - Tài liệu tổng quan (README) mô tả cấu trúc toàn bộ các sub-feature và trạng thái từng phần
 
 ---
 
-**Trạng thái tài liệu:** Đã chốt scope Phase 1 (v2.4) — bổ sung mô tả tín hiệu chống gian lận (QR, đa khuôn mặt, đổi mặt) phát hiện từ sample log thực tế; không đổi phạm vi/Phase
+**Trạng thái tài liệu:** Đã chốt scope Phase 1 (v2.5) — bổ sung mô tả tín hiệu chống gian lận (QR, đa khuôn mặt, đổi mặt) phát hiện từ sample log thực tế; thêm tham chiếu tài liệu kỹ thuật API list cho Journey Log; không đổi phạm vi/Phase
 **Dành cho:** PM/BA, Ops, Compliance/Legal, Dev Lead
 **Bước tiếp theo:** Chốt 4 câu hỏi ở mục 7 → Dev Lead đọc chi tiết kỹ thuật ở tài liệu tham chiếu → estimate effort → lên kế hoạch Sprint. Phase 2 (màn hình admin, Dashboard, MRZ, lưu ảnh) chờ mở lại scope riêng sau khi Phase 1 go-live.

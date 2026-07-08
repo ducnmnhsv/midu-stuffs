@@ -171,7 +171,7 @@
 <nav class="sidebar">
   <div class="sidebar-logo">
     <h2>eKYC — Attempt &amp; Journey Log</h2>
-    <p>Phase 1 — Backend/DB only · v2.2</p>
+    <p>Phase 1 — Backend/DB only · v2.4</p>
   </div>
   <div class="nav-group">
     <div class="nav-group-label">Tổng quan</div>
@@ -206,7 +206,7 @@
     <h1>eKYC — Compliance &amp; Attempt Logging</h1>
     <p>Phase 1: lưu trữ toàn bộ lịch sử lần thử eKYC (VNPT biometric) và toàn bộ hành trình mở tài khoản (11 API call), phục vụ audit/compliance. <strong>Thuần backend/DB — không có màn hình admin nào ở giai đoạn này.</strong></p>
     <div class="hero-meta">
-      <div class="hero-meta-item"><div class="label">Version</div><div class="value">v2.2</div></div>
+      <div class="hero-meta-item"><div class="label">Version</div><div class="value">v2.4</div></div>
       <div class="hero-meta-item"><div class="label">Service</div><div class="value">ekyc-admin</div></div>
       <div class="hero-meta-item"><div class="label">Trạng thái</div><div class="value">Phase 1 scope locked</div></div>
       <div class="hero-meta-item"><div class="label">Ảnh hưởng</div><div class="value">Backend · App (data capture only)</div></div>
@@ -389,6 +389,10 @@
       <strong>Quyết định quan trọng (2026-07-06):</strong> <code>ekyc_journey_log</code> là <strong>bảng riêng</strong>, không mở rộng chung <code>ekyc_attempt_log</code>. Lý do: <code>ekyc_attempt_log</code> phải append-only/never-delete (giữ mọi lần thử VNPT kể cả fail), trong khi <code>ekyc_journey_log</code> phải xóa bản ghi của hành trình không thành công — hai chính sách retention xung đột trực tiếp nếu share bảng.
     </div>
 
+    <div class="alert alert-yellow">
+      <strong>Cập nhật schema (2026-07-08)</strong> — đối chiếu <code>ekyc_attempt_log</code> với sample log thực tế production do dev gửi (OCR CCCD 2 mặt, liveness, face compare): phát hiện &amp; sửa 4 chỗ mapping sai tên field JSON gốc (<code>vnpt_citizen_id</code> ← <code>object.id</code> chứ không phải field <code>citizenId</code> không tồn tại; <code>vnpt_citizen_id_chip</code> ← <code>object.dict_qr.SoCCCD</code>; cột <code>vnpt_match_valid_date</code> đổi thành <code>vnpt_match_sex</code>; tách <code>fake_liveness_prob</code>/<code>fake_print_photo_prob</code> theo mặt trước/sau). Bổ sung field mới: <code>mrz_line3</code>, <code>vnpt_qr_match_summary</code>, phát hiện đổi mặt/deepfake, phát hiện nhiều khuôn mặt, và 6 cột VNPT logID để tra soát chéo khi audit. Chi tiết đầy đủ + sample thực tế đã ẩn danh: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code> Section 0.4–0.6.
+    </div>
+
     <div class="card">
       <h3>Bảng 1: <code>ekyc_attempt_log</code> — VNPT biometric (append-only, không bao giờ xóa)</h3>
       <div style="margin-top:12px">
@@ -411,11 +415,36 @@
           <div class="col-tags">
             <span class="col-tag">vnpt_status_code</span>
             <span class="col-tag">vnpt_citizen_id</span>
+            <span class="col-tag">vnpt_old_citizen_id</span>
             <span class="col-tag">vnpt_name</span>
             <span class="col-tag">vnpt_is_tampered</span>
+            <span class="col-tag">vnpt_match_sex</span>
             <span class="col-tag">liveness_face_result</span>
             <span class="col-tag">face_compare_prob</span>
             <span class="col-tag">vnpt_raw_data LONGTEXT</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">🆕 QR Cross-Check &amp; Fraud Signals mới (2026-07-08)</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_qr_match_summary</span>
+            <span class="col-tag">mrz_line3</span>
+            <span class="col-tag">liveness_card_front_face_swapping</span>
+            <span class="col-tag">liveness_card_rear_face_swapping</span>
+            <span class="col-tag">liveness_face_multiple_faces</span>
+            <span class="col-tag">face_compare_multiple_faces</span>
+            <span class="col-tag">face_compare_match_warning</span>
+          </div>
+        </div>
+        <div class="col-group">
+          <div class="col-group-title">🆕 VNPT Log IDs — tra soát chéo khi audit/tranh chấp (2026-07-08)</div>
+          <div class="col-tags">
+            <span class="col-tag">vnpt_ocr_log_id</span>
+            <span class="col-tag">vnpt_card_liveness_front_log_id</span>
+            <span class="col-tag">vnpt_card_liveness_rear_log_id</span>
+            <span class="col-tag">vnpt_face_liveness_log_id</span>
+            <span class="col-tag">vnpt_face_compare_log_id</span>
+            <span class="col-tag">vnpt_face_mask_log_id</span>
           </div>
         </div>
         <div class="col-group">
@@ -426,7 +455,7 @@
           </div>
         </div>
       </div>
-      <p style="margin-top:8px;font-size:12px">Chi tiết đầy đủ 46+ cột: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code>. Ảnh CCCD (<code>image_front_url</code>/<code>image_back_url</code>) — cột đã dự trù nhưng upload S3/MinIO là Phase 2.</p>
+      <p style="margin-top:8px;font-size:12px">Chi tiết đầy đủ 60+ cột: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code>. Ảnh CCCD (<code>image_front_url</code>/<code>image_back_url</code>) — cột đã dự trù nhưng upload S3/MinIO là Phase 2.</p>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -487,7 +516,10 @@
 
     <div class="card" style="margin-top:16px">
       <h3>11 API hành trình mở tài khoản — ghi log tự động phía Backend (không phải endpoint mới)</h3>
-      <p style="font-size:12px;margin-top:4px">Journey Log KHÔNG cần App gọi thêm API nào — một interceptor/aspect ở Backend tự ghi lại mỗi lần 1 trong 11 API dưới đây được gọi. Danh sách: <code>lotte/ekycs/create</code>, <code>ekyc-admin/sendOtp</code>, <code>ekyc-admin/verifyOtp</code>, <code>lotte/ekycs</code> (submit), <code>ekycs/banks</code>, <code>ekycs/branch</code>, <code>ekycs/banks/{id}/branches</code>, <code>ekycs/partner</code>, <code>ekycs/account/exist</code>, <code>equity/account/checkNationalId</code>, <code>equity/account/contracts</code>. Chi tiết: <code>Planning/PRD_eKYC_v2.md</code> mục 4.10.</p>
+      <p style="font-size:12px;margin-top:4px">Journey Log KHÔNG cần App gọi thêm API nào — một interceptor/aspect ở Backend tự ghi lại mỗi lần 1 trong 11 API dưới đây được gọi. Danh sách (đã đối chiếu với source code app <code>nhsv-mts-rn</code> ngày 2026-07-08): <code>lotte/ekycs/create</code>, <code>ekyc-admin/sendOtp</code>, <code>ekyc-admin/verifyOtp</code>, <code>equity/account/checkNationalId</code>, <code>aws</code> (upload/download ảnh CCCD), <code>ekycs/banks</code>, <code>ekycs/banks/{bankCode}/branches</code>, <code>ekycs/branch</code>, <code>ekycs/partner</code>, <code>lotte/ekycs</code> (submit), <code>equity/account/contracts</code>. Chi tiết đầy đủ + evidence file:line: <code>07_Compliance_Journey_Log/Specifications/Journey_API_Reference.md</code>.</p>
+      <div class="alert alert-yellow" style="margin-top:10px;font-size:12px">
+        <strong>Cập nhật 2026-07-08:</strong> danh sách cũ ghi <code>ekycs/account/exist</code> — endpoint này <strong>không tồn tại</strong> trong code app hiện tại, đã gỡ khỏi danh sách. Danh sách cũ cũng <strong>thiếu hẳn</strong> endpoint <code>aws</code> (lấy URL upload/download ảnh CCCD lên storage) — một bước bắt buộc trong luồng scan CCCD, nay đã bổ sung.
+      </div>
     </div>
 
     <div class="card deferred" style="margin-top:16px">
@@ -629,7 +661,7 @@ Response: { "eKycId": "...", "status": "success" }</code></pre>
       <div class="card">
         <h3>Tài liệu</h3>
         <ul class="check-list">
-          <li>PRD v2.2 — scope Phase 1 đã chốt (thuần backend/DB)</li>
+          <li>PRD v2.5 — scope Phase 1 đã chốt (thuần backend/DB); mục 4.2/4.3 bổ sung tín hiệu chống gian lận (QR, đa khuôn mặt, đổi mặt); thêm tham chiếu <code>07_Compliance_Journey_Log/Journey_API_Reference.md</code></li>
           <li>PRD_eKYC_v2.md mục 4.10 — chi tiết storage strategy Journey Log</li>
           <li>Backend Spec (sub-feature 01) — Entity, Service, Repository</li>
           <li class="deferred">FE Issue Admin Journey / Dashboard / MRZ — giữ tham khảo, chưa triển khai</li>
@@ -684,7 +716,7 @@ Response: { "eKycId": "...", "status": "success" }</code></pre>
   </section>
 
   <div style="text-align:center;padding:32px 0;color:var(--text-muted);font-size:12px">
-    eKYC — Compliance &amp; Attempt Logging (Phase 1) · v2.2 · Cập nhật 2026-07-06 · For: Dev Team + BA + Compliance
+    eKYC — Compliance &amp; Attempt Logging (Phase 1) · v2.4 · Cập nhật 2026-07-08 · For: Dev Team + BA + Compliance
   </div>
 
 </main>
