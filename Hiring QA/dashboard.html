@@ -2062,7 +2062,65 @@ const CV = [
    hl:"HC-01 FAIL: Vận hành hệ thống T24 Core Banking — không phải QA",iq:"C",action:"reject",cvFile:"VNW Nguyen Xuan Canh.pdf",
    rejectReason:"HC-01 FAIL: System Operation/Vận hành Hệ thống tại NCB — monitoring, incident response, Core Card TX Compass Plus operations. Không có QA/Tester role.",
    pros:["7+ năm banking ops: T24 Core Banking, Payment Hub, NAPAS, eKYC — cực kỳ liên quan domain","Grafana, ELK Stack (Elasticsearch, Logstash, Kibana), Jenkins, Kubernetes — DevOps/monitoring depth","Root Cause Analysis, production incident handling — debugging skills","Core Card TX Compass Plus + ATM/POS operations — payment infrastructure knowledge"],
-   cons:["HC-01 FAIL: System Operation — không phải QA/Tester","Không có test case design, test execution, test management experience","Role là vận hành hệ thống 24/7, không phải kiểm thử phần mềm","Apply sai vị trí"]}
+   cons:["HC-01 FAIL: System Operation — không phải QA/Tester","Không có test case design, test execution, test management experience","Role là vận hành hệ thống 24/7, không phải kiểm thử phần mềm","Apply sai vị trí"]},
+
+  {id:"phuong-vt",name:"Vũ Thị Phương",role:"QA Engineer — FPT Securities / FPT Software",tier:"B",score:61,hc:true,
+   d1:28,d2:19,d3:5,d4:9,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[5,8],"Automation":[4,6],"Performance":[3,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[2,6],"3rd-party":[0,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[3,3]},
+   hl:"FPT Securities 1.5 năm + UOB banking app — securities & banking domain thật",iq:"C",action:"interview",cvFile:"(Potential) VNW Vu Thi Phuong.pdf",
+   pros:["FPT Securities 08/2022–03/2024: securities & banking operations, viết test case theo SRS","UOB banking app (48-member team): Login/Access/Security, Payment/Transfer — API testing Postman + MySQL + JMeter","Robot Framework (Python) automation thực tế tại Renault CDC — không chỉ 'basic'","3+ năm liên tục, đa domain (securities, banking, automotive), quen SIT/UAT/regression"],
+   cons:["CK tenure chỉ 1.5 năm tại FPT Securities, phần lớn sự nghiệp sau đó là banking/automotive","Không có real-time/WebSocket testing experience","Không có CI/CD pipeline — automation chạy manual, chưa tích hợp CI","English chỉ B1 — cần xác nhận đủ đọc tài liệu kỹ thuật"]},
+
+  {id:"hung-lt",name:"Lê Tuấn Hưng",role:"Java / Fullstack / Low-code Developer",tier:"REJECT",score:9,hc:false,
+   d1:0,d2:2,d3:3,d4:4,
+   d2s:{"API Testing":[2,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[2,6],"3rd-party":[0,4],"SQL/Log":[1,3]},
+   d4s:{"Learning":[2,4],"Docs":[1,3],"Initiative":[1,3]},
+   hl:"HC-01 FAIL",iq:null,action:"reject",cvFile:"VNW Le Tuan Hung.pdf",
+   rejectReason:"HC-01 FAIL: Java Developer / Fullstack Developer / Low-code Developer — không có QA/Tester role trong toàn bộ career. CV tự định hướng 'muốn trở thành software project manager', apply sai vị trí.",
+   pros:["Nền tảng lập trình đa dạng: Java, JS, Python, React/Angular, Spring Boot","Có dùng Jira, JMeter, Cypress như dev — không phải QA thực sự"],
+   cons:["HC-01 FAIL: 100% career là Developer, chưa từng giữ vai trò QA/Tester","Không có domain tài chính/CK/banking nào","Không có test case design, test plan experience thực sự — chỉ 'participated in quality assessment programs'","Apply sai vị trí — career goal là trở thành PM, không phải QA"]},
+
+  {id:"thuong-nc",name:"Nguyễn Công Thưởng",role:"Software Test Engineer — Samsung R&D Việt Nam",tier:"C",score:34,hc:true,
+   d1:3,d2:14,d3:8,d4:9,
+   d2s:{"API Testing":[2,12],"Mobile Testing":[6,8],"Automation":[6,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[4,4],"Docs":[2,3],"Initiative":[3,3]},
+   hl:"Samsung R&D 3+ năm — Smart Switch cross-platform, tự xây automation tool + AI Agent",iq:"B",action:"second_look",cvFile:"VNW Nguyen Cong Thuong.pdf",
+   note:"Worth second look nếu Tier B pipeline không đủ — automation/technical mạnh nhất nhóm C, nhưng zero domain tài chính. Dùng bộ câu hỏi Group B.",
+   pros:["Samsung R&D 3+ năm: Software Test Engineer chính thức, black/white/gray-box testing, cross-platform (Android/iOS/Windows/macOS)","Tự viết automation: Python + pytest + UI Automator, tự build tool data-compare (C#) và log-collection (Python/Tkinter)","Chủ động ứng dụng AI Agent (MCP, workflow, rule) để tự động hóa quy trình test — công nghệ mới nhất trong batch","SQL data validation, quản lý bug lifecycle trên Jira/Confluence, đã làm việc cross-team Dev/UI-UX"],
+   cons:["Zero domain tài chính/CK/banking — toàn bộ sự nghiệp là consumer electronics/IoT (Smart Switch, Smart Home, camera)","Không có performance testing (JMeter/K6)","Không có API testing sâu (Postman/Swagger) — test chủ yếu ở device/OS level","Automation hiện tại phục vụ Smart Switch/Samsung nội bộ, chưa chứng minh transferable sang trading app"]},
+
+  {id:"trang-pt",name:"Phạm Thu Trang",role:"QC Engineer / Sub-Test Lead — Viettel / FPT Software (Toyota)",tier:"C",score:34,hc:true,
+   d1:6,d2:11,d3:8,d4:9,
+   d2s:{"API Testing":[7,12],"Mobile Testing":[4,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[3,4],"Docs":[3,3],"Initiative":[3,3]},
+   hl:"5+ năm QA — Viettel (chính phủ số) + FPT Software (Toyota) + ISOFH (Hospital), ISTQB CTFL",iq:"B",action:"second_look",cvFile:"VNW Pham Thu Trang.pdf",
+   note:"Senior generalist QA process tốt, ISTQB certified, career path Test Lead rõ ràng — nhưng zero domain tài chính và chưa có automation. Second look nếu cần process/test-strategy ownership. Dùng bộ câu hỏi Group B.",
+   pros:["5+ năm QA liên tục, ISTQB CTFL certified, vai trò Sub-Test Lead tại Viettel (dự án chuyển đổi số Tổng cục Chính trị)","Test strategy/test plan ownership cho multi-subsystem project, ước lượng effort, phân bổ task","API testing + SQL validation (MSSQL/Oracle/MongoDB), review BA docs & Figma designs","Mentor QA team members, giao tiếp khách hàng quốc tế (Nhật, Hàn) bằng tiếng Anh"],
+   cons:["Zero domain tài chính/CK/banking — chính phủ số, automotive inventory (Toyota), hospital system (HIS)","Không có automation framework nào — thuần manual testing dù đã 5+ năm","Không có performance testing (JMeter/K6)","Không có mobile testing chuyên sâu — chỉ liệt kê platform, không mô tả chi tiết"]},
+
+  {id:"hien-tcm",name:"Trần Cao Minh Hiển",role:"Tester — MK Vision (Hardware/Web/API)",tier:"C",score:38,hc:true,
+   d1:4,d2:17,d3:8,d4:9,
+   d2s:{"API Testing":[8,12],"Mobile Testing":[4,8],"Automation":[5,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[3,6],"3rd-party":[2,4],"SQL/Log":[3,3]},
+   d4s:{"Learning":[4,4],"Docs":[2,3],"Initiative":[3,3]},
+   hl:"MK Vision: camera hardware testing + Playwright automation + Pytest API testing",iq:"B",action:"second_look",cvFile:"VNW Tran Cao Minh Hien.pdf",
+   note:"QA kỹ thuật khá tròn (automation Playwright + API Pytest + SQL) nhưng zero domain tài chính, mới 2 năm kinh nghiệm. Second look nếu cần technical breadth. Dùng bộ câu hỏi Group B.",
+   pros:["Automation thực tế bằng Playwright cho Regression/Smoke/UI Testing — không chỉ 'basic knowledge'","API testing: Postman (manual) + Pytest (Python) bán tự động, đảm bảo data integrity backend","Đang học Thạc sĩ Khoa học dữ liệu song song đi làm — learning drive mạnh","Full-stack side projects (ReactJS/NodeJS/PostgreSQL) — nền tảng kỹ thuật tốt để học automation nâng cao"],
+   cons:["Zero domain tài chính/CK/banking — property management app (BEEVR) + hardware/camera (MK Vision)","Chỉ 2 năm kinh nghiệm QA (từ 05/2024), background Fresher Tester","Không có performance testing (JMeter/K6)","Không có real-time/WebSocket testing experience"]},
+
+  {id:"nhi-ty",name:"Trần Yến Nhi",role:"QA Intern — APA Tech",tier:"C",score:9,hc:true,
+   d1:2,d2:0,d3:1,d4:6,
+   d2s:{"API Testing":[0,12],"Mobile Testing":[0,8],"Automation":[0,6],"Performance":[0,4]},
+   d3s:{"Real-time/WS":[0,7],"CI/CD & Tools":[1,6],"3rd-party":[0,4],"SQL/Log":[0,3]},
+   d4s:{"Learning":[3,4],"Docs":[1,3],"Initiative":[2,3]},
+   hl:"QA Intern 6 tháng — chưa có domain, chưa có API/mobile/automation testing",iq:null,action:"reject",cvFile:"VNW Yen Nhi Tran.pdf",
+   pros:["QA Intern 6 tháng tại APA Tech: functional/UI/regression testing cho web app, dùng Jira","Tham gia đầy đủ Agile/Scrum ceremonies (Sprint Planning, Daily Meeting)","Nền tảng Big Data & Machine Learning, có side project GitHub (Python/scikit-learn)"],
+   cons:["Chỉ 6 tháng kinh nghiệm QA (intern), chưa có domain tài chính/CK/banking nào","Không có API testing (không dùng Postman), không mobile testing, không automation","TOEIC 450 — tiếng Anh yếu hơn đáng kể so với mặt bằng chung ứng viên khác","CV thiếu chi tiết cụ thể (dự án 'web applications' chung chung, không rõ client/domain)"]}
 ];
 
 // ─── PIPELINE STAGES ────────────────────────────────────────────────────────
@@ -2164,7 +2222,11 @@ function hasNotes(id) {
 async function saveNotes() {
   if (!currentId) return;
   const existing = getNotes(currentId);
+  // Note-taking (date/interviewer/ratings/comments/decision) is not a pipeline
+  // status change, so it must NOT touch updatedAt/updatedBy/history — those
+  // only move when setPipeline/resetPipeline fires (gửi bài test, PV, fail, loại...).
   const n = {
+    ...existing,
     date:        (document.getElementById('n-date') || {}).value || '',
     interviewer: (document.getElementById('n-interviewer') || {}).value || '',
     domainScore: +((document.querySelector('.stars[data-dim="domain"] .star.lit:last-of-type') || {}).dataset?.val || 0),
@@ -2173,17 +2235,13 @@ async function saveNotes() {
     cultureScore:+((document.querySelector('.stars[data-dim="culture"] .star.lit:last-of-type') || {}).dataset?.val || 0),
     notes:       (document.getElementById('n-notes') || {}).value || '',
     decision:    (document.querySelector('.decision-opt.selected') || {}).dataset?.val || '',
-    actionItems: (document.getElementById('n-actions') || {}).value || '',
-    updatedAt:   new Date().toLocaleString('vi-VN'),
-    updatedBy:   currentUser,
-    pipeline:    existing.pipeline || 0,
-    pipelineStatus: existing.pipelineStatus || ''
+    actionItems: (document.getElementById('n-actions') || {}).value || ''
   };
   notesCache[currentId] = n;
   await postNote(currentId, n);
   const el = document.getElementById('n-saved');
   if (el) {
-    el.textContent = '✓ ' + currentUser + ' · ' + n.updatedAt;
+    el.textContent = '✓ Đã lưu ghi chú';
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 3000);
   }
@@ -2197,8 +2255,8 @@ const STAGE_LABELS = ['', '', 'Gửi Bài test', 'PV Vòng 1', 'PV Vòng 2', 'Of
 async function setPipeline(id, stageIdx, status) {
   const existing = getNotes(id);
   const history = Array.isArray(existing.history) ? [...existing.history] : [];
-  history.unshift({ stage: stageIdx, stageName: STAGE_LABELS[stageIdx] || '—', status, by: currentUser, at: new Date().toLocaleString('vi-VN') });
-  const n = { ...existing, pipeline: stageIdx, pipelineStatus: status, updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN'), history };
+  history.unshift({ stage: stageIdx, stageName: STAGE_LABELS[stageIdx] || '—', status, by: currentUser, at: new Date().toLocaleDateString('vi-VN') });
+  const n = { ...existing, pipeline: stageIdx, pipelineStatus: status, updatedBy: currentUser, updatedAt: new Date().toLocaleDateString('vi-VN'), history };
   notesCache[id] = n;
   await postNote(id, n);
   renderCards(currentFilter);
@@ -2208,8 +2266,8 @@ async function setPipeline(id, stageIdx, status) {
 async function resetPipeline(id) {
   const existing = getNotes(id);
   const history = Array.isArray(existing.history) ? [...existing.history] : [];
-  history.unshift({ stage: 0, stageName: '—', status: 'reset', by: currentUser, at: new Date().toLocaleString('vi-VN') });
-  const n = { ...existing, pipeline: 0, pipelineStatus: '', updatedBy: currentUser, updatedAt: new Date().toLocaleString('vi-VN'), history };
+  history.unshift({ stage: 0, stageName: '—', status: 'reset', by: currentUser, at: new Date().toLocaleDateString('vi-VN') });
+  const n = { ...existing, pipeline: 0, pipelineStatus: '', updatedBy: currentUser, updatedAt: new Date().toLocaleDateString('vi-VN'), history };
   notesCache[id] = n;
   await postNote(id, n);
   renderCards(currentFilter);
@@ -2259,7 +2317,7 @@ function buildPipelineStepper(id) {
     else if (status === 'failed-test') { barCls = 'psb-failed';   icon = '✗'; statusLabel = 'Fail Test'; }
     else if (status === 'failed-cv')   { barCls = 'psb-failed';   icon = '✗'; statusLabel = 'Fail CV'; }
     else                               { barCls = 'psb-active';   icon = '→'; statusLabel = 'Đang tiến hành'; }
-    const meta = n.updatedBy ? `${n.updatedBy} · ${n.updatedAt || ''}` : '';
+    const meta = n.updatedBy ? `${n.updatedBy} · ${parseUpdateDate(n.updatedAt) || ''}` : '';
     stateBar = `<div class="pip-state-bar ${barCls}">
       <div class="psb-status"><span class="psb-dot"></span>${icon} ${statusLabel}</div>
       <span class="psb-stage">${STAGE_LABELS[pipeline] || ''}</span>
@@ -2280,7 +2338,7 @@ function buildPipelineStepper(id) {
     };
     const rows = history.slice(0, 15).map(h => {
       const e = entryMap[h.status] || { icon: '·', cls: '', fmt: sn => sn };
-      const dateShort = (h.at || '').split(',')[0] || '';
+      const dateShort = parseUpdateDate(h.at) || '';
       return `<div class="ph-entry ${e.cls}">
         <span class="ph-icon">${e.icon}</span>
         <span class="ph-by">${h.by || '—'}</span>
@@ -2373,10 +2431,11 @@ function autoSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveNotes,
 // ─── DATE HELPERS ────────────────────────────────────────────────────────────
 function parseUpdateDate(updatedAt) {
   if (!updatedAt) return null;
-  const datePart = updatedAt.split(',')[0].trim(); // e.g. "29/6/2026"
-  const parts = datePart.split('/');
-  if (parts.length !== 3) return null;
-  const [d, m, y] = parts;
+  // Match d/m/yyyy anywhere in the string — tolerant of legacy "HH:MM:SS d/m/yyyy"
+  // values (no comma, time before date) as well as the current date-only format.
+  const match = updatedAt.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!match) return null;
+  const [, d, m, y] = match;
   return `${d.padStart(2, '0')}/${m.padStart(2, '0')}/${y}`;
 }
 
@@ -2747,7 +2806,7 @@ function buildNotesTab(c) {
         <div class="sec-title" style="margin:0">Ghi chú Phỏng vấn</div>
         <div class="notes-saved" id="n-saved"></div>
       </div>
-      ${n.updatedBy ? `<div class="notes-meta">Cập nhật bởi <strong>${n.updatedBy}</strong> · ${n.updatedAt || ''}</div>` : ''}
+      ${n.updatedBy ? `<div class="notes-meta">Cập nhật bởi <strong>${n.updatedBy}</strong> · ${parseUpdateDate(n.updatedAt) || ''}</div>` : ''}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Ngày phỏng vấn</label>

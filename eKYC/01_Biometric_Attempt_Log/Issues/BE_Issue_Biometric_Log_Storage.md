@@ -6,7 +6,7 @@
 **Integration type:** TradeX-native
 **Priority:** High
 **Spec:** `01_Biometric_Attempt_Log/Specifications/Backend_Spec.md`
-**Date:** 2026-07-01 (revised — align với Backend_Spec.md canonical, thêm raw SDK log capture)
+**Date:** 2026-07-08 (revised lần 2 — sửa mapping field sai + bổ sung field mới phát hiện từ sample log thực tế do dev gửi; xem 2026-07-01 cho lần revise trước)
 
 ---
 
@@ -27,6 +27,10 @@ Cần tạo bảng `ekyc_attempt_log` (append-only) có cấu trúc, cộng thê
 
 > ⚠️ **Schema đã được đối chiếu lại (2026-07-01)** để khớp với model `outcome` / `failure_step` dùng xuyên suốt PRD, `Dashboard_API_Spec.md`, và `FE_Issue_Admin_Attempt_History.md`. Bản trước của issue này dùng model `attempt_result` (PASS/FAIL/PENDING) riêng biệt — đã bị loại bỏ vì không tương thích với các API khác trong hệ thống.
 
+> ⚠️ **Schema đã được đối chiếu lại lần 2 (2026-07-08)** với sample log thực tế do dev gửi (OCR CCCD 2 mặt VNPT + liveness + face compare). Phát hiện vài chỗ bản v1 map sai tên field JSON gốc, và vài field VNPT trả về nhưng spec bỏ sót — chi tiết đầy đủ xem `Backend_Spec.md` Section 0.4/0.5 (các dòng đánh dấu ⚠️) và sample thực tế đã ẩn danh ở Section 0.6. Tóm tắt:
+> - **Sửa:** `vnpt_citizen_id` phải lấy từ `object.id` (không phải `object.citizenId` — field không tồn tại); `vnpt_citizen_id_chip` lấy từ `object.dict_qr.SoCCCD` (không phải `object.citizenIdChip`); cột `vnpt_match_valid_date` đổi thành `vnpt_match_sex` (field `match_valid_date` không tồn tại); `fake_liveness_prob`/`fake_print_photo_prob` tách thành 6 cột riêng theo mặt trước/sau vì 2 field này nằm ở `LOG_LIVENESS_CARD_FRONT`/`REAR`, không phải `LOG_LIVENESS_FACE` như spec v1 giả định.
+> - **Thêm mới:** `mrz_line3` (MRZ CCCD gắn chip có 3 dòng, không phải 2), `vnpt_old_citizen_id` (CMND cũ), `vnpt_qr_match_summary` (đối chiếu QR chip vs OCR), `face_swapping` detection (2 cột, theo mặt trước/sau), `multiple_faces` detection (2 cột: face compare + face liveness), `face_compare_match_warning`, và 6 cột VNPT logID (`vnpt_ocr_log_id`, `vnpt_card_liveness_front_log_id`, `vnpt_card_liveness_rear_log_id`, `vnpt_face_liveness_log_id`, `vnpt_face_compare_log_id`, `vnpt_face_mask_log_id`) — các logID này App **đã có sẵn** trong luồng `/lotte/ekycs` hiện tại, chỉ cần gửi kèm.
+
 ---
 
 ## Tasks
@@ -42,16 +46,19 @@ Tạo changeset tạo bảng `ekyc_attempt_log` theo schema đầy đủ trong `
 - `attempt_number` INT NOT NULL, `attempt_at` DATETIME NOT NULL
 - `final_ekyc_id` BIGINT (FK → `e_kyc.id`, `ON DELETE SET NULL`)
 - `outcome` VARCHAR(30) NOT NULL, `failure_step` VARCHAR(50), `failure_code` VARCHAR(100), `failure_message` VARCHAR(500)
-- VNPT OCR: `vnpt_status_code`, `vnpt_citizen_id`, `vnpt_name`, `vnpt_card_type`, `vnpt_citizen_id_prob`, `vnpt_mrz_valid_score`
+- VNPT OCR: `vnpt_status_code`, `vnpt_citizen_id` (← `object.id`, KHÔNG phải `object.citizenId`), `vnpt_old_citizen_id` (← `object.citizen_id`, mới), `vnpt_name`, `vnpt_card_type`, `vnpt_citizen_id_prob`, `vnpt_mrz_valid_score`
 - Fraud detection: `vnpt_is_tampered`, `vnpt_id_fake_warning`, `vnpt_id_fake_prob`, `vnpt_duplication_warning`, `vnpt_dob_fake_warning`, `vnpt_address_fake_warning`, `vnpt_issuedate_fake_warning`, `vnpt_name_fake_warning`
 - Card integrity (front/back): `vnpt_front_recaptured`, `vnpt_front_edited_prob`, `vnpt_front_photocopied`, `vnpt_back_recaptured`, `vnpt_back_edited_prob`, `vnpt_back_photocopied`
 - Image quality (front/back): `vnpt_front_blur_score`, `vnpt_front_luminance_score`, `vnpt_back_blur_score`, `vnpt_back_luminance_score`
-- Cross-validation: `vnpt_match_id`, `vnpt_match_name`, `vnpt_match_bod`, `vnpt_match_valid_date`
-- Extended OCR: `vnpt_nationality`, `vnpt_citizen_id_chip`
-- MRZ raw: `mrz_line1`, `mrz_line2`, `mrz_overall_prob`
+- Cross-validation: `vnpt_match_id`, `vnpt_match_name`, `vnpt_match_bod`, `vnpt_match_sex` (← `match_front_back.match_sex` — **đổi tên** từ `vnpt_match_valid_date`, field đó không tồn tại)
+- Extended OCR: `vnpt_nationality`, `vnpt_citizen_id_chip` (← `object.dict_qr.SoCCCD`, KHÔNG phải `object.citizenIdChip`)
+- **QR cross-check (mới):** `vnpt_qr_match_summary` (PASS/FAIL/SKIPPED — BE tự tính từ `object.match_qr.*`)
+- MRZ raw: `mrz_line1`, `mrz_line2`, `mrz_line3` (mới — CCCD gắn chip trả 3 dòng MRZ, không phải 2), `mrz_overall_prob`
 - MRZ cross-check: `mrz_cross_check`, `mrz_check_id`, `mrz_check_dob`, `mrz_check_gender`, `mrz_check_expiry`
-- Liveness (SDK): `liveness_card_front_result`, `liveness_card_rear_result`, `liveness_face_result`, `face_mask_result`, `fake_liveness_prob`, `fake_print_photo_prob`
-- Face compare: `face_compare_msg`, `face_compare_prob`
+- Liveness (SDK): `liveness_card_front_result`, `liveness_card_rear_result`, `liveness_face_result`, `face_mask_result`
+- **Card liveness fraud detail (đổi cấu trúc — tách theo mặt):** `liveness_card_front_fake_prob`, `liveness_card_front_fake_print_prob`, `liveness_card_front_face_swapping` (mới), `liveness_card_rear_fake_prob`, `liveness_card_rear_fake_print_prob`, `liveness_card_rear_face_swapping` (mới), `liveness_face_multiple_faces` (mới) — **thay thế** 2 cột cũ `fake_liveness_prob`/`fake_print_photo_prob` (spec v1 gán nhầm nguồn `LOG_LIVENESS_FACE`, thực tế 2 field này nằm ở `LOG_LIVENESS_CARD_FRONT`/`REAR`)
+- Face compare: `face_compare_msg`, `face_compare_prob` (thang 0-100), `face_compare_match_warning` (mới), `face_compare_multiple_faces` (mới)
+- **VNPT log IDs (mới — tra soát chéo khi audit/tranh chấp):** `vnpt_ocr_log_id`, `vnpt_card_liveness_front_log_id`, `vnpt_card_liveness_rear_log_id`, `vnpt_face_liveness_log_id`, `vnpt_face_compare_log_id`, `vnpt_face_mask_log_id` — App đã có sẵn các ID này (`ocrLogId`, `cardLivenessLogId`,...) trong luồng `/lotte/ekycs`
 - Image storage: `image_front_url` VARCHAR(500), `image_back_url` VARCHAR(500)
 - **Raw audit (2 cột):**
   - `vnpt_raw_data` LONGTEXT — raw JSON `LOG_OCR`
@@ -264,6 +271,11 @@ Implement 3 endpoints theo `Backend_Spec.md` Section 4 (đã có response mẫu 
 - [ ] `GET /api/admin/ekyc/attempts/list?accountStatus=APPROVED` chỉ trả về customer có lần thử gần nhất `outcome = SUCCESS`.
 - [ ] `GET /api/admin/ekyc/attempts/list?accountStatus=NOT_APPROVED` trả về đúng customer mà **chưa từng có** lần thử `outcome = SUCCESS` — bao gồm cả customer chỉ có attempt fail ở pre-submit (không có `e_kyc` row nào).
 - [ ] `/list` hỗ trợ pagination đúng (`totalCount`, `customers[]`, `page`, `size`).
+- [ ] **(Mới 2026-07-08)** `vnpt_citizen_id` parse đúng từ `object.id` — verify bằng sample thực tế Section 0.6, KHÔNG bị null dù `object.citizenId` không tồn tại trong response.
+- [ ] **(Mới 2026-07-08)** Cả 3 dòng MRZ (`mrz_line1/2/3`) được lưu đủ khi VNPT trả về CCCD gắn chip (mảng `mrz` có 3 phần tử).
+- [ ] **(Mới 2026-07-08)** `vnpt_qr_match_summary` = `PASS` khi cả 4 field `match_qr.*` = `"yes"`, = `FAIL` khi có field `"no"`, = `SKIPPED` khi response không có `match_qr`.
+- [ ] **(Mới 2026-07-08)** `liveness_card_front_fake_prob`/`liveness_card_rear_fake_prob` lưu đúng giá trị riêng biệt theo từng mặt — verify test case có giá trị khác nhau giữa 2 mặt để đảm bảo không bị ghi đè lẫn nhau.
+- [ ] **(Mới 2026-07-08)** 6 cột `vnpt_*_log_id` được lưu đúng khi App gửi kèm — verify bằng cách tra ngược 1 attempt và xác nhận logID khớp với App log gốc.
 
 ---
 

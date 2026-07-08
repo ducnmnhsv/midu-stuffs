@@ -1,6 +1,8 @@
 # Backend Specification: eKYC Attempt History
 
-**Version:** 2.0 | **Date:** 2026-05-24 | **Service:** ekyc-admin
+**Version:** 2.1 | **Date:** 2026-07-08 | **Service:** ekyc-admin
+
+> **Revision 2026-07-08:** Đối chiếu spec với sample log thực tế do dev gửi (OCR CCCD 2 mặt VNPT, liveness, face compare) — phát hiện & sửa vài chỗ mapping sai field, đồng thời bổ sung field mới mà data thực tế có nhưng spec bản trước bỏ sót (QR cross-check, phát hiện nhiều khuôn mặt, phát hiện đổi mặt/deepfake, VNPT logID). Chi tiết từng thay đổi được đánh dấu ⚠️ tại vị trí tương ứng. Sample thực tế (đã ẩn danh) xem Section 0.6.
 
 ---
 
@@ -31,11 +33,12 @@ CREATE TABLE ekyc_attempt_log (
 
   -- ── VNPT OCR Results ──
   vnpt_status_code     INT              COMMENT '0 = success',
-  vnpt_citizen_id      VARCHAR(20)      COMMENT 'Số CCCD VNPT đọc được',
+  vnpt_citizen_id      VARCHAR(20)      COMMENT 'Số CCCD VNPT đọc được — ⚠️ sửa 2026-07-08: field nguồn thực tế là object.id, KHÔNG PHẢI object.citizenId (field này không tồn tại) — xem mapping 0.4',
+  vnpt_old_citizen_id  VARCHAR(20)      COMMENT 'Số CMND cũ (nếu có) — object.citizen_id, giá trị "-" khi khách chưa từng có CMND. Field mới 2026-07-08.',
   vnpt_name            VARCHAR(100)     COMMENT 'Họ tên VNPT đọc được',
   vnpt_card_type       VARCHAR(10)      COMMENT 'Loại thẻ: CMND / CC',
   vnpt_citizen_id_prob DOUBLE           COMMENT 'Confidence score số CCCD (0-1)',
-  vnpt_mrz_valid_score INT              COMMENT 'Điểm MRZ hợp lệ (0-10)',
+  vnpt_mrz_valid_score INT              COMMENT 'Điểm MRZ hợp lệ (0-100 theo sample thực tế, không phải 0-10 như comment cũ)',
 
   -- ── Fraud Detection ──
   vnpt_is_tampered            VARCHAR(5)  COMMENT '"Y"=hợp lệ / "N"=bị chỉnh sửa (tampering.is_legal)',
@@ -69,15 +72,19 @@ CREATE TABLE ekyc_attempt_log (
   vnpt_match_id         VARCHAR(10) COMMENT 'match_front_back.match_id',
   vnpt_match_name       VARCHAR(10) COMMENT 'match_front_back.match_name',
   vnpt_match_bod        VARCHAR(10) COMMENT 'match_front_back.match_bod',
-  vnpt_match_valid_date VARCHAR(10) COMMENT 'match_front_back.match_valid_date',
+  vnpt_match_sex        VARCHAR(10) COMMENT 'match_front_back.match_sex — ⚠️ sửa 2026-07-08: cột cũ "vnpt_match_valid_date" bị xóa vì field match_front_back.match_valid_date KHÔNG tồn tại trong response thực tế; field thật trả về là match_sex',
 
   -- ── Extended OCR Fields ──
   vnpt_nationality       VARCHAR(50)  COMMENT 'Quốc tịch — object.nationality',
-  vnpt_citizen_id_chip   VARCHAR(20)  COMMENT 'Số CCCD trên chip (có thể khác mặt thẻ) — object.citizenIdChip',
+  vnpt_citizen_id_chip   VARCHAR(20)  COMMENT 'Số CCCD giải mã từ QR/chip — ⚠️ sửa 2026-07-08: field nguồn thực tế là object.dict_qr.SoCCCD (KHÔNG có field object.citizenIdChip). Dùng để đối chiếu với vnpt_citizen_id (đọc từ mặt thẻ bằng OCR) — 2 giá trị lệch nhau là dấu hiệu nghi ngờ.',
+
+  -- ── QR Code Cross-Check (đối chiếu QR/chip vs OCR mặt thẻ) — mới 2026-07-08 ──
+  vnpt_qr_match_summary VARCHAR(20)  COMMENT 'PASS nếu toàn bộ 4 field match_qr.* = "yes"; FAIL nếu có field = "no"; SKIPPED nếu response không có match_qr. BE tự tính khi parse vnptRawData, không cần App gửi thêm.',
 
   -- ── MRZ (Machine Readable Zone) ──
   mrz_line1            VARCHAR(50)  COMMENT 'Dòng 1 MRZ thô — object.mrz[0] (IDVNM...)',
-  mrz_line2            VARCHAR(50)  COMMENT 'Dòng 2 MRZ thô — object.mrz[1] (9001151M300...)',
+  mrz_line2            VARCHAR(50)  COMMENT 'Dòng 2 MRZ thô — object.mrz[1] (ngày sinh/giới tính/hết hạn...)',
+  mrz_line3            VARCHAR(50)  COMMENT 'Dòng 3 MRZ thô — object.mrz[2] (họ tên). Mới 2026-07-08: CCCD gắn chip (định dạng TD1) trả về 3 dòng MRZ chứ không phải 2 như bản spec trước giả định.',
   mrz_overall_prob     DOUBLE       COMMENT 'Độ tin cậy tổng thể đọc MRZ (0-1) — object.mrz_prob',
 
   -- ── MRZ Cross-Check (App so sánh MRZ với OCR visual) ──
@@ -92,12 +99,35 @@ CREATE TABLE ekyc_attempt_log (
   liveness_card_rear_result  VARCHAR(20)  COMMENT 'Kết quả liveness mặt sau CCCD: success/failure',
   liveness_face_result       VARCHAR(20)  COMMENT 'Kết quả liveness khuôn mặt: success/failure',
   face_mask_result           VARCHAR(20)  COMMENT 'Kết quả phát hiện mặt nạ: success/failure',
-  fake_liveness_prob         DOUBLE       COMMENT 'Xác suất liveness giả (0-1)',
-  fake_print_photo_prob      DOUBLE       COMMENT 'Xác suất ảnh in/photo giả (0-1)',
+
+  -- ── Card Liveness Fraud Detail (mặt trước / mặt sau) ──
+  -- ⚠️ sửa 2026-07-08: 2 cột "fake_liveness_prob"/"fake_print_photo_prob" ở bản spec v2.0 bị gán nhầm
+  -- nguồn "LOG_LIVENESS_FACE" — sample thực tế cho thấy 2 field này thực ra nằm trong
+  -- LOG_LIVENESS_CARD_FRONT và LOG_LIVENESS_CARD_REAR (mỗi mặt thẻ 1 giá trị riêng), KHÔNG có ở face liveness.
+  -- Tách thành cột riêng theo mặt để tránh 2 lần ghi đè lẫn nhau nếu dùng chung 1 cột.
+  liveness_card_front_fake_prob       DOUBLE  COMMENT 'Xác suất liveness giả của ảnh mặt trước CCCD (0-1) — LOG_LIVENESS_CARD_FRONT.fake_liveness_prob',
+  liveness_card_front_fake_print_prob DOUBLE  COMMENT 'Xác suất ảnh mặt trước là ảnh in/chụp lại màn hình (0-1) — LOG_LIVENESS_CARD_FRONT.fake_print_photo_prob',
+  liveness_card_front_face_swapping   BOOLEAN COMMENT 'Phát hiện đổi mặt/deepfake trên ảnh mặt trước — LOG_LIVENESS_CARD_FRONT.face_swapping. Field mới 2026-07-08.',
+  liveness_card_rear_fake_prob        DOUBLE  COMMENT 'Tương tự liveness_card_front_fake_prob, cho mặt sau',
+  liveness_card_rear_fake_print_prob  DOUBLE  COMMENT 'Tương tự liveness_card_front_fake_print_prob, cho mặt sau',
+  liveness_card_rear_face_swapping    BOOLEAN COMMENT 'Tương tự liveness_card_front_face_swapping, cho mặt sau',
+  liveness_face_multiple_faces        BOOLEAN COMMENT 'Phát hiện nhiều khuôn mặt trong ảnh liveness khuôn mặt — LOG_LIVENESS_FACE.multiple_faces_details. Field mới 2026-07-08 — dấu hiệu gian lận (ảnh có 2 người, hoặc dùng ảnh người khác).',
 
   -- ── Face Compare (SDK — LOG_COMPARE) ──
-  face_compare_msg  VARCHAR(20)  COMMENT 'Kết quả so khớp khuôn mặt: MATCH / NOMATCH',
-  face_compare_prob DOUBLE       COMMENT 'Độ tương đồng khuôn mặt (0-1, ngưỡng thường ≥ 0.7)',
+  face_compare_msg            VARCHAR(20)  COMMENT 'Kết quả so khớp khuôn mặt: MATCH / NOMATCH',
+  face_compare_prob           DOUBLE       COMMENT 'Độ tương đồng khuôn mặt (0-1, ngưỡng thường ≥ 0.7)',
+  face_compare_match_warning  VARCHAR(20)  COMMENT 'Cảnh báo bổ sung, tách biệt với msg — LOG_COMPARE.match_warning. Field mới 2026-07-08.',
+  face_compare_multiple_faces BOOLEAN      COMMENT 'Phát hiện nhiều khuôn mặt trong ảnh so khớp — LOG_COMPARE.multiple_faces_details. Field mới 2026-07-08.',
+
+  -- ── VNPT Log IDs (tracing — đối chiếu chéo với hệ thống VNPT khi audit/tranh chấp) — mới 2026-07-08 ──
+  -- App đã có sẵn các ID này trong luồng /lotte/ekycs hiện tại (ocrLogId, cardLivenessLogId, v.v.)
+  -- — chỉ cần App gửi kèm khi gọi /ekycs/attempt-log, không cần tính toán thêm.
+  vnpt_ocr_log_id                 VARCHAR(150) COMMENT 'logID của LOG_OCR — dùng để VNPT support tra soát phiên OCR cụ thể',
+  vnpt_card_liveness_front_log_id VARCHAR(150) COMMENT 'logID của LOG_LIVENESS_CARD_FRONT',
+  vnpt_card_liveness_rear_log_id  VARCHAR(150) COMMENT 'logID của LOG_LIVENESS_CARD_REAR',
+  vnpt_face_liveness_log_id       VARCHAR(150) COMMENT 'logID của LOG_LIVENESS_FACE',
+  vnpt_face_compare_log_id        VARCHAR(150) COMMENT 'logID của LOG_COMPARE',
+  vnpt_face_mask_log_id           VARCHAR(150) COMMENT 'logID của LOG_MASK_FACE',
 
   -- ── Image Storage (S3 / MinIO) ──
   image_front_url VARCHAR(500) COMMENT 'URL ảnh mặt trước CCCD đã upload lên S3/MinIO',
@@ -170,6 +200,7 @@ ALTER TABLE e_kyc
             <column name="failure_message" type="varchar(500)"/>
             <column name="vnpt_status_code" type="int"/>
             <column name="vnpt_citizen_id" type="varchar(20)"/>
+            <column name="vnpt_old_citizen_id" type="varchar(20)"/>
             <column name="vnpt_name" type="varchar(100)"/>
             <column name="vnpt_card_type" type="varchar(10)"/>
             <column name="vnpt_citizen_id_prob" type="double"/>
@@ -195,11 +226,13 @@ ALTER TABLE e_kyc
             <column name="vnpt_match_id" type="varchar(10)"/>
             <column name="vnpt_match_name" type="varchar(10)"/>
             <column name="vnpt_match_bod" type="varchar(10)"/>
-            <column name="vnpt_match_valid_date" type="varchar(10)"/>
+            <column name="vnpt_match_sex" type="varchar(10)"/>
             <column name="vnpt_nationality" type="varchar(50)"/>
             <column name="vnpt_citizen_id_chip" type="varchar(20)"/>
+            <column name="vnpt_qr_match_summary" type="varchar(20)"/>
             <column name="mrz_line1" type="varchar(50)"/>
             <column name="mrz_line2" type="varchar(50)"/>
+            <column name="mrz_line3" type="varchar(50)"/>
             <column name="mrz_overall_prob" type="double"/>
             <column name="mrz_cross_check" type="varchar(20)"/>
             <column name="mrz_check_id" type="varchar(10)"/>
@@ -210,10 +243,23 @@ ALTER TABLE e_kyc
             <column name="liveness_card_rear_result" type="varchar(20)"/>
             <column name="liveness_face_result" type="varchar(20)"/>
             <column name="face_mask_result" type="varchar(20)"/>
-            <column name="fake_liveness_prob" type="double"/>
-            <column name="fake_print_photo_prob" type="double"/>
+            <column name="liveness_card_front_fake_prob" type="double"/>
+            <column name="liveness_card_front_fake_print_prob" type="double"/>
+            <column name="liveness_card_front_face_swapping" type="boolean"/>
+            <column name="liveness_card_rear_fake_prob" type="double"/>
+            <column name="liveness_card_rear_fake_print_prob" type="double"/>
+            <column name="liveness_card_rear_face_swapping" type="boolean"/>
+            <column name="liveness_face_multiple_faces" type="boolean"/>
             <column name="face_compare_msg" type="varchar(20)"/>
             <column name="face_compare_prob" type="double"/>
+            <column name="face_compare_match_warning" type="varchar(20)"/>
+            <column name="face_compare_multiple_faces" type="boolean"/>
+            <column name="vnpt_ocr_log_id" type="varchar(150)"/>
+            <column name="vnpt_card_liveness_front_log_id" type="varchar(150)"/>
+            <column name="vnpt_card_liveness_rear_log_id" type="varchar(150)"/>
+            <column name="vnpt_face_liveness_log_id" type="varchar(150)"/>
+            <column name="vnpt_face_compare_log_id" type="varchar(150)"/>
+            <column name="vnpt_face_mask_log_id" type="varchar(150)"/>
             <column name="image_front_url" type="varchar(500)"/>
             <column name="image_back_url" type="varchar(500)"/>
             <column name="vnpt_raw_data" type="longtext"/>
@@ -255,42 +301,47 @@ ALTER TABLE e_kyc
 
 ### 0.4 Mapping VNPT Response → `ekyc_attempt_log`
 
-| `ekyc_attempt_log` column | `VNPTDataBase64` field |
-|--------------------------|----------------------|
-| `vnpt_status_code` | `statusCode` |
-| `vnpt_citizen_id` | `object.citizenId` |
-| `vnpt_name` | `object.name` |
-| `vnpt_card_type` | `object.cardType` |
-| `vnpt_citizen_id_prob` | `object.citizenIdProb` |
-| `vnpt_mrz_valid_score` | `object.mrzValidScore` |
-| `vnpt_is_tampered` | `object.tampering.isLegal` |
-| `vnpt_id_fake_warning` | `object.idFakeWarning` |
-| `vnpt_id_fake_prob` | `object.idFakeProb` |
-| `vnpt_duplication_warning` | `object.dupplicationWarning` |
-| `vnpt_dob_fake_warning` | `object.dobFakeWarning` |
-| `vnpt_address_fake_warning` | `object.addressFakeWarning` |
-| `vnpt_issuedate_fake_warning` | `object.issuedateFakeWarning` |
-| `vnpt_name_fake_warning` | `object.nameFakeWarning` |
-| `vnpt_front_recaptured` | `object.checkingResultFront.recapturedResult` |
-| `vnpt_front_edited_prob` | `object.checkingResultFront.editedProb` |
-| `vnpt_front_photocopied` | `object.checkingResultFront.checkPhotocopiedResult` |
-| `vnpt_back_recaptured` | `object.checkingResultBack.recapturedResult` |
-| `vnpt_back_edited_prob` | `object.checkingResultBack.editedProb` |
-| `vnpt_back_photocopied` | `object.checkingResultBack.checkPhotocopiedResult` |
-| `vnpt_front_blur_score` | `object.qualityFront.blurScore` |
-| `vnpt_front_luminance_score` | `object.qualityFront.luminanceScore` |
-| `vnpt_back_blur_score` | `object.qualityBack.blurScore` |
-| `vnpt_back_luminance_score` | `object.qualityBack.luminanceScore` |
-| `vnpt_match_id` | `object.matchFrontBack.matchId` |
-| `vnpt_match_name` | `object.matchFrontBack.matchName` |
-| `vnpt_match_bod` | `object.matchFrontBack.matchBod` |
-| `vnpt_match_valid_date` | `object.matchFrontBack.matchValidDate` |
-| `vnpt_nationality` | `object.nationality` |
-| `vnpt_citizen_id_chip` | `object.citizenIdChip` |
-| `mrz_line1` | `object.mrz[0]` |
-| `mrz_line2` | `object.mrz[1]` |
-| `mrz_overall_prob` | `object.mrz_prob` |
-| `vnpt_raw_data` | Toàn bộ JSON response (serialize) |
+> ⚠️ **Lưu ý 2026-07-08:** Bảng dưới đây dùng tên field theo JSON gốc VNPT trả về (snake_case, ví dụ `object.id`, `object.mrz_valid_score`) — đã đối chiếu với sample thực tế do dev gửi (Section 0.6). Việc map sang tên property Java (`citizenId`, `mrzValidScore`...) là do Jackson deserialize theo naming strategy của DTO `VNPTDataBase64`, không phải tên field JSON gốc. Các dòng có ⚠️ là chỗ bản v2.0 map sai/tham chiếu field không tồn tại.
+
+| `ekyc_attempt_log` column | VNPT JSON field (gốc) | Ghi chú |
+|--------------------------|----------------------|---------|
+| `vnpt_status_code` | `statusCode` | |
+| `vnpt_citizen_id` | `object.id` | ⚠️ sửa 2026-07-08 — field cũ ghi `object.citizenId` không tồn tại |
+| `vnpt_old_citizen_id` | `object.citizen_id` | Mới — số CMND cũ, `"-"` nếu không có |
+| `vnpt_name` | `object.name` | |
+| `vnpt_card_type` | `object.card_type` | |
+| `vnpt_citizen_id_prob` | `object.citizen_id_prob` | ⚠️ Cẩn thận: đây KHÔNG phải confidence của field `id` (số CCCD) — VNPT dùng `citizen_id_prob` cho field `citizen_id` (CMND cũ). Confidence của `id` là mảng `object.id_probs` (theo từng ký tự) — chưa có cột riêng, xem trong `vnpt_raw_data` khi cần |
+| `vnpt_mrz_valid_score` | `object.mrz_valid_score` | Thang điểm thực tế 0-100 (sample trả `100`), không phải 0-10 |
+| `vnpt_is_tampered` | `object.tampering.is_legal` | |
+| `vnpt_id_fake_warning` | `object.id_fake_warning` | |
+| `vnpt_id_fake_prob` | `object.id_fake_prob` | |
+| `vnpt_duplication_warning` | `object.dupplication_warning` | Giữ nguyên chính tả "dupplication" theo VNPT (lỗi chính tả gốc) |
+| `vnpt_dob_fake_warning` | `object.dob_fake_warning` | |
+| `vnpt_address_fake_warning` | `object.address_fake_warning` | |
+| `vnpt_issuedate_fake_warning` | `object.issuedate_fake_warning` | |
+| `vnpt_name_fake_warning` | `object.name_fake_warning` | |
+| `vnpt_front_recaptured` | `object.checking_result_front.recaptured_result` | |
+| `vnpt_front_edited_prob` | `object.checking_result_front.edited_prob` | |
+| `vnpt_front_photocopied` | `object.checking_result_front.check_photocopied_result` | |
+| `vnpt_back_recaptured` | `object.checking_result_back.recaptured_result` | |
+| `vnpt_back_edited_prob` | `object.checking_result_back.edited_prob` | |
+| `vnpt_back_photocopied` | `object.checking_result_back.check_photocopied_result` | |
+| `vnpt_front_blur_score` | `object.quality_front.blur_score` | |
+| `vnpt_front_luminance_score` | `object.quality_front.luminance_score` | |
+| `vnpt_back_blur_score` | `object.quality_back.blur_score` | |
+| `vnpt_back_luminance_score` | `object.quality_back.luminance_score` | |
+| `vnpt_match_id` | `object.match_front_back.match_id` | |
+| `vnpt_match_name` | `object.match_front_back.match_name` | |
+| `vnpt_match_bod` | `object.match_front_back.match_bod` | |
+| `vnpt_match_sex` | `object.match_front_back.match_sex` | ⚠️ sửa 2026-07-08 — cột cũ map `matchFrontBack.matchValidDate`, field này KHÔNG tồn tại; field thật là `match_sex` |
+| `vnpt_nationality` | `object.nationality` | |
+| `vnpt_citizen_id_chip` | `object.dict_qr.SoCCCD` | ⚠️ sửa 2026-07-08 — cột cũ map `object.citizenIdChip` (không tồn tại). Giá trị đúng nằm trong QR decode (`dict_qr`), dùng đối chiếu với `vnpt_citizen_id` (OCR mặt thẻ) |
+| `vnpt_qr_match_summary` | Tính từ `object.match_qr.*` | Mới — BE tự suy ra: `PASS` nếu cả 4 field con = `"yes"`, ngược lại `FAIL` |
+| `mrz_line1` | `object.mrz[0]` | |
+| `mrz_line2` | `object.mrz[1]` | |
+| `mrz_line3` | `object.mrz[2]` | Mới — dòng họ tên trong MRZ 3 dòng (định dạng TD1) |
+| `mrz_overall_prob` | `object.mrz_prob` | |
+| `vnpt_raw_data` | Toàn bộ JSON response (serialize) | Bao gồm cả `dict_qr`, `new_post_code`/`post_code` (địa chỉ có cấu trúc), `match_qr` chi tiết — các field này chưa có cột riêng, tra trực tiếp trong raw JSON khi điều tra sâu |
 
 ### 0.5 Mapping SDK Log Keys → `ekyc_attempt_log`
 
@@ -298,14 +349,21 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 
 | `ekyc_attempt_log` column | SDK Log Key | Giá trị |
 |--------------------------|------------|---------|
-| `liveness_card_front_result` | `LOG_LIVENESS_CARD_FRONT` | `"success"` / `"failure"` |
-| `liveness_card_rear_result` | `LOG_LIVENESS_CARD_REAR` | `"success"` / `"failure"` |
-| `liveness_face_result` | `LOG_LIVENESS_FACE` | `"success"` / `"failure"` |
-| `face_mask_result` | `LOG_MASK_FACE` | `"success"` / `"failure"` |
-| `fake_liveness_prob` | Trong `LOG_LIVENESS_FACE` JSON | `fakeLivenessProb` (0–1) |
-| `fake_print_photo_prob` | Trong `LOG_LIVENESS_FACE` JSON | `fakePrintPhotoProb` (0–1) |
+| `liveness_card_front_result` | `LOG_LIVENESS_CARD_FRONT` | `"success"` / `"failure"` (JSON field: `liveness`) |
+| `liveness_card_rear_result` | `LOG_LIVENESS_CARD_REAR` | `"success"` / `"failure"` (JSON field: `liveness`) |
+| `liveness_face_result` | `LOG_LIVENESS_FACE` | `"success"` / `"failure"` (JSON field: `liveness`) |
+| `face_mask_result` | `LOG_MASK_FACE` | `"success"` nếu `masked = "no"`, `"failure"` nếu `masked = "yes"` |
+| `liveness_card_front_fake_prob` | `LOG_LIVENESS_CARD_FRONT` | `fake_liveness_prob` (0–1) — ⚠️ sửa 2026-07-08, xem note bên dưới |
+| `liveness_card_front_fake_print_prob` | `LOG_LIVENESS_CARD_FRONT` | `fake_print_photo_prob` (0–1) |
+| `liveness_card_front_face_swapping` | `LOG_LIVENESS_CARD_FRONT` | `face_swapping` (boolean) — mới 2026-07-08 |
+| `liveness_card_rear_fake_prob` | `LOG_LIVENESS_CARD_REAR` | `fake_liveness_prob` (0–1) |
+| `liveness_card_rear_fake_print_prob` | `LOG_LIVENESS_CARD_REAR` | `fake_print_photo_prob` (0–1) |
+| `liveness_card_rear_face_swapping` | `LOG_LIVENESS_CARD_REAR` | `face_swapping` (boolean) — mới 2026-07-08 |
+| `liveness_face_multiple_faces` | `LOG_LIVENESS_FACE` | `multiple_faces_details` → true nếu bất kỳ face nào = true — mới 2026-07-08 |
 | `face_compare_msg` | `LOG_COMPARE` JSON | `"MATCH"` / `"NOMATCH"` |
-| `face_compare_prob` | `LOG_COMPARE` JSON | Similarity score (0–1) |
+| `face_compare_prob` | `LOG_COMPARE` JSON | `prob` — similarity score, sample thực tế trả thang **0–100** (VD `98.596`), không phải 0–1 như comment cũ. BE cần chuẩn hóa đơn vị khi lưu (khuyến nghị: giữ nguyên thang 0–100 để khớp với `matchingRate` đã dùng ở `/lotte/ekycs`, xem note reuse bên dưới) |
+| `face_compare_match_warning` | `LOG_COMPARE` JSON | `match_warning` (`"yes"`/`"no"`) — mới 2026-07-08 |
+| `face_compare_multiple_faces` | `LOG_COMPARE` JSON | `multiple_faces_details` → true nếu bất kỳ face nào = true — mới 2026-07-08 |
 | `image_front_url` | `LOG_PATH_IMAGE_FRONT` → upload S3 | URL sau khi BE upload |
 | `image_back_url` | `LOG_PATH_IMAGE_BACK` → upload S3 | URL sau khi BE upload |
 | `mrz_cross_check` | App tính toán | `PASS` / `PARTIAL_FAIL` / `FAIL` / `SKIPPED` |
@@ -313,7 +371,20 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 | `mrz_check_dob` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
 | `mrz_check_gender` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
 | `mrz_check_expiry` | App so MRZ parsed vs OCR | `MATCH` / `MISMATCH` |
+| `vnpt_ocr_log_id` | `logID` trong `LOG_OCR` | App đã có field này (`ocrLogId`) sẵn trong luồng `/lotte/ekycs` hiện tại — gửi kèm |
+| `vnpt_card_liveness_front_log_id` | `logID` trong `LOG_LIVENESS_CARD_FRONT` | App đã có sẵn (`cardLivenessLogId`) |
+| `vnpt_card_liveness_rear_log_id` | `logID` trong `LOG_LIVENESS_CARD_REAR` | App đã có sẵn (`cardRearLogId`) |
+| `vnpt_face_liveness_log_id` | `logID` trong `LOG_LIVENESS_FACE` | App đã có sẵn (`faceLivenessLogId`) |
+| `vnpt_face_compare_log_id` | `logID` trong `LOG_COMPARE` | App đã có sẵn (`compareLogId`) |
+| `vnpt_face_mask_log_id` | `logID` trong `LOG_MASK_FACE` | App đã có sẵn (`faceMaskLogId`) |
 
+> ⚠️ **Gap đã fix (2026-07-08) — đối chiếu với sample log thực tế do dev gửi:**
+> 1. **`fake_liveness_prob`/`fake_print_photo_prob` nằm sai vị trí trong spec.** Bản v2.0 ghi 2 field này lấy từ `LOG_LIVENESS_FACE`, nhưng sample thực tế (2 mẫu OCR CCCD 2 mặt) cho thấy chúng nằm ở `LOG_LIVENESS_CARD_FRONT`/`LOG_LIVENESS_CARD_REAR`, KHÔNG có trong `LOG_LIVENESS_FACE`. Đã tách thành 6 cột riêng theo từng loại check (front/rear × fake_prob/fake_print_prob + face_swapping) thay vì 2 cột dùng chung — tránh ghi đè lẫn nhau.
+> 2. **`face_swapping`/`face_swapping_prob`** (phát hiện đổi mặt/deepfake) — field hoàn toàn mới, có trong `LOG_LIVENESS_CARD_FRONT`/`REAR`, spec cũ không có cột nào.
+> 3. **`multiple_faces`/`multiple_faces_details`** — cả `LOG_LIVENESS_FACE` và `LOG_COMPARE` đều trả cờ phát hiện nhiều khuôn mặt trong ảnh (dấu hiệu gian lận rõ ràng: ảnh có 2 người, hoặc dùng ảnh người khác chèn vào). Spec cũ không capture.
+> 4. **6 VNPT logID** (`ocrLogId`, `cardLivenessLogId`, `cardRearLogId`, `compareLogId`, `faceLivenessLogId`, `faceMaskLogId`) — các field này **đã chạy thật trong production** trên `EKycAddReq` (gửi kèm `/lotte/ekycs`), nhưng chưa từng được đưa vào schema `ekyc_attempt_log`. Rất có giá trị để tra soát chéo với VNPT khi có tranh chấp/audit — App không cần tính toán gì thêm, chỉ cần gửi kèm các ID đã có sẵn.
+> 5. **Reuse `matchingRate` có sẵn:** App hiện đã tính `matchingRate` (= `LOG_COMPARE.object.prob`) để gửi Lotte qua `vnptPoint` trong luồng `/lotte/ekycs`. Khi gọi `/ekycs/attempt-log`, App nên gửi lại đúng giá trị này cho `faceCompareProb` thay vì tính lại từ đầu — tránh rủi ro 2 nguồn lệch nhau.
+>
 > ⚠️ **Gap đã fix (2026-07-01):** Các cột trên chỉ lưu field **đã được App cherry-pick** từ mỗi SDK log key (VD: chỉ lấy `liveness` string và `fakeLivenessProb` từ `LOG_LIVENESS_FACE`, bỏ qua các field khác SDK có thể trả về). Nếu VNPT SDK trả thêm field mới hoặc field ngoài danh sách đã map, dữ liệu đó **mất vĩnh viễn** — không audit được.
 >
 > **Fix:** thêm cột `sdk_raw_logs` (LONGTEXT) — App gửi **nguyên văn, không lọc field**, JSON gộp của toàn bộ 7 log key còn lại:
@@ -336,6 +407,213 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 |-------------|---------------------|------------------------------|
 | **Post-submit** (App gọi `/lotte/ekycs`) | BE extract từ `VNPTDataBase64.Img.imgFront/imgBack`, upload S3 | App gửi kèm trong request body |
 | **Pre-submit** (App log riêng qua `/ekycs/attempt-log`) | App gửi `imageFrontBase64` / `imageBackBase64`, BE upload S3 | App gửi kèm trong request body |
+
+---
+
+## 0.6 Sample thực tế (đã ẩn danh) — cho dev tham khảo
+
+> Nguồn: dev gửi 2 bộ log thật từ production (2026-07-02), review 2026-07-08. Tên, số CCCD, ngày sinh, địa chỉ, ảnh path, chữ ký số (`dataSign`), payload base64 (`dataBase64`) đã được **thay bằng giá trị giả** — cấu trúc field, kiểu dữ liệu và các field ít gặp (đặc biệt `match_qr`, `dict_qr`, `face_swapping`, `multiple_faces`) giữ nguyên 100% so với bản gốc để dev đối chiếu khi implement `buildAttemptLog()`.
+
+### 0.6.1 `LOG_OCR` — kết quả OCR CCCD 2 mặt (nguồn của `vnptRawData` / cột `vnpt_*`)
+
+```json
+{
+  "logID": "<vnpt-log-id>",
+  "statusCode": 200,
+  "message": "IDG-00000000",
+  "server_version": "1.6.16",
+  "challengeCode": "INNOVATIONCENTER",
+  "imgs": {
+    "img_front": "<bucket-path>/front.jpg",
+    "img_back": "<bucket-path>/back.jpg"
+  },
+  "object": {
+    "msg": "OK",
+    "msg_back": "OK",
+    "type_id": 6,
+    "back_type_id": 6,
+    "card_type": "CĂN CƯỚC",
+
+    "id": "001099999999",
+    "id_probs": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    "citizen_id": "-",
+    "citizen_id_prob": 0,
+
+    "name": "NGUYEN VAN A",
+    "name_prob": 1,
+    "name_fake_warning": "real",
+    "name_fake_warning_prob": 0.2,
+
+    "gender": "Nam",
+    "birth_day": "01/01/1990",
+    "birth_day_prob": 0.999,
+    "nationality": "Việt Nam",
+    "issue_date": "18/12/2024",
+    "issue_date_prob": 0.994,
+    "issue_place": "BỘ CÔNG AN",
+    "issue_place_prob": 0.999,
+    "expiry_date": "01/01/2039",
+    "expiry_date_prob": 0.999,
+    "valid_date": "01/01/2039",
+    "valid_date_prob": 0.999,
+    "expire_warning": "no",
+    "back_expire_warning": "no",
+
+    "mrz": [
+      "IDVNM0099999999001099999999<<4",
+      "9001011M3901011VNM<<<<<<<<<<<4",
+      "NGUYEN<<VAN<A<<<<<<<<<<<<<<<<<"
+    ],
+    "mrz_prob": 0.994,
+    "mrz_probs": [0.996, 0.999, 0.986],
+    "mrz_valid_score": 100,
+
+    "tampering": { "is_legal": "yes", "warning": [] },
+    "id_fake_warning": "no",
+    "id_fake_prob": 0,
+    "dupplication_warning": false,
+    "dob_fake_warning": false,
+    "address_fake_warning": false,
+    "issuedate_fake_warning": false,
+    "general_warning": [],
+    "corner_warning": "no",
+    "back_corner_warning": "no",
+
+    "checking_result_front": {
+      "recaptured_result": "0", "recaptured_prob": 0.106,
+      "edited_result": "0", "edited_prob": 0.151,
+      "check_photocopied_result": "0", "check_photocopied_prob": 0,
+      "corner_cut_result": "0", "corner_cut_prob": [0.096, 0.096, 0.096, 0.096]
+    },
+    "checking_result_back": {
+      "recaptured_result": "0", "recaptured_prob": 0.085,
+      "edited_result": "0", "edited_prob": 0,
+      "check_photocopied_result": "0", "check_photocopied_prob": 0,
+      "corner_cut_result": "0", "corner_cut_prob": [0.100, 0.100, 0.100, 0.100]
+    },
+    "quality_front": {
+      "blur_score": 0.208, "luminance_score": 0.675, "bright_spot_score": 0,
+      "resolution": [440, 704],
+      "final_result": { "blurred_likelihood": "unlikely", "low_resolution_likelihood": "unlikely", "bad_luminance_likelihood": "unlikely", "bright_spot_likelihood": "unlikely" }
+    },
+    "quality_back": {
+      "blur_score": 0.048, "luminance_score": 0.667, "bright_spot_score": 0,
+      "resolution": [423, 678],
+      "final_result": { "blurred_likelihood": "unlikely", "low_resolution_likelihood": "unlikely", "bad_luminance_likelihood": "unlikely", "bright_spot_likelihood": "unlikely" }
+    },
+
+    "match_front_back": { "match_id": "yes", "match_name": "yes", "match_bod": "yes", "match_sex": "yes" },
+
+    "match_qr": {
+      "match_id_qr": "yes", "match_name_qr": "yes",
+      "match_issue_date_qr": "yes", "match_bod_qr": "yes"
+    },
+    "dict_qr": {
+      "SoCCCD": "001099999999", "SoCMND": "-",
+      "name": "Nguyễn Văn A", "gender": "Nam",
+      "birth_day": "01011990", "issue_date": "18122024",
+      "recent_location": "<địa chỉ đã ẩn danh>"
+    },
+
+    "new_post_code": [
+      { "type": "address", "city": ["01", "Thành phố Hà Nội", 1], "district": ["", "", 1], "ward": ["00004", "Phường Ba Đình", 1], "detail": "<đã ẩn danh>" },
+      { "type": "hometown", "city": ["01", "Thành phố Hà Nội", 1], "district": ["", "", 1], "ward": ["00004", "Phường Ba Đình", 1], "detail": "" }
+    ],
+
+    "origin_location": "<đã ẩn danh>",
+    "recent_location": "<đã ẩn danh>",
+    "place_birth": "<đã ẩn danh>",
+    "features": "-",
+    "features_prob": 0
+  }
+}
+```
+
+**Điểm cần chú ý khi dev đọc payload này:**
+
+- `id` = số CCCD hiện tại (dùng cho `vnpt_citizen_id`) — **khác** `citizen_id` (số CMND cũ, `"-"` nếu chưa từng có, dùng cho `vnpt_old_citizen_id`).
+- `mrz` có **3 phần tử** (2 dòng dữ liệu + 1 dòng họ tên) — parse đủ cả 3, đừng giả định chỉ có 2 như tài liệu SDK cũ.
+- `match_front_back` không có `match_valid_date` — trường thật là `match_sex`.
+- `match_qr` + `dict_qr` là 2 khối hoàn toàn tách biệt với `match_front_back`: một cái so QR-vs-OCR, một cái là data thô decode từ QR — cả hai đều nằm trong `vnptRawData`, BE tự parse, App không cần gửi thêm gì.
+- `new_post_code` cấu trúc lồng nhau theo `[city, district, ward]` dạng mảng `[code, name, flag]` — nếu chỉ cần lưu địa chỉ dạng text, ưu tiên dùng field song song `recent_location`/`origin_location` (string phẳng), còn `new_post_code`/`post_code` để trong `vnpt_raw_data` phục vụ tra cứu sâu.
+
+### 0.6.2 SDK log keys còn lại (nguồn của `sdkRawLogs` / các cột liveness, face compare)
+
+```json
+{
+  "livenessCardFront": {
+    "logID": "<vnpt-log-id>",
+    "statusCode": 200,
+    "object": {
+      "liveness": "success",
+      "liveness_msg": "Giấy tờ thật",
+      "fake_liveness": false,
+      "fake_liveness_prob": 0.106,
+      "fake_print_photo": false,
+      "fake_print_photo_prob": 0,
+      "face_swapping": false,
+      "face_swapping_prob": 0.036
+    }
+  },
+  "livenessCardRear": {
+    "logID": "<vnpt-log-id>",
+    "statusCode": 200,
+    "object": {
+      "liveness": "success",
+      "liveness_msg": "Giấy tờ thật",
+      "fake_liveness": false,
+      "fake_liveness_prob": 0.086,
+      "fake_print_photo": false,
+      "fake_print_photo_prob": 0,
+      "face_swapping": false,
+      "face_swapping_prob": 0
+    }
+  },
+  "livenessFace": {
+    "logID": "<vnpt-log-id>",
+    "statusCode": 200,
+    "object": {
+      "liveness": "success",
+      "liveness_msg": "Người thật",
+      "liveness_prob": 0.2,
+      "age": 29,
+      "gender": "Nam",
+      "is_eye_open": "yes",
+      "blur_face": "no",
+      "blur_face_score": 0,
+      "background_warning": "no",
+      "multiple_faces_details": { "multiple_face_1": false, "multiple_face_2": false }
+    }
+  },
+  "maskFace": {
+    "logID": "<vnpt-log-id>",
+    "statusCode": 200,
+    "object": { "masked": "no" }
+  },
+  "compare": {
+    "logID": "<vnpt-log-id>",
+    "statusCode": 200,
+    "object": {
+      "msg": "MATCH",
+      "result": "Khuôn mặt khớp 98.596%",
+      "prob": 98.596,
+      "match_warning": "no",
+      "multiple_faces": false,
+      "multiple_faces_details": { "multiple_face_1": false, "multiple_face_2": false }
+    }
+  },
+  "pathImageFront": "file:///.../ImageCropedFront.png",
+  "pathImageBack": "file:///.../ImageCropedBack.png"
+}
+```
+
+**Điểm cần chú ý:**
+
+- `fake_liveness_prob`/`fake_print_photo_prob`/`face_swapping` chỉ xuất hiện ở `livenessCardFront`/`livenessCardRear` — **không có** trong `livenessFace` (bản spec trước đây giả định sai vị trí này).
+- `livenessFace.liveness_prob` là xác suất liveness **thật** của khuôn mặt (khác ý nghĩa với `fake_liveness_prob` của 2 mặt thẻ) — không nhầm 2 field cùng tên gốc "liveness prob" nhưng khác ngữ nghĩa.
+- `compare.prob` trả về thang **0–100** (không phải 0–1) — khớp với `matchingRate` mà App đã tính sẵn cho luồng `/lotte/ekycs`, nên dùng lại giá trị đó thay vì tính lại.
+- `multiple_faces_details` xuất hiện ở cả `livenessFace` và `compare` — đều là cờ chống gian lận (ảnh có nhiều hơn 1 khuôn mặt), nên map vào 2 cột riêng (`liveness_face_multiple_faces`, `face_compare_multiple_faces`) vì có thể chỉ 1 trong 2 bước phát hiện được.
+- Mỗi khối đều có `logID` riêng — map đúng theo Section 0.5 vào 6 cột `vnpt_*_log_id`.
 
 ---
 
@@ -385,6 +663,9 @@ public class EKycAttemptLog implements Serializable {
 
     @Column(name = "vnpt_citizen_id")
     private String vnptCitizenId;
+
+    @Column(name = "vnpt_old_citizen_id")
+    private String vnptOldCitizenId;   // object.citizen_id — CMND cũ, "-" nếu không có
 
     @Column(name = "vnpt_name")
     private String vnptName;
@@ -465,15 +746,19 @@ public class EKycAttemptLog implements Serializable {
     @Column(name = "vnpt_match_bod")
     private String vnptMatchBod;
 
-    @Column(name = "vnpt_match_valid_date")
-    private String vnptMatchValidDate;
+    @Column(name = "vnpt_match_sex")
+    private String vnptMatchSex;   // object.match_front_back.match_sex — thay cho "matchValidDate" không tồn tại
 
     // Extended OCR Fields
     @Column(name = "vnpt_nationality")
     private String vnptNationality;
 
     @Column(name = "vnpt_citizen_id_chip")
-    private String vnptCitizenIdChip;
+    private String vnptCitizenIdChip;   // object.dict_qr.SoCCCD (QR/chip decode)
+
+    // QR Cross-Check
+    @Column(name = "vnpt_qr_match_summary")
+    private String vnptQrMatchSummary;   // PASS / FAIL / SKIPPED — BE tự suy ra từ object.match_qr.*
 
     // MRZ Raw Data
     @Column(name = "mrz_line1")
@@ -481,6 +766,9 @@ public class EKycAttemptLog implements Serializable {
 
     @Column(name = "mrz_line2")
     private String mrzLine2;
+
+    @Column(name = "mrz_line3")
+    private String mrzLine3;   // object.mrz[2] — dòng họ tên (CCCD gắn chip có 3 dòng MRZ)
 
     @Column(name = "mrz_overall_prob")
     private Double mrzOverallProb;
@@ -514,18 +802,59 @@ public class EKycAttemptLog implements Serializable {
     @Column(name = "face_mask_result")
     private String faceMaskResult;
 
-    @Column(name = "fake_liveness_prob")
-    private Double fakeLivenessProb;
+    // Card Liveness Fraud Detail — tách theo mặt (xem note 2026-07-08 ở Section 0.5)
+    @Column(name = "liveness_card_front_fake_prob")
+    private Double livenessCardFrontFakeProb;
 
-    @Column(name = "fake_print_photo_prob")
-    private Double fakePrintPhotoProb;
+    @Column(name = "liveness_card_front_fake_print_prob")
+    private Double livenessCardFrontFakePrintProb;
+
+    @Column(name = "liveness_card_front_face_swapping")
+    private Boolean livenessCardFrontFaceSwapping;
+
+    @Column(name = "liveness_card_rear_fake_prob")
+    private Double livenessCardRearFakeProb;
+
+    @Column(name = "liveness_card_rear_fake_print_prob")
+    private Double livenessCardRearFakePrintProb;
+
+    @Column(name = "liveness_card_rear_face_swapping")
+    private Boolean livenessCardRearFaceSwapping;
+
+    @Column(name = "liveness_face_multiple_faces")
+    private Boolean livenessFaceMultipleFaces;
 
     // Face Compare
     @Column(name = "face_compare_msg")
     private String faceCompareMsg;   // MATCH / NOMATCH
 
     @Column(name = "face_compare_prob")
-    private Double faceCompareProb;
+    private Double faceCompareProb;   // thang 0-100 theo VNPT thực tế (không phải 0-1)
+
+    @Column(name = "face_compare_match_warning")
+    private String faceCompareMatchWarning;
+
+    @Column(name = "face_compare_multiple_faces")
+    private Boolean faceCompareMultipleFaces;
+
+    // VNPT Log IDs — đối chiếu chéo khi audit/tranh chấp
+    @Column(name = "vnpt_ocr_log_id")
+    private String vnptOcrLogId;
+
+    @Column(name = "vnpt_card_liveness_front_log_id")
+    private String vnptCardLivenessFrontLogId;
+
+    @Column(name = "vnpt_card_liveness_rear_log_id")
+    private String vnptCardLivenessRearLogId;
+
+    @Column(name = "vnpt_face_liveness_log_id")
+    private String vnptFaceLivenessLogId;
+
+    @Column(name = "vnpt_face_compare_log_id")
+    private String vnptFaceCompareLogId;
+
+    @Column(name = "vnpt_face_mask_log_id")
+    private String vnptFaceMaskLogId;
 
     // Image Storage (S3 / MinIO)
     @Column(name = "image_front_url")
@@ -594,7 +923,9 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
             log.setVnptStatusCode(vnpt.getStatusCode());
             VNPTDataBase64.VNPTObject obj = vnpt.getObject();
             if (obj != null) {
-                log.setVnptCitizenId(obj.getCitizenId());
+                // ⚠️ 2026-07-08: obj.getId() — KHÔNG dùng obj.getCitizenId() (field không tồn tại trong response thật)
+                log.setVnptCitizenId(obj.getId());
+                log.setVnptOldCitizenId(obj.getCitizenIdOld()); // map JSON field "citizen_id" — CMND cũ, "-" nếu không có
                 log.setVnptName(obj.getName());
                 log.setVnptCardType(obj.getCardType());
                 log.setVnptCitizenIdProb(obj.getCitizenIdProb());
@@ -640,19 +971,37 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
                     log.setVnptMatchId(obj.getMatchFrontBack().getMatchId());
                     log.setVnptMatchName(obj.getMatchFrontBack().getMatchName());
                     log.setVnptMatchBod(obj.getMatchFrontBack().getMatchBod());
-                    log.setVnptMatchValidDate(obj.getMatchFrontBack().getMatchValidDate());
+                    // ⚠️ 2026-07-08: field thật là match_sex, KHÔNG có match_valid_date
+                    log.setVnptMatchSex(obj.getMatchFrontBack().getMatchSex());
                 }
 
                 // Extended OCR
                 log.setVnptNationality(obj.getNationality());
-                log.setVnptCitizenIdChip(obj.getCitizenIdChip());
+                // ⚠️ 2026-07-08: obj.getCitizenIdChip() không tồn tại — giá trị đúng nằm trong QR decode
+                if (obj.getDictQr() != null) {
+                    log.setVnptCitizenIdChip(obj.getDictQr().getSoCCCD());
+                }
+
+                // QR Cross-Check — mới 2026-07-08, BE tự suy ra PASS/FAIL, App không cần gửi thêm
+                if (obj.getMatchQr() != null) {
+                    boolean allYes = "yes".equals(obj.getMatchQr().getMatchIdQr())
+                        && "yes".equals(obj.getMatchQr().getMatchNameQr())
+                        && "yes".equals(obj.getMatchQr().getMatchIssueDateQr())
+                        && "yes".equals(obj.getMatchQr().getMatchBodQr());
+                    log.setVnptQrMatchSummary(allYes ? "PASS" : "FAIL");
+                } else {
+                    log.setVnptQrMatchSummary("SKIPPED");
+                }
             }
 
             // ── MRZ Raw Data ──
-            // vnpt.getMrz() trả về List<String> — 2 dòng MRZ thô
+            // vnpt.getMrz() trả về List<String> — CCCD gắn chip trả 3 dòng (2 dòng dữ liệu + 1 dòng họ tên)
             if (vnpt.getMrz() != null && vnpt.getMrz().size() >= 2) {
                 log.setMrzLine1(vnpt.getMrz().get(0));
                 log.setMrzLine2(vnpt.getMrz().get(1));
+            }
+            if (vnpt.getMrz() != null && vnpt.getMrz().size() >= 3) {
+                log.setMrzLine3(vnpt.getMrz().get(2));
             }
             log.setMrzOverallProb(vnpt.getMrzProb());
             // MRZ cross-check fields được App tính toán và gửi kèm request
@@ -932,12 +1281,14 @@ Response 200:
 
   "vnptOcr": {
     "citizenId": "038xxx",
+    "oldCitizenId": "-",
     "name": "NGUYEN VAN A",
     "cardType": "CC",
     "citizenIdProb": 0.95,
-    "mrzValidScore": 8,
+    "mrzValidScore": 100,
     "nationality": "Việt Nam",
-    "citizenIdChip": "038xxxxxxxx"
+    "citizenIdChip": "038xxxxxxxx",
+    "qrMatchSummary": "PASS"
   },
   "fraudDetection": {
     "isTampered": "Y",
@@ -965,19 +1316,34 @@ Response 200:
     "matchId": "MATCH",
     "matchName": "MATCH",
     "matchBod": "MATCH",
-    "matchValidDate": "MATCH"
+    "matchSex": "MATCH"
   },
   "livenessResults": {
     "cardFrontResult": "success",
     "cardRearResult": "success",
     "faceResult": "failure",
     "maskResult": "success",
-    "fakeLivenessProb": 0.12,
-    "fakePrintPhotoProb": 0.05
+    "cardFrontFakeProb": 0.12,
+    "cardFrontFakePrintProb": 0.05,
+    "cardFrontFaceSwapping": false,
+    "cardRearFakeProb": 0.09,
+    "cardRearFakePrintProb": 0,
+    "cardRearFaceSwapping": false,
+    "faceMultipleFaces": false
   },
   "faceCompare": {
     "msg": "MATCH",
-    "prob": 0.91
+    "prob": 91.0,
+    "matchWarning": "no",
+    "multipleFaces": false
+  },
+  "vnptLogIds": {
+    "ocr": "2076b017-7601-11f1-aa3e-475548588d85-4d2d722b-Zuulserver",
+    "cardLivenessFront": "1b9acacc-7601-11f1-bdd1-1f31c32b8112-702fe89a-Zuulserver",
+    "cardLivenessRear": "20768948-7601-11f1-ac87-b73f3ca2f7f2-6636f4df-Zuulserver",
+    "faceLiveness": "23bf2e86-7602-11f1-aa3e-c122f0288833-2fc5eb94-Zuulserver",
+    "faceCompare": "23c018e1-7602-11f1-ac87-75a8dc21ac2c-c187695f-Zuulserver",
+    "faceMask": "23bc6f8c-7602-11f1-bd72-098ea85a785c-060a2def-Zuulserver"
   },
   "images": {
     "frontUrl": "https://minio.example.com/ekyc/038xxx/attempt-1-front.jpg",
@@ -986,6 +1352,7 @@ Response 200:
   "mrz": {
     "line1": "IDVNM030207010063<<<<<<<<<<<<<<<",
     "line2": "0301230M3001158VNM<<<<<<<<<<<<<<4",
+    "line3": "NGUYEN<<VAN<A<<<<<<<<<<<<<<<<<",
     "overallProb": 0.97,
     "validScore": 9,
     "crossCheck": "PASS",
@@ -998,6 +1365,8 @@ Response 200:
   }
 }
 ```
+
+> Cập nhật 2026-07-08: `matchValidDate` → `matchSex` (field cũ không tồn tại), `fakeLivenessProb`/`fakePrintPhotoProb` tách theo mặt trước/sau, thêm `qrMatchSummary`, `faceSwapping`, `multipleFaces`, và object `vnptLogIds` mới — xem lý do ở Section 0.4/0.5.
 
 ---
 
@@ -1050,6 +1419,7 @@ public class EKycAttemptLogService {
         // Map MRZ fields từ request (SDK-only, không có trong rawData)
         log.setMrzLine1(req.getMrzLine1());
         log.setMrzLine2(req.getMrzLine2());
+        log.setMrzLine3(req.getMrzLine3());   // mới 2026-07-08 — dòng họ tên MRZ
         log.setMrzOverallProb(req.getMrzProb());
         log.setVnptMrzValidScore(req.getMrzValidScore());
         log.setMrzCrossCheck(req.getMrzCrossCheck());
@@ -1063,10 +1433,28 @@ public class EKycAttemptLogService {
         log.setLivenessCardRearResult(req.getLivenessCardRearResult());
         log.setLivenessFaceResult(req.getLivenessFaceResult());
         log.setFaceMaskResult(req.getFaceMaskResult());
-        log.setFakeLivenessProb(req.getFakeLivenessProb());
-        log.setFakePrintPhotoProb(req.getFakePrintPhotoProb());
+
+        // Card liveness fraud detail — tách theo mặt (sửa 2026-07-08, xem Section 0.5)
+        log.setLivenessCardFrontFakeProb(req.getLivenessCardFrontFakeProb());
+        log.setLivenessCardFrontFakePrintProb(req.getLivenessCardFrontFakePrintProb());
+        log.setLivenessCardFrontFaceSwapping(req.getLivenessCardFrontFaceSwapping());
+        log.setLivenessCardRearFakeProb(req.getLivenessCardRearFakeProb());
+        log.setLivenessCardRearFakePrintProb(req.getLivenessCardRearFakePrintProb());
+        log.setLivenessCardRearFaceSwapping(req.getLivenessCardRearFaceSwapping());
+        log.setLivenessFaceMultipleFaces(req.getLivenessFaceMultipleFaces());
+
         log.setFaceCompareMsg(req.getFaceCompareMsg());
         log.setFaceCompareProb(req.getFaceCompareProb());
+        log.setFaceCompareMatchWarning(req.getFaceCompareMatchWarning());
+        log.setFaceCompareMultipleFaces(req.getFaceCompareMultipleFaces());
+
+        // VNPT log IDs — App đã có sẵn trong luồng /lotte/ekycs, chỉ cần gửi kèm (mới 2026-07-08)
+        log.setVnptOcrLogId(req.getOcrLogId());
+        log.setVnptCardLivenessFrontLogId(req.getCardLivenessFrontLogId());
+        log.setVnptCardLivenessRearLogId(req.getCardLivenessRearLogId());
+        log.setVnptFaceLivenessLogId(req.getFaceLivenessLogId());
+        log.setVnptFaceCompareLogId(req.getFaceCompareLogId());
+        log.setVnptFaceMaskLogId(req.getFaceMaskLogId());
 
         // Upload ảnh nếu có
         if (StringUtils.isNotBlank(req.getImageFrontBase64())) {
@@ -1102,14 +1490,22 @@ public class EKycAttemptLogRequest {
     String vnptRawData;   // Raw JSON của LOG_OCR (Base64), BE tự parse ra các cột vnpt_*
     String sdkRawLogs;    // Raw JSON gộp 7 SDK log key còn lại — App gửi NGUYÊN VĂN, không tự lọc field
     // MRZ fields
-    String mrzLine1; String mrzLine2; Double mrzProb; Integer mrzValidScore;
+    String mrzLine1; String mrzLine2; String mrzLine3; Double mrzProb; Integer mrzValidScore;
     String mrzCrossCheck; String mrzCheckId; String mrzCheckDob;
     String mrzCheckGender; String mrzCheckExpiry;
     // Liveness & face compare
     String livenessCardFrontResult; String livenessCardRearResult;
     String livenessFaceResult; String faceMaskResult;
-    Double fakeLivenessProb; Double fakePrintPhotoProb;
-    String faceCompareMsg; Double faceCompareProb;
+    // Card liveness fraud detail — tách theo mặt (xem Section 0.5, sửa 2026-07-08)
+    Double livenessCardFrontFakeProb; Double livenessCardFrontFakePrintProb; Boolean livenessCardFrontFaceSwapping;
+    Double livenessCardRearFakeProb; Double livenessCardRearFakePrintProb; Boolean livenessCardRearFaceSwapping;
+    Boolean livenessFaceMultipleFaces;
+    // Face compare
+    String faceCompareMsg; Double faceCompareProb;   // faceCompareProb thang 0-100, khớp matchingRate đã dùng ở /lotte/ekycs
+    String faceCompareMatchWarning; Boolean faceCompareMultipleFaces;
+    // VNPT log IDs — App đã có sẵn trong luồng /lotte/ekycs, gửi kèm để tra soát chéo (mới 2026-07-08)
+    String ocrLogId; String cardLivenessFrontLogId; String cardLivenessRearLogId;
+    String faceLivenessLogId; String faceCompareLogId; String faceMaskLogId;
     // Images (base64)
     String imageFrontBase64;
     String imageBackBase64;
@@ -1219,9 +1615,10 @@ Content-Type: application/json
   // Mục đích: audit đầy đủ, không phụ thuộc vào việc BE đã map cột riêng cho field đó chưa.
   "sdkRawLogs": "{\"livenessCardFront\":{...},\"livenessCardRear\":{...},\"livenessFace\":{...},\"maskFace\":{...},\"compare\":{...},\"pathImageFront\":\"...\",\"pathImageBack\":\"...\"}",
 
-  // ── MRZ (App tính toán từ SDK) ──
+  // ── MRZ (App tính toán từ SDK) ── — mrzLine3 mới 2026-07-08, CCCD gắn chip trả 3 dòng MRZ
   "mrzLine1":       "IDVNM030207010063<<<<<<<<<<<<<<<",
   "mrzLine2":       "0301230M3001158VNM<<<<<<<<<<<<<<4",
+  "mrzLine3":       "NGUYEN<<VAN<A<<<<<<<<<<<<<<<<<",
   "mrzProb":        0.97,
   "mrzValidScore":  9,
   "mrzCrossCheck":  "PASS",
@@ -1235,10 +1632,29 @@ Content-Type: application/json
   "livenessCardRearResult":  "success",
   "livenessFaceResult":      "success",
   "faceMaskResult":          "success",
-  "fakeLivenessProb":        0.05,
-  "fakePrintPhotoProb":      0.02,
-  "faceCompareMsg":          "MATCH",
-  "faceCompareProb":         0.92,
+
+  // Card liveness fraud detail — tách theo mặt (sửa 2026-07-08: fake_liveness_prob/fake_print_photo_prob
+  // thực tế nằm ở LOG_LIVENESS_CARD_FRONT/REAR, không phải LOG_LIVENESS_FACE như bản spec trước)
+  "livenessCardFrontFakeProb":      0.05,
+  "livenessCardFrontFakePrintProb": 0.02,
+  "livenessCardFrontFaceSwapping":  false,
+  "livenessCardRearFakeProb":       0.04,
+  "livenessCardRearFakePrintProb":  0,
+  "livenessCardRearFaceSwapping":   false,
+  "livenessFaceMultipleFaces":      false,
+
+  "faceCompareMsg":            "MATCH",
+  "faceCompareProb":           98.6,
+  "faceCompareMatchWarning":   "no",
+  "faceCompareMultipleFaces":  false,
+
+  // ── VNPT log IDs — App đã có sẵn (dùng chung với luồng /lotte/ekycs), gửi kèm để tra soát chéo với VNPT ──
+  "ocrLogId":              "2076b017-7601-11f1-aa3e-475548588d85-4d2d722b-Zuulserver",
+  "cardLivenessFrontLogId":"1b9acacc-7601-11f1-bdd1-1f31c32b8112-702fe89a-Zuulserver",
+  "cardLivenessRearLogId": "20768948-7601-11f1-ac87-b73f3ca2f7f2-6636f4df-Zuulserver",
+  "faceLivenessLogId":     "23bf2e86-7602-11f1-aa3e-c122f0288833-2fc5eb94-Zuulserver",
+  "faceCompareLogId":      "23c018e1-7602-11f1-ac87-75a8dc21ac2c-c187695f-Zuulserver",
+  "faceMaskLogId":         "23bc6f8c-7602-11f1-bd72-098ea85a785c-060a2def-Zuulserver",
 
   // ── Ảnh OCR (REQUIRED khi outcome = VNPT_FAILED hoặc failureStep = VNPT_OCR) ──
   // App lấy từ LOG_PATH_IMAGE_FRONT / LOG_PATH_IMAGE_BACK (SDK trả về local path)
@@ -1261,6 +1677,8 @@ Content-Type: application/json
 | `vnptRawData` | Optional. Khi có, BE extract VNPT fields (override các field vnpt_* được gửi riêng nếu có conflict) |
 | `sdkRawLogs` | **Bắt buộc** khi App đã nhận được kết quả từ bất kỳ SDK log key nào (liveness/mask/compare) — kể cả khi outcome cuối là `SUCCESS`. Nếu SDK chưa chạy bước nào (fail ngay ở OCR) → có thể để trống. App gửi **nguyên văn** object SDK trả về, không rút gọn field. |
 | `mrzValidScore` | Optional. Nếu null → `mrz_cross_check = SKIPPED` |
+| `mrzLine3` | Optional nhưng khuyến nghị luôn gửi cùng `mrzLine1`/`mrzLine2` khi SDK trả về 3 dòng MRZ (CCCD gắn chip) — mới 2026-07-08 |
+| `ocrLogId`, `cardLivenessFrontLogId`, `cardLivenessRearLogId`, `faceLivenessLogId`, `faceCompareLogId`, `faceMaskLogId` | Optional nhưng khuyến nghị luôn gửi — App đã tính sẵn các ID này cho luồng `/lotte/ekycs`, không tốn thêm chi phí. Không có các ID này thì không tra soát chéo được với VNPT khi có tranh chấp (mới 2026-07-08) |
 | Ảnh size | Max 5 MB mỗi ảnh sau base64 decode |
 | `sdkRawLogs` size | Max 1 MB sau decode (cảnh báo nếu vượt — không phải lý do reject request) |
 
@@ -1277,6 +1695,8 @@ Content-Type: application/json
 
 3. Nếu có vnptRawData → parse và extract toàn bộ VNPT fields
    (giống buildAttemptLog() trong Section 2.3 — tái dùng method này)
+   → bao gồm cả vnpt_qr_match_summary (BE tự tính từ object.match_qr.*, xem 2.3)
+   và vnpt_citizen_id_chip (lấy từ object.dict_qr.SoCCCD, không phải field citizenIdChip)
 
 4. Upload ảnh lên S3/MinIO nếu imageFrontBase64 / imageBackBase64 có trong request:
    imageFrontUrl = imageStorageService.uploadBase64(
@@ -1372,4 +1792,4 @@ ekyc/{identifierId}/attempt-{attemptNumber}-back.jpg
 
 ---
 
-**Document Status:** Draft v2.0 | **For:** Backend Dev | **Next Steps:** Implement + unit test + image upload integration test
+**Document Status:** Draft v2.1 | **For:** Backend Dev | **Next Steps:** Implement + unit test (đặc biệt test case QR mismatch, face-swapping detected, multiple-faces detected) + image upload integration test
