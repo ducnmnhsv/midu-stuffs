@@ -565,7 +565,26 @@ const TASKS = [
     status: "backlog", priority: "P2", deadline: null,
     owner: "PO", jira: null,
     doc: "New feature in NHSV Pro/NHSV_Channel/Push_Notification/Push_Notification_Spec.md",
-    blocks: [], blockedBy: [], note: "Draft.",
+    blocks: [], blockedBy: ["NHP-ADMIN-NOTIF"],
+    note: "Draft. NH Research trigger đã chốt trong NHMTS-88 spec (internal call, audienceType=ALL, template song ngữ — Q1/Q2 đã đóng). Phần còn lại của spec này: Khuyến nghị trigger + deeplink FE + segment Phase 2.",
+  },
+  {
+    id: "NHP-ADMIN-NOTIF", title: "Spec: Send Notification from Admin Portal (NHMTS-88)",
+    area: "NHSV-Pro", feature: "Notification_Service", type: "Spec",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "PO", jira: "NHMTS-88",
+    doc: "NHMTS-88 Store push notification/Admin_Notification_API_Spec.md",
+    blocks: ["NHP-CHANNEL-PUSH"], blockedBy: [],
+    note: "Định nghĩa POST /api/v1/admin/notifications/send làm nền chung (audienceType: ALL/SEGMENT/USER_LIST) cho Admin Portal broadcast + NH Research/Khuyến nghị (SEGMENT) + Event Calendar GDKHQ (USER_LIST). Q1-Q4 (owner API app-facing, auth service-to-service, migrate schema cũ, convention API admin) cần BE Lead trả lời trước estimate.",
+  },
+  {
+    id: "NHP-ADMIN-NOTIF-FE", title: "FE: Admin Portal — Gửi thông báo (NHMTS-88)",
+    area: "NHSV-Pro", feature: "Notification_Service", type: "FE",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "FE team (nhsv-admin-fe)", jira: "NHMTS-88",
+    doc: "NHMTS-88 Store push notification/FE_Admin_Notification_Issue.md",
+    blocks: [], blockedBy: ["NHP-ADMIN-NOTIF"],
+    note: "⚠️ Chốt Q4 (convention API admin: TradeX chuẩn vs GenericResponse envelope của nhsv-admin) với BE Lead trước khi FE viết API client.",
   },
 
   // ==========================================================================

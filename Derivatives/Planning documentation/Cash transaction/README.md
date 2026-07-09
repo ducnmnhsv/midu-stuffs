@@ -31,10 +31,11 @@ Cash Transaction module handles all money-related operations for derivatives tra
 
 | In Scope | Out of Scope |
 |----------|--------------|
-| ✅ Internal cash transfers (DRACC-019, DRACC-020) | ❌ External bank transfers |
-| ✅ VSD margin deposit/withdrawal (DRACC-009, DRACC-021) | ❌ Equity cash transfers |
-| ✅ Cash statement / Lịch sử thanh toán (DRACC-023) | ❌ Payment gateway integration |
-| ✅ Transfer history queries | ❌ Bank reconciliation |
+| ✅ Internal cash transfers (DRACC-019, DRACC-020) | ❌ Equity cash transfers |
+| ✅ VSD margin deposit/withdrawal (DRACC-009, DRACC-021) | ❌ Payment gateway integration |
+| ✅ Cash statement / Lịch sử thanh toán (DRACC-023) | ❌ Bank reconciliation |
+| ✅ External bank withdrawal (DRACC-039, DRACC-040, DRACC-041) | |
+| ✅ Transfer history queries | |
 | 📋 Transaction fee calculation | |
 
 ---
@@ -118,6 +119,23 @@ VSD System (for margin transactions)
 
 ---
 
+### 4. External Withdrawal
+
+> **Location:** [`./External withdrawal/`](./External%20withdrawal/)
+
+**Purpose:** Rút tiền mặt từ sub phái sinh về tài khoản ngân hàng ngoài
+
+**APIs:**
+- DRACC-039: Query withdrawal history
+- DRACC-040: Execute withdrawal
+- DRACC-041: Query available withdrawal balance
+
+**Status:** 🔄 Draft (pending PM confirmation of Open Questions)
+
+[→ See External Withdrawal Documentation](./External%20withdrawal/README.md)
+
+---
+
 ## 📊 Implementation Status
 
 ### ✅ Completed Features
@@ -133,6 +151,7 @@ VSD System (for margin transactions)
 | Internal Transfer | DRACC-019, DRACC-020 | 📋 API Spec Done | High | 2-3 weeks |
 | VSD Transaction | DRACC-009, 021, 032, 033, 034 | 📋 API Spec Done | High | 3-4 weeks |
 | Cash Statement | DRACC-023 | 📋 API Spec Done | Medium | 1-2 weeks |
+| External Withdrawal | DRACC-039, 040, 041 | 🔄 Draft — pending Open Questions | High | TBD |
 
 ---
 
@@ -145,6 +164,7 @@ VSD System (for margin transactions)
 | 1 | Internal Transfer | [README.md](./Internal%20transfer/README.md) | [API Spec](./Internal%20transfer/Internal_Transfer_API_Spec.md) | 📋 Planning |
 | 2 | VSD Transaction | [README.md](./VSD%20transaction/README.md) | [API Spec](./VSD%20transaction/VSD_Transaction_API_Spec.md) | 📋 Planning |
 | 3 | Cash Statement | [README.md](./Cash%20statement/README.md) | [API Spec](./Cash%20statement/Cash_Statement_API_Spec.md) | 📋 Planning |
+| 4 | External Withdrawal | [README.md](./External%20withdrawal/README.md) | [API Spec](./External%20withdrawal/Sub_Account_Withdrawal_API_Spec.md) | 🔄 Draft |
 
 ### Reference Documents
 

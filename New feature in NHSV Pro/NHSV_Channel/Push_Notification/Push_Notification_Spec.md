@@ -17,11 +17,16 @@ Thông báo khi admin publish bài mới trong NHSV Channel — NH Research và 
 
 ## Notification Templates
 
-### TRIGGER_NH_RESEARCH_PUBLISH
+> **Cập nhật 2026-07-09:** template NH Research đã được chốt **song ngữ** và chuyển vào spec nền chung `NHMTS-88 Store push notification/Admin_Notification_API_Spec.md` (section "Trigger tự động — NH Research publish"). Bảng dưới là bản tham chiếu.
+
+### TRIGGER_NH_RESEARCH_PUBLISH (đã chốt — song ngữ)
 
 ```
-Title: Báo cáo mới từ NH Research
-Body:  {title} — {category: Thị trường | Doanh nghiệp | Vĩ mô}
+Title VI: Báo cáo mới từ NH Research
+Title EN: New report from NH Research
+Body VI:  {title} — {categoryVi}. Nhấn để đọc ngay trên NHSV Pro.
+Body EN:  {title} — {categoryEn}. Tap to read on NHSV Pro.
+Category: THI_TRUONG → Thị trường/Market · DOANH_NGHIEP → Doanh nghiệp/Company · VI_MO → Vĩ mô/Macro
 ```
 
 ### TRIGGER_KHUYEN_NGHI_PUBLISH
@@ -51,13 +56,18 @@ Thêm vào form upload của NH Research và Khuyến nghị:
 - Preview notification text trước khi submit
 - Sau publish thành công: hiển thị "Đã gửi notification đến X thiết bị"
 
-API:
+API / cơ chế (đã chốt 2026-07-09 — theo NHMTS-88):
 
 ```
-POST /admin/notifications/send
-  Body: { triggerType, payload, userSegment? }
-  Auth: Admin only
+NH Research publish (toggle ON)
+  → internal call NotificationSendService trong cùng service nhsv-admin
+  → notificationType=NEWS, audienceType=ALL (Phase 1 gửi tất cả subscriber)
+  → ghi t_notification, hiện trong "Lịch sử đã gửi" của Admin Portal
 ```
+
+- KHÔNG tạo endpoint riêng — dùng chung notification service của NHMTS-88 (`Admin_Notification_API_Spec.md`).
+- Push thất bại không rollback publish — admin nhận cảnh báo, gửi lại thủ công từ composer (BR-019).
+- Segment theo category (`userSegment`) dời Phase 2 — contract `audienceType=SEGMENT` đã chừa sẵn.
 
 ---
 
@@ -81,8 +91,8 @@ Test cases tối thiểu:
 
 | # | Câu hỏi | Owner |
 |---|---|---|
-| Q1 | FCM đã tích hợp chưa? (chung với Event Calendar) | IT/BE |
-| Q2 | User segment: tất cả user hay theo category preference? | PM + BE |
+| Q1 | ~~FCM đã tích hợp chưa?~~ → **Đã chốt: dùng OneSignal** qua notification service NHMTS-88 | ~~IT/BE~~ Đã đóng |
+| Q2 | ~~User segment: tất cả user hay theo category preference?~~ → **Đã chốt: Phase 1 gửi tất cả (audienceType=ALL)**, segment theo category dời Phase 2 | ~~PM + BE~~ Đã đóng |
 | Q3 | Rate limit per ngày? | IT |
 
 ---
