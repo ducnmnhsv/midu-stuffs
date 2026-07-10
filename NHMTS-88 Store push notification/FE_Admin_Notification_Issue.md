@@ -46,8 +46,9 @@
 
 - Khi chọn loại tin ở bước 1, form **prefill template song ngữ** tương ứng (bảng Template trong spec) — admin sửa placeholder rồi gửi, template chỉ là gợi ý.
 - Title + Message: nhập song ngữ EN/VI — bắt buộc **ít nhất 1 ngôn ngữ** cho mỗi trường (validate trước khi cho qua bước 3).
-- Chỉ khi loại là PROMOTION/NEWS mới hiện thêm: **HTML Content** (rich text đơn giản: bold/italic/underline), **Image URL**, **Launch Deeplink** (đều tuỳ chọn).
-- Loại còn lại: hiển thị ghi chú "chỉ gửi văn bản đơn giản", không hiện 3 field trên.
+- **Mọi loại tin** đều có: **Launch URL** (deeplink/web URL, tuỳ chọn) + **Nhãn nút CTA** song ngữ (tuỳ chọn — mặc định "Xem chi tiết"/"View details" khi có URL). Nhập nhãn CTA mà không có URL → báo lỗi tại field.
+- Chỉ khi loại là PROMOTION/NEWS mới hiện thêm: **HTML Content** — nhập bằng **rich text HTML editor (WYSIWYG)**, KHÔNG phải textarea HTML thô. Yêu cầu editor: toolbar tối thiểu bold/italic/underline + chèn emoji, admin thấy trực tiếp kết quả định dạng khi gõ, output là HTML (thư viện do FE team chọn — vd Quill/TipTap, tương thích React 18 + Ant Design). Và **Image URL** (banner).
+- Loại còn lại: hiển thị ghi chú "không có HTML/ảnh banner", vẫn có Launch URL + CTA.
 
 **Bước 3 — Lịch gửi:**
 
@@ -57,7 +58,7 @@
 
 **Bước 4 — Xác nhận & Gửi:**
 
-- **Preview mô phỏng notification trên điện thoại** (app icon, title, body, ảnh nếu có) — cập nhật live theo nội dung đã nhập từ bước 2.
+- **Preview mô phỏng trên điện thoại có 2 chế độ chuyển đổi**: (a) **Push banner** — như notification trên lock screen; (b) **Thẻ trong app** — như tab Thông báo trong app (banner + title + rich body + nút CTA, style tham chiếu inbox SSI iBoard). Cập nhật live theo nội dung đã nhập từ bước 2.
 - Bảng tóm tắt: loại, đối tượng, lịch gửi, priority.
 - Nút "Gửi ngay" / "Lên lịch" → gọi `POST /api/v1/admin/notifications/send`.
 - Gửi thành công: toast xác nhận (kèm số người nhận ước tính) → chuyển sang tab "Lịch sử đã gửi".
@@ -97,7 +98,10 @@
 
 - [ ] Menu "Gửi thông báo" chỉ hiện với ADMIN/SUPER_ADMIN; role khác truy cập trực tiếp URL bị chặn.
 - [ ] Không thể qua bước 3 nếu thiếu cả Title EN+VI hoặc cả Message EN+VI.
-- [ ] Field HTML/Image/Deeplink **chỉ** xuất hiện với loại PROMOTION/NEWS.
+- [ ] Field HTML Content/Image URL **chỉ** xuất hiện với loại PROMOTION/NEWS; Launch URL + nhãn CTA xuất hiện với **mọi** loại.
+- [ ] HTML Content nhập qua WYSIWYG editor: bôi đen + bấm Bold thấy chữ đậm ngay trong editor (không thấy tag `<b>` thô); nội dung định dạng phản ánh đúng sang preview "Thẻ trong app".
+- [ ] Nhập nhãn CTA mà không có Launch URL → báo lỗi tại field, không gọi API.
+- [ ] Preview chuyển đổi được giữa 2 chế độ Push banner / Thẻ trong app; thẻ trong app hiển thị đúng banner + rich body + nút CTA với nhãn đã nhập.
 - [ ] Hẹn giờ với thời gian trong quá khứ → báo lỗi tại field, không gọi API.
 - [ ] Preview ở bước 4 khớp đúng nội dung đã nhập (title/body ưu tiên bản VI, fallback EN).
 - [ ] Gửi thành công hiện toast + record mới xuất hiện đầu danh sách "Lịch sử đã gửi" với đúng trạng thái (SENT/SCHEDULED).

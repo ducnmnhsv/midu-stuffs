@@ -97,8 +97,9 @@ Trong quá trình phân tích hệ thống (xem `_workspace/01_analyst_findings.
 | `titleEn`/`titleVi` | `headings.en`/`headings.vi` | |
 | `bodyEn`/`bodyVi` | `contents.en`/`contents.vi` | `contents` bắt buộc theo OneSignal |
 | `htmlContent` | `data.html_content` | Chỉ gửi khi `notificationType` ∈ {PROMOTION, NEWS}, đã sanitize |
-| `imageUrl` | `big_picture` (Android) / `ios_attachments.id` (iOS) | |
-| `actionDeeplink` | `url` | |
+| `imageUrl` | `big_picture` (Android) / `ios_attachments.id` (iOS) | Chỉ PROMOTION/NEWS |
+| `actionDeeplink` | `url` | **Mọi loại tin** (BR-008 rev.2) |
+| `actionLabelVi`/`actionLabelEn` | `data.action_label_vi` / `data.action_label_en` | App render nút CTA trong inbox — không ảnh hưởng push banner |
 | `sendSchedule`/`scheduledAt` | `send_after` | `IMMEDIATE` → không set |
 | *(ẩn, hệ thống set)* `priority` | `priority` (10/5) | PROMOTION/NEWS → 10; còn lại → 5 |
 
@@ -123,9 +124,10 @@ Trong quá trình phân tích hệ thống (xem `_workspace/01_analyst_findings.
 | `notificationType` | String | ✅ | `PROMOTION`\|`NEWS`\|`DAILY_REPORT`\|`REMINDER`\|`NORMAL` |
 | `titleEn` / `titleVi` | String | ⚠️ ít nhất 1 | Tiêu đề theo ngôn ngữ |
 | `bodyEn` / `bodyVi` | String | ⚠️ ít nhất 1 | Nội dung theo ngôn ngữ |
-| `htmlContent` | String | ❌ | Chỉ hợp lệ khi `notificationType` ∈ {PROMOTION, NEWS} (BR-008) |
-| `imageUrl` | String | ❌ | |
-| `actionDeeplink` | String | ❌ | |
+| `htmlContent` | String | ❌ | Rich content hiển thị trong inbox app — chỉ PROMOTION/NEWS (BR-008). Phía Admin UI nhập qua **rich text HTML editor (WYSIWYG)**, không phải textarea HTML thô — API nhận HTML output của editor; BE vẫn sanitize server-side theo whitelist tag cố định (BR-021) bất kể editor phía FE |
+| `imageUrl` | String | ❌ | Ảnh banner trong inbox app — chỉ PROMOTION/NEWS (BR-008) |
+| `actionDeeplink` | String | ❌ | **Launch URL** (deeplink `nhsv://...` hoặc web URL) — **mọi loại tin** đều gắn được (BR-008 rev.2) |
+| `actionLabelVi` / `actionLabelEn` | String | ❌ | Nhãn nút CTA trong inbox app (vd "Khám phá ngay" / "Explore now"). Nếu có `actionDeeplink` mà bỏ trống → mặc định "Xem chi tiết" / "View details" |
 | `sendSchedule` | String | ✅ | `IMMEDIATE` \| `SCHEDULED` |
 | `scheduledAt` | String (ISO8601) | ⚠️ bắt buộc nếu `SCHEDULED` | Phải > thời điểm hiện tại (BR-009) |
 | `audienceType` | String | ✅ | `ALL`\|`SEGMENT`\|`USER_LIST` — **Phase 1 luôn `ALL`** |
@@ -252,7 +254,8 @@ Khi admin publish bài NH Research với toggle **"Gửi push notification khi p
 |---|---|---|
 | Title | `Báo cáo mới từ NH Research` | `New report from NH Research` |
 | Body | `{title} — {categoryVi}. Nhấn để đọc ngay trên NHSV Pro.` | `{title} — {categoryEn}. Tap to read on NHSV Pro.` |
-| Deeplink | `nhsvpro://channel/nh-research?category={category}` | *(chung)* |
+| Nút CTA (`actionLabel`) | `Đọc ngay` | `Read now` |
+| Launch URL (`actionDeeplink`) | `nhsvpro://channel/nh-research?category={category}` | *(chung)* |
 
 Placeholder: `{title}` = tiêu đề bài viết (giữ nguyên ngôn ngữ gốc bài); `{category}` mapping:
 
@@ -270,13 +273,13 @@ Placeholder: `{title}` = tiêu đề bài viết (giữ nguyên ngôn ngữ gố
 
 Khi admin chọn loại tin ở Bước 1, composer prefill template tương ứng (cả VI + EN) — admin sửa placeholder rồi gửi. Template chỉ là gợi ý, sửa tự do.
 
-| Loại | Title VI / EN | Body VI / EN |
-|---|---|---|
-| PROMOTION | `🎁 {tên chương trình}` / `🎁 {promotion name}` | `{ưu đãi chính} — áp dụng đến {ngày}. Nhấn để xem chi tiết.` / `{main offer} — valid until {date}. Tap for details.` |
-| NEWS | `{tiêu đề tin}` / `{news headline}` | `{tóm tắt 1 câu}. Xem ngay trên NHSV Pro.` / `{one-line summary}. See it on NHSV Pro.` |
-| DAILY_REPORT | `Báo cáo danh mục {dd/MM}` / `Portfolio report {dd/MM}` | `Danh mục của bạn {tăng/giảm} {x}% hôm nay. Xem chi tiết biến động.` / `Your portfolio moved {±x}% today. View details.` |
-| REMINDER | `Nhắc: {sự kiện}` / `Reminder: {event}` | `{nội dung} đến hạn vào {ngày}. Kiểm tra ngay để không bỏ lỡ.` / `{item} is due on {date}. Check now.` |
-| NORMAL | `Thông báo từ NHSV` / `Notice from NHSV` | `{nội dung thông báo}.` / `{notice content}.` |
+| Loại | Title VI / EN | Body VI / EN | Nút CTA VI / EN |
+|---|---|---|---|
+| PROMOTION | `🎁 {tên chương trình}` / `🎁 {promotion name}` | `{ưu đãi chính} — áp dụng đến {ngày}. Nhấn để xem chi tiết.` / `{main offer} — valid until {date}. Tap for details.` | `Khám phá ngay` / `Explore now` |
+| NEWS | `{tiêu đề tin}` / `{news headline}` | `{tóm tắt 1 câu}. Xem ngay trên NHSV Pro.` / `{one-line summary}. See it on NHSV Pro.` | `Thử ngay` / `Try now` |
+| DAILY_REPORT | `Báo cáo danh mục {dd/MM}` / `Portfolio report {dd/MM}` | `Danh mục của bạn {tăng/giảm} {x}% hôm nay. Xem chi tiết biến động.` / `Your portfolio moved {±x}% today. View details.` | `Xem danh mục` / `View portfolio` |
+| REMINDER | `Nhắc: {sự kiện}` / `Reminder: {event}` | `{nội dung} đến hạn vào {ngày}. Kiểm tra ngay để không bỏ lỡ.` / `{item} is due on {date}. Check now.` | `Thanh toán ngay` / `Pay now` |
+| NORMAL | `Thông báo từ NHSV` / `Notice from NHSV` | `{nội dung thông báo}.` / `{notice content}.` | `Xem chi tiết` / `View details` |
 
 Quy tắc viết push notification (áp cho cả template):
 
@@ -284,6 +287,69 @@ Quy tắc viết push notification (áp cho cả template):
 2. Body luôn kết bằng call-to-action ngắn ("Nhấn để...", "Xem ngay...").
 3. Không viết HOA toàn bộ, tối đa 1 emoji ở Title (chỉ PROMOTION).
 4. Số liệu cụ thể > mô tả chung chung ("tăng 2.3%" thay vì "biến động").
+
+---
+
+## Mẫu thông báo hiển thị trong app (rich content)
+
+Style tham chiếu: inbox thông báo SSI iBoard (banner + title + body có emoji bullet/bold highlight + nút CTA full-width). Rich body dùng `htmlContent` (PROMOTION/NEWS) hoặc `body` nhiều dòng (loại khác). 4 mẫu sẵn dùng:
+
+### Mẫu 1 — PROMOTION: Ưu đãi margin
+
+```
+Banner:   margin-july2026.png (khuyến nghị 2:1, ~1200×600)
+Title:    Margin thảnh thơi, lãi suất hết ý 💰
+Rich body:
+  NHSV Pro ưu đãi lãi suất margin cho khách hàng mới với 2 gói linh hoạt:
+  <b>Chào mừng</b> & <b>Thân thiết</b>.
+
+  👉 Gói Chào mừng: lãi suất chỉ <b>6.8%/năm</b> trong 3 tháng đầu.
+  👉 Gói Thân thiết: hoàn tới <b>50% phí giao dịch</b> khi duy trì dư nợ.
+  👉 Đăng ký ngay trên NHSV Pro — vài chạm là xong ✨
+CTA:      Khám phá ngay  →  nhsv://margin/register
+```
+
+### Mẫu 2 — NEWS: Ra mắt Phái sinh
+
+```
+Banner:   derivatives-launch.png
+Title:    Thị trường lên xuống? Phái sinh cân tất 🚀
+Rich body:
+  ❌ Chọn đứng ngoài   ✅ <b>Long/Short 2 chiều</b> ngay trên NHSV Pro
+
+  👉 Sinh lời trên mọi xu hướng — tăng hay giảm đều có cơ hội
+  🔎 Bảng giá & chart VN30F realtime ngay trong app
+  ☝️ Đặt lệnh 1 chạm cùng <b>Stop / OCO / Trailing</b>
+CTA:      Thử ngay  →  nhsv://derivatives/trade
+```
+
+### Mẫu 3 — DAILY_REPORT: Báo cáo danh mục (plain body nhiều dòng, không banner)
+
+```
+Title:    Báo cáo danh mục 09/07 📊
+Body:
+  Danh mục của bạn +2.3% hôm nay — vượt VN-Index (+0.8%).
+  👉 Đóng góp lớn nhất: FPT +4.1%, MWG +2.9%
+  👉 Cần chú ý: HPG -1.8%
+CTA:      Xem danh mục  →  nhsv://portfolio
+```
+
+### Mẫu 4 — REMINDER: Nhắc thanh toán margin (plain, không banner)
+
+```
+Title:    Nhắc lịch thanh toán margin ⏰
+Body:
+  Khoản margin 50.000.000đ đến hạn ngày 12/07.
+  👉 Nộp tiền trước 16:00 để tránh phí phạt quá hạn.
+CTA:      Thanh toán ngay  →  nhsv://cash/deposit
+```
+
+Quy tắc viết rich body (bổ sung cho 4 quy tắc push ở trên):
+
+1. Mở đầu 1 câu hook, sau đó mỗi ý 1 dòng bắt đầu bằng emoji bullet (👉 🔎 ☝️ ✅ ❌).
+2. Highlight số liệu/từ khóa bằng `<b>` — không quá 2 highlight/dòng.
+3. Tối đa 4-5 dòng bullet — dài hơn thì đưa vào trang đích của deeplink.
+4. Nút CTA là động từ hành động ("Khám phá ngay", "Thử ngay", "Thanh toán ngay") — không dùng "Click here"/"OK".
 
 ---
 
@@ -300,6 +366,16 @@ Quy tắc viết push notification (áp cho cả template):
 
 ### `GET /api/v1/notifications`
 
+#### Query Parameters
+
+| Param | Type | Bắt buộc | Mô tả |
+|---|---|---|---|
+| `type` | String | ❌ | Lọc theo loại tin — 1 trong 5 giá trị admin đã gửi: `PROMOTION`\|`NEWS`\|`DAILY_REPORT`\|`REMINDER`\|`NORMAL`. Không truyền → trả tất cả loại. |
+| `fromDate` | String (ISO8601 date) | ❌ | Lọc `sentAt >= fromDate` (BR-022). |
+| `toDate` | String (ISO8601 date) | ❌ | Lọc `sentAt <= toDate` (BR-022). |
+| `fetchCount` | Number | ❌ | Số lượng/trang, default 20, max 100. |
+| `nextKey` | String | ❌ | Cursor phân trang, lấy từ response trước. |
+
 ```json
 {
   "totalCount": 42,
@@ -313,6 +389,7 @@ Quy tắc viết push notification (áp cho cả template):
       "htmlContent": "<b>Ưu đãi 20%</b>...",
       "imageUrl": "https://cdn.nhsv.vn/promo/july2026.png",
       "actionDeeplink": "nhsv://promotion/july2026",
+      "actionLabel": "Khám phá ngay",
       "sentAt": "2026-07-08T02:00:00Z",
       "isRead": false
     }
@@ -320,7 +397,14 @@ Quy tắc viết push notification (áp cho cả template):
 }
 ```
 
-`title`/`body` resolve theo `Accept-Language` (vi/en/ko → default vi).
+`title`/`body`/`actionLabel` resolve theo `Accept-Language` (vi/en/ko → default vi).
+
+**Cấu trúc render 1 thẻ thông báo trong inbox app** (style tham chiếu: SSI iBoard tab Ưu đãi):
+
+1. Ảnh banner (`imageUrl`) — nếu có
+2. Title (đậm) + rich body (`htmlContent` nếu có, fallback `body`) — hỗ trợ xuống dòng, bold, emoji bullet
+3. Timestamp
+4. **Nút CTA full-width** (`actionLabel`) — chỉ hiện khi có `actionDeeplink`; tap → mở deeplink/web URL
 
 ### Mutation Responses
 
@@ -367,6 +451,8 @@ Quy tắc viết push notification (áp cho cả template):
         <column name="html_content" type="longtext"/>
         <column name="image_url" type="varchar(2048)"/>
         <column name="action_deeplink" type="varchar(2048)"/>
+        <column name="action_label_vi" type="varchar(64)"/>
+        <column name="action_label_en" type="varchar(64)"/>
         <column name="priority" type="varchar(10)" defaultValue="NORMAL">
             <constraints nullable="false"/>
         </column>
@@ -429,7 +515,7 @@ Row chỉ tạo (upsert) khi 1 account **lần đầu tương tác** (đọc/ẩ
 | Rule | Nội dung |
 |---|---|
 | BR-001…BR-007 | *(kế thừa từ draft gốc — không đổi: field required theo loại, idempotent read, v.v.)* |
-| **BR-008** | Chỉ `notificationType` ∈ {PROMOTION, NEWS} mới nhận `htmlContent`/`imageUrl`/`actionDeeplink` — validate ở cả UI và API. |
+| **BR-008** *(rev.2)* | `htmlContent`/`imageUrl` chỉ nhận khi `notificationType` ∈ {PROMOTION, NEWS}. **`actionDeeplink` (launch URL) + `actionLabelVi/En` (nhãn nút CTA) nhận với MỌI loại tin** — validate ở cả UI và API. `actionLabel*` chỉ có nghĩa khi có `actionDeeplink` (gửi label không kèm URL → 400 `INVALID_PARAMETER`). |
 | **BR-009** | `sendSchedule=SCHEDULED` → `scheduledAt` bắt buộc và phải > hiện tại. Sai → 400 `INVALID_PARAMETER`. |
 | **BR-010** | OneSignal trả `id` rỗng (không subscriber nào) → KHÔNG insert `t_notification`, chỉ cảnh báo UI. |
 | **BR-011** *(sửa so với draft)* | Vì gọi OneSignal **trực tiếp, đồng bộ** (không qua Kafka async) — INSERT `t_notification` diễn ra **ngay trong cùng request/response** sau khi nhận HTTP response thành công từ OneSignal. Nếu gọi OneSignal thất bại (network/timeout/422 sau khi hết retry) → KHÔNG insert, trả lỗi cho FE. |
@@ -442,6 +528,8 @@ Row chỉ tạo (upsert) khi 1 account **lần đầu tương tác** (đọc/ẩ
 | **BR-018** *(mới — hủy tin hẹn giờ)* | Chỉ hủy được record đang **SCHEDULED**. Thứ tự bắt buộc: gọi OneSignal Cancel **trước**, thành công mới update `cancelled_at`/`cancelled_by_admin_id`. OneSignal báo đã gửi → trả `NOTIFICATION_ALREADY_SENT`, không update gì. Tin đã hủy **không** hiển thị trong app-facing API (chưa từng gửi tới user). |
 | **BR-019** *(mới — NH Research trigger)* | Publish NH Research + toggle ON → internal call gửi push (`NEWS`, `ALL`, template song ngữ, deeplink theo category). Push thất bại **không rollback** publish — hiển thị cảnh báo cho admin và cho gửi lại thủ công. Record tự động ghi `t_notification` với `created_by_admin_id` = admin publish. |
 | **BR-020** *(mới — template)* | Composer prefill template song ngữ theo loại tin (bảng Template ở trên) — admin sửa tự do trước khi gửi. Template chỉ là gợi ý phía UI, backend không validate nội dung theo template. |
+| **BR-021** *(mới — whitelist tag `htmlContent`)* | Sanitizer server-side (BE) chỉ giữ lại **2 tag**: `<b>` (highlight số liệu/từ khóa) và `<br>` (xuống dòng giữa các bullet). Mọi tag khác (`<script>`, `<a>`, `<img>`, `<ul>/<li>`, `<div>`, style/class attribute...) bị strip hoàn toàn — kể cả khi WYSIWYG editor phía FE sinh ra. Bullet trong rich body dùng **ký tự emoji** (👉 🔎 ☝️ ✅ ❌) đặt đầu dòng, không dùng list tag HTML (khớp 4 mẫu ở mục "Mẫu thông báo hiển thị trong app"). App-side render `htmlContent` phải map đúng 2 tag này sang style native (bold text, line break) — không dùng WebView render HTML thô. |
+| **BR-022** *(mới — filter khoảng ngày app-facing)* | `GET /api/v1/notifications` nhận thêm 2 query param tuỳ chọn `fromDate`/`toDate` (ISO8601 date, vd `2026-05-11`) để lọc theo `sentAt` — dùng cho UI lọc khoảng ngày kiểu "11/05/2026 - 10/07/2026" (style tham chiếu SSI iBoard). Không truyền → mặc định trả toàn bộ lịch sử (giới hạn bởi phân trang `fetchCount`/`nextKey`). `toDate` < `fromDate` → 400 `INVALID_PARAMETER`. |
 
 ---
 

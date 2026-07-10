@@ -168,22 +168,26 @@
   <div class="subtitle">3 sub-tabs · Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày · Nhiều nguồn dữ liệu</div>
   <div class="meta-row">
     <div class="meta-item"><strong>Module</strong> · A-05 (Home Screen)</div>
-    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.0</div>
+    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.1</div>
     <div class="meta-item"><strong>Admin URL</strong> · tnhsvpro.nhsv.vn/nhsv-admin</div>
-    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+    <div class="meta-item"><strong>Ngày</strong> · July 2026</div>
   </div>
 </div>
 
 <!-- SUMMARY BAR -->
 <div class="summary-bar">
   <div class="sum-card"><div class="num c-blue">3</div><div class="lbl">Sub-tabs</div></div>
-  <div class="sum-card"><div class="num c-teal">10</div><div class="lbl">BE tasks</div></div>
+  <div class="sum-card"><div class="num c-teal">11</div><div class="lbl">BE tasks</div></div>
   <div class="sum-card"><div class="num c-teal">8</div><div class="lbl">Mobile FE tasks</div></div>
   <div class="sum-card"><div class="num c-violet">6</div><div class="lbl">Admin FE tasks</div></div>
-  <div class="sum-card"><div class="num c-amber">3</div><div class="lbl">Open questions</div></div>
+  <div class="sum-card"><div class="num c-amber">2</div><div class="lbl">Open questions</div></div>
 </div>
 
 <div class="content">
+
+<div class="note-info" style="margin-top:0;">
+  <strong>Integration type:</strong> TradeX-native (internal DB only). Toàn bộ API mục 5 & 6 không đi qua Lotte/Core — không cần map field Lotte, không cần <code>sourceIp</code>/<code>deviceUniqueId</code>/<code>lang_code</code> auto-populate kiểu Order API. Duy nhất bước enrich <code>currentPrice</code> (mục 5, API 1) gọi service nội bộ market-data — không phải Lotte.
+</div>
 
 <!-- 1. OVERVIEW -->
 <div class="section">
@@ -410,7 +414,7 @@
         <li class="ac-item">% tiềm năng = (Giá kỳ vọng / Giá hiện tại - 1) × 100 — tính trên app, màu xanh nếu dương, đỏ nếu âm</li>
         <li class="ac-item">Nút "📄 Báo cáo": mở PDF trong in-app viewer (tái sử dụng component từ NH Research). Ẩn nếu không có PDF.</li>
         <li class="ac-item">Sort mặc định: ngày khuyến nghị mới nhất lên đầu</li>
-        <li class="ac-item">Disclaimer footer: "Khuyến nghị chỉ mang tính chất tham khảo. Quý khách cần cân nhắc trước mọi quyết định đầu tư."</li>
+        <li class="ac-item">Disclaimer footer (draft, chờ Legal duyệt — Q6): "Nội dung khuyến nghị do Phòng Phân tích NHSV cung cấp, chỉ mang tính chất tham khảo, không phải là lời chào mua/bán hoặc tư vấn đầu tư. NHSV không chịu trách nhiệm đối với quyết định giao dịch dựa trên thông tin này. Quý khách cần tự đánh giá và cân nhắc kỹ trước khi thực hiện giao dịch." — dùng chung cho cả sub-tab Kỹ thuật hằng ngày (Screen 3.4)</li>
         <li class="ac-item">Tap card → push navigation đến màn hình Detail (Screen 3.2)</li>
       </ul>
     </div>
@@ -546,7 +550,7 @@
         <li class="ac-item">Legend ở cuối: giải thích ý nghĩa từng rating level</li>
         <li class="ac-item">Badge "Cập nhật: MM/YYYY" hiển thị ngày batch hiện tại (từ <code>uploadedAt</code> của batch đang active)</li>
         <li class="ac-item">Có thể sort theo từng cột khi tap header</li>
-        <li class="ac-item">Disclaimer footer tối giản: "Rating do Phòng QTRR cung cấp, cập nhật định kỳ hàng tháng."</li>
+        <li class="ac-item">Disclaimer footer (draft, chờ Legal duyệt — Q6): "Rating do Phòng Quản trị Rủi ro NHSV xây dựng, cập nhật định kỳ hàng tháng, dùng cho mục đích quản lý danh mục ký quỹ, chỉ mang tính chất tham khảo và không phải là tư vấn đầu tư. NHSV không chịu trách nhiệm đối với quyết định giao dịch dựa trên thông tin này."</li>
       </ul>
     </div>
   </div>
@@ -621,7 +625,7 @@
         <li class="ac-item"><strong>Upsize</strong>: ẩn ô này nếu null (không hiển thị placeholder)</li>
         <li class="ac-item">Default load: phiên hôm nay. Nếu hôm nay chưa có data (trước khi Phòng PT upload): empty state "Dữ liệu kỹ thuật hôm nay chưa có. Vui lòng quay lại sau."</li>
         <li class="ac-item">Tap card → detail screen với thêm thông tin (short desc + PDF nếu có)</li>
-        <li class="ac-item">Disclaimer footer</li>
+        <li class="ac-item">Disclaimer footer: dùng chung wording với Screen 3.1 (Danh mục cơ bản) — xem chi tiết ở đó</li>
       </ul>
     </div>
   </div>
@@ -651,10 +655,14 @@
       <tr><td>pdf_filename</td><td class="type">VARCHAR(255)</td><td><span class="req-n">N</span></td><td>Tên file</td><td></td></tr>
       <tr><td>pdf_size_bytes</td><td class="type">BIGINT</td><td><span class="req-n">N</span></td><td>Dung lượng</td><td></td></tr>
       <tr><td>status</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Trạng thái</td><td>'ACTIVE' | 'ARCHIVED'. Default: ACTIVE</td></tr>
+      <tr><td>expiry_date</td><td class="type">DATE</td><td><span class="req-n">N</span></td><td>Ngày hết hiệu lực</td><td>Optional, set theo từng mã (Q1 resolved 2026-07-10). Null = không tự hết hạn — admin tự Archive tay.</td></tr>
       <tr><td>created_by</td><td class="type">VARCHAR(100)</td><td><span class="req-y">Y</span></td><td>Admin tạo</td><td></td></tr>
       <tr><td>created_at / updated_at</td><td class="type">DATETIME</td><td><span class="req-y">Y</span></td><td>Timestamps</td><td>Auto</td></tr>
     </tbody>
   </table>
+  <div class="note-warn" style="margin-top:8px;">
+    <strong>Scheduled job (mới — BE-11):</strong> Chạy hàng ngày (vd. 00:05) — tìm record <code>status='ACTIVE' AND expiry_date IS NOT NULL AND expiry_date &lt; CURDATE()</code> → SET <code>status='ARCHIVED'</code>. Record có <code>expiry_date = NULL</code> không bị ảnh hưởng (không tự hết hạn).
+  </div>
 
   <!-- Table 2: nhsv_rating_batches -->
   <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;margin-top:16px;">② <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">nhsv_rating_batches</code> + <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-size:11px;">nhsv_ratings</code> — NHSV Rating</div>
@@ -700,10 +708,35 @@
       <tr><td>short_desc</td><td class="type">TEXT</td><td><span class="req-n">N</span></td><td>Ghi chú phân tích</td><td>Hiển thị trên detail screen</td></tr>
       <tr><td>pdf_url / pdf_filename / pdf_size_bytes</td><td class="type">VARCHAR / BIGINT</td><td><span class="req-n">N</span></td><td>Báo cáo kèm theo</td><td>Optional, NHSV server</td></tr>
       <tr><td>data_source</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Nguồn dữ liệu</td><td>'MANUAL' | 'VIETSTOCK_AUTO'. Default: 'MANUAL'. Automation-ready field.</td></tr>
+      <tr><td>status</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Trạng thái publish</td><td>'DRAFT' | 'PUBLISHED'. Default: 'DRAFT' (mới — 2026-07-10). Mobile app chỉ đọc <code>status='PUBLISHED'</code>.</td></tr>
       <tr><td>created_by</td><td class="type">VARCHAR(100)</td><td><span class="req-y">Y</span></td><td>Admin tạo</td><td>Null nếu data_source = VIETSTOCK_AUTO</td></tr>
       <tr><td>created_at</td><td class="type">DATETIME</td><td><span class="req-y">Y</span></td><td>Timestamp</td><td>Auto</td></tr>
+      <tr><td>published_at</td><td class="type">DATETIME</td><td><span class="req-n">N</span></td><td>Thời điểm publish</td><td>Null khi còn DRAFT. Set khi admin bấm Publish.</td></tr>
     </tbody>
   </table>
+  <div class="note-warn" style="margin-top:8px;">
+    <strong>Draft → Publish workflow (mới — 2026-07-10):</strong> Admin nhập <strong>nhiều mã cùng lúc</strong> cho 1 ngày giao dịch qua form batch → tất cả lưu <code>status='DRAFT'</code>, chưa hiển thị trên app. Khi sẵn sàng, admin bấm <strong>"Publish ngày [tradeDate]"</strong> → toàn bộ entry DRAFT của ngày đó chuyển <code>status='PUBLISHED'</code> cùng lúc (transaction) → app đọc thấy ngay. Tách biệt bước "soạn" và "công bố" để tránh user thấy danh sách nửa vời khi Phòng PT đang nhập liệu.
+  </div>
+</div>
+
+<!-- 4.5 AUTO-POPULATED FIELDS -->
+<div class="section">
+  <div class="section-hdr">
+    <div class="icon" style="background:#e0f2fe">🔒</div>
+    <h2>4.5. Trường tự động điền</h2>
+    <span class="sub">FE (mobile + admin) KHÔNG cần truyền các field này</span>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Field</th><th>API áp dụng</th><th>Nguồn</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td>createdBy</td><td>POST /recommendations/portfolio<br>POST /recommendations/dailyTechnical</td><td>Admin session</td><td>Lấy từ session admin đang login. Null nếu <code>dataSource = VIETSTOCK_AUTO</code> (v2).</td></tr>
+      <tr><td>uploadedBy</td><td>POST /recommendations/ratingUpload</td><td>Admin session</td><td>Lấy từ session admin đang login.</td></tr>
+      <tr><td>status</td><td>POST /recommendations/portfolio</td><td>Hệ thống</td><td>Luôn khởi tạo <code>'ACTIVE'</code>. Tự chuyển <code>'ARCHIVED'</code> khi quá <code>expiryDate</code> (scheduled job BE-11) hoặc khi admin Archive tay.</td></tr>
+      <tr><td>batch.isActive</td><td>POST /recommendations/ratingPublish</td><td>Hệ thống</td><td>Set <code>true</code> cho batch mới, <code>false</code> cho batch cũ, cùng 1 transaction.</td></tr>
+      <tr><td>status</td><td>POST /recommendations/dailyTechnical/batch</td><td>Hệ thống</td><td>Luôn khởi tạo <code>'DRAFT'</code>. Chỉ chuyển <code>'PUBLISHED'</code> qua PUT /dailyTechnical/publish — client không tự set trực tiếp.</td></tr>
+    </tbody>
+  </table>
+  <div class="note-info">Vì đây là feature TradeX-native, không có field auto-populate kiểu JWT/Lotte (<code>sourceIp</code>, <code>userId</code>, <code>deviceUniqueId</code>) như các API Order — bảng trên chỉ gồm field hệ thống/admin-session nội bộ.</div>
 </div>
 
 <!-- 5. API MOBILE -->
@@ -727,8 +760,8 @@
           <div class="pb-title">Query Parameters</div>
           <div class="param-row"><span class="pname">segment</span><span class="ptype">string?</span><span class="pdesc"><code>BLUECHIP</code> | <code>MIDCAP</code>. Null → tất cả</span></div>
           <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã CK (LIKE)</span></div>
-          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1</span></div>
-          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Default: 20</span></div>
+          <div class="param-row"><span class="pname">fetchCount</span><span class="ptype">int?</span><span class="pdesc">Số bản ghi mỗi trang. Default: 20</span></div>
+          <div class="param-row"><span class="pname">lastRecommendationId</span><span class="ptype">string?</span><span class="pdesc">Cursor phân trang. Trang đầu bỏ qua; trang sau = <code>recommendationId</code> cuối cùng của trang trước</span></div>
         </div>
         <div class="param-block">
           <div class="pb-title">Response (200) — Recommendation item</div>
@@ -744,7 +777,7 @@
       </div>
       <div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>Price enrichment:</strong> BE join với market data service khi serve API. Nếu market data không available (ngoài giờ giao dịch): dùng closing price phiên gần nhất.<br>
-        <strong>Pagination:</strong> Trả thêm <code>totalCount</code>, <code>page</code>, <code>pageSize</code>.<br>
+        <strong>Response wrapper:</strong> <code>{"totalCount": ..., "recommendations": [...]}</code>. Pagination theo cursor <code>fetchCount</code> + <code>lastRecommendationId</code> — nhất quán với convention TradeX-native khác (vd. stopOrder history), thay cho <code>page</code>/<code>pageSize</code>.<br>
         <strong>Filter status:</strong> Chỉ trả records có status = 'ACTIVE'.
       </div>
     </div>
@@ -791,8 +824,6 @@
           <div class="pb-title">Query Parameters</div>
           <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã (client-side hoặc server-side). LIKE.</span></div>
           <div class="param-row"><span class="pname">sortBy</span><span class="ptype">string?</span><span class="pdesc"><code>OVERALL</code> | <code>FUNDAMENTAL</code> | <code>MARKET</code>. Default: OVERALL DESC</span></div>
-          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1</span></div>
-          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Default: 50 (vì bảng rating cần load nhiều)</span></div>
         </div>
         <div class="param-block">
           <div class="pb-title">Response (200)</div>
@@ -800,6 +831,9 @@
           <div class="param-row"><span class="pname">ratings</span><span class="ptype">Rating[]</span><span class="pdesc">stockCode · fundamentalRating · marketRating · overallRating (S/A/B/C/D)</span></div>
           <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Tổng số mã</span></div>
         </div>
+      </div>
+      <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
+        <strong>Không phân trang:</strong> Trả toàn bộ batch active trong 1 response — dataset bounded (danh mục ký quỹ, không phải log tăng vô hạn). Mobile filter/search theo mã CK client-side (đã spec ở Screen 3.3). Đã bỏ <code>page</code>/<code>pageSize</code> khỏi bản draft trước — vừa lệch convention pagination, vừa mâu thuẫn với "filter client-side" của Screen 3.3.
       </div>
     </div>
   </div>
@@ -833,7 +867,8 @@
       </div>
       <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>Empty response:</strong> <code>{"tradeDate":"...","technicals":[],"totalCount":0}</code> — không trả 404 khi không có data hôm nay. Mobile hiển thị empty state.<br>
-        <strong>dataSource filter:</strong> Trả cả MANUAL và VIETSTOCK_AUTO — app không phân biệt.
+        <strong>dataSource filter:</strong> Trả cả MANUAL và VIETSTOCK_AUTO — app không phân biệt.<br>
+        <strong>Status filter (mới — 2026-07-10):</strong> Chỉ trả record <code>status='PUBLISHED'</code>. Record còn <code>DRAFT</code> (Phòng PT đang soạn, chưa Publish) không xuất hiện — app hiển thị y như chưa có data hôm nay.
       </div>
     </div>
   </div>
@@ -929,45 +964,108 @@
           <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Required. Giá kỳ vọng</span></div>
           <div class="param-row"><span class="pname">recommendedPrice</span><span class="ptype">number</span><span class="pdesc">Required. Giá tại ngày KN</span></div>
           <div class="param-row"><span class="pname">recommendationDate</span><span class="ptype">date</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">expiryDate</span><span class="ptype">date?</span><span class="pdesc">Optional (Q1 resolved). Null = không hết hạn</span></div>
           <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
           <div class="param-row"><span class="pname">pdfUrl / pdfFilename / pdfSizeBytes</span><span class="ptype">varies?</span><span class="pdesc">Optional. Public URL từ /upload/pdf</span></div>
         </div>
         <div class="param-block">
-          <div class="pb-title">Response (201)</div>
-          <div class="param-row"><span class="pname">recommendationId</span><span class="ptype">string</span><span class="pdesc">ID vừa tạo</span></div>
-          <div class="param-row"><span class="pname">status</span><span class="ptype">string</span><span class="pdesc">"ACTIVE"</span></div>
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">id</span><span class="ptype">number</span><span class="pdesc">ID vừa tạo. TradeX-native mutation → chỉ trả <code>{"id": ...}</code>, HTTP 200 (theo convention, không phải 201).</span></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Daily Technical CRUD -->
-  <div class="api-block">
+  <!-- Daily Technical: Batch Create -->
+  <div class="card" style="border-left:3px solid var(--teal);margin-bottom:14px;">
+    <div class="card-title">📅 Kỹ thuật hằng ngày — Draft → Publish Flow (mới — 2026-07-10)</div>
+    <div class="card-body">
+      Admin chọn <strong>1 ngày giao dịch</strong>, nhập <strong>nhiều mã</strong> trong cùng 1 form (mỗi dòng = 1 mã), lưu 1 lần → tất cả vào DB với <code>status='DRAFT'</code>. App mobile không thấy record DRAFT. Khi Phòng PT xong việc soạn cho ngày đó, bấm <strong>"Publish ngày [tradeDate]"</strong> → toàn bộ DRAFT của ngày đó chuyển <code>PUBLISHED</code> cùng lúc, atomic. Có thể publish nhiều lần/ngày nếu thêm mã mới sau đó (chỉ publish phần DRAFT còn lại, không ảnh hưởng record đã PUBLISHED trước đó).
+    </div>
+  </div>
+
+  <!-- Daily Technical: Admin list by date -->
+  <div class="api-block" style="margin-bottom:14px;">
     <div class="api-hdr">
-      <span class="method POST">POST</span>
+      <span class="method GET">GET</span>
       <span class="api-path">/recommendations/dailyTechnical</span>
-      <span class="api-desc">Tạo khuyến nghị kỹ thuật — admin manual</span>
+      <span class="api-desc">Admin xem danh sách theo ngày — mọi trạng thái, kể cả quá khứ (mới — 2026-07-10)</span>
+    </div>
+    <div class="api-body">
+      <div class="param-grid">
+        <div class="param-block">
+          <div class="pb-title">Query Parameters</div>
+          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Required. Bất kỳ ngày nào — không giới hạn hôm nay, xem được cả ngày trong quá khứ</span></div>
+          <div class="param-row"><span class="pname">status</span><span class="ptype">string?</span><span class="pdesc"><code>DRAFT</code> | <code>PUBLISHED</code>. Null → trả cả 2 (khác endpoint mobile — mobile chỉ luôn PUBLISHED)</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc">Search theo mã</span></div>
+        </div>
+        <div class="param-block">
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Ngày được query</span></div>
+          <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Số entry — có thể = 0</span></div>
+          <div class="param-row"><span class="pname">technicals</span><span class="ptype">Technical[]</span><span class="pdesc">Field giống mobile + thêm <code>status</code> ("DRAFT"/"PUBLISHED")</span></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
+        <strong>Contract — ngày không có mã (kể cả DRAFT):</strong> trả <code>{"tradeDate":"...","totalCount":0,"technicals":[]}</code>, <strong>HTTP 200</strong> — KHÔNG trả 404. Áp dụng cho mọi ngày, kể cả ngày trong quá khứ chưa từng có ai nhập liệu.
+      </div>
+    </div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+    <div class="api-block">
+      <div class="api-hdr">
+        <span class="method POST">POST</span>
+        <span class="api-path">/recommendations/dailyTechnical/batch</span>
+        <span class="api-desc">Tạo nhiều mã cùng lúc — luôn DRAFT</span>
+      </div>
+      <div class="api-body">
+        <div class="pb-title" style="margin-bottom:8px;">Request Body</div>
+        <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Required. Áp dụng cho toàn bộ items</span></div>
+        <div class="param-row"><span class="pname">items</span><span class="ptype">Item[]</span><span class="pdesc">Required, ít nhất 1. Mỗi item: <code>stockCode</code>, <code>buyPriceFrom</code>, <code>buyPriceTo?</code>, <code>targetPrice</code>, <code>stopLoss</code>, <code>upsize?</code>, <code>shortDesc?</code>, <code>pdfUrl/pdfFilename/pdfSizeBytes?</code></span></div>
+        <div class="pb-title" style="margin-top:10px;margin-bottom:8px;">Response (200)</div>
+        <div class="param-row"><span class="pname">ids</span><span class="ptype">number[]</span><span class="pdesc">ID các entry vừa tạo, cùng thứ tự với <code>items</code></span></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Lưu ý convention:</strong> đây là bulk mutation nên trả <code>{"ids": [...]}</code> (array) thay vì <code>{"id"}</code> đơn — deviation có chủ đích, ghi rõ để BE/FE không nhầm với mutation đơn.<br><strong>Error 400:</strong> <code>INVALID_PARAMETER</code> nếu <code>items</code> rỗng hoặc thiếu field required ở bất kỳ item nào — reject toàn bộ batch, không tạo 1 phần.</div>
+      </div>
+    </div>
+    <div class="api-block">
+      <div class="api-hdr">
+        <span class="method PUT">PUT</span>
+        <span class="api-path">/recommendations/dailyTechnical/publish</span>
+        <span class="api-desc">Publish toàn bộ DRAFT của 1 ngày</span>
+      </div>
+      <div class="api-body">
+        <div class="pb-title" style="margin-bottom:8px;">Request Body</div>
+        <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Required</span></div>
+        <div class="pb-title" style="margin-top:10px;margin-bottom:8px;">Response (200)</div>
+        <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Ngày vừa publish</span></div>
+        <div class="param-row"><span class="pname">publishedCount</span><span class="ptype">int</span><span class="pdesc">Số entry vừa chuyển DRAFT→PUBLISHED</span></div>
+        <div style="margin-top:8px;padding:7px;background:var(--amber-light);border-radius:5px;font-size:11px;color:var(--amber);">⚠️ Idempotent: gọi lại khi không còn DRAFT nào → <code>publishedCount: 0</code>, không lỗi. Không ảnh hưởng record đã PUBLISHED từ trước.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Technical: Edit single entry -->
+  <div class="api-block" style="margin-top:14px;">
+    <div class="api-hdr">
+      <span class="method PUT">PUT</span>
+      <span class="api-path">/recommendations/dailyTechnical/{technicalId}</span>
+      <span class="api-desc">Sửa 1 entry — dùng để bổ sung luận điểm/PDF sau khi batch-tạo, hoặc sửa số liệu dù đang DRAFT hay đã PUBLISHED</span>
     </div>
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
           <div class="pb-title">Request Body</div>
-          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">tradeDate</span><span class="ptype">date</span><span class="pdesc">Required. Ngày áp dụng khuyến nghị</span></div>
-          <div class="param-row"><span class="pname">buyPriceFrom</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">buyPriceTo</span><span class="ptype">number?</span><span class="pdesc">Optional</span></div>
-          <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">stopLoss</span><span class="ptype">number</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">upsize</span><span class="ptype">number?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">buyPriceFrom / buyPriceTo</span><span class="ptype">number/number?</span><span class="pdesc">Optional — chỉ gửi field cần sửa</span></div>
+          <div class="param-row"><span class="pname">targetPrice / stopLoss / upsize</span><span class="ptype">number?</span><span class="pdesc">Optional</span></div>
           <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
           <div class="param-row"><span class="pname">pdfUrl / pdfFilename / pdfSizeBytes</span><span class="ptype">varies?</span><span class="pdesc">Optional</span></div>
         </div>
         <div class="param-block">
-          <div class="pb-title">Response (201)</div>
-          <div class="param-row"><span class="pname">technicalId</span><span class="ptype">string</span><span class="pdesc">ID vừa tạo</span></div>
-          <div class="param-row"><span class="pname">dataSource</span><span class="ptype">string</span><span class="pdesc">"MANUAL"</span></div>
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">id</span><span class="ptype">number</span><span class="pdesc">ID entry vừa sửa</span></div>
           <div style="margin-top:12px;padding:8px;background:#f0fdf4;border-radius:6px;font-size:11px;color:#166534;">
-            <strong>Future automation note:</strong> Khi pipeline Vietstock được build, BE sẽ POST vào đây với <code>dataSource: "VIETSTOCK_AUTO"</code> và <code>createdBy: null</code>. Endpoint và DB schema đã sẵn sàng, không cần migration.
+            <strong>Future automation note:</strong> Khi pipeline Vietstock được build, BE sẽ tạo entry với <code>dataSource: "VIETSTOCK_AUTO"</code> và <code>createdBy: null</code> — có thể đi qua batch endpoint hoặc endpoint riêng, quyết định khi build v2. Endpoint và DB schema hiện tại đã sẵn sàng, không cần migration.
           </div>
         </div>
       </div>
@@ -1009,6 +1107,7 @@
           <li class="ac-item"><strong>Giá tại ngày KN</strong>: số (required)</li>
           <li class="ac-item"><strong>Giá kỳ vọng</strong>: số, auto tính % tiềm năng hiển thị live khi nhập (required)</li>
           <li class="ac-item"><strong>Ngày khuyến nghị</strong>: date picker (required)</li>
+          <li class="ac-item"><strong>Ngày hết hiệu lực</strong>: date picker (optional) — để trống = không giới hạn thời gian, khuyến nghị không tự Archive (Q1 resolved 2026-07-10)</li>
           <li class="ac-item"><strong>Luận điểm</strong>: textarea (optional)</li>
           <li class="ac-item"><strong>Upload PDF</strong>: drag-drop, .pdf only (optional)</li>
         </ul>
@@ -1032,11 +1131,14 @@
       <div class="card-body">
         <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/daily-technical</div>
         <ul class="ac-list">
-          <li class="ac-item">Date picker để chọn ngày (default: hôm nay). Hiển thị danh sách entries theo ngày đã chọn.</li>
-          <li class="ac-item">Table: Mã CK | Vùng mua | Mục tiêu | Cắt lỗ | Upsize | PDF | Nguồn | Thao tác</li>
+          <li class="ac-item">Date picker để chọn ngày (default: hôm nay) — chọn được <strong>bất kỳ ngày trong quá khứ</strong>, không giới hạn hôm nay. Hiển thị toàn bộ entry của ngày đó, gồm cả Nháp và đã Publish.</li>
+          <li class="ac-item">Ngày không có entry nào (kể cả Nháp): empty state rõ ràng "Ngày [X] không có mã kỹ thuật nào — kể cả Nháp" — không hiểu nhầm là lỗi tải dữ liệu.</li>
+          <li class="ac-item">Table: Mã CK | Vùng mua | Mục tiêu | Cắt lỗ | Upsize | PDF | Nguồn | <strong>Trạng thái</strong> (Nháp/Còn hiệu lực/Đạt target) | Thao tác</li>
           <li class="ac-item">Badge "MANUAL" / "AUTO" trên cột Nguồn — phân biệt entry thủ công vs tương lai tự động</li>
-          <li class="ac-item">Nút "+ Thêm entry": form gồm Mã CK, Ngày, Vùng mua (from/to), Mục tiêu, Cắt lỗ, Upsize (optional), PDF (optional)</li>
-          <li class="ac-item">Delete: hard delete (không soft delete — dữ liệu kỹ thuật ngắn hạn)</li>
+          <li class="ac-item"><strong>Nút "+ Thêm entry" (đổi hành vi — 2026-07-10):</strong> mở form batch — chọn 1 Ngày áp dụng, sau đó thêm <strong>nhiều dòng mã</strong> (mỗi dòng: Mã CK, Vùng mua from/to, Mục tiêu, Cắt lỗ, Upsize optional) qua nút "+ Thêm dòng". Bấm "Lưu nháp" → tất cả lưu <code>status=DRAFT</code>, chưa hiện trên app.</li>
+          <li class="ac-item"><strong>Nút "Publish ngày [ngày đang chọn]" (mới):</strong> hiện/enable khi ngày đang chọn có ≥ 1 entry Nháp. Bấm → toàn bộ Nháp của ngày đó chuyển "Còn hiệu lực" cùng lúc, app đọc thấy ngay.</li>
+          <li class="ac-item">Sửa từng dòng (action Edit riêng): dùng khi cần bổ sung Luận điểm/PDF sau khi batch-tạo, hoặc chỉnh số liệu — áp dụng cho cả entry Nháp và đã Publish.</li>
+          <li class="ac-item">Delete: hard delete (không soft delete — dữ liệu kỹ thuật ngắn hạn), áp dụng cho cả Nháp và đã Publish.</li>
         </ul>
       </div>
     </div>
@@ -1059,12 +1161,13 @@
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-02</span><div><div class="t-name">API: GET /recommendations/portfolio (list)</div><div class="t-note">Filter segment/stockCode, paginate, enrich currentPrice từ market data service</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-03</span><div><div class="t-name">API: GET /recommendations/portfolio/{id} (detail)</div><div class="t-note">Trả thêm recommendedPrice, shortDesc, pdfUrl. 404 nếu không tồn tại.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-04</span><div><div class="t-name">API: GET /recommendations/rating</div><div class="t-note">Join nhsv_ratings với batch is_active=true. sortBy param. Trả batchUpdatedAt.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-05</span><div><div class="t-name">API: GET /recommendations/dailyTechnical</div><div class="t-note">Default tradeDate = CURDATE(). Empty array nếu chưa có data hôm nay.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-05</span><div><div class="t-name">API: GET /recommendations/dailyTechnical</div><div class="t-note">Default tradeDate = CURDATE(). Chỉ trả status=PUBLISHED (2026-07-10). Empty array nếu chưa publish hôm nay.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-06</span><div><div class="t-name">Admin API: CRUD /recommendations/portfolio</div><div class="t-note">POST create, PUT update, DELETE soft-archive. Tái sử dụng /upload/pdf từ A-04.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-07</span><div><div class="t-name">Admin API: Excel upload + parse NHSV Rating</div><div class="t-note">POST /ratingUpload: parse .xlsx, validate columns + values, trả preview + batchId. POST /ratingPublish: activate batch trong transaction.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-08</span><div><div class="t-name">Admin API: CRUD /recommendations/dailyTechnical</div><div class="t-note">POST create (dataSource=MANUAL), DELETE hard delete. Accept dataSource field cho future automation.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-08</span><div><div class="t-name">Admin API: List theo ngày + Batch create + Publish + Edit /recommendations/dailyTechnical</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): GET admin trả mọi status theo tradeDate bất kỳ (kể cả quá khứ) — ngày trống trả {totalCount:0, technicals:[]} HTTP 200, không 404. POST /batch tạo nhiều mã cùng lúc (status=DRAFT, reject toàn batch nếu 1 item lỗi). PUT /publish chuyển DRAFT→PUBLISHED theo tradeDate (transaction). PUT /{id} sửa 1 entry. DELETE hard delete.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-09</span><div><div class="t-name">Price enrichment: currentPrice từ market data service</div><div class="t-note">Fetch batch prices cho danh sách mã trong portfolio list. Fallback: closing price phiên gần nhất nếu ngoài giờ GD.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-10</span><div><div class="t-name">API: GET /recommendations/dailyTechnical/{id} (detail)</div><div class="t-note">Trả thêm shortDesc, pdfUrl. 404 nếu không tồn tại.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-11</span><div><div class="t-name">Scheduled job: auto-archive khuyến nghị hết hiệu lực</div><div class="t-note">Daily cron: status='ACTIVE' AND expiry_date &lt; CURDATE() → SET status='ARCHIVED'. Không ảnh hưởng record expiry_date=NULL. (Mới — Q1 resolved 2026-07-10)</div></div></li>
       </ul>
     </div>
     <!-- Mobile FE -->
@@ -1088,7 +1191,7 @@
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-01</span><div><div class="t-name">Menu: thêm "Khuyến nghị" vào sidebar</div><div class="t-note">3 sub-menu: Danh mục cơ bản / NHSV Rating / Kỹ thuật hằng ngày</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-02</span><div><div class="t-name">Danh mục cơ bản: list + CRUD form</div><div class="t-note">Table với filter/search + form tạo/sửa (auto-calculate % tiềm năng live)</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-03</span><div><div class="t-name">NHSV Rating: Excel upload page</div><div class="t-note">Upload component + preview table + error list + confirm button + lịch sử batches</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-04</span><div><div class="t-name">Kỹ thuật hằng ngày: list + CRUD form</div><div class="t-note">Date picker để chọn ngày + table + form nhập (vùng mua range, mục tiêu, cắt lỗ, upsize)</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-04</span><div><div class="t-name">Kỹ thuật hằng ngày: list + batch-entry form + Publish</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): form "+ Thêm entry" cho phép chọn 1 Ngày + thêm nhiều dòng mã (repeatable row) trước khi Lưu nháp. Nút "Publish ngày [X]" riêng, enable khi có Nháp. Cột Trạng thái (Nháp/Còn hiệu lực/Đạt target) trên table. Date picker xem được ngày quá khứ (cả Nháp + Publish); ngày trống → empty state rõ ràng, không phải lỗi.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-05</span><div><div class="t-name">PDF upload component (reuse from A-04)</div><div class="t-note">Tái sử dụng component từ NH Research. Áp dụng cho Danh mục cơ bản + Kỹ thuật hằng ngày.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-06</span><div><div class="t-name">Excel parsing validation UI</div><div class="t-note">Hiển thị error list từ ratingUpload API: mã không hợp lệ, rating value sai, row number. Giúp admin fix file.</div></div></li>
       </ul>
@@ -1100,7 +1203,7 @@
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-01</span><div><div class="t-name">Test: Danh mục cơ bản — filter, price, %</div><div class="t-note">Bluechip/Midcap filter. % tiềm năng tính đúng (dương/âm, màu sắc). currentPrice = closing price ngoài giờ GD.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-02</span><div><div class="t-name">Test: NHSV Rating — Excel upload flow</div><div class="t-note">File hợp lệ → preview đúng → confirm → app show batch mới. File thiếu cột → error. File có giá trị rating sai (E, F) → error list đúng.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-03</span><div><div class="t-name">Test: NHSV Rating — batch replacement</div><div class="t-note">Sau upload batch mới: app hiện data mới. Batch cũ is_active=false. Search đúng mã trong batch mới.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-04</span><div><div class="t-name">Test: Kỹ thuật hằng ngày</div><div class="t-note">Hôm nay có data → hiển thị. Hôm nay chưa có → empty state đúng. Upsize=null → ẩn ô. vùng mua 1 giá vs range.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-04</span><div><div class="t-name">Test: Kỹ thuật hằng ngày</div><div class="t-note">Hôm nay có data PUBLISHED → hiển thị. Hôm nay chưa có/chỉ có DRAFT → empty state đúng (2026-07-10: DRAFT không lộ ra app). Batch-tạo nhiều mã 1 lần → tất cả DRAFT. Publish → toàn bộ DRAFT của ngày đó lên app ngay, không ảnh hưởng entry đã PUBLISHED trước. Upsize=null → ẩn ô. Vùng mua 1 giá vs range.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-05</span><div><div class="t-name">Test: Search mã CK — tất cả 3 sub-tabs</div><div class="t-note">Search "VCB" → lọc đúng. Search mã không tồn tại → empty state. Clear search → full list.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-06</span><div><div class="t-name">Test: Disclaimer + navigate stock detail</div><div class="t-note">Disclaimer hiển thị đúng trên cả 3 tabs. Tap card/row → navigate đúng stock detail screen với stockCode đúng.</div></div></li>
       </ul>
@@ -1116,12 +1219,11 @@
     <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev</span>
   </div>
 
-  <div class="oq-card">
-    <div class="oq-num">1</div>
+  <div class="oq-card" style="background:#f0fdf4;border-color:#86efac;">
+    <div class="oq-num" style="background:#16a34a;">✓</div>
     <div class="oq-content">
-      <div class="oq-q">[BLOCKING] Danh mục cơ bản: khuyến nghị có expire hay tự quản lý?</div>
-      <div class="oq-note">Sau khi đạt target price hoặc qua N tháng, khuyến nghị có tự động archive không? Hay admin phải tự tay archive từng mã? Nếu tự động: cần thêm <code>expiry_date</code> hoặc rule theo target price. Nếu không: spec hiện tại (admin tự archive) là đủ.</div>
-      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM + Phòng Phân tích</span><span class="tag tag-block">Blocking data model</span></div>
+      <div class="oq-q" style="color:#14532d;">[RESOLVED 2026-07-10] Danh mục cơ bản: khuyến nghị có expire hay tự quản lý?</div>
+      <div class="oq-note" style="color:#166534;">Trả lời: Có expire, set theo từng mã (optional, field <code>expiry_date</code>). Không set = không tự hết hạn, admin tự Archive tay. Có set = scheduled job (BE-11) tự SET <code>status='ARCHIVED'</code> sau ngày hết hiệu lực. Đã cập nhật data model (mục 4), Admin form (mục 7), Work Breakdown (mục 8).</div>
     </div>
   </div>
 
@@ -1146,8 +1248,8 @@
 
 <!-- FOOTER -->
 <div class="doc-footer">
-  <div>NHSV Pro · A-05 Khuyến nghị Feature Spec · v1.0</div>
-  <div>30 tasks (10 BE · 8 Mobile · 6 Admin) · 6 QA tasks · 3 open questions</div>
+  <div>NHSV Pro · A-05 Khuyến nghị Feature Spec · v1.1</div>
+  <div>31 tasks (11 BE · 8 Mobile · 6 Admin) · 6 QA tasks · 2 open questions (1 resolved)</div>
 </div>
 
 </div>

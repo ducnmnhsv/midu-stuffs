@@ -549,7 +549,7 @@ const TASKS = [
     status: "backlog", priority: "P2", deadline: null,
     owner: "PO", jira: null,
     doc: "New feature in NHSV Pro/NHSV_Channel/Khuyen_Nghi/PRD.md",
-    blocks: [], blockedBy: [], note: "Draft + Design draft HTML.",
+    blocks: [], blockedBy: [], note: "v1.1 (2026-07-10): Q1 resolved (expiry per-mã, optional). Spec.html sửa 5 điểm lệch convention (Integration type, auto-populated fields, pagination, mutation {id}+200). Còn chờ: Q2/Q4/Q5 (PM), Q3 (IT+PT), Q6 Legal duyệt wording disclaimer (đã có draft mới).",
   },
   {
     id: "NHP-RESEARCH", title: "PRD: NH Research (NHSV Channel)",

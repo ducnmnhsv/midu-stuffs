@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>nhsv-admin · Khuyến nghị</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --primary:      #028D96;
+    --primary-dim:  rgba(2,141,150,.12);
+    --navy:         #0f2744;
+    --green:        #07A461;
+    --red:          #DA1004;
+    --amber:        #b45309;
+    --violet:       #5b21b6;
+    --blue:         #1890FF;
+
+    --bg:           #F2F6FB;
+    --card:         #FFFFFF;
+    --border:       #E4E9F2;
+    --text:         #26303D;
+    --text-muted:   #7C88A0;
+    --shadow:       0 1px 2px rgba(15,39,68,.05);
+    --shadow-lg:    0 16px 40px rgba(15,39,68,.16);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary:    #2FD1CF;
+      --bg:         #0B1220;
+      --card:       #121B2E;
+      --border:     #253248;
+      --text:       #E7ECF5;
+      --text-muted: #8CA0C2;
+      --shadow:     0 1px 2px rgba(0,0,0,.3);
+      --shadow-lg:  0 16px 40px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --primary:    #2FD1CF;
+    --bg:         #0B1220;
+    --card:       #121B2E;
+    --border:     #253248;
+    --text:       #E7ECF5;
+    --text-muted: #8CA0C2;
+    --shadow:     0 1px 2px rgba(0,0,0,.3);
+    --shadow-lg:  0 16px 40px rgba(0,0,0,.5);
+  }
+  :root[data-theme="light"] {
+    --primary:    #028D96;
+    --bg:         #F2F6FB;
+    --card:       #FFFFFF;
+    --border:     #E4E9F2;
+    --text:       #26303D;
+    --text-muted: #7C88A0;
+    --shadow:     0 1px 2px rgba(15,39,68,.05);
+    --shadow-lg:  0 16px 40px rgba(15,39,68,.16);
+  }
+
+  html, body { background: var(--bg); }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+
+  /* ── Top chrome ── */
+  .topbar {
+    background: var(--navy); color: #cbd5e1;
+    padding: 0 24px; height: 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 60;
+  }
+  .crumb { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+  .crumb .sep { color: #475569; }
+  .crumb .now { color: white; font-weight: 700; }
+  .crumb .app { display: flex; align-items: center; gap: 7px; font-weight: 700; color: white; }
+  .crumb .app .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--primary); }
+  .topbar-right { display: flex; align-items: center; gap: 14px; font-size: 11.5px; color: #94a3b8; }
+  .env-pill { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 20px; padding: 3px 10px; }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #04292c;
+  }
+
+  .shell { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .page-title { font-size: 21px; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
+  .page-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; }
+
+  /* ── Sub-tabs ── */
+  .subtabs { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 4px; width: fit-content; margin-bottom: 18px; box-shadow: var(--shadow); }
+  .subtab {
+    appearance: none; border: none; background: transparent; cursor: pointer; font-family: inherit;
+    padding: 8px 16px; border-radius: 7px; font-size: 12.5px; font-weight: 700; color: var(--text-muted);
+    transition: background .15s, color .15s;
+  }
+  .subtab.active { background: var(--primary); color: #04292c; }
+  :root[data-theme="dark"] .subtab.active, @media (prefers-color-scheme: dark) { }
+
+  .view { display: none; }
+  .view.active { display: block; animation: fadein .18s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+
+  /* ── Stat row ── */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; box-shadow: var(--shadow);
+  }
+  .stat .v { font-size: 22px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+  .stat .l { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .stat.warn .v { color: var(--amber); }
+
+  /* ── Toolbar ── */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .select, .input {
+    height: 34px; border: 1px solid var(--border); border-radius: 7px;
+    padding: 0 10px; font-size: 12.5px; color: var(--text);
+    background: var(--card); outline: none; font-family: inherit;
+  }
+  .select:focus, .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+  .input.search { width: 200px; }
+  .spacer { flex: 1; }
+
+  .quick-dates { display: flex; gap: 4px; }
+  .qd-btn {
+    appearance: none; border: 1px solid var(--border); background: var(--card); color: var(--text-muted);
+    font-family: inherit; font-size: 11.5px; font-weight: 600; padding: 7px 10px; border-radius: 7px; cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .qd-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+  .empty-day { padding: 42px 20px; text-align: center; }
+  .empty-day .ed-icon { color: var(--text-muted); margin-bottom: 10px; }
+  .empty-day .ed-title { font-size: 13px; font-weight: 700; color: var(--text); }
+  .empty-day .ed-sub { font-size: 11.5px; color: var(--text-muted); margin-top: 5px; }
+  .empty-day .ed-api { display: inline-block; margin-top: 10px; font-size: 10.5px; font-family: ui-monospace, Menlo, monospace; background: color-mix(in srgb, var(--text) 6%, var(--card)); color: var(--text-muted); padding: 4px 9px; border-radius: 6px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+    padding: 8px 14px; border-radius: 7px; font-size: 12.5px; font-family: inherit;
+    font-weight: 700; cursor: pointer; border: 1px solid transparent; transition: filter .15s, opacity .15s;
+  }
+  .btn:hover { filter: brightness(1.04); }
+  .btn:active { filter: brightness(.97); }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn-primary { background: var(--primary); color: #04292c; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border-color: var(--border); }
+  .btn-danger-ghost { background: transparent; color: var(--red); border-color: var(--border); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  /* ── Table ── */
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 16px; }
+  .panel-head { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .panel-title { font-size: 13.5px; font-weight: 800; color: var(--text); }
+  .panel-meta { font-size: 11.5px; color: var(--text-muted); }
+  .tbl-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  thead tr { background: color-mix(in srgb, var(--text) 4%, var(--card)); }
+  th {
+    padding: 10px 14px; text-align: left; font-size: 10.5px; font-weight: 800;
+    color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; vertical-align: middle; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: color-mix(in srgb, var(--text) 3%, var(--card)); }
+  .num { font-variant-numeric: tabular-nums; }
+  .code-cell .code { font-weight: 800; color: var(--text); }
+  .code-cell .name { font-size: 11px; color: var(--text-muted); }
+
+  /* ── Chips / badges ── */
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; padding: 3px 9px;
+    border-radius: 20px; white-space: nowrap; border: 1px solid transparent;
+  }
+  .chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .chip-active   { background: color-mix(in srgb, var(--green) 14%, var(--card)); color: var(--green); }
+  .chip-active .chip-dot { background: var(--green); }
+  .chip-archived { background: color-mix(in srgb, var(--text-muted) 16%, var(--card)); color: var(--text-muted); }
+  .chip-archived .chip-dot { background: var(--text-muted); }
+  .chip-expiring { background: color-mix(in srgb, var(--amber) 16%, var(--card)); color: var(--amber); }
+  .chip-expiring .chip-dot { background: var(--amber); }
+  .chip-bluechip { background: color-mix(in srgb, var(--blue) 14%, var(--card)); color: var(--blue); }
+  .chip-midcap   { background: color-mix(in srgb, var(--violet) 14%, var(--card)); color: var(--violet); }
+  .chip-manual   { background: color-mix(in srgb, var(--text-muted) 16%, var(--card)); color: var(--text-muted); }
+  .chip-auto     { background: color-mix(in srgb, var(--primary) 16%, var(--card)); color: var(--primary); }
+  .chip-draft    { background: color-mix(in srgb, var(--amber) 16%, var(--card)); color: var(--amber); }
+  .chip-draft .chip-dot { background: var(--amber); }
+  .chip-target   { background: color-mix(in srgb, var(--blue) 14%, var(--card)); color: var(--blue); }
+  .chip-target .chip-dot { background: var(--blue); }
+  .pdf-chip { font-size: 11px; color: var(--primary); font-weight: 700; }
+  .pdf-chip.none { color: var(--text-muted); font-weight: 500; }
+
+  .rate {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 22px; border-radius: 5px; font-size: 11px; font-weight: 800;
+  }
+  .rate-s { background: color-mix(in srgb, var(--amber) 18%, var(--card)); color: var(--amber); }
+  .rate-a { background: color-mix(in srgb, var(--green) 16%, var(--card)); color: var(--green); }
+  .rate-b { background: color-mix(in srgb, var(--blue) 16%, var(--card)); color: var(--blue); }
+  .rate-c { background: color-mix(in srgb, var(--text-muted) 18%, var(--card)); color: var(--text-muted); }
+  .rate-d { background: color-mix(in srgb, var(--red) 16%, var(--card)); color: var(--red); }
+
+  .act-group { display: flex; gap: 4px; }
+  .act-btn {
+    width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; color: var(--text-muted); transition: background .15s, color .15s, border-color .15s;
+  }
+  .act-btn:hover { background: var(--primary-dim); border-color: var(--primary); color: var(--primary); }
+  .act-btn.danger:hover { background: color-mix(in srgb, var(--red) 12%, var(--card)); border-color: var(--red); color: var(--red); }
+  .act-btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+  .empty-row td { text-align: center; padding: 32px 14px; color: var(--text-muted); font-size: 12.5px; }
+
+  /* ── Upload zone ── */
+  .upload-zone {
+    border: 1.5px dashed var(--border); border-radius: 10px;
+    padding: 26px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .upload-zone:hover { border-color: var(--primary); background: var(--primary-dim); }
+  .upload-zone .uz-icon { color: var(--text-muted); }
+  .upload-zone .uz-title { font-size: 13px; font-weight: 700; color: var(--text); margin-top: 10px; }
+  .upload-zone .uz-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+  .upload-demo-row { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+
+  .col-req { font-size: 11px; color: var(--text-muted); margin-top: 10px; }
+  .col-req code { background: color-mix(in srgb, var(--text) 6%, var(--card)); padding: 1px 6px; border-radius: 4px; font-size: 10.5px; }
+
+  /* ── Preview panel ── */
+  .preview-panel { display: none; margin-top: 14px; }
+  .preview-panel.show { display: block; animation: fadein .2s ease; }
+  .preview-summary { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .psum { flex: 1; min-width: 130px; background: var(--card); border: 1px solid var(--border); border-radius: 9px; padding: 11px 14px; }
+  .psum .v { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .psum .l { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+  .psum.err .v { color: var(--red); }
+  .psum.ok .v { color: var(--green); }
+
+  .error-list { background: color-mix(in srgb, var(--red) 8%, var(--card)); border: 1px solid color-mix(in srgb, var(--red) 30%, var(--border)); border-radius: 9px; padding: 12px 14px; margin-bottom: 12px; }
+  .error-list .et { font-size: 12px; font-weight: 800; color: var(--red); margin-bottom: 6px; }
+  .error-list ul { list-style: none; }
+  .error-list li { font-size: 12px; color: var(--text); padding: 3px 0; }
+  .error-list li b { color: var(--red); font-variant-numeric: tabular-nums; }
+
+  .preview-actions { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+  .preview-note { font-size: 11.5px; color: var(--text-muted); }
+
+  .batch-banner {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: color-mix(in srgb, var(--primary) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border));
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 14px;
+  }
+  .batch-banner .bt { font-size: 12.5px; font-weight: 800; color: var(--text); }
+  .batch-banner .bs { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(11,18,32,.55);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .18s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--card); border-radius: 14px; width: 560px; max-width: 94vw;
+    max-height: 88vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+    transform: translateY(10px) scale(.99); transition: transform .18s;
+  }
+  .modal-overlay.open .modal { transform: none; }
+  .modal-head { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .modal-title { font-size: 15.5px; font-weight: 800; color: var(--text); }
+  .modal-close {
+    width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; color: var(--text-muted);
+  }
+  .modal-close:hover { background: var(--bg); }
+  .modal-body { padding: 18px 22px; }
+  .modal-foot { padding: 15px 22px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+  .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fgroup { margin-bottom: 13px; }
+  .flabel { display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 5px; }
+  .flabel .req { color: var(--red); }
+  .flabel .opt { color: var(--text-muted); font-weight: 500; }
+  .ftext, .fselect, .ftextarea, .fdate {
+    width: 100%; border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 11px; font-size: 13px; color: var(--text); outline: none;
+    transition: border-color .15s, box-shadow .15s; font-family: inherit; background: var(--card);
+  }
+  .ftext:focus, .fselect:focus, .ftextarea:focus, .fdate:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+  .ftextarea { resize: vertical; min-height: 72px; line-height: 1.55; }
+  .fhint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .live-calc {
+    display: flex; align-items: center; justify-content: space-between;
+    background: color-mix(in srgb, var(--primary) 8%, var(--card)); border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+    border-radius: 8px; padding: 9px 13px; margin-top: -3px; margin-bottom: 13px;
+  }
+  .live-calc .lc-l { font-size: 11.5px; color: var(--text-muted); }
+  .live-calc .lc-v { font-size: 15px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+  .live-calc .lc-v.neg { color: var(--red); }
+
+  /* ── Batch row repeater (Kỹ thuật hằng ngày) ── */
+  .row-repeater { border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+  .row-repeater-head {
+    display: grid; grid-template-columns: 84px 1fr 1fr 1fr 1fr 1fr 30px; gap: 8px;
+    padding: 8px 10px; background: color-mix(in srgb, var(--text) 4%, var(--card));
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: var(--text-muted);
+  }
+  .row-item {
+    display: grid; grid-template-columns: 84px 1fr 1fr 1fr 1fr 1fr 30px; gap: 8px;
+    padding: 7px 10px; border-top: 1px solid var(--border); align-items: center;
+  }
+  .row-item input {
+    width: 100%; border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 8px; font-size: 12px; color: var(--text); outline: none;
+    background: var(--card); font-family: inherit; transition: border-color .15s;
+  }
+  .row-item input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim); }
+  .row-remove {
+    width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text-muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .row-remove:hover { background: color-mix(in srgb, var(--red) 12%, var(--card)); border-color: var(--red); color: var(--red); }
+  .add-row-btn {
+    width: 100%; padding: 9px; border: none; border-top: 1px dashed var(--border);
+    background: color-mix(in srgb, var(--primary) 5%, var(--card)); color: var(--primary);
+    font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .add-row-btn:hover { background: var(--primary-dim); }
+  .batch-hint { font-size: 11.5px; color: var(--text-muted); margin-top: 8px; }
+
+  .toast-wrap { position: fixed; bottom: 22px; right: 22px; z-index: 400; display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+  .toast {
+    background: var(--navy); color: white; padding: 12px 16px; border-radius: 9px;
+    font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; gap: 9px;
+    opacity: 0; transform: translateY(8px); transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: none; }
+  .toast .tk { color: var(--green); flex-shrink: 0; }
+
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="crumb">
+    <span class="app"><span class="dot"></span>nhsv-admin</span>
+    <span class="sep">›</span>
+    <span>NHSV Channel</span>
+    <span class="sep">›</span>
+    <span class="now">Khuyến nghị</span>
+  </div>
+  <div class="topbar-right">
+    <span class="env-pill">UAT · tnhsvpro.nhsv.vn</span>
+    <div class="avatar">PT</div>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="page-head">
+    <div>
+      <div class="page-title">Khuyến nghị</div>
+      <div class="page-sub">Quản lý 3 nguồn nội dung khuyến nghị NHSV — Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày</div>
+    </div>
+  </div>
+
+  <div class="subtabs" role="tablist" aria-label="Loại khuyến nghị">
+    <button class="subtab active" id="tab-dmcb" role="tab" aria-selected="true" onclick="switchView('dmcb')">Danh mục cơ bản</button>
+    <button class="subtab" id="tab-rating" role="tab" aria-selected="false" onclick="switchView('rating')">NHSV Rating</button>
+    <button class="subtab" id="tab-kythuat" role="tab" aria-selected="false" onclick="switchView('kythuat')">Kỹ thuật hằng ngày</button>
+  </div>
+
+  <!-- ══════════ VIEW: DANH MUC CO BAN ══════════ -->
+  <section class="view active" id="view-dmcb">
+
+    <div class="stats">
+      <div class="stat"><div class="v">5</div><div class="l">Đang hiệu lực</div></div>
+      <div class="stat warn"><div class="v">1</div><div class="l">Sắp hết hiệu lực (≤ 7 ngày)</div></div>
+      <div class="stat"><div class="v">3</div><div class="l">Bluechip</div></div>
+      <div class="stat"><div class="v">2</div><div class="l">Midcap</div></div>
+    </div>
+
+    <div class="toolbar">
+      <select class="select">
+        <option>Tất cả phân khúc</option>
+        <option>Bluechip</option>
+        <option>Midcap</option>
+      </select>
+      <select class="select">
+        <option>Tất cả trạng thái</option>
+        <option>Đang hiệu lực</option>
+        <option>Đã lưu trữ</option>
+      </select>
+      <input class="input search" placeholder="Tìm theo mã CK...">
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="openModal('modal-dmcb')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Thêm khuyến nghị
+      </button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Danh sách khuyến nghị</div>
+        <div class="panel-meta">5 mã · sắp xếp theo ngày khuyến nghị mới nhất</div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th>Mã CK</th><th>Phân khúc</th><th>Giá KN</th><th>Giá kỳ vọng</th><th>Ngày KN</th><th>Hết hiệu lực</th><th>PDF</th><th>Trạng thái</th><th>Thao tác</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td class="code-cell"><div class="code">VCB</div><div class="name">Vietcombank · HOSE</div></td>
+              <td><span class="chip chip-bluechip">Bluechip</span></td>
+              <td class="num">29.200</td>
+              <td class="num" style="color:var(--green);font-weight:700">40.000</td>
+              <td class="num">04/06/26</td>
+              <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
+              <td><span class="pdf-chip">2.4 MB</span></td>
+              <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
+              <td><div class="act-group">
+                <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td class="code-cell"><div class="code">TV1</div><div class="name">Tân Tạo · HNX</div></td>
+              <td><span class="chip chip-midcap">Midcap</span></td>
+              <td class="num">24.500</td>
+              <td class="num" style="color:var(--green);font-weight:700">43.900</td>
+              <td class="num">17/04/26</td>
+              <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
+              <td><span class="pdf-chip">1.8 MB</span></td>
+              <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
+              <td><div class="act-group">
+                <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+              </div></td>
+            </tr>
+            <tr>
+              <td class="code-cell"><div class="code">GMD</div><div class="name">Gemadept · HOSE</div></td>
+              <td><span class="chip chip-bluechip">Bluechip</span></td>
+              <td class="num">75.500</td>
+              <td class="num" style="color:var(--green);font-weight:700">90.000</td>
+              <td class="num">02/07/26</td>
+              <td class="num" style="color:var(--amber);font-weight:700">15/07/26</td>
+              <td><span class="pdf-chip none">Chưa có</span></td>
+              <td><span class="chip chip-expiring"><span class="chip-dot"></span>Sắp hết hiệu lực</span></td>
+              <td><div class="act-group">
+                <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
+              </div></td>
+            </tr>
+            <tr style="opacity:.55">
+              <td class="code-cell"><div class="code">FPT</div><div class="name">FPT Corp · HOSE</div></td>
+              <td><span class="chip chip-bluechip">Bluechip</span></td>
+              <td class="num">118.000</td>
+              <td class="num">135.000</td>
+              <td class="num">02/03/26</td>
+              <td class="num">30/06/26</td>
+              <td><span class="pdf-chip">3.1 MB</span></td>
+              <td><span class="chip chip-archived"><span class="chip-dot"></span>Đã lưu trữ (tự động)</span></td>
+              <td><div class="act-group">
+                <button class="act-btn" title="Xem" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+              </div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
+        <div class="panel-meta">FPT tự chuyển "Đã lưu trữ" lúc 00:05 ngày 30/06/26 — scheduled job theo <code style="background:color-mix(in srgb, var(--text) 6%, var(--card));padding:1px 5px;border-radius:4px">expiryDate</code>, không cần admin can thiệp.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ VIEW: NHSV RATING ══════════ -->
+  <section class="view" id="view-rating">
+
+    <div class="batch-banner">
+      <div>
+        <div class="bt">Batch hiện tại: Tháng 06/2026 · 47 mã</div>
+        <div class="bs">Upload bởi qtrr.nguyen · 30/06/2026 09:12 · Đang active</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHistory()">Xem lịch sử batch</button>
+    </div>
+
+    <div class="panel" style="margin-bottom:14px;">
+      <div class="panel-head"><div class="panel-title">Upload batch mới</div></div>
+      <div style="padding:18px;">
+        <div class="upload-zone" role="button" tabindex="0">
+          <svg class="uz-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="uz-title">Kéo thả file Excel vào đây, hoặc chọn demo bên dưới</div>
+          <div class="uz-hint">Định dạng .xlsx / .xls — parse ngay khi chọn</div>
+        </div>
+        <div class="col-req">Cột bắt buộc: <code>Mã</code>, <code>Cơ bản</code>, <code>Thị trường</code>, <code>NHSV Rating</code> (giá trị S/A/B/C/D, không phân biệt hoa thường)</div>
+        <div class="upload-demo-row">
+          <button class="btn btn-ghost btn-sm" onclick="simulateUpload('error')">📤 Demo: file có lỗi</button>
+          <button class="btn btn-ghost btn-sm" onclick="simulateUpload('ok')">📤 Demo: file hợp lệ</button>
+        </div>
+
+        <!-- Preview: ERROR state -->
+        <div class="preview-panel" id="preview-error">
+          <div class="preview-summary">
+            <div class="psum"><div class="v">312</div><div class="l">Tổng số dòng</div></div>
+            <div class="psum ok"><div class="v">309</div><div class="l">Hợp lệ</div></div>
+            <div class="psum err"><div class="v">3</div><div class="l">Lỗi</div></div>
+          </div>
+          <div class="error-list">
+            <div class="et">3 dòng lỗi — sửa file và tải lại</div>
+            <ul>
+              <li><b>Dòng 47</b> — Mã "XYZ99" không tồn tại trong danh sách niêm yết</li>
+              <li><b>Dòng 118</b> — Giá trị "E" ở cột NHSV Rating không hợp lệ (chỉ nhận S / A / B / C / D)</li>
+              <li><b>Dòng 205</b> — Cột "Thị trường" để trống</li>
+            </ul>
+          </div>
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr><th>#</th><th>Mã</th><th>Cơ bản</th><th>Thị trường</th><th>NHSV Rating</th></tr></thead>
+              <tbody>
+                <tr><td class="num">1</td><td><strong>ACB</strong></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-s">S</span></td></tr>
+                <tr><td class="num">2</td><td><strong>AAA</strong></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-b">B</span></td><td><span class="rate rate-a">A</span></td></tr>
+                <tr style="background:color-mix(in srgb, var(--red) 6%, var(--card))"><td class="num">47</td><td><strong>XYZ99</strong></td><td><span class="rate rate-b">B</span></td><td><span class="rate rate-c">C</span></td><td><span class="rate rate-c">C</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="preview-actions">
+            <button class="btn btn-primary" disabled>Xác nhận publish</button>
+            <span class="preview-note">Publish bị khoá tới khi 3 dòng lỗi được sửa và tải lại file.</span>
+          </div>
+        </div>
+
+        <!-- Preview: OK state -->
+        <div class="preview-panel" id="preview-ok">
+          <div class="preview-summary">
+            <div class="psum"><div class="v">315</div><div class="l">Tổng số dòng</div></div>
+            <div class="psum ok"><div class="v">315</div><div class="l">Hợp lệ</div></div>
+            <div class="psum"><div class="v" style="color:var(--text-muted)">0</div><div class="l">Lỗi</div></div>
+          </div>
+          <div class="tbl-scroll">
+            <table>
+              <thead><tr><th>#</th><th>Mã</th><th>Cơ bản</th><th>Thị trường</th><th>NHSV Rating</th></tr></thead>
+              <tbody>
+                <tr><td class="num">1</td><td><strong>ACB</strong></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-s">S</span></td></tr>
+                <tr><td class="num">2</td><td><strong>AAA</strong></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-b">B</span></td><td><span class="rate rate-a">A</span></td></tr>
+                <tr><td class="num">3</td><td><strong>VCB</strong></td><td><span class="rate rate-s">S</span></td><td><span class="rate rate-a">A</span></td><td><span class="rate rate-a">A</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="preview-actions">
+            <button class="btn btn-primary" onclick="publishBatch()">Xác nhận publish</button>
+            <span class="preview-note">Sẽ thay toàn bộ 47 mã của batch 06/2026 bằng 315 mã mới — batch cũ được giữ lại để audit, không xoá.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="rating-history" style="display:none;">
+      <div class="panel-head"><div class="panel-title">Lịch sử batch</div><div class="panel-meta">Không xoá — audit trail</div></div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Batch</th><th>Số mã</th><th>Người upload</th><th>Thời điểm</th><th>Trạng thái</th></tr></thead>
+          <tbody>
+            <tr><td class="num">06/2026</td><td class="num">47</td><td>qtrr.nguyen</td><td class="num">30/06/2026 09:12</td><td><span class="chip chip-active"><span class="chip-dot"></span>Active</span></td></tr>
+            <tr><td class="num">05/2026</td><td class="num">45</td><td>qtrr.nguyen</td><td class="num">02/05/2026 08:40</td><td><span class="chip chip-archived"><span class="chip-dot"></span>Thay thế</span></td></tr>
+            <tr><td class="num">04/2026</td><td class="num">44</td><td>qtrr.le</td><td class="num">01/04/2026 08:55</td><td><span class="chip chip-archived"><span class="chip-dot"></span>Thay thế</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Bảng rating đang active — Tháng 06/2026</div>
+        <div class="panel-meta">47 mã</div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Mã CK</th><th style="text-align:center">Cơ bản</th><th style="text-align:center">Thị trường</th><th style="text-align:center">Tổng</th><th>Thao tác</th></tr></thead>
+          <tbody>
+            <tr><td class="code-cell"><div class="code">ACB</div><div class="name">HOSE</div></td><td style="text-align:center"><span class="rate rate-s">S</span></td><td style="text-align:center"><span class="rate rate-s">S</span></td><td style="text-align:center"><span class="rate rate-s">S</span></td><td><div class="act-group"><button class="act-btn" title="Sửa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>
+            <tr><td class="code-cell"><div class="code">AAA</div><div class="name">HOSE</div></td><td style="text-align:center"><span class="rate rate-s">S</span></td><td style="text-align:center"><span class="rate rate-b">B</span></td><td style="text-align:center"><span class="rate rate-a">A</span></td><td><div class="act-group"><button class="act-btn" title="Sửa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>
+            <tr><td class="code-cell"><div class="code">VCB</div><div class="name">HOSE</div></td><td style="text-align:center"><span class="rate rate-s">S</span></td><td style="text-align:center"><span class="rate rate-a">A</span></td><td style="text-align:center"><span class="rate rate-a">A</span></td><td><div class="act-group"><button class="act-btn" title="Sửa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>
+            <tr><td class="code-cell"><div class="code">AGG</div><div class="name">HOSE</div></td><td style="text-align:center"><span class="rate rate-b">B</span></td><td style="text-align:center"><span class="rate rate-c">C</span></td><td style="text-align:center"><span class="rate rate-c">C</span></td><td><div class="act-group"><button class="act-btn" title="Sửa"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
+        <div class="panel-meta">Sửa từng dòng chỉ áp dụng cho sai sót nhỏ — thay đổi hàng loạt luôn nên đi qua upload batch mới ở trên.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ VIEW: KY THUAT HANG NGAY ══════════ -->
+  <section class="view" id="view-kythuat">
+
+    <div class="stats">
+      <div class="stat"><div class="v" id="stat-total">6</div><div class="l">Entry ngày này</div></div>
+      <div class="stat warn"><div class="v" id="stat-draft">3</div><div class="l">Nháp — chưa publish</div></div>
+      <div class="stat"><div class="v" id="stat-published">3</div><div class="l">Đã publish</div></div>
+      <div class="stat"><div class="v" id="stat-hit-target">1</div><div class="l">Đạt target</div></div>
+    </div>
+
+    <div class="toolbar">
+      <span class="flabel" style="margin:0;color:var(--text-muted);font-weight:600">Ngày:</span>
+      <input class="input fdate" type="text" id="kt-date" value="11/06/2026" style="width:120px" onchange="renderKt(this.value)">
+      <div class="quick-dates">
+        <button class="qd-btn" onclick="renderKt('11/06/2026')">11/06 · hôm nay</button>
+        <button class="qd-btn" onclick="renderKt('10/06/2026')">10/06</button>
+        <button class="qd-btn" onclick="renderKt('09/06/2026')">09/06</button>
+        <button class="qd-btn" onclick="renderKt('05/06/2026')">05/06</button>
+      </div>
+      <input class="input search" placeholder="Tìm theo mã CK...">
+      <div class="spacer"></div>
+      <button class="btn btn-ghost" id="btn-publish-day" onclick="publishDay()" style="border-color:var(--amber);color:var(--amber)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Publish ngày <span id="kt-date-label">11/06</span> <span id="publish-count">(3)</span>
+      </button>
+      <button class="btn btn-primary" onclick="openModal('modal-kythuat')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Thêm entry
+      </button>
+    </div>
+    <div class="fhint" style="margin:-6px 0 12px;">Xem được cả ngày trong quá khứ — gồm cả entry đã Publish và còn Nháp. Ngày không có mã nào (kể cả Nháp) → bảng trống, API trả <code>technicals: []</code>, HTTP 200 (không phải 404).</div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Kỹ thuật hằng ngày — <span id="kt-panel-date">11/06/2026</span></div>
+        <div class="panel-meta" id="kt-count">6 mã</div>
+      </div>
+      <div class="tbl-scroll">
+        <table id="kt-table">
+          <thead><tr>
+            <th>Mã CK</th><th>Vùng mua</th><th>Mục tiêu</th><th>Cắt lỗ</th><th>Upsize</th><th>PDF</th><th>Nguồn</th><th>Trạng thái</th><th>Thao tác</th>
+          </tr></thead>
+          <tbody id="kt-tbody"></tbody>
+        </table>
+      </div>
+      <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
+        <div class="panel-meta">Entry "Nháp" <strong>không</strong> hiển thị trên app — chỉ lên app sau khi bấm "Publish ngày...". Xoá ở bảng này luôn là hard delete (khác Danh mục cơ bản dùng soft archive), áp dụng cho cả Nháp và đã publish. "Upsize" hiện gạch ngang khi không có giá trị.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ══════════ MODAL: Danh mục cơ bản ══════════ -->
+<div class="modal-overlay" id="modal-dmcb">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Thêm khuyến nghị — Danh mục cơ bản</div>
+      <button class="modal-close" onclick="closeModal('modal-dmcb')" aria-label="Đóng">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="frow">
+        <div class="fgroup">
+          <label class="flabel">Mã CK <span class="req">*</span></label>
+          <input class="ftext" id="dmcb-code" placeholder="VD: VCB" value="VCB">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Phân khúc <span class="req">*</span></label>
+          <select class="fselect">
+            <option>Bluechip</option>
+            <option>Midcap</option>
+          </select>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fgroup">
+          <label class="flabel">Giá tại ngày KN <span class="req">*</span></label>
+          <input class="ftext" id="dmcb-price" type="text" inputmode="decimal" value="29200" oninput="calcPotential()">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Giá kỳ vọng <span class="req">*</span></label>
+          <input class="ftext" id="dmcb-target" type="text" inputmode="decimal" value="40000" oninput="calcPotential()">
+        </div>
+      </div>
+      <div class="live-calc">
+        <span class="lc-l">Tiềm năng ước tính</span>
+        <span class="lc-v" id="dmcb-potential">+36,99%</span>
+      </div>
+      <div class="frow">
+        <div class="fgroup">
+          <label class="flabel">Ngày khuyến nghị <span class="req">*</span></label>
+          <input class="fdate" type="text" value="04/06/2026">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Ngày hết hiệu lực <span class="opt">(tuỳ chọn)</span></label>
+          <input class="fdate" type="text" placeholder="Để trống = không giới hạn">
+          <div class="fhint">Không set = khuyến nghị không tự hết hạn, cần Archive tay. Có set = tự chuyển "Đã lưu trữ" sau ngày này.</div>
+        </div>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Luận điểm <span class="opt">(tuỳ chọn)</span></label>
+        <textarea class="ftextarea" placeholder="Tóm tắt lý do khuyến nghị — hiển thị ở màn chi tiết trên app..."></textarea>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Báo cáo PDF <span class="opt">(tuỳ chọn)</span></label>
+        <div class="upload-zone" style="padding:16px;">
+          <svg class="uz-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <div class="uz-title" style="font-size:12px;">Kéo thả hoặc chọn PDF</div>
+          <div class="uz-hint">Tối đa 20 MB</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="fhint">created_by tự lấy từ session admin</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="closeModal('modal-dmcb')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveAndToast('modal-dmcb','Đã lưu khuyến nghị VCB')">Lưu khuyến nghị</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MODAL: Ky thuat hang ngay — batch nhieu ma ══════════ -->
+<div class="modal-overlay" id="modal-kythuat">
+  <div class="modal" style="width:680px;">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">Thêm khuyến nghị kỹ thuật — nhiều mã</div>
+        <div class="fhint" style="margin-top:3px;">Chọn 1 ngày áp dụng, thêm bao nhiêu mã cũng được, rồi lưu 1 lần</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-kythuat')" aria-label="Đóng">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="fgroup" style="max-width:220px;">
+        <label class="flabel">Ngày áp dụng <span class="req">*</span></label>
+        <input class="fdate" type="text" id="batch-date" value="12/06/2026">
+        <div class="fhint">Áp dụng cho toàn bộ các mã thêm bên dưới</div>
+      </div>
+
+      <div class="fgroup">
+        <label class="flabel" style="margin-bottom:8px;">Danh sách mã</label>
+        <div class="row-repeater">
+          <div class="row-repeater-head">
+            <div>Mã CK</div><div>Mua từ</div><div>Mua đến</div><div>Mục tiêu</div><div>Cắt lỗ</div><div>Upsize</div><div></div>
+          </div>
+          <div id="row-list">
+            <div class="row-item">
+              <input placeholder="VD: SSI">
+              <input placeholder="30.20">
+              <input placeholder="30.80">
+              <input placeholder="34.00">
+              <input placeholder="29.00">
+              <input placeholder="tuỳ chọn">
+              <button class="row-remove" onclick="removeRow(this)" title="Xoá dòng" aria-label="Xoá dòng">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+            <div class="row-item">
+              <input placeholder="VD: DGW">
+              <input placeholder="42.00">
+              <input placeholder="">
+              <input placeholder="48.00">
+              <input placeholder="40.50">
+              <input placeholder="tuỳ chọn">
+              <button class="row-remove" onclick="removeRow(this)" title="Xoá dòng" aria-label="Xoá dòng">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <button class="add-row-btn" onclick="addRow()">+ Thêm dòng</button>
+        </div>
+        <div class="batch-hint">Bỏ trống "Mua đến" nếu chỉ có 1 mức giá mua (app hiển thị "≥ giá từ"). Bỏ trống "Upsize" nếu không có mức mở rộng.</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <span class="fhint">Lưu ở đây luôn tạo <strong>Nháp</strong> — bấm "Publish ngày..." ở màn danh sách khi sẵn sàng đưa lên app.</span>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button class="btn btn-ghost" onclick="closeModal('modal-kythuat')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveDraftBatch()">Lưu nháp (<span id="row-count">2</span> mã)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+  function switchView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    document.querySelectorAll('.subtab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+    const tab = document.getElementById('tab-' + name);
+    tab.classList.add('active'); tab.setAttribute('aria-selected', 'true');
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  });
+
+  function calcPotential() {
+    const price = parseFloat(document.getElementById('dmcb-price').value) || 0;
+    const target = parseFloat(document.getElementById('dmcb-target').value) || 0;
+    const el = document.getElementById('dmcb-potential');
+    if (!price) { el.textContent = '—'; return; }
+    const pct = (target / price - 1) * 100;
+    el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2).replace('.', ',') + '%';
+    el.classList.toggle('neg', pct < 0);
+  }
+
+  function simulateUpload(kind) {
+    document.getElementById('preview-error').classList.toggle('show', kind === 'error');
+    document.getElementById('preview-ok').classList.toggle('show', kind === 'ok');
+    document.getElementById(kind === 'error' ? 'preview-error' : 'preview-ok').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function toggleHistory() {
+    const h = document.getElementById('rating-history');
+    h.style.display = h.style.display === 'none' ? '' : 'none';
+  }
+
+  function publishBatch() {
+    showToast('Đã publish batch mới — 315 mã rating có hiệu lực ngay trên app.');
+    document.getElementById('preview-ok').classList.remove('show');
+  }
+
+  function archiveRow(btn) {
+    const row = btn.closest('tr');
+    row.style.opacity = '.5';
+    row.querySelector('.chip').outerHTML = '<span class="chip chip-archived"><span class="chip-dot"></span>Đã lưu trữ</span>';
+    showToast('Đã lưu trữ khuyến nghị.');
+  }
+
+  /* ── Kỹ thuật hằng ngày — data theo ngày, xem được cả quá khứ ── */
+  const KT_DATA = {
+    '11/06/2026': [
+      { code: 'GMD', name: 'Gemadept · HOSE', buyFrom: '75,50', buyTo: '76,50', target: '90,00', stop: '73,00', upsize: '92,00', pdf: '—', status: 'PUBLISHED', hitTarget: false },
+      { code: 'MBB', name: 'MB Bank · HOSE', buyFrom: '23,00', buyTo: '23,80', target: '27,20', stop: '22,00', upsize: null, pdf: '1.1 MB', status: 'PUBLISHED', hitTarget: true },
+      { code: 'HPG', name: 'Hoà Phát · HOSE', buyFrom: '28,50', buyTo: null, target: '32,00', stop: '27,20', upsize: null, pdf: null, status: 'PUBLISHED', hitTarget: false },
+      { code: 'VIC', name: 'Vingroup · HOSE', buyFrom: '42,00', buyTo: '43,00', target: '48,50', stop: '40,50', upsize: null, pdf: null, status: 'DRAFT', hitTarget: false },
+      { code: 'HSG', name: 'Hoa Sen · HOSE', buyFrom: '18,20', buyTo: null, target: '21,00', stop: '17,40', upsize: '22,50', pdf: null, status: 'DRAFT', hitTarget: false },
+      { code: 'DGC', name: 'Hoá chất Đức Giang · HOSE', buyFrom: '108,00', buyTo: '110,00', target: '125,00', stop: '104,00', upsize: null, pdf: null, status: 'DRAFT', hitTarget: false },
+    ],
+    '10/06/2026': [
+      { code: 'SSI', name: 'SSI Securities · HOSE', buyFrom: '30,20', buyTo: '30,80', target: '34,00', stop: '29,00', upsize: null, pdf: null, status: 'PUBLISHED', hitTarget: false },
+      { code: 'VND', name: 'VNDirect · HOSE', buyFrom: '18,50', buyTo: null, target: '21,00', stop: '17,60', upsize: null, pdf: null, status: 'PUBLISHED', hitTarget: true },
+    ],
+    '09/06/2026': [],
+    '05/06/2026': [
+      { code: 'DGW', name: 'Digiworld · HOSE', buyFrom: '42,00', buyTo: null, target: '48,00', stop: '40,50', upsize: null, pdf: null, status: 'DRAFT', hitTarget: false },
+    ],
+  };
+  let currentKtDate = '11/06/2026';
+
+  function ktRowHtml(item) {
+    const buy = item.buyTo ? (item.buyFrom + ' – ' + item.buyTo) : ('≥ ' + item.buyFrom);
+    const upsize = item.upsize ? `<td class="num">${item.upsize}</td>` : `<td class="num" style="color:var(--text-muted)">—</td>`;
+    const pdf = item.pdf ? `<span class="pdf-chip">${item.pdf}</span>` : `<span class="pdf-chip none">Chưa có</span>`;
+    let statusChip;
+    if (item.status === 'DRAFT') statusChip = `<span class="chip chip-draft"><span class="chip-dot"></span>Nháp</span>`;
+    else if (item.hitTarget) statusChip = `<span class="chip chip-target"><span class="chip-dot"></span>Đạt target</span>`;
+    else statusChip = `<span class="chip chip-active"><span class="chip-dot"></span>Còn hiệu lực</span>`;
+    return `<tr class="${item.status === 'DRAFT' ? 'kt-draft-row' : ''}" data-code="${item.code}">
+      <td class="code-cell"><div class="code">${item.code}</div><div class="name">${item.name}</div></td>
+      <td class="num">${buy}</td>
+      <td class="num" style="color:var(--green);font-weight:700">${item.target}</td>
+      <td class="num" style="color:var(--red)">${item.stop}</td>
+      ${upsize}
+      <td>${pdf}</td>
+      <td><span class="chip chip-manual">MANUAL</span></td>
+      <td>${statusChip}</td>
+      <td><div class="act-group">
+        <button class="act-btn" title="Sửa" onclick="openModal('modal-kythuat')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="act-btn danger" title="Xoá (hard delete)" onclick="deleteRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
+      </div></td>
+    </tr>`;
+  }
+
+  function renderKt(dateKey) {
+    currentKtDate = dateKey;
+    const items = KT_DATA[dateKey] || [];
+    const tbody = document.getElementById('kt-tbody');
+    document.getElementById('kt-date').value = dateKey;
+    document.getElementById('kt-panel-date').textContent = dateKey;
+    document.getElementById('kt-date-label').textContent = dateKey.slice(0, 5);
+
+    if (items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-day">
+        <svg class="ed-icon" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div class="ed-title">Ngày ${dateKey} không có mã kỹ thuật nào — kể cả Nháp</div>
+        <div class="ed-sub">Bấm "+ Thêm entry" để nhập cho ngày này.</div>
+        <div class="ed-api">GET .../dailyTechnical?tradeDate=... → { "technicals": [], "totalCount": 0 } · HTTP 200</div>
+      </div></td></tr>`;
+    } else {
+      tbody.innerHTML = items.map(ktRowHtml).join('');
+    }
+    refreshKtStats();
+  }
+
+  function deleteRow(btn) {
+    const row = btn.closest('tr');
+    const code = row.dataset.code;
+    showToast('Đã xoá entry (hard delete).');
+    KT_DATA[currentKtDate] = (KT_DATA[currentKtDate] || []).filter(i => i.code !== code);
+    renderKt(currentKtDate);
+  }
+
+  function updateRowCount() {
+    const n = document.querySelectorAll('#row-list .row-item').length;
+    const countEl = document.getElementById('row-count');
+    if (countEl) countEl.textContent = n;
+  }
+
+  function addRow() {
+    const list = document.getElementById('row-list');
+    const row = document.createElement('div');
+    row.className = 'row-item';
+    row.innerHTML = `
+      <input placeholder="VD: HPG">
+      <input placeholder="Mua từ">
+      <input placeholder="Mua đến">
+      <input placeholder="Mục tiêu">
+      <input placeholder="Cắt lỗ">
+      <input placeholder="tuỳ chọn">
+      <button class="row-remove" onclick="removeRow(this)" title="Xoá dòng" aria-label="Xoá dòng">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>`;
+    list.appendChild(row);
+    updateRowCount();
+    row.querySelector('input').focus();
+  }
+
+  function removeRow(btn) {
+    const list = document.getElementById('row-list');
+    if (list.querySelectorAll('.row-item').length <= 1) return;
+    btn.closest('.row-item').remove();
+    updateRowCount();
+  }
+
+  function refreshKtStats() {
+    const items = KT_DATA[currentKtDate] || [];
+    const draftCount = items.filter(i => i.status === 'DRAFT').length;
+    const total = items.length;
+    document.getElementById('stat-draft').textContent = draftCount;
+    document.getElementById('stat-published').textContent = total - draftCount;
+    document.getElementById('stat-hit-target').textContent = items.filter(i => i.hitTarget).length;
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('kt-count').textContent = total + ' mã';
+    document.getElementById('publish-count').textContent = '(' + draftCount + ')';
+    const btn = document.getElementById('btn-publish-day');
+    btn.disabled = draftCount === 0;
+    btn.style.opacity = draftCount === 0 ? '.5' : '1';
+  }
+
+  function saveDraftBatch() {
+    const rows = document.querySelectorAll('#row-list .row-item');
+    const dateVal = document.getElementById('batch-date').value || currentKtDate;
+    if (!KT_DATA[dateVal]) KT_DATA[dateVal] = [];
+    let added = 0;
+    rows.forEach(r => {
+      const inputs = r.querySelectorAll('input');
+      const code = inputs[0].value.trim();
+      if (!code) return;
+      KT_DATA[dateVal].push({
+        code: code.toUpperCase(), name: 'Mới nhập',
+        buyFrom: inputs[1].value || '0', buyTo: inputs[2].value || null,
+        target: inputs[3].value || '—', stop: inputs[4].value || '—',
+        upsize: inputs[5].value || null, pdf: null, status: 'DRAFT', hitTarget: false,
+      });
+      added++;
+    });
+    closeModal('modal-kythuat');
+    if (added > 0) {
+      renderKt(dateVal);
+      showToast('Đã lưu ' + added + ' mã dưới dạng Nháp cho ngày ' + dateVal + '. Bấm "Publish" khi sẵn sàng.');
+    } else {
+      showToast('Chưa nhập mã nào — không có gì để lưu.');
+    }
+  }
+
+  function publishDay() {
+    const items = KT_DATA[currentKtDate] || [];
+    const n = items.filter(i => i.status === 'DRAFT').length;
+    if (n === 0) return;
+    items.forEach(i => { if (i.status === 'DRAFT') i.status = 'PUBLISHED'; });
+    renderKt(currentKtDate);
+    showToast('Đã publish ' + n + ' mã kỹ thuật hằng ngày cho ngày ' + currentKtDate + ' — hiển thị ngay trên app.');
+  }
+
+  function saveAndToast(modalId, message) {
+    closeModal(modalId);
+    showToast(message);
+  }
+
+  function showToast(message) {
+    const wrap = document.getElementById('toast-wrap');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = '<svg class="tk" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><span>' + message + '</span>';
+    wrap.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 250); }, 3200);
+  }
+
+  calcPotential();
+  renderKt(currentKtDate);
+  updateRowCount();
+</script>
+</body>
+</html>

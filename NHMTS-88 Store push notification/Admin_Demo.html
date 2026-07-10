@@ -198,11 +198,26 @@
     padding: 14px; margin-top: 4px;
   }
   .html-block-title { font-size: 11.5px; font-weight: 900; color: var(--amber); margin-bottom: 10px; }
-  .html-toolbar { display: flex; gap: 5px; margin-bottom: 6px; }
-  .html-toolbar button {
-    border: 1px solid var(--border); background: white; border-radius: 5px;
-    padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: inherit;
+  .html-toolbar {
+    display: flex; gap: 4px; align-items: center; flex-wrap: wrap;
+    border: 1px solid var(--border); border-bottom: none; background: #f8fafc;
+    border-radius: 7px 7px 0 0; padding: 6px 8px;
   }
+  .html-toolbar button {
+    border: 1px solid transparent; background: none; border-radius: 5px;
+    min-width: 28px; height: 28px; font-size: 13px; cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center; color: var(--text);
+  }
+  .html-toolbar button:hover { background: white; border-color: var(--border); }
+  .html-toolbar .tb-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+  .html-toolbar .tb-hint { margin-left: auto; font-size: 10px; color: var(--text-muted); }
+  .rte {
+    min-height: 120px; max-height: 240px; overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 0 0 7px 7px;
+    background: white; padding: 10px 12px; font-size: 13px; line-height: 1.7;
+    outline: none; color: var(--text);
+  }
+  .rte:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2,141,150,.12); }
   .plain-note {
     font-size: 12px; color: var(--text-muted); background: var(--bg);
     border-radius: 8px; padding: 11px 13px; margin-top: 4px;
@@ -246,6 +261,12 @@
   /* ── Phone preview ── */
   .preview-wrap { position: sticky; top: 76px; }
   .preview-card-title { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .preview-toggle { display: flex; gap: 4px; background: white; border: 1px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 10px; }
+  .preview-toggle button {
+    flex: 1; border: none; background: none; padding: 7px 8px; border-radius: 6px;
+    font-size: 11.5px; font-weight: 700; color: var(--text-muted); cursor: pointer; font-family: inherit;
+  }
+  .preview-toggle button.active { background: var(--primary); color: white; }
   .phone-frame {
     background: #0f2744; border-radius: 26px; padding: 14px 10px;
     box-shadow: 0 12px 32px rgba(15,39,68,.22);
@@ -269,6 +290,28 @@
   .noti-msg { font-size: 12px; color: #444; line-height: 1.45; word-break: break-word; }
   .noti-card img.att { width: 100%; border-radius: 8px; margin-top: 8px; display: block; }
   .noti-empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 44px 12px; }
+
+  /* ── In-app inbox card (style tham chiếu SSI iBoard tab Ưu đãi) ── */
+  .inapp-screen { background: #14112b; border-radius: 16px; min-height: 260px; padding: 12px 10px; }
+  .inapp-header { text-align: center; color: #fff; font-size: 13px; font-weight: 900; padding: 2px 0 10px; }
+  .inapp-date { color: #8f89b8; font-size: 11px; font-weight: 700; margin: 2px 2px 8px; }
+  .inapp-card { background: #201c40; border-radius: 13px; overflow: hidden; }
+  .inapp-banner { width: 100%; display: block; }
+  .inapp-banner-ph {
+    height: 92px; display: flex; align-items: center; justify-content: center;
+    font-size: 30px; background: linear-gradient(135deg, #00A9B4 0%, #01B483 100%);
+  }
+  .inapp-banner-ph.violet { background: linear-gradient(135deg, #5b21b6 0%, #8b5cf6 100%); }
+  .inapp-content { padding: 12px 13px 13px; }
+  .inapp-title { color: #fff; font-weight: 900; font-size: 13.5px; line-height: 1.4; }
+  .inapp-text { color: #c9c5e8; font-size: 11.5px; line-height: 1.65; margin-top: 6px; white-space: pre-line; word-break: break-word; }
+  .inapp-text b { color: #fff; }
+  .inapp-time { color: #6f6a99; font-size: 10px; margin-top: 8px; }
+  .inapp-cta {
+    display: block; width: 100%; margin-top: 10px; background: #6c63d2; color: #fff;
+    text-align: center; padding: 9px; border-radius: 9px; font-weight: 700; font-size: 12px;
+    border: none; cursor: pointer; font-family: inherit;
+  }
   .meta-box {
     margin-top: 12px; background: white; border: 1px solid var(--border);
     border-radius: 9px; padding: 12px 14px; font-size: 12px; color: var(--text-muted);
@@ -498,6 +541,10 @@
 
         <div class="preview-wrap">
           <div class="preview-card-title">Preview trên điện thoại</div>
+          <div class="preview-toggle">
+            <button id="pvPush" class="active" onclick="setPreviewMode('push')">🔔 Push banner</button>
+            <button id="pvInapp" onclick="setPreviewMode('inapp')">📱 Thẻ trong app</button>
+          </div>
           <div class="phone-frame">
             <div class="phone-screen" id="phoneScreen"></div>
           </div>
@@ -566,23 +613,31 @@
 <div class="toast" id="toast"><span id="toastIcon">✅</span><span id="toastMsg"></span></div>
 
 <script>
-// ── 5 loại thông báo (spec: BR-008, BR-012) + template song ngữ prefill (BR-020) ──
+// ── 5 loại thông báo (spec: BR-008 rev.2, BR-012) + template song ngữ prefill (BR-020) ──
+// Mọi loại đều có deeplink (launch URL) + nhãn nút CTA; htmlVi (rich content) chỉ PROMOTION/NEWS.
 const TYPES = {
-  PROMOTION: { icon:'🏷️', name:'Khuyến mãi', cls:'tt-promotion', hint:'Ưu đãi, lãi suất, sản phẩm mới', html:true, priority:'high',
-    template:{ titleVi:'🎁 Ưu đãi tháng 7', titleEn:'🎁 July special offer',
-      bodyVi:'Lãi suất ưu đãi margin — áp dụng đến 31/07. Nhấn để xem chi tiết.', bodyEn:'Preferential margin rate — valid until 31/07. Tap for details.' } },
-  NEWS: { icon:'📰', name:'Tin tức', cls:'tt-news', hint:'Sự kiện, tính năng mới, thị trường', html:true, priority:'high',
-    template:{ titleVi:'Tính năng mới: Phái sinh VN30F', titleEn:'New feature: VN30F Derivatives',
-      bodyVi:'NHSV Pro chính thức hỗ trợ hợp đồng tương lai. Xem ngay trên NHSV Pro.', bodyEn:'NHSV Pro now supports futures trading. See it on NHSV Pro.' } },
-  DAILY_REPORT: { icon:'📊', name:'Báo cáo ngày', cls:'tt-daily-report', hint:'Tổng hợp giao dịch cuối ngày', html:false, priority:'normal',
-    template:{ titleVi:'Báo cáo danh mục 08/07', titleEn:'Portfolio report 08/07',
-      bodyVi:'Danh mục của bạn tăng 2.3% hôm nay. Xem chi tiết biến động.', bodyEn:'Your portfolio moved +2.3% today. View details.' } },
-  REMINDER: { icon:'⏰', name:'Nhắc nhở', cls:'tt-reminder', hint:'Lịch thanh toán, chốt quyền', html:false, priority:'normal',
-    template:{ titleVi:'Nhắc: thanh toán margin', titleEn:'Reminder: margin payment',
-      bodyVi:'Khoản thanh toán margin đến hạn vào 10/07. Kiểm tra ngay để không bỏ lỡ.', bodyEn:'Your margin payment is due on 10/07. Check now.' } },
-  NORMAL: { icon:'🔔', name:'Mặc định', cls:'tt-normal', hint:'Thông báo thông thường khác', html:false, priority:'normal',
+  PROMOTION: { icon:'🏷️', name:'Khuyến mãi', cls:'tt-promotion', hint:'Ưu đãi, lãi suất, sản phẩm mới', html:true, priority:'high', bannerCls:'',
+    template:{ titleVi:'Margin thảnh thơi, lãi suất hết ý 💰', titleEn:'Easy margin, great rates 💰',
+      bodyVi:'Lãi suất margin chỉ từ 6.8%/năm cho khách hàng mới. Nhấn để xem chi tiết.', bodyEn:'Margin rate from only 6.8%/year for new customers. Tap for details.',
+      htmlVi:'NHSV Pro ưu đãi lãi suất margin cho khách hàng mới với 2 gói linh hoạt: <b>Chào mừng</b> & <b>Thân thiết</b>.\n\n👉 Gói Chào mừng: lãi suất chỉ <b>6.8%/năm</b> trong 3 tháng đầu.\n👉 Gói Thân thiết: hoàn tới <b>50% phí giao dịch</b> khi duy trì dư nợ.\n👉 Đăng ký ngay trên NHSV Pro — vài chạm là xong ✨',
+      deeplink:'nhsv://margin/register', ctaVi:'Khám phá ngay', ctaEn:'Explore now' } },
+  NEWS: { icon:'📰', name:'Tin tức', cls:'tt-news', hint:'Sự kiện, tính năng mới, thị trường', html:true, priority:'high', bannerCls:'violet',
+    template:{ titleVi:'Thị trường lên xuống? Phái sinh cân tất 🚀', titleEn:'Market up or down? Derivatives wins 🚀',
+      bodyVi:'Long/Short 2 chiều ngay trên NHSV Pro. Xem ngay.', bodyEn:'Go Long/Short both ways on NHSV Pro. See it now.',
+      htmlVi:'❌ Chọn đứng ngoài   ✅ <b>Long/Short 2 chiều</b> ngay trên NHSV Pro\n\n👉 Sinh lời trên mọi xu hướng — tăng hay giảm đều có cơ hội\n🔎 Bảng giá & chart VN30F realtime ngay trong app\n☝️ Đặt lệnh 1 chạm cùng <b>Stop / OCO / Trailing</b>',
+      deeplink:'nhsv://derivatives/trade', ctaVi:'Thử ngay', ctaEn:'Try now' } },
+  DAILY_REPORT: { icon:'📊', name:'Báo cáo ngày', cls:'tt-daily-report', hint:'Tổng hợp giao dịch cuối ngày', html:false, priority:'normal', bannerCls:'',
+    template:{ titleVi:'Báo cáo danh mục 09/07 📊', titleEn:'Portfolio report 09/07 📊',
+      bodyVi:'Danh mục của bạn +2.3% hôm nay — vượt VN-Index (+0.8%).\n👉 Đóng góp lớn nhất: FPT +4.1%, MWG +2.9%\n👉 Cần chú ý: HPG -1.8%', bodyEn:'Your portfolio +2.3% today — beating VN-Index (+0.8%).\n👉 Top contributors: FPT +4.1%, MWG +2.9%\n👉 Watch out: HPG -1.8%',
+      deeplink:'nhsv://portfolio', ctaVi:'Xem danh mục', ctaEn:'View portfolio' } },
+  REMINDER: { icon:'⏰', name:'Nhắc nhở', cls:'tt-reminder', hint:'Lịch thanh toán, chốt quyền', html:false, priority:'normal', bannerCls:'',
+    template:{ titleVi:'Nhắc lịch thanh toán margin ⏰', titleEn:'Margin payment reminder ⏰',
+      bodyVi:'Khoản margin 50.000.000đ đến hạn ngày 12/07.\n👉 Nộp tiền trước 16:00 để tránh phí phạt quá hạn.', bodyEn:'Your margin of 50,000,000đ is due on 12/07.\n👉 Deposit before 16:00 to avoid late fees.',
+      deeplink:'nhsv://cash/deposit', ctaVi:'Thanh toán ngay', ctaEn:'Pay now' } },
+  NORMAL: { icon:'🔔', name:'Mặc định', cls:'tt-normal', hint:'Thông báo thông thường khác', html:false, priority:'normal', bannerCls:'',
     template:{ titleVi:'Thông báo từ NHSV', titleEn:'Notice from NHSV',
-      bodyVi:'Hệ thống bảo trì từ 23:00 - 01:00.', bodyEn:'System maintenance from 23:00 to 01:00.' } },
+      bodyVi:'Hệ thống bảo trì từ 23:00 - 01:00.', bodyEn:'System maintenance from 23:00 to 01:00.',
+      deeplink:'', ctaVi:'', ctaEn:'' } },
 };
 // Phase 1: đối tượng cố định — audienceType=ALL (spec: BR-015)
 const AUDIENCE_ALL = { name:'Tất cả subscriber (Total Subscriptions)', count: 12480 };
@@ -590,14 +645,26 @@ const AUDIENCE_ALL = { name:'Tất cả subscriber (Total Subscriptions)', count
 // id: số nguyên (bigint autoIncrement) — theo spec
 let nextId = 129;
 const SENT_HISTORY = [
-  { id:128, type:'PROMOTION', title:'Ưu đãi tháng 7 🔥', status:'SENT', recipients:12480, time:'2026-07-08T09:00:00', createdBy:'ducnm', body:'Nhận ngay lãi suất ưu đãi. Nhấn để xem chi tiết.' },
+  { id:128, type:'PROMOTION', title:'Margin thảnh thơi, lãi suất hết ý 💰', status:'SENT', recipients:12480, time:'2026-07-08T09:00:00', createdBy:'ducnm',
+    body:'Lãi suất margin chỉ từ 6.8%/năm cho khách hàng mới. Nhấn để xem chi tiết.',
+    htmlContent:'NHSV Pro ưu đãi lãi suất margin cho khách hàng mới với 2 gói linh hoạt: <b>Chào mừng</b> & <b>Thân thiết</b>.\n\n👉 Gói Chào mừng: lãi suất chỉ <b>6.8%/năm</b> trong 3 tháng đầu.\n👉 Gói Thân thiết: hoàn tới <b>50% phí giao dịch</b> khi duy trì dư nợ.\n👉 Đăng ký ngay trên NHSV Pro — vài chạm là xong ✨',
+    deeplink:'nhsv://margin/register', actionLabel:'Khám phá ngay' },
   // 127: tin tự động từ NH Research publish (BR-019) — createdBy = admin đã bấm publish
-  { id:127, type:'NEWS', title:'Báo cáo mới từ NH Research', status:'SENT', recipients:12401, time:'2026-07-05T16:15:00', createdBy:'ducnm (auto · NH Research)', body:'Triển vọng ngành ngân hàng nửa cuối 2026 — Thị trường. Nhấn để đọc ngay trên NHSV Pro.' },
-  { id:126, type:'REMINDER', title:'Nhắc lịch thanh toán margin', status:'SCHEDULED', recipients:12480, time:'2026-07-10T09:00:00', createdBy:'huongltm', body:'Bạn có khoản thanh toán đến hạn vào ngày mai.' },
-  { id:125, type:'DAILY_REPORT', title:'Báo cáo danh mục 07/07', status:'SENT', recipients:12380, time:'2026-07-07T23:00:00', createdBy:'ducnm', body:'Danh mục của bạn tăng 1.1% hôm nay.' },
+  { id:127, type:'NEWS', title:'Báo cáo mới từ NH Research', status:'SENT', recipients:12401, time:'2026-07-05T16:15:00', createdBy:'ducnm (auto · NH Research)',
+    body:'Triển vọng ngành ngân hàng nửa cuối 2026 — Thị trường. Nhấn để đọc ngay trên NHSV Pro.',
+    deeplink:'nhsvpro://channel/nh-research?category=THI_TRUONG', actionLabel:'Đọc ngay' },
+  { id:126, type:'REMINDER', title:'Nhắc lịch thanh toán margin ⏰', status:'SCHEDULED', recipients:12480, time:'2026-07-10T09:00:00', createdBy:'huongltm',
+    body:'Khoản margin 50.000.000đ đến hạn ngày 12/07.\n👉 Nộp tiền trước 16:00 để tránh phí phạt quá hạn.',
+    deeplink:'nhsv://cash/deposit', actionLabel:'Thanh toán ngay' },
+  { id:125, type:'DAILY_REPORT', title:'Báo cáo danh mục 07/07 📊', status:'SENT', recipients:12380, time:'2026-07-07T23:00:00', createdBy:'ducnm',
+    body:'Danh mục của bạn +1.1% hôm nay — vượt VN-Index (+0.4%).\n👉 Đóng góp lớn nhất: FPT +2.8%',
+    deeplink:'nhsv://portfolio', actionLabel:'Xem danh mục' },
   { id:124, type:'PROMOTION', title:'Flash sale phí GD (đã hủy)', status:'CANCELLED', recipients:12480, time:'2026-07-06T09:00:00', createdBy:'huongltm', cancelledBy:'ducnm', cancelledAt:'2026-07-05T17:20:00', body:'Chương trình hoãn lại theo yêu cầu marketing.' },
   { id:123, type:'NORMAL', title:'Thông báo bảo trì hệ thống', status:'SENT', recipients:12480, time:'2026-07-03T15:30:00', createdBy:'ducnm', body:'Hệ thống sẽ bảo trì từ 23:00 - 01:00.' },
-  { id:122, type:'NEWS', title:'NHSV Pro đạt 12.000 người dùng', status:'SENT', recipients:11500, time:'2026-06-20T10:00:00', createdBy:'ducnm', body:'Cảm ơn quý khách hàng đã đồng hành cùng NHSV Pro.' },
+  { id:122, type:'NEWS', title:'Thị trường lên xuống? Phái sinh cân tất 🚀', status:'SENT', recipients:11500, time:'2026-06-20T10:00:00', createdBy:'ducnm',
+    body:'Long/Short 2 chiều ngay trên NHSV Pro. Xem ngay.',
+    htmlContent:'❌ Chọn đứng ngoài   ✅ <b>Long/Short 2 chiều</b> ngay trên NHSV Pro\n\n👉 Sinh lời trên mọi xu hướng — tăng hay giảm đều có cơ hội\n🔎 Bảng giá & chart VN30F realtime ngay trong app\n☝️ Đặt lệnh 1 chạm cùng <b>Stop / OCO / Trailing</b>',
+    deeplink:'nhsv://derivatives/trade', actionLabel:'Thử ngay' },
 ];
 const STATUS_UI = {
   SENT:      { label:'Đã gửi',   cls:'status-sent',      dot:'dot-sent' },
@@ -607,10 +674,12 @@ const STATUS_UI = {
 
 let step = 1;
 let sending = false;
+let previewMode = 'push';
 let state = {
   type: null,
   titleEn:'', titleVi:'', bodyEn:'', bodyVi:'',
   htmlContent:'', imageUrl:'', deeplink:'',
+  actionLabelVi:'', actionLabelEn:'',
   schedule:'immediate', scheduledAt:'',
 };
 
@@ -655,6 +724,10 @@ function selectType(key){
   const tpl=TYPES[key].template;
   state.titleVi=tpl.titleVi; state.titleEn=tpl.titleEn;
   state.bodyVi=tpl.bodyVi; state.bodyEn=tpl.bodyEn;
+  state.htmlContent = tpl.htmlVi || '';
+  state.deeplink = tpl.deeplink || '';
+  state.actionLabelVi = tpl.ctaVi || '';
+  state.actionLabelEn = tpl.ctaEn || '';
   renderStep(); renderPreview();
 }
 
@@ -692,25 +765,41 @@ function renderStep(){
           <textarea class="form-textarea" placeholder="Nội dung (Tiếng Việt)" oninput="state.bodyVi=this.value; renderPreview()">${escapeHtml(state.bodyVi)}</textarea>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Launch URL <span class="opt">(tuỳ chọn — mọi loại tin đều gắn được)</span></label>
+        <input class="form-input" type="text" placeholder="nhsv://... hoặc https://..." value="${escapeAttr(state.deeplink)}" oninput="state.deeplink=this.value; renderPreview()">
+        <div class="form-hint">Deeplink trong app (nhsv://margin/register) hoặc web URL. User tap notification / nút CTA sẽ mở link này.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nhãn nút CTA <span class="opt">(tuỳ chọn — hiển thị trong inbox app, mặc định "Xem chi tiết")</span></label>
+        <div class="form-row">
+          <input class="form-input" type="text" placeholder="CTA label (English) — vd Explore now" value="${escapeAttr(state.actionLabelEn)}" oninput="state.actionLabelEn=this.value; renderPreview()">
+          <input class="form-input" type="text" placeholder="Nhãn nút (Tiếng Việt) — vd Khám phá ngay" value="${escapeAttr(state.actionLabelVi)}" oninput="state.actionLabelVi=this.value; renderPreview()">
+        </div>
+      </div>
       ${t.html ? `
         <div class="html-block">
-          <div class="html-block-title">🏷️ Nội dung chi tiết (HTML) — chỉ áp dụng cho ${t.name}</div>
+          <div class="html-block-title">🏷️ Rich content trong app — WYSIWYG editor (chỉ áp dụng cho ${t.name})</div>
           <div class="html-toolbar">
-            <button onclick="wrapHtml('b')"><b>B</b></button>
-            <button onclick="wrapHtml('i')"><i>I</i></button>
-            <button onclick="wrapHtml('u')"><u>U</u></button>
+            <button title="Bold" onmousedown="event.preventDefault();execRte('bold')"><b>B</b></button>
+            <button title="Italic" onmousedown="event.preventDefault();execRte('italic')"><i>I</i></button>
+            <button title="Underline" onmousedown="event.preventDefault();execRte('underline')"><u>U</u></button>
+            <span class="tb-sep"></span>
+            <button title="Bullet 👉" onmousedown="event.preventDefault();insertEmoji('👉 ')">👉</button>
+            <button title="Bullet 🔎" onmousedown="event.preventDefault();insertEmoji('🔎 ')">🔎</button>
+            <button title="Bullet ☝️" onmousedown="event.preventDefault();insertEmoji('☝️ ')">☝️</button>
+            <button title="Có" onmousedown="event.preventDefault();insertEmoji('✅ ')">✅</button>
+            <button title="Không" onmousedown="event.preventDefault();insertEmoji('❌ ')">❌</button>
+            <span class="tb-hint">Bôi đen chữ rồi bấm B/I/U — thấy kết quả ngay</span>
           </div>
-          <textarea class="form-textarea" id="htmlArea" placeholder="Nội dung HTML mở rộng, hiển thị khi mở chi tiết thông báo…" oninput="state.htmlContent=this.value">${escapeHtml(state.htmlContent)}</textarea>
-          <div class="form-group" style="margin-top:12px">
-            <label class="form-label">Image URL <span class="opt">(tuỳ chọn)</span></label>
+          <div class="rte" id="htmlArea" contenteditable="true" oninput="onRteInput(this)"></div>
+          <div class="form-hint" style="margin-top:6px">Mỗi ý 1 dòng, bắt đầu bằng emoji bullet · highlight số liệu bằng Bold · tối đa 4-5 dòng</div>
+          <div class="form-group" style="margin-top:12px;margin-bottom:0">
+            <label class="form-label">Image URL — ảnh banner <span class="opt">(tuỳ chọn, khuyến nghị tỉ lệ 2:1)</span></label>
             <input class="form-input" type="url" placeholder="https://cdn.nhsv.vn/promo/..." value="${escapeAttr(state.imageUrl)}" oninput="state.imageUrl=this.value; renderPreview()">
           </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Launch Deeplink <span class="opt">(tuỳ chọn)</span></label>
-            <input class="form-input" type="text" placeholder="nhsv://promotion/..." value="${escapeAttr(state.deeplink)}" oninput="state.deeplink=this.value">
-          </div>
         </div>` : `
-        <div class="plain-note">ℹ️ Loại thông báo <b>${t.name}</b> chỉ gửi văn bản đơn giản — không có HTML / ảnh đính kèm / deeplink.</div>`
+        <div class="plain-note">ℹ️ Loại thông báo <b>${t.name}</b> không có HTML/ảnh banner — nội dung Message hiển thị trực tiếp trong inbox app (hỗ trợ xuống dòng + emoji bullet), vẫn có Launch URL + nút CTA.</div>`
       }`;
   } else if(step===3){
     const t = TYPES[state.type];
@@ -758,18 +847,87 @@ function renderStep(){
   nb.textContent = step===4 ? (sending ? 'Đang gửi…' : (state.schedule==='immediate' ? 'Gửi ngay ✓' : 'Lên lịch ✓')) : 'Tiếp tục →';
   nb.className = 'btn ' + (step===4 ? 'btn-success':'btn-primary');
   nb.disabled = sending;
+  if(step===2 && state.type && TYPES[state.type].html){ initRte(); }
 }
 
-function wrapHtml(tag){
-  const ta = document.getElementById('htmlArea');
-  const s = ta.selectionStart, e = ta.selectionEnd;
-  const val = ta.value;
-  ta.value = val.slice(0,s) + `<${tag}>` + val.slice(s,e) + `</${tag}>` + val.slice(e);
-  state.htmlContent = ta.value;
+// ── WYSIWYG editor (rich content HTML) ──
+// Canonical format lưu trong state.htmlContent: text nhiều dòng (\n) + tag <b>/<i>/<u> — khớp mẫu trong spec.
+// contentToEditor: canonical → HTML cho contenteditable; editorToContent: HTML editor → canonical (whitelist tag).
+function contentToEditor(content){
+  return richHtml(content).replace(/\n/g,'<br>');
+}
+function editorToContent(html){
+  let s = (html||'')
+    .replace(/<(strong)\b[^>]*>/gi,'<b>').replace(/<\/strong>/gi,'</b>')
+    .replace(/<(em)\b[^>]*>/gi,'<i>').replace(/<\/em>/gi,'</i>')
+    .replace(/<div>(\s|&nbsp;)*<br\s*\/?>(\s|&nbsp;)*<\/div>/gi,'\n')
+    .replace(/<br\s*\/?>/gi,'\n')
+    .replace(/<div[^>]*>/gi,'\n')
+    .replace(/<\/div>/gi,'')
+    .replace(/<(?!\/?(b|i|u)\b)[^>]*>/gi,'')   // strip mọi tag ngoài whitelist b/i/u
+    .replace(/&nbsp;/gi,' ')
+    .replace(/&amp;/gi,'&');
+  return s;
+}
+function execRte(cmd){
+  const el = document.getElementById('htmlArea');
+  el.focus();
+  document.execCommand('styleWithCSS', false, false);
+  document.execCommand(cmd);
+  onRteInput(el);
+}
+function insertEmoji(text){
+  const el = document.getElementById('htmlArea');
+  el.focus();
+  document.execCommand('insertText', false, text);
+  onRteInput(el);
+}
+function onRteInput(el){
+  state.htmlContent = editorToContent(el.innerHTML);
+  renderPreview();
+}
+function initRte(){
+  const el = document.getElementById('htmlArea');
+  if(el){ el.innerHTML = contentToEditor(state.htmlContent); }
 }
 
 function escapeHtml(s){ return (s||'').replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+
+function setPreviewMode(mode){
+  previewMode = mode;
+  document.getElementById('pvPush').classList.toggle('active', mode==='push');
+  document.getElementById('pvInapp').classList.toggle('active', mode==='inapp');
+  renderPreview();
+}
+
+// Sanitize thô cho demo: chỉ giữ <b>/<i>/<u>, escape phần còn lại (BE thật sanitize server-side — BR-004)
+function richHtml(s){
+  return escapeHtml(s||'')
+    .replace(/&lt;(\/?)(b|i|u)&gt;/g, '<$1$2>');
+}
+
+// Thẻ thông báo trong inbox app — style tham chiếu SSI iBoard (banner + title + rich body + time + CTA)
+function inappCardHtml(o){
+  const t = TYPES[o.type];
+  const rich = o.htmlContent ? richHtml(o.htmlContent) : escapeHtml(o.body||'(chưa có nội dung)');
+  const cta = o.deeplink ? `<button class="inapp-cta" title="${escapeAttr(o.deeplink)}">${escapeHtml(o.actionLabel || 'Xem chi tiết')}</button>` : '';
+  const banner = (t.html)
+    ? (o.imageUrl
+        ? `<img class="inapp-banner" src="${escapeAttr(o.imageUrl)}" onerror="this.outerHTML='<div class=\\'inapp-banner-ph ${t.bannerCls}\\'>${t.icon}</div>'">`
+        : `<div class="inapp-banner-ph ${t.bannerCls}">${t.icon}</div>`)
+    : '';
+  return `
+    <div class="inapp-card">
+      ${banner}
+      <div class="inapp-content">
+        <div class="inapp-title">${escapeHtml(o.title||'(chưa có tiêu đề)')}</div>
+        <div class="inapp-text">${rich}</div>
+        <div class="inapp-time">${o.timeStr || '11:13:19'}</div>
+        ${cta}
+      </div>
+    </div>`;
+}
 
 function renderPreview(){
   const screen = document.getElementById('phoneScreen');
@@ -782,19 +940,38 @@ function renderPreview(){
   const t = TYPES[state.type];
   const title = state.titleVi || state.titleEn || '(chưa có tiêu đề)';
   const body = state.bodyVi || state.bodyEn || '(chưa có nội dung)';
-  screen.innerHTML = `
-    <div class="noti-card">
-      <div class="noti-app-icon">N</div>
-      <div class="noti-body">
-        <div class="noti-app-name">NHSV PRO · BÂY GIỜ</div>
-        <div class="noti-title">${escapeHtml(title)}</div>
-        <div class="noti-msg">${escapeHtml(body)}</div>
-        ${(t.html && state.imageUrl) ? `<img class="att" src="${escapeAttr(state.imageUrl)}" onerror="this.style.display='none'">` : ''}
-      </div>
-    </div>`;
+
+  if(previewMode==='push'){
+    screen.className = 'phone-screen';
+    screen.innerHTML = `
+      <div class="noti-card">
+        <div class="noti-app-icon">N</div>
+        <div class="noti-body">
+          <div class="noti-app-name">NHSV PRO · BÂY GIỜ</div>
+          <div class="noti-title">${escapeHtml(title)}</div>
+          <div class="noti-msg">${escapeHtml(body.split('\n')[0])}</div>
+          ${(t.html && state.imageUrl) ? `<img class="att" src="${escapeAttr(state.imageUrl)}" onerror="this.style.display='none'">` : ''}
+        </div>
+      </div>`;
+  } else {
+    screen.className = 'phone-screen inapp-screen';
+    screen.innerHTML = `
+      <div class="inapp-header">Thông báo</div>
+      <div class="inapp-date">${new Date().toLocaleDateString('vi-VN')}</div>
+      ${inappCardHtml({
+        type: state.type, title,
+        body: state.bodyVi || state.bodyEn,
+        htmlContent: t.html ? state.htmlContent : '',
+        imageUrl: state.imageUrl,
+        deeplink: state.deeplink,
+        actionLabel: state.actionLabelVi || state.actionLabelEn || (state.deeplink ? 'Xem chi tiết' : ''),
+      })}`;
+  }
+
   meta.innerHTML = `
     <div><b>Loại:</b> ${t.icon} ${t.name} · <span class="prio-badge ${t.priority==='high'?'prio-high':'prio-normal'}">${t.priority==='high'?'High':'Normal'}</span></div>
     <div style="margin-top:6px"><b>Đối tượng:</b> ${AUDIENCE_ALL.name} (${AUDIENCE_ALL.count.toLocaleString('vi-VN')})</div>
+    ${state.deeplink ? `<div style="margin-top:6px"><b>Launch URL:</b> <span style="font-family:monospace;font-size:11px">${escapeHtml(state.deeplink)}</span></div>` : ''}
   `;
 }
 
@@ -821,6 +998,10 @@ function sendNow(){
       time: isScheduled ? state.scheduledAt : new Date().toISOString(),
       createdBy: 'bạn (demo)',
       body: state.bodyVi || state.bodyEn,
+      htmlContent: TYPES[state.type].html ? state.htmlContent : '',
+      imageUrl: state.imageUrl,
+      deeplink: state.deeplink,
+      actionLabel: state.actionLabelVi || state.actionLabelEn || (state.deeplink ? 'Xem chi tiết' : ''),
     };
     SENT_HISTORY.unshift(rec);
     showToast(isScheduled
@@ -917,18 +1098,17 @@ function openDetail(id){
   document.getElementById('dmMeta').textContent = `id ${n.id} · ${timeLabel} ${fmtDateTime(n.time)}`;
   document.getElementById('dmBody').innerHTML = `
     <div class="phone-frame" style="border-radius:18px;padding:10px 8px;margin-bottom:16px">
-      <div class="phone-screen" style="min-height:auto;padding:12px 8px">
-        <div class="noti-card">
-          <div class="noti-app-icon">N</div>
-          <div class="noti-body">
-            <div class="noti-app-name">NHSV PRO</div>
-            <div class="noti-title">${escapeHtml(n.title)}</div>
-            <div class="noti-msg">${escapeHtml(n.body)}</div>
-          </div>
-        </div>
+      <div class="phone-screen inapp-screen" style="min-height:auto;padding:10px 8px">
+        ${inappCardHtml({
+          type: n.type, title: n.title, body: n.body,
+          htmlContent: n.htmlContent || '', imageUrl: n.imageUrl || '',
+          deeplink: n.deeplink || '', actionLabel: n.actionLabel || '',
+          timeStr: fmtDateTime(n.time),
+        })}
       </div>
     </div>
     <div class="sum-row"><span class="sum-k">Loại</span><span class="sum-v"><span class="type-tag ${t.cls}">${t.icon} ${t.name}</span></span></div>
+    ${n.deeplink ? `<div class="sum-row"><span class="sum-k">Launch URL</span><span class="sum-v" style="font-family:monospace;font-size:11px">${escapeHtml(n.deeplink)}</span></div>` : ''}
     <div class="sum-row"><span class="sum-k">Trạng thái</span><span class="sum-v"><span class="status-badge ${s.cls}"><span class="status-dot ${s.dot}"></span>${s.label}</span></span></div>
     <div class="sum-row"><span class="sum-k">Người nhận</span><span class="sum-v">${n.recipients.toLocaleString('vi-VN')} (Tất cả subscriber)</span></div>
     <div class="sum-row"><span class="sum-k">Người gửi</span><span class="sum-v">${n.createdBy}</span></div>
