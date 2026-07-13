@@ -295,25 +295,25 @@
 
 <!-- HEADER -->
 <div class="doc-header">
-  <div class="eyebrow">NHSV Pro · Feature Spec · A-04</div>
+  <div class="eyebrow">NHSV Pro · Feature Spec · A-04 + A-06</div>
   <h1>NH Research — Tab Nội dung Phân tích</h1>
-  <div class="subtitle">Tab mới trong Kênh tin tức NHSV · Trang chủ App · Phòng Phân tích làm nội dung</div>
+  <div class="subtitle">Tab mới trong Kênh tin tức NHSV · Song ngữ VIE/ENG · Bao gồm A-06 Stock Tag Enrichment</div>
   <div class="meta-row">
-    <div class="meta-item"><strong>Module</strong> · A-04 (Home Screen)</div>
-    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.1</div>
+    <div class="meta-item"><strong>Module</strong> · A-04 (Home Screen) + A-06 (Stock Tag)</div>
+    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.2</div>
     <div class="meta-item"><strong>Admin URL</strong> · tnhsvpro.nhsv.vn/nhsv-admin</div>
     <div class="meta-item"><strong>Workflow</strong> · Upload → Publish ngay</div>
-    <div class="meta-item"><strong>Ngày</strong> · June 2026</div>
+    <div class="meta-item"><strong>Ngày</strong> · 2026-07-13</div>
   </div>
 </div>
 
 <!-- SUMMARY BAR -->
 <div class="summary-bar">
-  <div class="sum-card"><div class="num blue">3</div><div class="lbl">Sub-tab nội dung</div></div>
+  <div class="sum-card"><div class="num blue">3</div><div class="lbl">Category filter</div></div>
   <div class="sum-card"><div class="num teal">10</div><div class="lbl">BE tasks</div></div>
-  <div class="sum-card"><div class="num teal">8</div><div class="lbl">Mobile FE tasks</div></div>
+  <div class="sum-card"><div class="num teal">9</div><div class="lbl">Mobile FE tasks</div></div>
   <div class="sum-card"><div class="num violet">6</div><div class="lbl">Admin FE tasks</div></div>
-  <div class="sum-card"><div class="num amber">2</div><div class="lbl">Open questions</div></div>
+  <div class="sum-card"><div class="num amber">5</div><div class="lbl">Open questions</div></div>
 </div>
 
 <div class="content">
@@ -326,38 +326,41 @@
   </div>
   <div class="card">
     <div class="card-body">
-      Tab <strong>NH Research</strong> được thêm mới vào <em>Kênh tin tức NHSV</em> trên màn hình Trang chủ, cho phép nhà đầu tư đọc các báo cáo phân tích do Phòng Phân tích của NHSV xuất bản trực tiếp trên app. Nội dung được phân loại thành 3 nhóm: <strong>Thị trường</strong>, <strong>Doanh nghiệp</strong>, và <strong>Vĩ mô</strong>.
+      Tab <strong>NH Research</strong> được thêm mới vào <em>Kênh tin tức NHSV</em> trên màn hình Trang chủ, cho phép nhà đầu tư đọc các báo cáo phân tích do Phòng Phân tích của NHSV xuất bản trực tiếp trên app. Nội dung được phân loại thành 3 nhóm: <strong>Thị trường</strong>, <strong>Doanh nghiệp</strong>, và <strong>Vĩ mô</strong>, hỗ trợ song ngữ (VIE bắt buộc, ENG tùy chọn). Spec này gộp luôn <strong>A-06 — Stock Tag Enrichment</strong>: admin có thể gắn nhiều mã CK liên quan vào bài viết, mobile hiển thị tag làm reference và cho phép lọc lại bài theo mã.
     </div>
   </div>
 
   <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 4px;">
     <div class="card">
-      <div class="card-title" style="color: var(--green)">✅ Trong scope (v1)</div>
+      <div class="card-title" style="color: var(--green)">✅ Trong scope</div>
       <div class="card-body">
         <ul style="list-style:none; line-height:2">
-          <li>• Danh sách bài viết theo 3 category</li>
+          <li>• Danh sách bài viết theo 3 category, sort <code>publishedAt DESC</code></li>
+          <li>• Song ngữ VIE (bắt buộc) + ENG (tùy chọn) — fallback VIE nếu bản EN chưa có</li>
           <li>• Detail screen: title + short content + PDF</li>
-          <li>• Mở PDF bằng in-app viewer</li>
-          <li>• Admin CRUD bài viết tại nhsv-admin</li>
-          <li>• Upload PDF kèm theo bài (NHSV server, public URL)</li>
-          <li>• Publish ngay sau khi upload (no approval)</li>
-          <li>• <strong>Admin mention mã CK</strong> trong bài viết</li>
-          <li>• <strong>Tag mã CK</strong> trên detail screen (% thay đổi phiên, tap → stock detail)</li>
+          <li>• Mở PDF bằng in-app viewer, cache trong session</li>
+          <li>• Admin CRUD bài viết tại nhsv-admin, publish ngay (không duyệt)</li>
+          <li>• Upload PDF kèm theo bài (per bài, tối đa 20MB — IT confirm)</li>
+          <li>• Publish & Notify toggle — push notification khi có bài mới (phụ thuộc X-03)</li>
+          <li>• Deeplink tới tab/category và tới article detail</li>
+          <li>• <strong>A-06:</strong> Admin gắn nhiều mã CK liên quan/bài</li>
+          <li>• <strong>A-06:</strong> Mobile hiển thị tag chip mã CK trên card + detail (reference, tap → Stock Detail)</li>
+          <li>• <strong>A-06:</strong> Filter bài viết theo mã CK ngay trong tab NH Research</li>
         </ul>
       </div>
     </div>
     <div class="card">
-      <div class="card-title" style="color: var(--red)">❌ Ngoài scope (v1)</div>
+      <div class="card-title" style="color: var(--red)">❌ Ngoài scope</div>
       <div class="card-body">
         <ul style="list-style:none; line-height:2">
-          <li>• Push notification khi có bài mới</li>
+          <li>• Phân quyền user chi tiết trong Admin Tool — dùng rule hiện có nhsv-admin</li>
+          <li>• Notification Settings screen (opt-in/opt-out) — sprint riêng</li>
           <li>• Like / comment / share bài viết</li>
-          <li>• Bookmark / lưu bài về sau</li>
-          <li>• Tìm kiếm bài theo từ khóa</li>
-          <li>• Tìm kiếm theo mã CK <em>(tag là đủ cho v1)</em></li>
-          <li>• Approval workflow / nhiều người duyệt</li>
-          <li>• Hỗ trợ đa ngôn ngữ (EN)</li>
-          <li>• Realtime price cho stock tags</li>
+          <li>• <strong>% thay đổi giá / giá hiện tại</strong> cho mã CK được tag — A-06 chỉ tag + reference, không enrich giá (không phụ thuộc market data service)</li>
+          <li>• Tích hợp Stock Tag vào Stock Detail screen (màn dùng chung) — API filter sẵn sàng để màn đó consume sau, build UI không thuộc scope lần này</li>
+          <li>• Tìm kiếm nội dung/tiêu đề trong NH Research — A-07 (Search feature), tách biệt với filter mã CK</li>
+          <li>• Approval workflow nhiều bước — v1 publish ngay</li>
+          <li>• Machine translation (tự động dịch VIE → ENG)</li>
         </ul>
       </div>
     </div>
@@ -374,21 +377,20 @@
   <div class="persona-block">
     <div class="persona-hdr" style="background: var(--navy)">📱 Nhà đầu tư (App User)</div>
     <div class="persona-stories">
-      <div class="story-row"><span class="as">US-01</span> Là nhà đầu tư, tôi muốn xem danh sách báo cáo Thị trường / Doanh nghiệp / Vĩ mô mới nhất từ NHSV trên app để nắm bắt thông tin phân tích kịp thời.</div>
-      <div class="story-row"><span class="as">US-02</span> Là nhà đầu tư, tôi muốn đọc nội dung tóm tắt của báo cáo ngay trong app để quyết định có cần xem đầy đủ không.</div>
-      <div class="story-row"><span class="as">US-03</span> Là nhà đầu tư, tôi muốn mở file PDF báo cáo đầy đủ ngay trong app mà không cần tải về hay chuyển app khác.</div>
-      <div class="story-row"><span class="as">US-04</span> Là nhà đầu tư, tôi muốn lọc riêng từng loại báo cáo (Thị trường / Doanh nghiệp / Vĩ mô) để không mất thời gian tìm kiếm.</div>
-      <div class="story-row"><span class="as">US-05</span> Là nhà đầu tư, khi không có bài mới trong một tab, tôi muốn thấy thông báo rõ ràng thay vì màn hình trống.</div>
+      <div class="story-row"><span class="as">US-01</span> Là nhà đầu tư, tôi muốn xem danh sách báo cáo phân tích theo chủ đề (Thị trường/Doanh nghiệp/Vĩ mô) để tìm nhanh báo cáo liên quan đến mã đang quan tâm.</div>
+      <div class="story-row"><span class="as">US-02</span> Là nhà đầu tư, tôi muốn đọc nội dung bài viết theo ngôn ngữ của mình để hiểu nội dung phân tích đúng ngôn ngữ.</div>
+      <div class="story-row"><span class="as">US-03</span> Là nhà đầu tư, tôi muốn mở PDF báo cáo mà không cần tải về máy để tiết kiệm dung lượng, xem ngay khi cần.</div>
+      <div class="story-row"><span class="as">US-04</span> Là nhà đầu tư, tôi muốn nhận thông báo khi có báo cáo mới để không bỏ lỡ báo cáo quan trọng.</div>
+      <div class="story-row"><span class="as">US-07</span> Là nhà đầu tư, tôi muốn lọc/tra cứu tất cả báo cáo đã từng tag một mã CK cụ thể để xem lại toàn bộ nhận định của Phòng PT về mã đang quan tâm trước khi quyết định.</div>
     </div>
   </div>
 
   <div class="persona-block" style="margin-top:12px">
     <div class="persona-hdr" style="background: var(--violet)">⚙️ Phòng Phân tích (Admin User)</div>
     <div class="persona-stories">
-      <div class="story-row"><span class="as">US-06</span> Là nhân viên Phòng Phân tích, tôi muốn đăng bài mới với tiêu đề, nội dung tóm tắt và file PDF chỉ trong 1 form đơn giản tại nhsv-admin.</div>
-      <div class="story-row"><span class="as">US-07</span> Là nhân viên Phòng Phân tích, tôi muốn bài đăng lên app ngay lập tức sau khi submit, không cần chờ ai duyệt.</div>
-      <div class="story-row"><span class="as">US-08</span> Là nhân viên Phòng Phân tích, tôi muốn chỉnh sửa hoặc xóa bài đã đăng khi có sai sót.</div>
-      <div class="story-row"><span class="as">US-09</span> Là nhân viên Phòng Phân tích, tôi muốn xem danh sách tất cả bài đã đăng để quản lý và theo dõi lịch sử xuất bản.</div>
+      <div class="story-row"><span class="as">US-05</span> Là Analyst (Admin), tôi muốn upload bài song ngữ (VIE + ENG) và publish ngay để phục vụ cả nhà đầu tư Việt và nước ngoài.</div>
+      <div class="story-row"><span class="as">US-06</span> Là Analyst (Admin), tôi muốn ẩn hoặc chỉnh sửa bài đã đăng để cập nhật khi có thông tin mới hoặc sai sót.</div>
+      <div class="story-row"><span class="as">US-08</span> Là Analyst (Admin), tôi muốn gắn nhiều mã CK liên quan khi tạo/sửa bài để giúp user tra cứu ngược và giúp Phòng PT quản lý nội dung theo mã.</div>
     </div>
   </div>
 </div>
@@ -414,30 +416,36 @@
     <div class="flow-arrow">→</div>
     <div class="flow-step">
       <div class="fs-num">3</div>
-      <div class="fs-name">Chọn category</div>
-      <div class="fs-desc">Bấm button <em>Thị trường / Doanh nghiệp / Vĩ mô</em>. Default: Thị trường</div>
+      <div class="fs-name">Chọn category / lọc mã CK</div>
+      <div class="fs-desc">Bấm <em>Thị trường / Doanh nghiệp / Vĩ mô</em> (default: Thị trường), hoặc nhập mã CK vào filter (A-06) để lọc riêng bài tag mã đó</div>
     </div>
     <div class="flow-arrow">→</div>
     <div class="flow-step">
       <div class="fs-num">4</div>
       <div class="fs-name">Danh sách bài</div>
-      <div class="fs-desc">Xem list cards, cuộn để xem thêm (pagination)</div>
+      <div class="fs-desc">Xem list cards (infinite scroll, cursor-based), mỗi card có thể có tag chip mã CK</div>
     </div>
     <div class="flow-arrow">→</div>
     <div class="flow-step">
       <div class="fs-num">5</div>
       <div class="fs-name">Detail screen</div>
-      <div class="fs-desc">Tap card → màn hình mới: title + short content + PDF attachment</div>
+      <div class="fs-desc">Tap card → title + short content + tag chip mã CK + PDF attachment (nếu có)</div>
     </div>
     <div class="flow-arrow">→</div>
     <div class="flow-step">
-      <div class="fs-num">6</div>
+      <div class="fs-num">6a</div>
       <div class="fs-name">In-app PDF viewer</div>
-      <div class="fs-desc">Tap vào file PDF → mở viewer trong app. Có nút đóng / back</div>
+      <div class="fs-desc">Tap file PDF → mở viewer trong app. Có nút đóng / back</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="fs-num">6b</div>
+      <div class="fs-name">Stock Detail screen</div>
+      <div class="fs-desc">Tap 1 tag chip mã CK → navigate màn Stock Detail của mã đó (màn dùng chung, đã có sẵn)</div>
     </div>
   </div>
   <div style="margin-top:12px; padding: 10px 14px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 7px; font-size: 12px; color: #0c4a6e;">
-    <strong>Lưu ý UX:</strong> Màn hình Trang chủ không điều hướng ra màn hình riêng — NH Research hiển thị inline trong scroll view của Trang chủ. Màn hình Detail và PDF viewer là các screen mới (push navigation).
+    <strong>Lưu ý UX:</strong> Màn hình Trang chủ không điều hướng ra màn hình riêng — NH Research hiển thị inline trong scroll view của Trang chủ. Detail screen, PDF viewer, và Stock Detail screen (khi tap tag) là push navigation.
   </div>
 </div>
 
@@ -457,11 +465,13 @@
         <div class="phone-screen">
           <div class="phone-bar">← Kênh tin tức NHSV</div>
           <!-- Category buttons -->
-          <div style="display:flex; gap:4px; margin-bottom:8px;">
+          <div style="display:flex; gap:4px; margin-bottom:6px;">
             <div style="background:#0f2744; color:white; font-size:8px; padding:3px 8px; border-radius:20px; font-weight:600;">Thị trường</div>
             <div style="background:#f1f5f9; font-size:8px; padding:3px 8px; border-radius:20px; color:#475569;">Doanh nghiệp</div>
             <div style="background:#f1f5f9; font-size:8px; padding:3px 8px; border-radius:20px; color:#475569;">Vĩ mô</div>
           </div>
+          <!-- Stock filter input (A-06) -->
+          <div style="border:1px solid #e2e8f0; border-radius:20px; padding:3px 8px; margin-bottom:8px; font-size:7px; color:#94a3b8;">🔍 Lọc theo mã CK...</div>
           <!-- Card 1 -->
           <div style="border:1px solid #e2e8f0; border-radius:7px; padding:7px; margin-bottom:6px; display:flex; gap:7px;">
             <div style="background:#1a4a8a; color:white; border-radius:5px; padding:5px 5px; min-width:50px; text-align:center;">
@@ -471,6 +481,10 @@
             <div>
               <div style="font-size:8px; font-weight:600; line-height:1.3; color:#0f2744;">VƯỢT QUA RUNG LẮC</div>
               <div style="font-size:7px; color:#64748b; margin-top:2px; line-height:1.3;">Thị trường tiếp tục hồi phục dù áp lực. Cung gia tăng trong phiên...</div>
+              <div style="margin-top:3px; display:flex; gap:3px;">
+                <span style="background:#f1f5f9; color:#475569; font-size:6px; padding:1px 5px; border-radius:8px; font-weight:600;">VCB</span>
+                <span style="background:#f1f5f9; color:#475569; font-size:6px; padding:1px 5px; border-radius:8px; font-weight:600;">BID</span>
+              </div>
             </div>
           </div>
           <!-- Card 2 -->
@@ -484,7 +498,7 @@
               <div style="font-size:7px; color:#64748b; margin-top:2px; line-height:1.3;">Thị trường chuyển biến tích cực trở lại sau phiên sáng...</div>
             </div>
           </div>
-          <div style="font-size:7px; color:#94a3b8; text-align:center; margin-top:4px;">Xem thêm ↓</div>
+          <div style="font-size:7px; color:#94a3b8; text-align:center; margin-top:4px;">Cuộn để xem thêm ↓</div>
         </div>
       </div>
     </div>
@@ -492,13 +506,14 @@
       <div style="font-size:12px; font-weight:600; color:var(--navy); margin-bottom:10px;">Yêu cầu hiển thị</div>
       <ul class="ac-list">
         <li class="ac-item">3 category buttons — Thị trường (default selected), Doanh nghiệp, Vĩ mô. Style: pill button, active state nổi bật</li>
-        <li class="ac-item">Mỗi card gồm: ô màu trái (category + ngày), title in đậm, short_content preview (2–3 dòng, truncate nếu dài hơn)</li>
-        <li class="ac-item">Sorted mặc định theo <code>published_at DESC</code> (mới nhất lên đầu)</li>
-        <li class="ac-item">Khi switch category: load lại danh sách — không cache lẫn nhau</li>
-        <li class="ac-item">Pagination: 20 bài/page. Infinite scroll hoặc nút "Xem thêm" (IT tự quyết)</li>
+        <li class="ac-item"><strong>(A-06)</strong> Input filter mã CK cạnh 3 category chip. Nhập/chọn mã → gọi lại API với <code>stockCode</code>, giữ nguyên category đang chọn. Xóa filter → về lại đúng category, không còn <code>stockCode</code></li>
+        <li class="ac-item">Mỗi card gồm: ô màu trái (category + ngày), title in đậm, shortContent preview (2–3 dòng, truncate), và <strong>(A-06)</strong> tag chip mã CK nếu bài có tag (tối đa 3 chip + <code>+N</code>)</li>
+        <li class="ac-item">Sorted mặc định theo <code>publishedAt DESC</code> (mới nhất lên đầu)</li>
+        <li class="ac-item">Khi switch category hoặc đổi filter mã CK: load lại danh sách — không cache lẫn nhau</li>
+        <li class="ac-item">Pagination: cursor-based (<code>nextKey</code>/<code>fetchCount</code>, mặc định 20 bài/trang). Trang cuối: <code>nextKey = null</code>, ẩn trigger load more</li>
         <li class="ac-item">Loading skeleton hiển thị trong lúc gọi API</li>
-        <li class="ac-item">Empty state khi category chưa có bài: "Chưa có nội dung. Vui lòng quay lại sau."</li>
-        <li class="ac-item">Màu ô label theo category: Thị trường (#1a4a8a), Doanh nghiệp (#0e7490), Vĩ mô (#5b21b6) — IT/Design confirm</li>
+        <li class="ac-item">Empty state khi category chưa có bài: "Chưa có nội dung. Vui lòng quay lại sau." · <strong>(A-06)</strong> khi filter mã CK không có kết quả: "Chưa có báo cáo nào liên quan đến mã {code}."</li>
+        <li class="ac-item">Màu ô label theo category: Thị trường (#1a4a8a), Doanh nghiệp (#0e7490), Vĩ mô (#5b21b6)</li>
       </ul>
     </div>
   </div>
@@ -512,7 +527,12 @@
         <div class="phone-screen">
           <div class="phone-bar">← NHỊP HỒI KHẢ QUAN</div>
           <div style="display:inline-block; background:#ccfbf1; color:#0e7490; font-size:7px; font-weight:600; padding:2px 7px; border-radius:20px; margin-bottom:6px;">Thị trường • 04/06/2026</div>
-          <div style="font-size:10px; font-weight:700; color:#0f2744; line-height:1.4; margin-bottom:8px;">NHỊP HỒI KHẢ QUAN</div>
+          <div style="font-size:10px; font-weight:700; color:#0f2744; line-height:1.4; margin-bottom:6px;">NHỊP HỒI KHẢ QUAN</div>
+          <div style="display:flex; gap:3px; margin-bottom:8px;">
+            <span style="background:#f1f5f9; color:#475569; font-size:6.5px; padding:2px 6px; border-radius:8px; font-weight:600;">VCB ›</span>
+            <span style="background:#f1f5f9; color:#475569; font-size:6.5px; padding:2px 6px; border-radius:8px; font-weight:600;">BID ›</span>
+            <span style="background:#f1f5f9; color:#475569; font-size:6.5px; padding:2px 6px; border-radius:8px; font-weight:600;">CTG ›</span>
+          </div>
           <div style="font-size:8px; color:#374151; line-height:1.5; margin-bottom:12px;">Thị trường chuyển biến tích cực trở lại. Sau phiên sáng chủ yếu vận động quanh vùng tham chiếu, lực cầu bắt đáy đã trở lại rõ hơn trong phiên chiều, giúp VNIndex lấy lại sắc xanh...</div>
           <div style="border:1px solid #e2e8f0; border-radius:7px; padding:8px; display:flex; align-items:center; gap:7px;">
             <div style="width:24px; height:30px; background:#fee2e2; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:9px;">📄</div>
@@ -531,7 +551,10 @@
         <li class="ac-item">Header: nút back + title bài (truncate nếu dài)</li>
         <li class="ac-item">Category tag + ngày đăng dưới header</li>
         <li class="ac-item">Title in đậm, kích thước lớn hơn body text</li>
+        <li class="ac-item"><strong>(A-06)</strong> Tag chip mã CK ngay dưới title, trước phần short content. Không hiện khu vực tag nếu <code>stockCodes = []</code> (không có khoảng trống thừa)</li>
+        <li class="ac-item"><strong>(A-06)</strong> Tap 1 tag chip → navigate Stock Detail screen với đúng mã đó (dùng lại cơ chế navigate/deeplink đã có, cùng pattern CTA "Xem cổ phiếu {code}" ở tab Khuyến nghị)</li>
         <li class="ac-item">Short content: hiển thị đầy đủ (không truncate), scroll nếu dài. Tab <strong>Vĩ mô</strong> cần vùng text rộng hơn vì báo cáo thường dài hơn</li>
+        <li class="ac-item">Nội dung hiển thị theo <code>Accept-Language</code> của app; fallback VIE nếu bản EN chưa có</li>
         <li class="ac-item">PDF section (chỉ hiển thị khi có PDF): icon file + filename + dung lượng + nút "Mở xem"</li>
         <li class="ac-item">Khi tap "Mở xem": mở in-app PDF viewer (push navigation hoặc modal fullscreen)</li>
         <li class="ac-item">Khi không có PDF: ẩn hoàn toàn PDF section, không hiển thị placeholder</li>
@@ -605,7 +628,7 @@
     <tbody>
       <tr>
         <td>article_id</td>
-        <td class="type">UUID / BIGINT</td>
+        <td class="type">BIGINT</td>
         <td><span class="req req-y">Required</span></td>
         <td>Primary key</td>
         <td>Auto-generated</td>
@@ -615,28 +638,42 @@
         <td class="type">ENUM</td>
         <td><span class="req req-y">Required</span></td>
         <td>Phân loại bài viết</td>
-        <td>'thi_truong' | 'doanh_nghiep' | 'vi_mo'</td>
+        <td><code>MARKET</code> | <code>COMPANY</code> | <code>MACRO</code></td>
       </tr>
       <tr>
         <td>title</td>
         <td class="type">VARCHAR(500)</td>
         <td><span class="req req-y">Required</span></td>
-        <td>Tiêu đề bài viết</td>
+        <td>Tiêu đề tiếng Việt</td>
         <td>Hiển thị trên card và detail screen</td>
+      </tr>
+      <tr>
+        <td>title_en</td>
+        <td class="type">VARCHAR(500)</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Tiêu đề tiếng Anh</td>
+        <td>Null nếu chưa có bản EN — fallback VIE</td>
       </tr>
       <tr>
         <td>short_content</td>
         <td class="type">TEXT</td>
         <td><span class="req req-y">Required</span></td>
-        <td>Nội dung tóm tắt</td>
-        <td>Hiển thị preview trên card (truncate) và full trên detail. Vĩ mô thường dài hơn.</td>
+        <td>Nội dung tiếng Việt</td>
+        <td>Hiển thị preview trên card (truncate FE) và full trên detail</td>
+      </tr>
+      <tr>
+        <td>short_content_en</td>
+        <td class="type">TEXT</td>
+        <td><span class="req req-n">Optional</span></td>
+        <td>Nội dung tiếng Anh</td>
+        <td>Null nếu chưa có bản EN — fallback VIE</td>
       </tr>
       <tr>
         <td>pdf_url</td>
         <td class="type">VARCHAR(1000)</td>
         <td><span class="req req-n">Optional</span></td>
         <td>URL đầy đủ của file PDF</td>
-        <td>Null nếu không có đính kèm. Trả về trong API detail.</td>
+        <td>Null nếu không có đính kèm</td>
       </tr>
       <tr>
         <td>pdf_filename</td>
@@ -653,18 +690,11 @@
         <td>Hiển thị "2.4 MB" dưới tên file trên detail screen</td>
       </tr>
       <tr>
-        <td>related_stock_codes</td>
-        <td class="type">JSON</td>
-        <td><span class="req req-n">Optional</span></td>
-        <td>Danh sách mã CK được mention trong bài</td>
-        <td>Array string: <code>["VCB","ACB","MBB"]</code>. Null hoặc [] nếu không có. Admin nhập khi tạo/sửa bài.</td>
-      </tr>
-      <tr>
         <td>status</td>
         <td class="type">ENUM</td>
         <td><span class="req req-y">Required</span></td>
         <td>Trạng thái bài</td>
-        <td>'PUBLISHED' | 'DELETED'. Default: 'PUBLISHED'</td>
+        <td><code>PUBLISHED</code> | <code>DISABLED</code> | <code>DELETED</code>. Default: <code>PUBLISHED</code></td>
       </tr>
       <tr>
         <td>published_at</td>
@@ -697,8 +727,52 @@
     </tbody>
   </table>
 
+  <div style="font-size:12px; font-weight:600; color:var(--navy); margin:18px 0 10px;">Bảng <code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:11px;">nh_research_article_stocks</code> <span style="font-weight:400; color:var(--muted); font-size:11px;">(A-06 — mới)</span></div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Type</th>
+        <th>Required</th>
+        <th>Mô tả</th>
+        <th>Ghi chú</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>id</td>
+        <td class="type">BIGINT</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Primary key</td>
+        <td>Auto-generated</td>
+      </tr>
+      <tr>
+        <td>article_id</td>
+        <td class="type">BIGINT</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>FK → nh_research_articles.article_id</td>
+        <td>Index: <code>(article_id)</code> — lấy tag của 1 bài</td>
+      </tr>
+      <tr>
+        <td>stock_code</td>
+        <td class="type">VARCHAR(10)</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Mã CK, lưu uppercase</td>
+        <td>Index: <code>(stock_code)</code> — reverse lookup "tìm bài theo mã", mục đích chính của A-06</td>
+      </tr>
+      <tr>
+        <td>created_at</td>
+        <td class="type">DATETIME</td>
+        <td><span class="req req-y">Required</span></td>
+        <td>Thời điểm tag được tạo</td>
+        <td>Auto-generated</td>
+      </tr>
+    </tbody>
+  </table>
+
   <div style="margin-top:14px; padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 7px; font-size: 12px; color: #14532d;">
-    <strong>File Storage (OQ#2 — Resolved):</strong> PDF upload lên <strong>NHSV server hiện có</strong>. URL dạng <strong>public</strong> (không cần signed URL). VD: <code>https://files.nhsv.vn/research/NHSV_TT_04062026.pdf</code>. Max file size: IT confirm (đề xuất 20MB). Mobile không cần handle token refresh cho PDF URL.
+    <strong>1 bài ↔ nhiều mã:</strong> một bảng join riêng (không phải 1 cột JSON trên <code>nh_research_articles</code>) vì 1 bài có thể liên quan nhiều mã CK (VD bài Vĩ mô nhắc VCB, BID, CTG), và cần query ngược hiệu quả "tìm mọi bài đã tag mã X". Khác với Khuyến nghị (1 mã/bài → lưu thẳng 1 cột <code>stock_code</code>).<br><br>
+    <strong>File Storage:</strong> PDF upload lên <strong>NHSV server hiện có</strong> (Open Q #2 — chưa resolved, xem mục 10). URL public hoặc signed — chờ IT xác nhận (Open Q #3).
   </div>
 </div>
 
@@ -715,28 +789,30 @@
     <div class="api-hdr">
       <span class="method GET">GET</span>
       <span class="api-path">/nhResearch/articles</span>
-      <span class="api-desc">Lấy danh sách bài viết (có phân trang + filter)</span>
+      <span class="api-desc">Lấy danh sách bài viết (cursor pagination + filter)</span>
     </div>
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
-          <div class="pb-title">Query Parameters</div>
-          <div class="param-row"><span class="pname">category</span><span class="ptype">string?</span><span class="pdesc">Lọc theo category. Values: <code>THI_TRUONG</code> | <code>DOANH_NGHIEP</code> | <code>VI_MO</code>. Nếu null → trả tất cả.</span></div>
-          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Trang hiện tại. Default: 1</span></div>
-          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Số bài trên trang. Default: 20. Max: 50</span></div>
+          <div class="pb-title">Request Header</div>
+          <div class="param-row"><span class="pname">Accept-Language</span><span class="ptype">string</span><span class="pdesc"><code>vi</code> hoặc <code>en</code>. Fallback VIE nếu bản EN chưa có</span></div>
+          <div class="pb-title" style="margin-top:12px;">Query Parameters</div>
+          <div class="param-row"><span class="pname">category</span><span class="ptype">string?</span><span class="pdesc">Values: <code>MARKET</code> | <code>COMPANY</code> | <code>MACRO</code>. Bỏ qua → trả tất cả</span></div>
+          <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string?</span><span class="pdesc"><strong>(A-06)</strong> Lọc bài có tag đúng mã này (exact match, case-insensitive). Kết hợp được với <code>category</code></span></div>
+          <div class="param-row"><span class="pname">fetchCount</span><span class="ptype">int?</span><span class="pdesc">Default: 20. Max: 50</span></div>
+          <div class="param-row"><span class="pname">nextKey</span><span class="ptype">string?</span><span class="pdesc">Cursor token trang tiếp. Trang đầu: bỏ qua</span></div>
         </div>
         <div class="param-block">
           <div class="pb-title">Response Body (200)</div>
-          <div class="param-row"><span class="pname">data</span><span class="ptype">Article[]</span><span class="pdesc">Mỗi item: <code>articleId</code>, <code>category</code>, <code>title</code>, <code>shortContent</code> (200 chars), <code>hasPdf</code> (bool), <code>publishedAt</code>, <code>relatedStockCodes</code> (string[])</span></div>
+          <div class="param-row"><span class="pname">articles</span><span class="ptype">Article[]</span><span class="pdesc">Mỗi item: <code>articleId</code>, <code>category</code>, <code>title</code>, <code>shortContent</code>, <code>hasPdf</code> (bool), <code>stockCodes</code> (string[]), <code>publishedAt</code></span></div>
           <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Tổng số bài (theo filter hiện tại)</span></div>
-          <div class="param-row"><span class="pname">page</span><span class="ptype">int</span><span class="pdesc">Trang hiện tại</span></div>
-          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int</span><span class="pdesc">Số bài mỗi trang</span></div>
+          <div class="param-row"><span class="pname">nextKey</span><span class="ptype">string?</span><span class="pdesc"><code>null</code> khi hết dữ liệu</span></div>
         </div>
       </div>
       <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 11.5px; color: var(--slate);">
-        <strong>Sorting:</strong> publishedAt DESC — không expose sort param ở v1.<br>
-        <strong>Filter:</strong> Chỉ trả bài có status = 'PUBLISHED'.<br>
-        <strong>relatedStockCodes:</strong> Trả mảng mã string (VD: <code>["VCB","ACB"]</code>). Không kèm price data ở list — để giảm payload. Price data chỉ có ở detail API.
+        <strong>Sorting:</strong> publishedAt DESC — không expose sort param.<br>
+        <strong>Filter:</strong> Chỉ trả bài có <code>status = PUBLISHED</code>.<br>
+        <strong>stockCodes:</strong> <code>[]</code> nếu bài không tag mã nào. Không kèm price data — A-06 chỉ tag + reference, không enrich giá.
       </div>
     </div>
   </div>
@@ -751,38 +827,26 @@
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
-          <div class="pb-title">Path Parameter</div>
-          <div class="param-row"><span class="pname">articleId</span><span class="ptype">string</span><span class="pdesc">ID bài viết</span></div>
+          <div class="pb-title">Path Parameter + Header</div>
+          <div class="param-row"><span class="pname">articleId</span><span class="ptype">int</span><span class="pdesc">ID bài viết</span></div>
+          <div class="param-row"><span class="pname">Accept-Language</span><span class="ptype">string</span><span class="pdesc"><code>vi</code> hoặc <code>en</code>. Fallback VIE</span></div>
         </div>
         <div class="param-block">
           <div class="pb-title">Response Body (200)</div>
-          <div class="param-row"><span class="pname">articleId</span><span class="ptype">string</span><span class="pdesc">ID bài</span></div>
-          <div class="param-row"><span class="pname">category</span><span class="ptype">string</span><span class="pdesc">Phân loại: <code>THI_TRUONG</code> | <code>DOANH_NGHIEP</code> | <code>VI_MO</code></span></div>
-          <div class="param-row"><span class="pname">title</span><span class="ptype">string</span><span class="pdesc">Tiêu đề đầy đủ</span></div>
-          <div class="param-row"><span class="pname">shortContent</span><span class="ptype">string</span><span class="pdesc">Nội dung tóm tắt (full, không truncate)</span></div>
-          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Public URL file PDF trên NHSV server. Null nếu không có.</span></div>
+          <div class="param-row"><span class="pname">articleId</span><span class="ptype">int</span><span class="pdesc">ID bài</span></div>
+          <div class="param-row"><span class="pname">category</span><span class="ptype">string</span><span class="pdesc"><code>MARKET</code> | <code>COMPANY</code> | <code>MACRO</code></span></div>
+          <div class="param-row"><span class="pname">title</span><span class="ptype">string</span><span class="pdesc">Tiêu đề theo Accept-Language</span></div>
+          <div class="param-row"><span class="pname">shortContent</span><span class="ptype">string</span><span class="pdesc">Nội dung đầy đủ, không truncate</span></div>
+          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Null nếu không có PDF</span></div>
           <div class="param-row"><span class="pname">pdfFilename</span><span class="ptype">string?</span><span class="pdesc">Tên file gốc</span></div>
           <div class="param-row"><span class="pname">pdfSizeBytes</span><span class="ptype">int?</span><span class="pdesc">Dung lượng bytes</span></div>
-          <div class="param-row"><span class="pname">publishedAt</span><span class="ptype">datetime</span><span class="pdesc">ISO 8601</span></div>
-          <div class="param-row"><span class="pname">relatedStocks</span><span class="ptype">StockTag[]?</span><span class="pdesc">Danh sách mã CK được mention. Null hoặc [] nếu không có.</span></div>
-        </div>
-      </div>
-      <div style="margin-top:10px;">
-        <div class="pb-title" style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">StockTag object</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-          <div>
-            <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK, VD: "VCB"</span></div>
-            <div class="param-row"><span class="pname">companyName</span><span class="ptype">string?</span><span class="pdesc">Tên công ty rút gọn (nullable)</span></div>
-          </div>
-          <div>
-            <div class="param-row"><span class="pname">changePercent</span><span class="ptype">string</span><span class="pdesc">% thay đổi phiên, VD: "+1.23" hoặc "-0.45"</span></div>
-            <div class="param-row"><span class="pname">changeType</span><span class="ptype">string</span><span class="pdesc">"UP" | "DOWN" | "FLAT" — dùng để hiển thị màu tag</span></div>
-          </div>
+          <div class="param-row"><span class="pname">stockCodes</span><span class="ptype">string[]</span><span class="pdesc"><strong>(A-06)</strong> <code>[]</code> nếu không tag mã nào</span></div>
+          <div class="param-row"><span class="pname">publishedAt</span><span class="ptype">datetime</span><span class="pdesc">Format: yyyyMMdd HH:mm:ss</span></div>
         </div>
       </div>
       <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 11.5px; color: var(--slate);">
-        <strong>Price data source:</strong> BE fetch <code>changePercent</code> và <code>changeType</code> từ market data service nội bộ (realtime-v2 hoặc market-query-v2). Không gọi Vietstock trực tiếp. Không cần realtime — snapshot phiên hiện tại là đủ.<br>
-        <strong>Error 404:</strong> <code>{"code": "OBJECT_NOT_FOUND"}</code> nếu bài không tồn tại hoặc đã bị xóa.
+        <strong>Error 404:</strong> <code>{"code": "OBJECT_NOT_FOUND"}</code> nếu bài không tồn tại, đã xóa, hoặc đang bị ẩn (<code>DISABLED</code>).<br>
+        <strong>Error 401:</strong> <code>{"code": "UNAUTHORIZED"}</code> nếu token invalid/expired.
       </div>
     </div>
   </div>
@@ -793,29 +857,31 @@
   <div class="section-hdr">
     <div class="icon" style="background:#ede9fe">⚙️</div>
     <h2>7. API Specification — Admin</h2>
-    <span class="sub">Base URL: /admin/api · Auth: Admin session (nhsv-admin)</span>
+    <span class="sub">Base URL: /admin · Auth: Admin session (nhsv-admin)</span>
   </div>
 
   <!-- Admin API 1 -->
   <div class="api-block">
     <div class="api-hdr">
       <span class="method GET">GET</span>
-      <span class="api-path">/nhResearch/articles</span>
+      <span class="api-path">/admin/nhResearch/articles</span>
       <span class="api-desc">Lấy danh sách bài (dành cho quản lý admin)</span>
     </div>
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
           <div class="pb-title">Query Parameters</div>
-          <div class="param-row"><span class="pname">category</span><span class="ptype">string?</span><span class="pdesc">Filter theo category</span></div>
-          <div class="param-row"><span class="pname">search</span><span class="ptype">string?</span><span class="pdesc">Tìm theo title (LIKE %search%)</span></div>
-          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1</span></div>
-          <div class="param-row"><span class="pname">pageSize</span><span class="ptype">int?</span><span class="pdesc">Default: 20</span></div>
+          <div class="param-row"><span class="pname">category</span><span class="ptype">string?</span><span class="pdesc"><code>MARKET</code> | <code>COMPANY</code> | <code>MACRO</code></span></div>
+          <div class="param-row"><span class="pname">status</span><span class="ptype">string?</span><span class="pdesc"><code>PUBLISHED</code> | <code>DISABLED</code>. Bỏ qua → trả tất cả (trừ DELETED)</span></div>
+          <div class="param-row"><span class="pname">search</span><span class="ptype">string?</span><span class="pdesc">LIKE trên <code>title</code> và <code>title_en</code></span></div>
+          <div class="param-row"><span class="pname">page</span><span class="ptype">int?</span><span class="pdesc">Default: 1 — offset-based (admin UI cần "Trang X/Y")</span></div>
+          <div class="param-row"><span class="pname">fetchCount</span><span class="ptype">int?</span><span class="pdesc">Default: 20</span></div>
         </div>
         <div class="param-block">
-          <div class="pb-title">Response</div>
-          <div class="param-row"><span class="pname">data</span><span class="ptype">Article[]</span><span class="pdesc">Bao gồm cả bài đã xóa (status = 'DELETED'). Thêm trường: <code>createdBy</code>, <code>status</code>, <code>updatedAt</code>, <code>relatedStockCodes</code></span></div>
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">articles</span><span class="ptype">Article[]</span><span class="pdesc">Gồm <code>articleId</code>, <code>category</code>, <code>title</code>, <code>hasPdf</code>, <code>stockCodes</code> (A-06), <code>status</code>, <code>publishedAt</code>, <code>createdAt</code>, <code>updatedAt</code>, <code>createdBy</code></span></div>
           <div class="param-row"><span class="pname">totalCount</span><span class="ptype">int</span><span class="pdesc">Tổng số bài</span></div>
+          <div class="param-row"><span class="pname">totalPages</span><span class="ptype">int</span><span class="pdesc"><code>ceil(totalCount / fetchCount)</code></span></div>
         </div>
       </div>
     </div>
@@ -825,27 +891,29 @@
   <div class="api-block">
     <div class="api-hdr">
       <span class="method POST">POST</span>
-      <span class="api-path">/nhResearch/articles</span>
+      <span class="api-path">/admin/nhResearch/articles</span>
       <span class="api-desc">Tạo bài mới — publish ngay lập tức</span>
     </div>
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
           <div class="pb-title">Request Body (JSON)</div>
-          <div class="param-row"><span class="pname">category</span><span class="ptype">string</span><span class="pdesc">Required. <code>THI_TRUONG</code> | <code>DOANH_NGHIEP</code> | <code>VI_MO</code></span></div>
-          <div class="param-row"><span class="pname">title</span><span class="ptype">string</span><span class="pdesc">Required. Max 500 chars</span></div>
-          <div class="param-row"><span class="pname">shortContent</span><span class="ptype">string</span><span class="pdesc">Required. Nội dung tóm tắt</span></div>
-          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Optional. Public URL sau khi upload lên NHSV server</span></div>
-          <div class="param-row"><span class="pname">pdfFilename</span><span class="ptype">string?</span><span class="pdesc">Optional. Tên file gốc</span></div>
-          <div class="param-row"><span class="pname">pdfSizeBytes</span><span class="ptype">int?</span><span class="pdesc">Optional. Dung lượng</span></div>
-          <div class="param-row"><span class="pname">relatedStockCodes</span><span class="ptype">string[]?</span><span class="pdesc">Optional. Mảng mã CK được mention. VD: <code>["VCB","ACB"]</code></span></div>
+          <div class="param-row"><span class="pname">category</span><span class="ptype">string</span><span class="pdesc">Required. <code>MARKET</code> | <code>COMPANY</code> | <code>MACRO</code></span></div>
+          <div class="param-row"><span class="pname">vi.title</span><span class="ptype">string</span><span class="pdesc">Required. Max 500 chars</span></div>
+          <div class="param-row"><span class="pname">vi.shortContent</span><span class="ptype">string</span><span class="pdesc">Required</span></div>
+          <div class="param-row"><span class="pname">en</span><span class="ptype">object?</span><span class="pdesc">Optional. Bỏ qua/null nếu chưa có bản EN</span></div>
+          <div class="param-row"><span class="pname">en.title / en.shortContent</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
+          <div class="param-row"><span class="pname">pdfUrl / pdfFilename / pdfSizeBytes</span><span class="ptype">?</span><span class="pdesc">Optional — từ upload API</span></div>
+          <div class="param-row"><span class="pname">stockCodes</span><span class="ptype">string[]?</span><span class="pdesc"><strong>(A-06)</strong> Optional. Tối đa 10 mã, mỗi mã tối đa 10 ký tự, tự uppercase. Bỏ qua/<code>[]</code> nếu không tag</span></div>
         </div>
         <div class="param-block">
-          <div class="pb-title">Response (201)</div>
-          <div class="param-row"><span class="pname">articleId</span><span class="ptype">string</span><span class="pdesc">ID bài vừa tạo</span></div>
-          <div class="param-row"><span class="pname">publishedAt</span><span class="ptype">datetime</span><span class="pdesc">Thời điểm publish</span></div>
-          <div class="param-row"><span class="pname">status</span><span class="ptype">string</span><span class="pdesc">"PUBLISHED"</span></div>
+          <div class="pb-title">Response (200)</div>
+          <div class="param-row"><span class="pname">id</span><span class="ptype">int</span><span class="pdesc">ID bài vừa tạo</span></div>
         </div>
+      </div>
+      <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 11.5px; color: var(--slate);">
+        <code>status = PUBLISHED</code>, <code>publishedAt = createdAt = now()</code> tự động. <code>createdBy</code> từ admin session JWT.<br>
+        <strong>Error 400:</strong> <code>INVALID_PARAMETER</code> khi thiếu field bắt buộc hoặc <code>category</code>/<code>stockCodes</code> sai định dạng.
       </div>
     </div>
   </div>
@@ -855,28 +923,28 @@
     <div class="api-block">
       <div class="api-hdr">
         <span class="method PUT">PUT</span>
-        <span class="api-path">/nhResearch/articles/{articleId}</span>
+        <span class="api-path">/admin/nhResearch/articles/{id}</span>
       </div>
       <div class="api-body">
-        <div class="pb-title" style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">Request Body (partial update OK)</div>
+        <div class="pb-title" style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.8px; color:var(--muted); margin-bottom:8px;">Request Body (partial update)</div>
         <div class="param-row"><span class="pname">category</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
-        <div class="param-row"><span class="pname">title</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
-        <div class="param-row"><span class="pname">shortContent</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
-        <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Optional. Null để xóa PDF</span></div>
-        <div class="param-row"><span class="pname">relatedStockCodes</span><span class="ptype">string[]?</span><span class="pdesc">Optional. Truyền [] để xóa toàn bộ tags</span></div>
-        <div style="margin-top:8px; font-size:11px; color:var(--slate);">Response 200: updated article object</div>
+        <div class="param-row"><span class="pname">vi / en</span><span class="ptype">object?</span><span class="pdesc"><code>en: null</code> để xóa toàn bộ bản EN</span></div>
+        <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Null để xóa PDF</span></div>
+        <div class="param-row"><span class="pname">stockCodes</span><span class="ptype">string[]?</span><span class="pdesc"><strong>(A-06)</strong> Replace toàn bộ set. <code>[]</code> = xóa hết; bỏ field = giữ nguyên</span></div>
+        <div class="param-row"><span class="pname">status</span><span class="ptype">string?</span><span class="pdesc"><code>PUBLISHED</code> | <code>DISABLED</code> — toggle visibility. Không nhận <code>DELETED</code></span></div>
+        <div style="margin-top:8px; font-size:11px; color:var(--slate);">Response 200: <code>{"id": &lt;articleId&gt;}</code></div>
       </div>
     </div>
     <div class="api-block">
       <div class="api-hdr">
         <span class="method DEL">DELETE</span>
-        <span class="api-path">/nhResearch/articles/{articleId}</span>
+        <span class="api-path">/admin/nhResearch/articles/{id}</span>
       </div>
       <div class="api-body">
-        <div style="font-size:12px; color:#374151; margin-bottom:8px;">Soft delete: set status = 'DELETED'. Bài sẽ không xuất hiện trên app nhưng vẫn lưu trong DB.</div>
-        <div style="font-size:11px; color:var(--slate);">Response 200: <code>{"deleted": true}</code></div>
+        <div style="font-size:12px; color:#374151; margin-bottom:8px;">Soft delete: set <code>status = DELETED</code>. Record giữ nguyên trong DB — không xóa file PDF trên storage.</div>
+        <div style="font-size:11px; color:var(--slate);">Response 200: <code>{"id": &lt;articleId&gt;}</code></div>
         <div style="margin-top:8px; padding:7px 10px; background:var(--amber-light); border-radius:5px; font-size:11px; color:var(--amber);">
-          ⚠️ Không xóa file PDF trên NHSV server khi soft delete — để tránh lỗi nếu có cache. Cleanup job riêng nếu cần.
+          ⚠️ Error 404 <code>OBJECT_NOT_FOUND</code> nếu bài không tồn tại hoặc đã xóa trước đó.
         </div>
       </div>
     </div>
@@ -886,25 +954,25 @@
   <div class="api-block" style="margin-top:14px;">
     <div class="api-hdr">
       <span class="method POST">POST</span>
-      <span class="api-path">/upload/pdf</span>
+      <span class="api-path">/admin/nhResearch/upload/pdf</span>
       <span class="api-desc">Upload file PDF lên NHSV server — trả về public URL</span>
     </div>
     <div class="api-body">
       <div class="param-grid">
         <div class="param-block">
           <div class="pb-title">Request (multipart/form-data)</div>
-          <div class="param-row"><span class="pname">file</span><span class="ptype">File</span><span class="pdesc">Required. PDF only. Max: 20MB (IT confirm)</span></div>
+          <div class="param-row"><span class="pname">file</span><span class="ptype">File</span><span class="pdesc">Required. PDF only. Max: 20MB — IT confirm (Open Q #2)</span></div>
         </div>
         <div class="param-block">
           <div class="pb-title">Response (200)</div>
-          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string</span><span class="pdesc">Public URL trên NHSV server. VD: <code>https://files.nhsv.vn/research/NHSV_TT_04062026.pdf</code></span></div>
+          <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string</span><span class="pdesc">VD: <code>https://storage.nhsv.vn/research/NHSV_TT_10062026.pdf</code></span></div>
           <div class="param-row"><span class="pname">pdfFilename</span><span class="ptype">string</span><span class="pdesc">Tên file gốc</span></div>
           <div class="param-row"><span class="pname">pdfSizeBytes</span><span class="ptype">int</span><span class="pdesc">Dung lượng file</span></div>
         </div>
       </div>
       <div style="margin-top: 10px; padding: 8px 12px; background: #f8fafc; border-radius: 6px; font-size: 11.5px; color: var(--slate);">
-        <strong>Flow upload:</strong> Admin FE gọi API upload trước → nhận pdfUrl → dùng pdfUrl khi submit form tạo bài.<br>
-        <strong>Error 400:</strong> <code>{"code": "INVALID_PARAMETER"}</code> nếu file không phải PDF hoặc vượt 20MB.
+        <strong>Flow upload:</strong> Admin FE gọi API upload trước → nhận <code>pdfUrl</code> → dùng khi submit POST/PUT article.<br>
+        <strong>Error 400:</strong> <code>INVALID_PARAMETER</code> (<code>INVALID_FILE_TYPE</code> hoặc <code>FILE_TOO_LARGE</code>) nếu file không phải PDF hoặc vượt giới hạn.
       </div>
     </div>
   </div>
@@ -924,12 +992,14 @@
         <div style="font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">URL: /nhsv-admin/nh-research</div>
         <ul class="ac-list">
           <li class="ac-item">Header: "NH Research" + nút <strong>+ Thêm bài mới</strong> (primary button)</li>
-          <li class="ac-item">Filter bar: dropdown Category (Tất cả / Thị trường / Doanh nghiệp / Vĩ mô) + ô search theo title</li>
-          <li class="ac-item">Table columns: STT | Category tag | Tiêu đề | Có PDF | Ngày đăng | Người đăng | Thao tác</li>
-          <li class="ac-item">Cột "Có PDF": icon ✓/✗ hoặc tên file</li>
-          <li class="ac-item">Thao tác: nút Sửa + nút Xóa (với confirmation modal)</li>
-          <li class="ac-item">Pagination: 20 bài/trang</li>
-          <li class="ac-item">Sorted: mới nhất lên đầu</li>
+          <li class="ac-item">Filter bar: dropdown Category (Tất cả/Thị trường/Doanh nghiệp/Vĩ mô) + dropdown Status (Published/Disabled) + ô search theo title</li>
+          <li class="ac-item">Table columns: # | Category | Title | PDF | <strong>Mã CK (A-06)</strong> | Status | Upload date | Update date | Created by | Visibility toggle | Actions</li>
+          <li class="ac-item">Cột "Mã CK": chip mã (tối đa 3 chip + <code>+N</code>), hoặc "—" nếu bài không tag mã nào</li>
+          <li class="ac-item">Visibility toggle: inline switch, gọi PUT với <code>{status: 'PUBLISHED'|'DISABLED'}</code>, không cần confirm modal</li>
+          <li class="ac-item">Row opacity giảm cho bài DISABLED</li>
+          <li class="ac-item">Thao tác: nút Sửa + nút Xóa (soft delete, có confirmation modal)</li>
+          <li class="ac-item">Pagination: 20 bài/trang, hiển thị "Trang X/Y"</li>
+          <li class="ac-item">Sorted: <code>createdAt DESC</code></li>
         </ul>
       </div>
     </div>
@@ -939,14 +1009,14 @@
       <div class="card-body">
         <div style="font-size:11px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">URL: /nhsv-admin/nh-research/new (hoặc /edit/{articleId})</div>
         <ul class="ac-list">
-          <li class="ac-item"><strong>Category</strong>: dropdown select — Thị trường / Doanh nghiệp / Vĩ mô (required)</li>
-          <li class="ac-item"><strong>Tiêu đề</strong>: input text, max 500 chars, hiển thị count (required)</li>
-          <li class="ac-item"><strong>Nội dung tóm tắt</strong>: textarea, no max chars (required)</li>
-          <li class="ac-item"><strong>Mã chứng khoán liên quan</strong>: tag input có autocomplete — admin gõ mã (VD: "VCB") → dropdown gợi ý → chọn để thêm tag. Có thể thêm nhiều mã. Nút ✕ để xóa từng mã. Optional.</li>
-          <li class="ac-item"><strong>Upload PDF</strong>: drag-and-drop hoặc browse. Chỉ .pdf. Sau upload: tên file, dung lượng, nút xóa. Optional.</li>
-          <li class="ac-item">Nút <strong>Đăng bài</strong>: gọi API tạo/sửa → redirect về danh sách + toast "Đăng thành công"</li>
-          <li class="ac-item">Nút <strong>Hủy</strong>: về danh sách không lưu</li>
-          <li class="ac-item">Khi sửa: form pre-fill đầy đủ kể cả danh sách mã CK đã tag</li>
+          <li class="ac-item">Form có 2 tab ngôn ngữ: <strong>VIE</strong> (mặc định, bắt buộc) và <strong>ENG</strong> (tùy chọn) — mỗi tab riêng Title + Nội dung tóm tắt</li>
+          <li class="ac-item"><strong>Category</strong> (dùng chung, ngoài tab): dropdown Thị trường/Doanh nghiệp/Vĩ mô — required</li>
+          <li class="ac-item"><strong>Mã CK liên quan (A-06, dùng chung, ngoài tab)</strong>: tag input với autocomplete từ danh mục mã CK (tái dùng component đã có ở Admin Khuyến nghị) — không required. Mỗi mã nhập xong hiện thành chip có nút ✕ xóa. Tối đa 10 mã, không trùng</li>
+          <li class="ac-item"><strong>Đính kèm PDF</strong> (dùng chung): drag-and-drop hoặc browse, chỉ .pdf. Sau upload: tên file, dung lượng, nút xóa — optional</li>
+          <li class="ac-item"><strong>Publish & Notify toggle</strong> (phụ thuộc X-03): "Gửi push notification", default bật</li>
+          <li class="ac-item">Nút <strong>Đăng bài</strong>: gọi API tạo/sửa → redirect về danh sách + toast "Đăng bài thành công"</li>
+          <li class="ac-item">Nút <strong>Hủy</strong>: về danh sách không lưu; unsaved changes warning nếu đang sửa</li>
+          <li class="ac-item">Khi sửa: pre-fill cả 2 tab ngôn ngữ (gọi GET detail 2 lần với <code>Accept-Language: vi</code> và <code>en</code>) và toàn bộ chip mã CK đã tag</li>
         </ul>
       </div>
     </div>
@@ -958,7 +1028,7 @@
   <div class="section-hdr">
     <div class="icon" style="background:#d1fae5">🏗️</div>
     <h2>9. Work Breakdown — Subtasks</h2>
-    <span class="sub">Phân tầng theo layer · Ready for Jira</span>
+    <span class="sub">Phân tầng theo layer · Chi tiết đầy đủ tại jira-issues.md</span>
   </div>
 
   <div class="layer-grid">
@@ -972,70 +1042,70 @@
           <span class="task-id p0" style="background:var(--blue-light); color:var(--blue);">BE-01</span>
           <div class="task-content">
             <div class="t-name">DB: Tạo bảng nh_research_articles + migration</div>
-            <div class="t-note">Schema theo mục 5. Index: category, published_at, status</div>
+            <div class="t-note">Schema theo mục 5. Index: (category, status), (published_at DESC), (status)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-02</span>
           <div class="task-content">
-            <div class="t-name">API: GET /nh-research/articles (list)</div>
-            <div class="t-note">Filter by category, pagination, sort published_at DESC, chỉ status=published</div>
+            <div class="t-name">API: GET /api/v1/nhResearch/articles (list)</div>
+            <div class="t-note">Filter category/stockCode (A-06), cursor pagination (nextKey/fetchCount), chỉ status=PUBLISHED, Accept-Language</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-03</span>
           <div class="task-content">
-            <div class="t-name">API: GET /nh-research/articles/{id} (detail)</div>
-            <div class="t-note">Trả đủ fields kể cả pdf_url, pdf_filename, pdf_size_bytes</div>
+            <div class="t-name">API: GET /api/v1/nhResearch/articles/{id} (detail)</div>
+            <div class="t-note">Trả đủ fields kể cả pdfUrl/pdfFilename/pdfSizeBytes, stockCodes (A-06)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-04</span>
           <div class="task-content">
-            <div class="t-name">Admin API: GET /admin/nh-research/articles</div>
-            <div class="t-note">Thêm search by title, bao gồm cả bài đã xóa</div>
+            <div class="t-name">Admin API: GET /admin/nhResearch/articles</div>
+            <div class="t-note">Search by title/title_en, filter category/status, offset pagination (page/fetchCount), trả stockCodes</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-05</span>
           <div class="task-content">
-            <div class="t-name">Admin API: POST /admin/nh-research/articles</div>
-            <div class="t-note">Validate required fields, set status=published + published_at=now</div>
+            <div class="t-name">Admin API: POST /admin/nhResearch/articles</div>
+            <div class="t-note">Validate vi.title/vi.shortContent required, en optional, stockCodes optional. Set status=PUBLISHED + publishedAt=now</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-06</span>
           <div class="task-content">
-            <div class="t-name">Admin API: PUT + DELETE /admin/nh-research/articles/{id}</div>
-            <div class="t-note">PUT: partial update. DELETE: soft delete (status→deleted)</div>
+            <div class="t-name">Admin API: PUT + DELETE /admin/nhResearch/articles/{id}</div>
+            <div class="t-note">PUT: partial update, status toggle PUBLISHED/DISABLED. DELETE: soft delete (status→DELETED)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-07</span>
           <div class="task-content">
-            <div class="t-name">File service: PDF upload lên NHSV server</div>
-            <div class="t-note">Validate .pdf only + max 20MB. Lưu lên NHSV server. Trả về public URL dạng https://files.nhsv.vn/research/...</div>
+            <div class="t-name">File service: PDF upload lên storage</div>
+            <div class="t-note">Validate .pdf only + max size (TBD, Open Q #2). Trả public/signed URL (Open Q #3)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-08</span>
           <div class="task-content">
-            <div class="t-name">Admin API: POST /admin/upload/pdf</div>
+            <div class="t-name">Admin API: POST /admin/nhResearch/upload/pdf</div>
             <div class="t-note">Gọi file service, trả pdfUrl + pdfFilename + pdfSizeBytes</div>
           </div>
         </li>
         <li class="task-item">
-          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-09</span>
+          <span class="task-id tag-new" style="background:#f0fdf4; color:#166534;">BE-09</span>
           <div class="task-content">
-            <div class="t-name">DB migration: thêm field related_stock_codes (JSON)</div>
-            <div class="t-note">ALTER TABLE nh_research_articles ADD related_stock_codes JSON NULL. Default NULL.</div>
+            <div class="t-name">DB: Tạo bảng join nh_research_article_stocks (A-06)</div>
+            <div class="t-note">Schema theo mục 5. Index: (article_id), (stock_code). Không cascade-delete khi article bị soft-delete</div>
           </div>
         </li>
         <li class="task-item">
-          <span class="task-id" style="background:var(--blue-light); color:var(--blue);">BE-10</span>
+          <span class="task-id tag-new" style="background:#f0fdf4; color:#166534;">BE-10</span>
           <div class="task-content">
-            <div class="t-name">Enrich detail API: fetch price data cho relatedStocks</div>
-            <div class="t-note">Khi trả GET /nhResearch/articles/{articleId}, join với market data service (realtime-v2 hoặc market-query-v2) để lấy changePercent + changeType cho từng mã trong related_stock_codes. Không cần realtime — snapshot phiên là đủ.</div>
+            <div class="t-name">Mở rộng BE-02/03/04/05/06 với stockCodes (A-06)</div>
+            <div class="t-note">Thêm filter stockCode (exact match) ở BE-02; trả stockCodes[] ở BE-02/03/04; nhận stockCodes ở BE-05 (insert) và BE-06 (full replace). Backward compatible với client A-04 hiện có</div>
           </div>
         </li>
       </ul>
@@ -1051,28 +1121,28 @@
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-01</span>
           <div class="task-content">
             <div class="t-name">NH Research tab + category filter buttons</div>
-            <div class="t-note">3 pill buttons (Thị trường / Doanh nghiệp / Vĩ mô), active state, default Thị trường</div>
+            <div class="t-note">3 pill buttons (Thị trường/Doanh nghiệp/Vĩ mô), active state, default Thị trường</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-02</span>
           <div class="task-content">
             <div class="t-name">Article card component</div>
-            <div class="t-note">Category label + ngày | title | shortContent preview (2–3 dòng truncate)</div>
+            <div class="t-note">Category label + ngày | title | shortContent preview (2–3 dòng truncate) | PDF indicator | stock tag chip (A-06)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-03</span>
           <div class="task-content">
-            <div class="t-name">Article list screen (pagination + empty state)</div>
-            <div class="t-note">Infinite scroll hoặc "Xem thêm". Loading skeleton. Empty state message.</div>
+            <div class="t-name">Article list screen — Pagination & empty state</div>
+            <div class="t-note">Cursor-based (nextKey/fetchCount). Loading skeleton. Empty state message</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-04</span>
           <div class="task-content">
             <div class="t-name">Article detail screen</div>
-            <div class="t-note">Title + category tag + date + full shortContent + stock tags row + PDF section (conditional)</div>
+            <div class="t-note">Title + category tag + date + full shortContent + stock tag chips (A-06) + PDF section (conditional)</div>
           </div>
         </li>
         <li class="task-item">
@@ -1086,21 +1156,28 @@
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-06</span>
           <div class="task-content">
             <div class="t-name">Error handling & edge cases</div>
-            <div class="t-note">PDF load lỗi toast. Network error state. API error handling.</div>
+            <div class="t-note">PDF load lỗi toast. Network error state. Rapid category switching cancel previous requests</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-07</span>
           <div class="task-content">
-            <div class="t-name">Stock tag component</div>
-            <div class="t-note">Pill hiển thị: mã CK + changePercent (màu xanh/đỏ/xám theo changeType UP/DOWN/FLAT). Hiện trên detail screen, ẩn nếu relatedStocks empty.</div>
+            <div class="t-name">Deeplink — tab NH Research / Article detail</div>
+            <div class="t-note"><code>nhsvpro://channel/nh-research?category=</code> và <code>?articleId=</code>. Ưu tiên articleId nếu có cả 2</div>
           </div>
         </li>
         <li class="task-item">
-          <span class="task-id" style="background:var(--teal-light); color:var(--teal);">MOB-08</span>
+          <span class="task-id tag-new" style="background:#f0fdf4; color:#166534;">MOB-08</span>
           <div class="task-content">
-            <div class="t-name">Tap stock tag → navigate stock detail screen</div>
-            <div class="t-note">Tap vào tag → push navigation tới màn hình chi tiết mã CK (màn hình đã có sẵn trong app). Truyền stockCode làm param.</div>
+            <div class="t-name">Stock tag chip trên card + detail (A-06)</div>
+            <div class="t-note">Hiển thị stockCodes dạng chip trên card (tối đa 3 + "+N") và detail. Tap → navigate Stock Detail screen (dùng lại cơ chế navigate đã có)</div>
+          </div>
+        </li>
+        <li class="task-item">
+          <span class="task-id tag-new" style="background:#f0fdf4; color:#166534;">MOB-09</span>
+          <div class="task-content">
+            <div class="t-name">Filter bài viết theo mã CK trong tab (A-06)</div>
+            <div class="t-note">Input filter mã CK cạnh 3 category chip. Debounce 250ms, kết hợp category + stockCode param, empty state riêng khi không có kết quả</div>
           </div>
         </li>
       </ul>
@@ -1116,42 +1193,42 @@
           <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-01</span>
           <div class="task-content">
             <div class="t-name">Menu/Nav: thêm mục "NH Research" vào sidebar nhsv-admin</div>
-            <div class="t-note">Link tới /nhsv-admin/nh-research. Phân quyền: xem Open Q #4</div>
+            <div class="t-note">Link tới /nhsv-admin/nh-research. Article count badge. Phân quyền: xem Open Q #4</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-02</span>
           <div class="task-content">
             <div class="t-name">Article management list page</div>
-            <div class="t-note">Table + filter + search + pagination. Nút Sửa/Xóa</div>
+            <div class="t-note">Table + filter (category/status/search) + pagination "Trang X/Y". Visibility toggle inline. Cột Mã CK (A-06)</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-03</span>
           <div class="task-content">
             <div class="t-name">Create article form</div>
-            <div class="t-note">Category dropdown + title + short_content textarea + PDF upload. Submit → publish ngay</div>
+            <div class="t-note">2 tab VIE/ENG + Category + Mã CK (A-06) + PDF upload (dùng chung). Submit → publish ngay</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-04</span>
           <div class="task-content">
             <div class="t-name">Edit article form</div>
-            <div class="t-note">Pre-fill từ API. PDF: hiển thị file hiện tại + cho phép thay thế hoặc xóa</div>
+            <div class="t-note">Pre-fill 2 tab ngôn ngữ (2 API call) + chip mã CK. PDF: thay thế hoặc xóa. Status toggle</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-05</span>
           <div class="task-content">
             <div class="t-name">PDF upload component + delete confirmation modal</div>
-            <div class="t-note">Drag-and-drop, progress indicator, error state. Modal confirm khi xóa bài.</div>
+            <div class="t-note">Drag-and-drop, progress indicator, error state. Modal confirm khi xóa bài</div>
           </div>
         </li>
         <li class="task-item">
-          <span class="task-id" style="background:var(--violet-light); color:var(--violet);">ADM-06</span>
+          <span class="task-id tag-new" style="background:#f0fdf4; color:#166534;">ADM-06</span>
           <div class="task-content">
-            <div class="t-name">Stock code tag input component</div>
-            <div class="t-note">Tag input với autocomplete mã CK. Gõ mã → dropdown gợi ý từ danh mục → chọn → thêm pill tag. Nút ✕ xóa từng mã. Hiển thị trong form tạo/sửa bài.</div>
+            <div class="t-name">Mã CK tag input trên form + cột Mã CK trên list (A-06)</div>
+            <div class="t-note">Tag/chip input với autocomplete — shared component dùng chung với Admin Khuyến nghị. Tối đa 10 mã, không trùng. Không required</div>
           </div>
         </li>
       </ul>
@@ -1167,42 +1244,42 @@
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-01</span>
           <div class="task-content">
             <div class="t-name">Test: article list — filter, sort, pagination</div>
-            <div class="t-note">Switch category load đúng bài; sort mới nhất trước; page 2+ load thêm đúng</div>
+            <div class="t-note">Switch category load đúng bài; sort mới nhất trước; cursor pagination load thêm đúng, dừng khi nextKey=null</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-02</span>
           <div class="task-content">
             <div class="t-name">Test: article detail + PDF viewer</div>
-            <div class="t-note">Bài có PDF: hiển thị section + mở viewer. Bài không có PDF: ẩn section. Viewer scroll, zoom, close.</div>
+            <div class="t-note">Bài có PDF: hiển thị section + mở viewer. Bài không có PDF: ẩn section. Viewer scroll, zoom, close</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-03</span>
           <div class="task-content">
-            <div class="t-name">Test: admin CRUD flow</div>
-            <div class="t-note">Tạo mới → xuất hiện trên app. Sửa → cập nhật trên app. Xóa → biến mất khỏi app. Không xóa cứng.</div>
+            <div class="t-name">Test: admin CRUD flow (song ngữ)</div>
+            <div class="t-note">Tạo mới VIE-only và VIE+ENG → hiển thị đúng theo Accept-Language. Sửa/Disable/Delete cập nhật đúng trên app</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-04</span>
           <div class="task-content">
             <div class="t-name">Test: PDF upload validation</div>
-            <div class="t-note">Upload đúng PDF → OK. Upload file không phải PDF → error. Upload quá size limit → error.</div>
+            <div class="t-note">Upload đúng PDF → OK. File không phải PDF → error. Quá size limit → error</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-05</span>
           <div class="task-content">
             <div class="t-name">Test: edge cases & empty states</div>
-            <div class="t-note">Category chưa có bài → empty state. Title rất dài → truncate đúng. PDF load lỗi → error toast.</div>
+            <div class="t-note">Category chưa có bài → empty state. Title dài → truncate đúng. PDF load lỗi → error toast</div>
           </div>
         </li>
         <li class="task-item">
           <span class="task-id" style="background:var(--green-light); color:var(--green);">QA-06</span>
           <div class="task-content">
-            <div class="t-name">Test: stock tags — hiển thị & navigate</div>
-            <div class="t-note">Bài có tag: hiện đúng số mã, màu tag đúng (UP=xanh, DOWN=đỏ, FLAT=xám). Tap tag → mở đúng màn hình stock detail. Bài không có tag: ẩn hoàn toàn row. Admin tạo bài với mã → app hiển thị đúng.</div>
+            <div class="t-name">Test: stock tag — hiển thị, filter & navigate (A-06)</div>
+            <div class="t-note">Bài có tag: hiện đúng số mã (+N nếu &gt;3). Filter theo mã trả đúng list, kết hợp đúng với category. Tap tag → mở đúng Stock Detail screen. Bài không có tag: ẩn hoàn toàn tag row, không đổi layout</div>
           </div>
         </li>
       </ul>
@@ -1215,50 +1292,69 @@
   <div class="section-hdr">
     <div class="icon" style="background:#fef3c7">⚠️</div>
     <h2>10. Open Questions</h2>
-    <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev</span>
+    <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev · A-06 không có blocker riêng</span>
   </div>
 
-  <div class="oq-card" style="background:#f0fdf4; border-color:#bbf7d0;">
-    <div class="oq-num" style="background:var(--green);">✓</div>
+  <div class="oq-card">
+    <div class="oq-num">1</div>
     <div class="oq-content">
-      <div class="oq-q" style="color:var(--green);">[RESOLVED] NH Research có cần tìm kiếm theo mã chứng khoán không?</div>
-      <div class="oq-note" style="color:#166534;">Không phải search — thay bằng <strong>mention + tag</strong>: admin gắn mã CK khi đăng bài → app hiển thị tag trên detail screen kèm % thay đổi phiên → tap → navigate stock detail. Xem spec tại mục data model (related_stock_codes) và API detail (relatedStocks). Tasks bổ sung: BE-09, BE-10, MOB-07, MOB-08, ADM-06, QA-06.</div>
+      <div class="oq-q">Nội dung <code>shortContent</code> giới hạn bao nhiêu ký tự? Hay không giới hạn và mobile tự cắt?</div>
+      <div class="oq-note">Ảnh hưởng UX + DB schema. Owner: PM + BE. Deadline: trước BE-01.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM + BE</span></div>
     </div>
   </div>
 
-  <div class="oq-card" style="background:#f0fdf4; border-color:#bbf7d0;">
-    <div class="oq-num" style="background:var(--green);">✓</div>
+  <div class="oq-card">
+    <div class="oq-num">2</div>
     <div class="oq-content">
-      <div class="oq-q" style="color:var(--green);">[RESOLVED] PDF storage: lưu ở đâu và kích thước tối đa?</div>
-      <div class="oq-note" style="color:#166534;"><strong>NHSV server hiện có</strong>, URL dạng <strong>public</strong> (không signed URL). VD: <code>https://files.nhsv.vn/research/...</code>. Max size: đề xuất 20MB — IT confirm. Mobile không cần handle token refresh. BE-07 đã được cập nhật.</div>
+      <div class="oq-q">Storage provider cho PDF: S3, MinIO, hay server NHSV tự host? Max file size?</div>
+      <div class="oq-note">Ảnh hưởng scope BE-07 + BE-08. Owner: IT Lead. Deadline: trước BE-07.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: IT Lead</span></div>
     </div>
   </div>
 
   <div class="oq-card">
     <div class="oq-num">3</div>
     <div class="oq-content">
-      <div class="oq-q">[Non-blocking] In-app PDF viewer: native hay third-party library?</div>
-      <div class="oq-note">iOS native PDFKit xử lý tốt, nhẹ, không cần license. Android PdfRenderer ổn với file thông thường nhưng có hạn chế với PDF phức tạp. Nếu cần cross-platform consistency, có thể dùng <em>react-native-pdf</em>. Mobile team tự quyết theo stack hiện tại.</div>
-      <div class="oq-tags"><span class="tag tag-open">❓ Owner: Mobile Lead</span></div>
+      <div class="oq-q">URL PDF là public URL hay signed URL có TTL?</div>
+      <div class="oq-note"><strong>Blocker cho MOB-05</strong> — mobile cần biết TTL để quyết định cache strategy. Owner: IT Lead. Deadline: trước BE-03 và MOB-05.</div>
+      <div class="oq-tags"><span class="tag tag-block">🚫 Blocker: MOB-05</span></div>
     </div>
   </div>
 
   <div class="oq-card">
     <div class="oq-num">4</div>
     <div class="oq-content">
-      <div class="oq-q">[Non-blocking] Phân quyền admin: ai được quản lý nội dung NH Research?</div>
-      <div class="oq-note">Chỉ tài khoản Phòng Phân tích, hay tất cả admin nhsv-admin? Nếu phân quyền riêng → BE cần role check middleware. IT/admin xác nhận role hiện có trong nhsv-admin.</div>
-      <div class="oq-tags"><span class="tag tag-open">❓ Owner: IT / Admin team</span></div>
+      <div class="oq-q">Role nào trong nhsv-admin được phép upload NH Research? Phòng Phân tích có role riêng chưa?</div>
+      <div class="oq-note">Ảnh hưởng Admin FE + BE access control. Owner: IT + Admin. Deadline: trước ADM-01.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: IT + Admin</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card">
+    <div class="oq-num">5</div>
+    <div class="oq-content">
+      <div class="oq-q">Mobile hiển thị ngôn ngữ theo app setting hay device locale? Nếu EN chưa có, hiển thị VIE hay ẩn bài?</div>
+      <div class="oq-note">Ảnh hưởng UX + Mobile FE. Owner: PM + Mobile. Deadline: trước MOB-01.</div>
+      <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM + Mobile</span></div>
+    </div>
+  </div>
+
+  <div class="oq-card" style="background:#f0fdf4; border-color:#bbf7d0; margin-top:14px;">
+    <div class="oq-num" style="background:var(--green);">✓</div>
+    <div class="oq-content">
+      <div class="oq-q" style="color:var(--green);">A-06 (Stock Tag Enrichment) — không có open question riêng</div>
+      <div class="oq-note" style="color:#166534;">Scope đã chốt: tag nhiều mã/bài + filter, không enrich giá/% thay đổi (không phụ thuộc market data service). Có thể estimate/build độc lập, không chờ Q1–Q5.</div>
     </div>
   </div>
 </div>
 
 <!-- FOOTER -->
 <div class="doc-footer">
-  <div>NHSV Pro · A-04 NH Research Feature Spec · v1.1</div>
-  <div>24 tasks (10 BE · 8 Mobile · 6 Admin) · 6 QA tasks · 2 open questions</div>
+  <div>NHSV Pro · A-04 NH Research + A-06 Stock Tag Enrichment · v1.2</div>
+  <div>25 tasks (10 BE · 9 Mobile · 6 Admin) · 6 QA tasks · 5 open questions</div>
 </div>
 
-</div><!-- /content -->
+</div>
 </body>
 </html>

@@ -4,7 +4,7 @@
 **Feature ID:** A-04  
 **PM:** Midu (Nguyễn Minh Đức)  
 **Status:** 📋 Draft  
-**Version:** 1.1 · 2026-06-22
+**Version:** 1.2 · 2026-07-13
 
 ---
 
@@ -89,6 +89,18 @@ Danh sách bài viết có bộ lọc theo danh mục và trạng thái. Admin c
 
 Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". Mặc định là bật. Khi publish, hệ thống tự gửi notification đến toàn bộ user opted-in và hiển thị xác nhận số thiết bị đã nhận.
 
+### 4.3 Stock Tag Enrichment (A-06)
+
+Mỗi bài NH Research có thể được gắn (tag) **nhiều mã CK** liên quan — ví dụ bài Vĩ mô nhắc đến VCB, BID, CTG thì tag cả 3 mã. Mục tiêu: giúp user tra ngược "tất cả báo cáo từng nói về mã X", và giúp admin quản lý nội dung theo mã.
+
+**Admin Tool:** Form tạo/sửa bài (mục 4.2) có thêm field "Mã CK liên quan" — nhập nhiều mã dạng tag/chip, autocomplete từ danh mục mã CK (tái dùng đúng pattern đã có ở Admin Khuyến nghị). Không bắt buộc — bài Thị trường/Vĩ mô chung có thể không tag mã nào. Danh sách bài viết trong Admin Tool cũng hiển thị cột mã CK đã tag để admin scan nhanh.
+
+**Mobile App:** Mỗi mã đã tag hiển thị dưới dạng tag/chip nhỏ ngay trên card bài viết (cùng hàng với nhãn danh mục) và trên màn chi tiết bài viết — đóng vai trò reference cho user. Tap vào 1 chip mã → navigate sang Stock Detail screen của mã đó (dùng lại cơ chế navigate đã có, giống CTA "Xem cổ phiếu {code}" ở tab Khuyến nghị).
+
+Tab NH Research có thêm 1 filter nhập mã CK (bên cạnh 3 filter danh mục hiện có) — khi user nhập/chọn mã, danh sách bài viết được lọc lại chỉ còn bài có tag đúng mã đó (kết hợp được với category đang chọn). Đây là filter theo mã, **không phải full-text search** nội dung/tiêu đề — phần search đó vẫn giữ nguyên là backlog riêng A-07 để tránh chồng lấn phạm vi.
+
+Không bao gồm hiển thị giá hiện tại hoặc % thay đổi giá của mã được tag (không phụ thuộc market data service) — chỉ tag + hiển thị + tra cứu.
+
 ---
 
 ## 5. Ngoài phạm vi (Out of Scope)
@@ -96,8 +108,9 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
 - Phân quyền user trong Admin Tool (xem Open Question 4) — dùng rule hiện có của nhsv-admin
 - Notification Settings cho user (màn hình opt-in/opt-out) — sẽ làm sau trong sprint riêng
 - Like, comment, share bài viết — backlog
-- Stock tag enrichment (gắn mã CK vào bài và hiển thị % thay đổi) — backlog, A-06
-- Tìm kiếm trong NH Research — A-07 (Search feature)
+- Hiển thị giá hiện tại / % thay đổi giá cho mã CK được tag (A-06 chỉ làm phần tag + reference, xem mục 4.3) — có thể mở rộng sau nếu cần, sẽ phụ thuộc market data service
+- Tích hợp Stock Tag vào Stock Detail screen (màn dùng chung toàn app) — API filter theo mã đã sẵn sàng để màn đó consume sau, nhưng build UI ở màn đó không nằm trong scope A-06 lần này
+- Tìm kiếm nội dung/tiêu đề trong NH Research — A-07 (Search feature, tách biệt với filter mã CK ở mục 4.3)
 - Approval workflow cho bài viết — v1 publish ngay, không duyệt
 - Machine translation (tự động dịch từ VIE sang ENG) — v1 admin tự nhập tay
 
@@ -113,6 +126,8 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
 | US-04 | Investor | Nhận thông báo khi có báo cáo mới | Không bỏ lỡ báo cáo quan trọng |
 | US-05 | Analyst (Admin) | Upload bài song ngữ (VIE + ENG) và publish ngay | Phục vụ cả nhà đầu tư Việt và nước ngoài |
 | US-06 | Analyst (Admin) | Ẩn hoặc chỉnh sửa bài đã đăng | Cập nhật khi có thông tin mới hoặc sai sót |
+| US-07 | Investor | Lọc/tra cứu tất cả báo cáo đã từng tag một mã CK cụ thể | Xem lại toàn bộ nhận định của Phòng PT về mã đang quan tâm trước khi quyết định |
+| US-08 | Analyst (Admin) | Gắn nhiều mã CK liên quan khi tạo/sửa bài | Giúp user tra cứu ngược và giúp Phòng PT quản lý nội dung theo mã |
 
 ---
 
@@ -150,6 +165,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
 | Param | Type | Required | Default | Mô tả |
 | --- | --- | --- | --- | --- |
 | `category` | String | No | — | `MARKET` \| `COMPANY` \| `MACRO` |
+| `stockCode` | String | No | — | Lọc bài có tag đúng mã này (exact match, case-insensitive). Xem A-06 mục 4.3 |
 | `fetchCount` | Number | No | 20 | Số bài/trang, tối đa 50 |
 | `nextKey` | String | No | — | Cursor token trang tiếp. Trang đầu: bỏ qua |
 
@@ -166,6 +182,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
       "title": "VƯỢT QUA RUNG LẮC",
       "shortContent": "Thị trường tiếp tục hồi phục...",
       "hasPdf": true,
+      "stockCodes": ["VCB", "BID", "CTG"],
       "publishedAt": "20260610 09:15:00"
     }
   ],
@@ -174,7 +191,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
 }
 ```
 
-`title` và `shortContent` trả về theo `Accept-Language`. Nếu bản EN chưa có → fallback về VIE. `nextKey` là `null` khi hết dữ liệu.
+`title` và `shortContent` trả về theo `Accept-Language`. Nếu bản EN chưa có → fallback về VIE. `nextKey` là `null` khi hết dữ liệu. `stockCodes` là `[]` nếu bài không tag mã nào.
 
 **8.1 — Error codes:**
 
@@ -202,11 +219,12 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
   "pdfUrl": "https://storage.nhsv.vn/research/NHSV_TT_10062026.pdf",
   "pdfFilename": "NHSV_TT_10062026.pdf",
   "pdfSizeBytes": 2516582,
+  "stockCodes": ["VCB", "BID", "CTG"],
   "publishedAt": "20260610 09:15:00"
 }
 ```
 
-`title` và `shortContent` trả về theo `Accept-Language` — fallback về VIE nếu bản EN chưa có. `pdfUrl`, `pdfFilename`, `pdfSizeBytes` là `null` khi không có PDF.
+`title` và `shortContent` trả về theo `Accept-Language` — fallback về VIE nếu bản EN chưa có. `pdfUrl`, `pdfFilename`, `pdfSizeBytes` là `null` khi không có PDF. `stockCodes` là `[]` nếu bài không tag mã nào.
 
 **8.2 — Error codes:**
 
@@ -243,6 +261,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
       "category": "MARKET",
       "title": "VƯỢT QUA RUNG LẮC",
       "hasPdf": true,
+      "stockCodes": ["VCB", "BID", "CTG"],
       "status": "PUBLISHED",
       "publishedAt": "20260610 09:15:00",
       "createdAt": "20260610 09:15:00",
@@ -254,7 +273,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
   "totalPages": 1
 }
 
-`title` trong response theo `Accept-Language` — fallback VIE.
+`title` trong response theo `Accept-Language` — fallback VIE. `stockCodes` là `[]` nếu bài không tag mã nào.
 ```
 
 **8.3 — Error codes:**
@@ -284,7 +303,8 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
   },
   "pdfUrl": "https://storage.nhsv.vn/research/NHSV_TT_10062026_1718006400.pdf",
   "pdfFilename": "NHSV_TT_10062026.pdf",
-  "pdfSizeBytes": 2516582
+  "pdfSizeBytes": 2516582,
+  "stockCodes": ["VCB", "BID", "CTG"]
 }
 ```
 
@@ -298,6 +318,7 @@ Khi tạo hoặc chỉnh sửa bài, form có toggle "Gửi push notification". 
 | `pdfUrl` | String | No | URL từ upload API (8.7) |
 | `pdfFilename` | String | No | Tên file gốc |
 | `pdfSizeBytes` | Number | No | Dung lượng file (bytes) |
+| `stockCodes` | String[] | No | Mã CK liên quan (xem A-06 mục 4.3). Tối đa 10 mã, mỗi mã tối đa 10 ký tự, tự động uppercase. Bỏ qua hoặc `[]` nếu bài không tag mã nào |
 
 `en` object là optional — bỏ qua hoặc `null` nếu chưa có bản tiếng Anh.
 
@@ -338,6 +359,7 @@ Bài được publish ngay (`status = PUBLISHED`, `publishedAt = createdAt = now
     "shortContent": "Updated English content..."
   },
   "pdfUrl": null,
+  "stockCodes": ["VCB", "CTG"],
   "status": "DISABLED"
 }
 ```
@@ -353,6 +375,7 @@ Bài được publish ngay (`status = PUBLISHED`, `publishedAt = createdAt = now
 | `pdfUrl` | String? | `null` để xóa PDF |
 | `pdfFilename` | String? | |
 | `pdfSizeBytes` | Number? | |
+| `stockCodes` | String[]? | Replace toàn bộ set mã đã tag. Gửi `[]` để xóa hết; bỏ field = giữ nguyên set hiện tại |
 | `status` | String | `PUBLISHED` \| `DISABLED` — toggle visibility |
 
 **8.5 — Response 200:**
@@ -460,8 +483,9 @@ Dùng `pdfUrl` trả về này khi gọi POST (8.4) hoặc PUT (8.5).
 | Backend | 8 stories | Chi tiết trong `jira-issues.md` (BE-01 → BE-08) |
 | Mobile FE | 6 stories | MOB-01 → MOB-06; PDF viewer có thể dùng native lib |
 | Admin FE | 5 stories | ADM-01 → ADM-05; UI reference tại `Admin_Tool/admin-demo.html` |
+| **A-06 — Stock Tag Enrichment** | +5 stories | `BE-09`, `BE-10`, `MOB-08`, `MOB-09`, `ADM-06` — xem mục 4.3 và `jira-issues.md` |
 
-Estimate giờ: cần IT team tự estimate sau khi Q1–Q5 được confirm. Blocker lớn nhất là Q2 (storage) và X-03 (push notification).
+Estimate giờ: cần IT team tự estimate sau khi Q1–Q5 được confirm. Blocker lớn nhất là Q2 (storage) và X-03 (push notification). A-06 không có blocker riêng — có thể estimate/build độc lập, không phụ thuộc Q1–Q5.
 
 ---
 
@@ -475,6 +499,8 @@ Về phía Admin Tool: Phòng Phân tích upload và publish bài song ngữ tro
 
 Về phía Push Notification: nếu X-03 chưa xong, feature vẫn release được — chỉ bỏ toggle Publish & Notify. Push sẽ bật sau khi X-03 merge.
 
+Về phía A-06 (Stock Tag Enrichment): admin tag được nhiều mã CK khi tạo/sửa bài; mobile hiển thị tag trên card + detail; filter theo mã trong tab NH Research trả đúng danh sách bài đã tag mã đó. Có thể release độc lập, không phụ thuộc các mục còn lại của PRD.
+
 ---
 
-Document Status: 📋 Draft | For: IT Lead, Mobile FE, Admin FE, Phòng Phân tích | Next Steps: Confirm Open Questions Q1–Q5 trước khi bắt đầu estimate sprint
+Document Status: 📋 Draft | For: IT Lead, Mobile FE, Admin FE, Phòng Phân tích | Next Steps: Confirm Open Questions Q1–Q5 trước khi bắt đầu estimate sprint; A-06 (mục 4.3) đã sẵn sàng để đưa vào backlog sprint kế tiếp

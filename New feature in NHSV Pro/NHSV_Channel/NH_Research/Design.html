@@ -187,6 +187,24 @@
   .cat-company { background: #E6F6EF; color: #07A461; }
   .cat-macro   { background: #F3E8FF; color: #9013FE; }
   .card-date { font-size: 11px; color: var(--fg-meta); font-family: 'Lato', sans-serif; margin-left: auto; }
+
+  /* Stock tag chip (A-06) */
+  .stock-tag-row { display: flex; gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+  .stock-chip {
+    font-family: 'Lato', sans-serif;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 8px;
+    background: var(--header-table); color: var(--fg-title);
+    white-space: nowrap;
+  }
+  .stock-chip.more { color: var(--fg-meta); font-weight: 400; }
+  .stock-filter-row { padding: 0 16px 10px; background: var(--surface); }
+  .stock-filter-input {
+    font-family: 'Lato', sans-serif;
+    font-size: 12px; color: var(--fg-meta);
+    border: 1px solid var(--stroke); border-radius: 8px;
+    padding: 7px 12px; display: flex; align-items: center; gap: 6px;
+  }
   .card-title-text {
     font-family: 'Lato', sans-serif;
     font-size: 14px; font-weight: 700; color: var(--fg-title);
@@ -406,15 +424,15 @@
 
 <!-- ═══════════════════════════════════════════════════════════ HEADER -->
 <div class="doc-header">
-  <div class="eyebrow">NHSV Pro · A-04 · UI Design</div>
+  <div class="eyebrow">NHSV Pro · A-04 + A-06 · UI Design</div>
   <h1>NH Research — Mobile UI Mockup</h1>
-  <div class="subtitle">Feature: Content tab hiển thị báo cáo phân tích từ Phòng Phân tích NHSV</div>
+  <div class="subtitle">Feature: Content tab hiển thị báo cáo phân tích từ Phòng Phân tích NHSV · Bao gồm A-06 Stock Tag chip + filter theo mã CK</div>
   <div class="meta-row">
     <div class="meta-item"><strong>Stack:</strong> React Native</div>
     <div class="meta-item"><strong>DS:</strong> NHSV Pro v1 (Lato · #028D96 · #EBECF0)</div>
     <div class="meta-item"><strong>Screens:</strong> 5 screens</div>
     <div class="meta-item"><strong>Status:</strong> 🎨 Design Draft</div>
-    <div class="meta-item"><strong>Date:</strong> 2026-06-17</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-13</div>
   </div>
 </div>
 
@@ -496,11 +514,19 @@
               <div class="chip inactive">Vĩ mô</div>
             </div>
 
+            <!-- Stock code filter (A-06) -->
+            <div class="stock-filter-row">
+              <div class="stock-filter-input">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Lọc theo mã CK...
+              </div>
+            </div>
+
             <!-- Article list -->
             <div class="scroll-area" style="padding-bottom:80px;">
               <div class="article-list">
 
-                <!-- Card 1 - with PDF -->
+                <!-- Card 1 - with PDF + stock tags -->
                 <div class="article-card">
                   <div class="card-top">
                     <span class="cat-badge cat-market">Thị trường</span>
@@ -508,14 +534,19 @@
                   </div>
                   <div class="card-title-text">Tổng quan thị trường tuần 3 tháng 6: VN-Index hồi phục tích cực sau phiên giảm mạnh</div>
                   <div class="card-desc">VN-Index kết thúc tuần với mức tăng 1,2%, thanh khoản cải thiện rõ rệt so với tuần trước. Nhóm ngân hàng và bất động sản dẫn dắt đà phục hồi.</div>
-                  <div class="pdf-indicator">
+                  <div class="stock-tag-row">
+                    <span class="stock-chip">VCB</span>
+                    <span class="stock-chip">BID</span>
+                    <span class="stock-chip">CTG</span>
+                  </div>
+                  <div class="pdf-indicator" style="margin-top:8px;">
                     <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
                     <span class="pdf-name">Weekly_Market_Brief_W3_Jun26.pdf</span>
                     <span>&nbsp;·&nbsp;2.8 MB</span>
                   </div>
                 </div>
 
-                <!-- Card 2 - no PDF -->
+                <!-- Card 2 - no PDF, no stock tag -->
                 <div class="article-card">
                   <div class="card-top">
                     <span class="cat-badge cat-market">Thị trường</span>
@@ -525,7 +556,7 @@
                   <div class="card-desc">Phiên hôm nay VN-Index đối mặt kháng cự quan trọng 1.270 điểm. Nhà đầu tư nên quan sát diễn biến thanh khoản phiên buổi chiều.</div>
                 </div>
 
-                <!-- Card 3 - with PDF -->
+                <!-- Card 3 - with PDF + >3 stock tags (overflow chip) -->
                 <div class="article-card">
                   <div class="card-top">
                     <span class="cat-badge cat-market">Thị trường</span>
@@ -533,7 +564,13 @@
                   </div>
                   <div class="card-title-text">Chiến lược đầu tư tháng 7: Cơ hội từ nhóm ngành phòng thủ trong giai đoạn bất ổn</div>
                   <div class="card-desc">Trong bối cảnh lãi suất toàn cầu duy trì cao, các nhà phân tích NHSV khuyến nghị tỷ trọng phòng thủ 40-50% danh mục.</div>
-                  <div class="pdf-indicator">
+                  <div class="stock-tag-row">
+                    <span class="stock-chip">VNM</span>
+                    <span class="stock-chip">FPT</span>
+                    <span class="stock-chip">MWG</span>
+                    <span class="stock-chip more">+2</span>
+                  </div>
+                  <div class="pdf-indicator" style="margin-top:8px;">
                     <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
                     <span class="pdf-name">Strategy_July2026.pdf</span>
                     <span>&nbsp;·&nbsp;4.1 MB</span>
@@ -673,6 +710,11 @@
                     <span class="detail-date">17/06/2026 · 08:30</span>
                   </div>
                   <div class="detail-title">Tổng quan thị trường tuần 3 tháng 6: VN-Index hồi phục tích cực sau phiên giảm mạnh</div>
+                  <div class="stock-tag-row" style="margin-bottom:8px;">
+                    <span class="stock-chip">VCB ›</span>
+                    <span class="stock-chip">BID ›</span>
+                    <span class="stock-chip">CTG ›</span>
+                  </div>
                   <div class="detail-author">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     Phòng Phân tích NHSV

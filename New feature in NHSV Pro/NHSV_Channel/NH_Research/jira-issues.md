@@ -1,19 +1,20 @@
-# Jira Issues — A-04 NH Research Feature
+# Jira Issues — A-04 NH Research Feature (+ A-06 Stock Tag Enrichment)
 
 **Epic:** NH Research — Analysis Content Tab  
-**Spec ref:** [PRD.md](./PRD.md) · [Admin demo](./admin-demo.html)  
+**Spec ref:** [PRD.md](./PRD.md) · [Spec.html](./Spec.html) · [Admin demo](./admin-demo.html)  
 **Integration type:** TradeX-native (internal DB only — không qua Lotte/Core, không cần Lotte mapping, Kafka forward, hay auto-populate `sourceIp`/`deviceUniqueId`)  
 **Category values (API):** `MARKET` · `COMPANY` · `MACRO`  
 **Category labels (UI):** Thị trường · Doanh nghiệp · Vĩ mô  
-**Status values (API):** `PUBLISHED` · `DISABLED` · `DELETED`
+**Status values (API):** `PUBLISHED` · `DISABLED` · `DELETED`  
+**A-06 add-on:** Stock Tag Enrichment (`BE-09`, `BE-10`, `MOB-08`, `MOB-09`, `ADM-06`) — tag nhiều mã CK/bài + filter, không enrich giá/% thay đổi (xem PRD §4.3)
 
 ---
 
 ## Table of Contents
 
-- [Backend (8 stories)](#backend)
-- [Mobile FE (7 stories)](#mobile-fe)
-- [Admin FE (5 stories)](#admin-fe)
+- [Backend (10 stories)](#backend)
+- [Mobile FE (9 stories)](#mobile-fe)
+- [Admin FE (6 stories)](#admin-fe)
 
 ---
 
@@ -465,6 +466,66 @@ Content-Type: multipart/form-data
 
 ---
 
+### BE-09 · DB Schema — Create `nh_research_article_stocks` join table
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Backend |
+| **Priority** | High |
+| **Labels** | `nh-research`, `database`, `a-06` |
+
+**Description**
+
+Create the join table that maps an article to the stock codes tagged on it. One article can have 0..N tagged codes (see A-06 in PRD.md §4.3). This table is the reverse-lookup index that powers the `stockCode` filter on BE-02/BE-10.
+
+**Acceptance Criteria**
+
+- [ ] Table `nh_research_article_stocks` is created with columns:
+  - `id` — PK, auto-generated (BIGINT)
+  - `article_id` — FK → `nh_research_articles.article_id`, NOT NULL
+  - `stock_code` — VARCHAR(10), NOT NULL, stored uppercase
+  - `created_at` — DATETIME, auto-generated
+- [ ] Indexes: `(article_id)` (fetch tags of one article), `(stock_code)` (reverse lookup — find articles by code)
+- [ ] Deleting an article (soft delete on `nh_research_articles`) does NOT cascade-delete rows here — rows are retained for audit; queries always join through `nh_research_articles.status`
+- [ ] Migration script created and tested on UAT DB, with rollback script included
+
+---
+
+### BE-10 · Extend NH Research APIs with `stockCodes` tagging + filter
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Backend |
+| **Priority** | High |
+| **Labels** | `nh-research`, `api`, `a-06` |
+
+**Description**
+
+Extend the existing mobile and admin article APIs (BE-02, BE-03, BE-04, BE-05, BE-06) to read/write `stockCodes`, and add the `stockCode` filter to the mobile list API. Depends on BE-09.
+
+**Changes per endpoint:**
+
+| Endpoint | Change |
+|---|---|
+| `GET /api/v1/nhResearch/articles` (BE-02) | New optional query param `stockCode` (string) — exact match, case-insensitive, filters to articles tagged with this code. Combinable with `category`. Response items add `stockCodes: string[]` |
+| `GET /api/v1/nhResearch/articles/{articleId}` (BE-03) | Response adds `stockCodes: string[]` |
+| `GET /admin/nhResearch/articles` (BE-04) | Response items add `stockCodes: string[]` |
+| `POST /admin/nhResearch/articles` (BE-05) | Request body adds optional `stockCodes: string[]` |
+| `PUT /admin/nhResearch/articles/{id}` (BE-06) | Request body adds optional `stockCodes: string[]` — **full replace** of the tag set (send `[]` to clear all, omit field to leave unchanged) |
+
+**Acceptance Criteria**
+
+- [ ] `stockCode` query param on BE-02 does exact match (not LIKE) against `nh_research_article_stocks.stock_code`, case-insensitive
+- [ ] `stockCode` filter combines correctly with `category` filter (AND condition)
+- [ ] `stockCodes` in POST (BE-05): optional, max 10 codes, each code max 10 chars, invalid values return HTTP 400 `INVALID_PARAMETER`; codes are uppercased before insert; omitted/`[]` → article created with no tags
+- [ ] `stockCodes` in PUT (BE-06): when provided, deletes existing rows for that `article_id` and inserts the new set (atomic replace, not merge); when field is omitted, existing tags are left untouched
+- [ ] `stockCodes` always returned as `[]` (never `null`) when article has no tags
+- [ ] No behavior change for callers that don't send `stockCode`/`stockCodes` — fully backward compatible with A-04 clients already in production
+
+---
+
 ## Mobile FE
 
 ### MOB-01 · NH Research tab — Category filter (MARKET / COMPANY / MACRO)
@@ -680,6 +741,55 @@ App cần xử lý deeplink để mở thẳng tab NH Research hoặc màn Artic
 
 ---
 
+### MOB-08 · Stock tag chip trên Article card + Article detail
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Mobile FE |
+| **Priority** | High |
+| **Labels** | `nh-research`, `mobile`, `a-06` |
+
+**Description**
+
+Hiển thị `stockCodes` (trả về từ BE-02/BE-03 sau BE-10) dưới dạng tag/chip nhỏ trên Article card (MOB-02) và Article Detail (MOB-04). Tap 1 chip → navigate sang Stock Detail screen của mã đó, dùng lại cơ chế navigate/deeplink đã có trong app (cùng pattern với CTA "Xem cổ phiếu {code}" ở tab Khuyến nghị) — không xây màn mới.
+
+**Acceptance Criteria**
+
+- [ ] Article card (MOB-02): tag chip mã CK hiển thị trong `.card-top`, cùng hàng với category badge, trước ngày publish
+- [ ] Nếu `stockCodes.length > 3`: hiện 3 mã đầu + chip `+N` (N = số mã còn lại), không hiện tràn dòng
+- [ ] Nếu `stockCodes = []`: không hiện khu vực tag, không có khoảng trống thừa (layout giữ nguyên như bài không tag)
+- [ ] Article Detail (MOB-04): tag chip hiển thị ngay dưới title, trước phần category + ngày, hoặc cùng khu vực category tag hiện có
+- [ ] Tap 1 chip mã → navigate Stock Detail screen với đúng `stockCode` đó
+- [ ] Chip không tương tác được (không tap) nếu app chưa hỗ trợ Stock Detail cho mã đó — fallback: vẫn navigate, để Stock Detail screen tự xử lý mã không tồn tại
+- [ ] Loading/skeleton state (MOB-01b) không cần render tag chip giả — giữ nguyên skeleton hiện có
+
+---
+
+### MOB-09 · NH Research tab — Filter bài viết theo mã CK
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Mobile FE |
+| **Priority** | Medium |
+| **Labels** | `nh-research`, `mobile`, `a-06`, `filter` |
+
+**Description**
+
+Thêm 1 input filter mã CK trong tab NH Research (MOB-01), bên cạnh 3 category chip hiện có (Thị trường/Doanh nghiệp/Vĩ mô). Khi user nhập/chọn mã, danh sách bài viết gọi lại `GET /api/v1/nhResearch/articles?category={category}&stockCode={code}` — kết hợp với category đang chọn. Đây là filter theo mã, **không phải full-text search** nội dung/tiêu đề (search đó là A-07, tách biệt scope).
+
+**Acceptance Criteria**
+
+- [ ] Input filter mã CK hiển thị trong tab NH Research, không thay thế 3 category chip hiện có
+- [ ] Nhập/chọn mã → fetch lại list với `stockCode` param, giữ nguyên `category` đang chọn, reset `nextKey`/pagination
+- [ ] Xóa filter mã (input rỗng) → list trở lại đúng category đang chọn, không còn `stockCode` param
+- [ ] Không có bài nào tag mã vừa filter → empty state riêng: *"Chưa có báo cáo nào liên quan đến mã {code}."*
+- [ ] Debounce input 250ms trước khi gọi API (đồng bộ pattern debounce đã dùng ở search Khuyến nghị)
+- [ ] Filter mã CK không ảnh hưởng đến behaviour deeplink (MOB-07) — deeplink vẫn mở đúng category/article, filter mã chỉ là state tại chỗ trong tab
+
+---
+
 ## Admin FE
 
 ### ADM-01 · Add NH Research section to nhsv-admin sidebar
@@ -853,18 +963,53 @@ Shared components used across create and edit forms: the PDF upload widget and t
 
 ---
 
+### ADM-06 · Mã CK tag input trên form + cột Mã CK trên list
+
+| Field | Value |
+|---|---|
+| **Type** | Story |
+| **Component** | Admin FE |
+| **Priority** | Medium |
+| **Labels** | `nh-research`, `admin`, `a-06`, `form` |
+
+**Description**
+
+Thêm field "Mã CK liên quan (không bắt buộc)" vào Create form (ADM-03) và Edit form (ADM-04), dùng chung cho cả 2 ngôn ngữ — nằm cùng khu vực Category/PDF, không thuộc tab VIE/ENG. Tái dùng đúng component autocomplete mã CK đã có ở Admin Khuyến nghị ("Mã CK: input với autocomplete từ danh mục"). Thêm cột "Mã CK" vào list page (ADM-02).
+
+**Form layout — bổ sung vào khu vực dùng chung:**
+
+```
+Danh mục *         [ Thị trường ▼ ]
+Mã CK liên quan    [ VCB ✕ ] [ BID ✕ ] [ + Nhập mã... ]
+Đính kèm PDF       [ Upload / Drag-drop ]
+```
+
+**Acceptance Criteria**
+
+- [ ] Field "Mã CK liên quan" nằm ở khu vực dùng chung (không phải trong tab VIE/ENG), ngay dưới Category
+- [ ] Input có autocomplete gợi ý mã từ danh mục mã CK (tái dùng component đã có ở Khuyến nghị Admin) — không tạo component autocomplete mới
+- [ ] Mỗi mã nhập/chọn xong hiện thành chip riêng, có nút ✕ để xóa từng mã
+- [ ] Không required — submit không có mã nào vẫn publish được bình thường (`stockCodes: []`)
+- [ ] Validate client-side: tối đa 10 mã/bài, không cho nhập trùng mã trong cùng bài
+- [ ] Create form (ADM-03): submit gửi `stockCodes` trong body POST (BE-05) — chỉ gửi field khi có ít nhất 1 mã, hoặc gửi `[]` nếu muốn explicit rõ ràng
+- [ ] Edit form (ADM-04): pre-fill chip từ `stockCodes` trả về ở GET detail; submit PUT (BE-06) luôn gửi `stockCodes` là **full set hiện tại** trên form (replace, không merge) — kể cả khi admin không đổi gì
+- [ ] List page (ADM-02): thêm cột "Mã CK" hiển thị chip mã (tối đa 3 chip + `+N`), hoặc "—" nếu bài không tag mã nào
+- [ ] Component autocomplete/chip input được implement dưới dạng shared component để Admin Khuyến nghị và Admin NH Research cùng dùng chung (tránh 2 bản implementation khác nhau)
+
+---
+
 ## Summary
 
 | Layer | Stories | Priority breakdown |
 |---|---|---|
-| Backend | 8 | 8 High |
-| Mobile FE | 7 | 4 High · 3 Medium |
-| Admin FE | 5 | 4 High · 1 Medium |
-| **Total** | **20** | |
+| Backend | 8 + 2 (A-06) | 9 High · 1 High (BE-10) |
+| Mobile FE | 7 + 2 (A-06) | 4 High · 1 High (MOB-08) · 3 Medium · 1 Medium (MOB-09) |
+| Admin FE | 5 + 1 (A-06) | 4 High · 2 Medium (incl. ADM-06) |
+| **Total** | **25** | |
 
-**Blocked stories:** BE-07 and BE-08 depend on storage provider decision (Open Q #2 in PRD).  
-**Recommended start:** BE-01 (DB schema) → BE-02/03 (Mobile APIs) in parallel → MOB-01~04 can start once BE-02/03 are deployed to UAT.
+**Blocked stories:** BE-07 and BE-08 depend on storage provider decision (Open Q #2 in PRD). A-06 stories (`BE-09`, `BE-10`, `MOB-08`, `MOB-09`, `ADM-06`) have no blocker and can be scheduled independently of Q1–Q5.  
+**Recommended start:** BE-01 (DB schema) → BE-02/03 (Mobile APIs) in parallel → MOB-01~04 can start once BE-02/03 are deployed to UAT. For A-06: BE-09 (join table) → BE-10 (API changes) → MOB-08/MOB-09 + ADM-06 in parallel once BE-10 is on UAT.
 
 ---
 
-*Generated from PRD A-04 — NH Research Feature Spec v1.0*
+*Generated from PRD A-04 — NH Research Feature Spec v1.0 · A-06 stories appended v1.2 (2026-07-13)*
