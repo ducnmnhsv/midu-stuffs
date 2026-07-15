@@ -390,7 +390,7 @@
     </div>
 
     <div class="alert alert-yellow">
-      <strong>Cập nhật schema (2026-07-08)</strong> — đối chiếu <code>ekyc_attempt_log</code> với sample log thực tế production do dev gửi (OCR CCCD 2 mặt, liveness, face compare): phát hiện &amp; sửa 4 chỗ mapping sai tên field JSON gốc (<code>vnpt_citizen_id</code> ← <code>object.id</code> chứ không phải field <code>citizenId</code> không tồn tại; <code>vnpt_citizen_id_chip</code> ← <code>object.dict_qr.SoCCCD</code>; cột <code>vnpt_match_valid_date</code> đổi thành <code>vnpt_match_sex</code>; tách <code>fake_liveness_prob</code>/<code>fake_print_photo_prob</code> theo mặt trước/sau). Bổ sung field mới: <code>mrz_line3</code>, <code>vnpt_qr_match_summary</code>, phát hiện đổi mặt/deepfake, phát hiện nhiều khuôn mặt, và 6 cột VNPT logID để tra soát chéo khi audit. Chi tiết đầy đủ + sample thực tế đã ẩn danh: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code> Section 0.4–0.6.
+      <strong>Cập nhật schema (2026-07-08)</strong> — đối chiếu <code>ekyc_attempt_log</code> với sample log thực tế production do dev gửi (OCR CCCD 2 mặt, liveness, face compare): phát hiện &amp; sửa 4 chỗ mapping sai tên field JSON gốc (<code>vnpt_citizen_id</code> ← <code>object.id</code> chứ không phải field <code>citizenId</code> không tồn tại; <code>vnpt_citizen_id_chip</code> ← <code>object.dict_qr.SoCCCD</code>; cột <code>vnpt_match_valid_date</code> đổi thành <code>vnpt_match_sex</code>; tách <code>fake_liveness_prob</code>/<code>fake_print_photo_prob</code> theo mặt trước/sau). Bổ sung field mới: <code>mrz_line3</code>, <code>vnpt_qr_match_summary</code>, phát hiện đổi mặt/deepfake, phát hiện nhiều khuôn mặt, và 6 cột VNPT logID để tra soát chéo khi audit. Chi tiết đầy đủ + sample thực tế đã ẩn danh: <code>Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md</code> Section 0.4–0.6.
     </div>
 
     <div class="card">
@@ -411,7 +411,7 @@
           </div>
         </div>
         <div class="col-group">
-          <div class="col-group-title">VNPT OCR + Fraud + Liveness (rút gọn — xem Backend_Spec.md)</div>
+          <div class="col-group-title">VNPT OCR + Fraud + Liveness (rút gọn — xem 01_Biometric_Attempt_Log_Backend_Spec.md)</div>
           <div class="col-tags">
             <span class="col-tag">vnpt_status_code</span>
             <span class="col-tag">vnpt_citizen_id</span>
@@ -455,7 +455,7 @@
           </div>
         </div>
       </div>
-      <p style="margin-top:8px;font-size:12px">Chi tiết đầy đủ 60+ cột: <code>01_Biometric_Attempt_Log/Specifications/Backend_Spec.md</code>. Ảnh CCCD (<code>image_front_url</code>/<code>image_back_url</code>) — cột đã dự trù nhưng upload S3/MinIO là Phase 2.</p>
+      <p style="margin-top:8px;font-size:12px">Chi tiết đầy đủ 60+ cột: <code>Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md</code>. Ảnh CCCD (<code>image_front_url</code>/<code>image_back_url</code>) — cột đã dự trù nhưng upload S3/MinIO là Phase 2.</p>
     </div>
 
     <div class="card" style="margin-top:16px">
@@ -515,10 +515,10 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>11 API hành trình mở tài khoản — ghi log tự động phía Backend (không phải endpoint mới)</h3>
-      <p style="font-size:12px;margin-top:4px">Journey Log KHÔNG cần App gọi thêm API nào — một interceptor/aspect ở Backend tự ghi lại mỗi lần 1 trong 11 API dưới đây được gọi. Danh sách (đã đối chiếu với source code app <code>nhsv-mts-rn</code> ngày 2026-07-08): <code>lotte/ekycs/create</code>, <code>ekyc-admin/sendOtp</code>, <code>ekyc-admin/verifyOtp</code>, <code>equity/account/checkNationalId</code>, <code>aws</code> (upload/download ảnh CCCD), <code>ekycs/banks</code>, <code>ekycs/banks/{bankCode}/branches</code>, <code>ekycs/branch</code>, <code>ekycs/partner</code>, <code>lotte/ekycs</code> (submit), <code>equity/account/contracts</code>. Chi tiết đầy đủ + evidence file:line: <code>07_Compliance_Journey_Log/Specifications/Journey_API_Reference.md</code>.</p>
+      <h3>11 step hành trình mở tài khoản — Compliance Journey Log (redesign v2.0, 2026-07-15)</h3>
+      <p style="font-size:12px;margin-top:4px">App gọi <code>POST /ekycs/journey-log</code> tại 10 màn hình đầu, gửi kèm <strong>toàn bộ state màn hình đó</strong> (không chỉ tóm tắt) — vì nhiều field (occupation, tax_cd, text điều khoản đầy đủ...) chỉ tồn tại ở local state App, một interceptor bắt request API nghiệp vụ sẽ không thấy được. 10 step: <code>EKYC_SEND_OTP</code>, <code>EKYC_VERIFY_OTP</code>, <code>GO_TO_ID_CARD_GUIDE</code>, <code>EKYC_FACE_SCAN</code>, <code>PERSONAL_INFORMATION</code>, <code>ACCOUNT_INFORMATION</code>, <code>BANK_INFORMATION</code>, <code>INVESTMENT_INFORMATION</code>, <code>TERMS_AND_CONDITIONS_CONFIRMATION</code>, <code>ACCOUNT_OPENING_COMPLETED</code> (mốc chốt retention). Step thứ 11, <code>ECONTRACT_SIGN_COMPLETED</code>, do <strong>Backend tự ghi</strong> qua webhook FPT có sẵn (không qua App) — khóa liên kết <code>e_kyc_id</code>. Chi tiết đầy đủ: <code>Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md</code>.</p>
       <div class="alert alert-yellow" style="margin-top:10px;font-size:12px">
-        <strong>Cập nhật 2026-07-08:</strong> danh sách cũ ghi <code>ekycs/account/exist</code> — endpoint này <strong>không tồn tại</strong> trong code app hiện tại, đã gỡ khỏi danh sách. Danh sách cũ cũng <strong>thiếu hẳn</strong> endpoint <code>aws</code> (lấy URL upload/download ảnh CCCD lên storage) — một bước bắt buộc trong luồng scan CCCD, nay đã bổ sung.
+        <strong>Redesign 2026-07-15:</strong> thay thế hoàn toàn thiết kế cũ (API-call-based, interceptor, chỉ lưu <code>response_summary</code>) — cũng gộp luôn sub-feature 05 (Contract Terms Checkbox Log, đã xóa) vào step <code>TERMS_AND_CONDITIONS_CONFIRMATION</code>. Vẫn giữ quyết định 2026-07-06: chỉ giữ hành trình <strong>thành công</strong>, xóa sau 8h nếu chưa tới <code>ACCOUNT_OPENING_COMPLETED</code>.
       </div>
     </div>
 
@@ -635,15 +635,15 @@ Response: { "eKycId": "...", "status": "success" }</code></pre>
     <div class="card-grid col3" style="margin-top:12px">
       <div class="card deferred">
         <h3>⏸ 02 — Admin Attempt History</h3>
-        <p style="font-size:12px">3 màn hình: Danh sách + tra cứu (2 tab) → Customer Journey Timeline → Chi tiết lần thử. Spec đầy đủ: <code>02_Admin_Attempt_History/Issues/FE_Issue_Admin_Attempt_History.md</code></p>
+        <p style="font-size:12px">3 màn hình: Danh sách + tra cứu (2 tab) → Customer Journey Timeline → Chi tiết lần thử. Spec đầy đủ: <code>Scope_2/Issues/02_FE_Issue_Admin_Attempt_History.md</code></p>
       </div>
       <div class="card deferred">
         <h3>⏸ 03 — Admin Dashboard Analytics</h3>
-        <p style="font-size:12px">7 KPI cards + 4 charts (donut, bar, line, fraud). Spec: <code>03_Admin_Dashboard_Analytics/Specifications/Dashboard_API_Spec.md</code>. Demo: <code>admin-ui-demo.html</code></p>
+        <p style="font-size:12px">7 KPI cards + 4 charts (donut, bar, line, fraud). Spec: <code>Scope_2/Specifications/03_Dashboard_API_Spec.md</code>. Demo: <code>Scope_2/demos/admin-ui-demo.html</code></p>
       </div>
       <div class="card deferred">
         <h3>⏸ 04 — MRZ Validation (App)</h3>
-        <p style="font-size:12px">3 phase: fix <code>default: break</code> → đọc/validate MRZ → gửi lên BE. Spec: <code>04_MRZ_Validation/Issues/FE_Issue_MRZ_Validation_CrossCheck.md</code></p>
+        <p style="font-size:12px">3 phase: fix <code>default: break</code> → đọc/validate MRZ → gửi lên BE. Spec: <code>Scope_2/Issues/04_FE_Issue_MRZ_Validation_CrossCheck.md</code></p>
       </div>
     </div>
     <div class="card deferred" style="margin-top:16px">
@@ -661,7 +661,7 @@ Response: { "eKycId": "...", "status": "success" }</code></pre>
       <div class="card">
         <h3>Tài liệu</h3>
         <ul class="check-list">
-          <li>PRD v2.5 — scope Phase 1 đã chốt (thuần backend/DB); mục 4.2/4.3 bổ sung tín hiệu chống gian lận (QR, đa khuôn mặt, đổi mặt); thêm tham chiếu <code>07_Compliance_Journey_Log/Journey_API_Reference.md</code></li>
+          <li>PRD v2.5 — scope Phase 1 đã chốt (thuần backend/DB); mục 4.2/4.3 bổ sung tín hiệu chống gian lận (QR, đa khuôn mặt, đổi mặt); thêm tham chiếu <code>Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md (redesign 2026-07-15, thay Journey_API_Reference.md cũ)</code></li>
           <li>PRD_eKYC_v2.md mục 4.10 — chi tiết storage strategy Journey Log</li>
           <li>Backend Spec (sub-feature 01) — Entity, Service, Repository</li>
           <li class="deferred">FE Issue Admin Journey / Dashboard / MRZ — giữ tham khảo, chưa triển khai</li>

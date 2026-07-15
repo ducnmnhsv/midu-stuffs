@@ -22,7 +22,7 @@
 
 Dashboard aggregation endpoint cho Admin UI. Trả về số liệu tổng hợp về eKYC attempts trong một khoảng thời gian: KPI metrics, outcome breakdown, failure analysis, fraud detection, và daily trend.
 
-**Nguồn dữ liệu chính:** `ekyc_attempt_log` (bảng mới, xem `Backend_Spec.md` Section 0).
+**Nguồn dữ liệu chính:** `ekyc_attempt_log` (bảng mới, xem `../../Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md` Section 0).
 
 **Đơn vị đo lường:** Tất cả KPI và breakdown đều tính theo **unique customer** (`DISTINCT identifier_id`), không phải tổng số lần thử — để phản ánh số người dùng thực sự, không bị inflate bởi retry.
 

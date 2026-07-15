@@ -45,7 +45,7 @@ Team vận hành không có công cụ tra cứu lịch sử eKYC của khách h
 | `GET /{identifierId}` | Lấy danh sách lần thử |
 | `GET /{identifierId}/{attemptNumber}` | Chi tiết một lần thử |
 
-Chi tiết request/response: xem `01_Biometric_Attempt_Log/Specifications/Backend_Spec.md` Section 4.
+Chi tiết request/response: xem `../../Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md` Section 4.
 
 ---
 
@@ -70,7 +70,7 @@ Chi tiết request/response: xem `01_Biometric_Attempt_Log/Specifications/Backen
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-**API:** `GET /api/admin/ekyc/attempts/list?accountStatus={APPROVED|NOT_APPROVED}&keyword=&fromDate=&toDate=&page=&size=` — xem `Backend_Spec.md` Section 4.1b.
+**API:** `GET /api/admin/ekyc/attempts/list?accountStatus={APPROVED|NOT_APPROVED}&keyword=&fromDate=&toDate=&page=&size=` — xem `../../Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md` Section 4.1b.
 
 **Tab 1 — "Đã mở TK thành công" (`accountStatus=APPROVED`):**
 

@@ -588,14 +588,14 @@ const TASKS = [
   },
 
   // ==========================================================================
-  // eKYC (VNPT integration — Phase 1)
+  // eKYC (VNPT integration — Scope 1 = đang triển khai, Scope 2 = sau)
   // ==========================================================================
   {
     id: "EKYC-01-BE", title: "BE: Biometric Attempt Log Storage",
     area: "eKYC", feature: "01_Biometric_Attempt_Log", type: "BE",
     status: "done", priority: "P1", deadline: null,
     owner: "BE team", jira: null,
-    doc: "eKYC/01_Biometric_Attempt_Log/Issues/BE_Issue_Biometric_Log_Storage.md",
+    doc: "eKYC/Scope_1/Issues/01_BE_Issue_Biometric_Log_Storage.md",
     blocks: ["EKYC-02-FE", "EKYC-03-FE"], blockedBy: [], note: "Complete.",
   },
   {
@@ -603,15 +603,33 @@ const TASKS = [
     area: "eKYC", feature: "01_Biometric_Attempt_Log", type: "Spec",
     status: "in_progress", priority: "P1", deadline: null,
     owner: "PO", jira: null,
-    doc: "eKYC/01_Biometric_Attempt_Log/Specifications/Backend_Spec.md",
+    doc: "eKYC/Scope_1/Specifications/01_Biometric_Attempt_Log_Backend_Spec.md",
     blocks: [], blockedBy: [], note: "Draft v2.0 — vừa fix schema conflict.",
+  },
+  {
+    id: "EKYC-07-SPEC", title: "Spec: Compliance Journey Log Backend (redesign v2.0)",
+    area: "eKYC", feature: "07_Compliance_Journey_Log", type: "Spec",
+    status: "done", priority: "P1", deadline: null,
+    owner: "PO", jira: null,
+    doc: "eKYC/Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md",
+    blocks: ["EKYC-07-BE"], blockedBy: [],
+    note: "Redesign 2026-07-15 — screen-based, full payload, gộp sub-feature 05. Thay thế Journey_API_Reference.md.",
+  },
+  {
+    id: "EKYC-07-BE", title: "BE: Compliance Journey Log — journey-log API + purge job + econtract hook",
+    area: "eKYC", feature: "07_Compliance_Journey_Log", type: "BE",
+    status: "ready", priority: "P1", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "eKYC/Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md",
+    blocks: [], blockedBy: ["EKYC-07-SPEC"],
+    note: "Cần FE Lead confirm effort sửa ~8 màn hình App trước khi kickoff (Backend_Spec.md Section 10).",
   },
   {
     id: "EKYC-02-FE", title: "FE: Admin Attempt History",
     area: "eKYC", feature: "02_Admin_Attempt_History", type: "FE",
     status: "backlog", priority: "P1", deadline: null,
     owner: "FE/Admin team", jira: null,
-    doc: "eKYC/02_Admin_Attempt_History/Issues/FE_Issue_Admin_Attempt_History.md",
+    doc: "eKYC/Scope_2/Issues/02_FE_Issue_Admin_Attempt_History.md",
     blocks: [], blockedBy: ["EKYC-01-BE"], note: "Pending — BE đã xong, sẵn sàng kickoff.",
   },
   {
@@ -619,32 +637,16 @@ const TASKS = [
     area: "eKYC", feature: "03_Admin_Dashboard_Analytics", type: "FE",
     status: "backlog", priority: "P1", deadline: null,
     owner: "FE/Admin team", jira: null,
-    doc: "eKYC/03_Admin_Dashboard_Analytics/Issues/FE_Issue_Dashboard_Analytics.md",
-    blocks: [], blockedBy: ["EKYC-01-BE"], note: "Spec API ✅ Complete. Demo: demos/admin-ui-demo.html.",
+    doc: "eKYC/Scope_2/Issues/03_FE_Issue_Dashboard_Analytics.md",
+    blocks: [], blockedBy: ["EKYC-01-BE"], note: "Spec API ✅ Complete. Demo: Scope_2/demos/admin-ui-demo.html.",
   },
   {
     id: "EKYC-04-FE", title: "FE: MRZ Validation Cross-check",
     area: "eKYC", feature: "04_MRZ_Validation", type: "FE",
     status: "backlog", priority: "P2", deadline: null,
     owner: "FE team", jira: null,
-    doc: "eKYC/04_MRZ_Validation/Issues/FE_Issue_MRZ_Validation_CrossCheck.md",
+    doc: "eKYC/Scope_2/Issues/04_FE_Issue_MRZ_Validation_CrossCheck.md",
     blocks: [], blockedBy: [], note: "Draft.",
-  },
-  {
-    id: "EKYC-05-BE", title: "BE: Checkbox Consent Storage (Contract Terms)",
-    area: "eKYC", feature: "05_Contract_Terms_Checkbox_Log", type: "BE",
-    status: "ready", priority: "P1", deadline: null,
-    owner: "BE team", jira: null,
-    doc: "eKYC/05_Contract_Terms_Checkbox_Log/Issues/BE_Issue_Checkbox_Consent_Storage.md",
-    blocks: [], blockedBy: [], note: "Ready for Dev.",
-  },
-  {
-    id: "EKYC-05-FE", title: "FE: Checkbox Analytics Log (Contract Terms)",
-    area: "eKYC", feature: "05_Contract_Terms_Checkbox_Log", type: "FE",
-    status: "ready", priority: "P1", deadline: null,
-    owner: "FE team", jira: null,
-    doc: "eKYC/05_Contract_Terms_Checkbox_Log/Issues/FE_Issue_Checkbox_Analytics_Log.md",
-    blocks: [], blockedBy: [], note: "Ready for Dev.",
   },
 
   // ==========================================================================

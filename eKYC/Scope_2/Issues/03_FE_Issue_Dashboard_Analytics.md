@@ -3,7 +3,7 @@
 **Service:** ekyc-admin (Admin UI)
 **Priority:** Medium
 **Type:** New Feature
-**Blocked by:** BE Dashboard API (`GET /api/admin/ekyc/dashboard`) phải live trước — xem `Specifications/Dashboard_API_Spec.md`
+**Blocked by:** BE Dashboard API (`GET /api/admin/ekyc/dashboard`) phải live trước — xem `../Specifications/03_Dashboard_API_Spec.md`
 
 ---
 
@@ -37,7 +37,7 @@ BA/PM và team Security không có số liệu tổng hợp về eKYC — tỉ l
 **Auth:** Admin role required
 **Response time SLA:** < 3s (BE có cache)
 
-Full request/response spec: xem `Specifications/Dashboard_API_Spec.md`.
+Full request/response spec: xem `../Specifications/03_Dashboard_API_Spec.md`.
 
 ---
 
@@ -133,4 +133,4 @@ Khoảng thời gian: [7 ngày qua ▾]   [Áp dụng]
 
 ---
 
-**Document Status:** 📋 Pending | For: FE Dev (ekyc-admin UI) | Next Steps: BE implement `Dashboard_API_Spec.md` → FE implement 7 KPI cards + 4 charts
+**Document Status:** 📋 Pending | For: FE Dev (ekyc-admin UI) | Next Steps: BE implement `03_Dashboard_API_Spec.md` → FE implement 7 KPI cards + 4 charts
