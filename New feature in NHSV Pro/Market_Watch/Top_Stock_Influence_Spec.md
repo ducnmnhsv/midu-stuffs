@@ -2,12 +2,14 @@
 
 **Document Type:** API Specification  
 **Category:** Market Watch — Nhóm dẫn dắt thị trường  
-**Version:** 1.2  
-**Date:** July 10, 2026
+**Version:** 1.3  
+**Date:** July 15, 2026
 
 > **Note:** TradeX-native aggregation API. BE tự tính từ dữ liệu nội bộ TradeX (indexStockList + symbolInfo), **không gọi Vietstock**, không qua Lotte/Core. BE tính lại theo interval **2 phút/lần**, cache kết quả; API trả từ cache.
 
 > **Changelog v1.2:** Đổi data source từ Vietstock External API → TradeX tự tính (công thức §2.4). **I/O request/response giữ nguyên so với v1.1** — xem lưu ý về `tradingDate` tại §3.1.
+
+> **Changelog v1.3:** Đổi logic `influenceType=ALL` — từ "top N theo `|điểm|` tuyệt đối, gộp cả 2 chiều" sang "top N **mỗi chiều**" (trả cặp DECREASE + INCREASE). Lý do: `top` nhỏ hoặc thị trường lệch mạnh 1 phía làm mất hẳn 1 chiều khỏi response (VD `top=20` thực tế chỉ ra 1 mã INCREASE). **Breaking change về cardinality** — số bản ghi trả về khi `ALL` có thể lên tới `2 × top` thay vì đúng bằng `top`. Xem thảo luận tại NHMTS-1017.
 
 ---
 
@@ -100,13 +102,15 @@ hoặc validation error:
 
 ### 2.2 InfluenceType Enum
 
-BE filter trên kết quả đã tính, không còn map sang tham số upstream:
+BE filter trên kết quả đã tính, không còn map sang tham số upstream. **Lưu ý (v1.3):** với `ALL`, `top` áp dụng **theo từng chiều** — không còn "top N gộp theo `|điểm|` tuyệt đối" như v1.2 — để đảm bảo bar chart luôn thấy được cả 2 chiều ảnh hưởng kể cả khi `top` nhỏ hoặc thị trường lệch mạnh 1 phía.
 
-| TradeX `influenceType` | BE filter | Mô tả |
-|------------------------|-----------|-------|
-| `ALL` | Không filter — sort theo `|influenceIndex|` giảm dần | Cả tăng và giảm (default) |
-| `INCREASE` | `influenceIndex > 0` — sort giảm dần | Chỉ mã đóng góp dương |
-| `DECREASE` | `influenceIndex < 0` — sort tăng dần (âm nhất trước) | Chỉ mã đóng góp âm |
+| TradeX `influenceType` | BE filter | Số bản ghi trả về | Mô tả |
+|------------------------|-----------|--------------------|-------|
+| `ALL` | Nhóm `DECREASE` (`influenceIndex < 0`, sort tăng dần — âm nhất trước) lấy `top` mã đầu, **nối tiếp** nhóm `INCREASE` (`influenceIndex >= 0`, sort giảm dần — dương lớn nhất trước) lấy `top` mã đầu | Tối đa `2 × top` — ít hơn nếu 1 chiều không đủ mã, có thể chỉ còn 1 chiều nếu chiều kia rỗng | Cả tăng và giảm, đảm bảo mỗi chiều tối đa `top` mã (default) |
+| `INCREASE` | `influenceIndex >= 0` — sort giảm dần | Tối đa `top` | Chỉ mã đóng góp dương |
+| `DECREASE` | `influenceIndex < 0` — sort tăng dần (âm nhất trước) | Tối đa `top` | Chỉ mã đóng góp âm |
+
+> **Ví dụ:** `top=1`, `influenceType=ALL` → trả tối đa 2 bản ghi: 1 mã `DECREASE` ảnh hưởng âm nhất + 1 mã `INCREASE` ảnh hưởng dương nhất. Nếu thị trường giảm toàn diện (không có mã nào `INCREASE`) → chỉ trả 1 bản ghi `DECREASE`, không lỗi.
 
 ### 2.3 Direction Enum (Response)
 
@@ -136,7 +140,13 @@ value(mã)   = (mc / sumMc) × ra          // % đóng góp vào biến động 
 
 Trong đó `ra` = % thay đổi giá của mã, `indexValue` = giá trị chỉ số tại thời điểm tính.
 
-**Bước 4 — Sort & cache:** sort theo `|điểm|` giảm dần, đánh `row` từ 1, cache kết quả đầy đủ (không cắt `top`). API đọc cache, apply filter `influenceType` + slice `top` theo request.
+**Bước 4 — Sort & cache:** cache lưu **2 danh sách con theo chiều**, đầy đủ không cắt `top`:
+- `DECREASE`: các mã có điểm âm, sort tăng dần (âm nhất trước)
+- `INCREASE`: các mã có điểm dương/0, sort giảm dần (dương lớn nhất trước)
+
+API đọc cache theo `influenceType`:
+- `ALL`: lấy `top` mã đầu của `DECREASE`, nối tiếp `top` mã đầu của `INCREASE`; đánh lại `row` từ 1 theo thứ tự nối (DECREASE trước, INCREASE sau).
+- `INCREASE` / `DECREASE`: lấy `top` mã đầu của danh sách con tương ứng, đánh `row` từ 1.
 
 **Quy tắc loại trừ khi tính:**
 - Mã có `mc` null hoặc `mc = 0` → loại khỏi danh sách và **không** cộng vào `sumMc`.
@@ -159,8 +169,8 @@ Trong đó `ra` = % thay đổi giá của mã, `indexValue` = giá trị chỉ 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `tradingDate` | Current trading date (yyyy-MM-dd) | Chỉ validate format — xem lưu ý §3.1 |
-| `top` | `20` | Số mã tối đa trả về |
-| `influenceType` | `ALL` | Lấy cả tăng và giảm |
+| `top` | `20` | Số mã tối đa trả về **mỗi chiều** khi `ALL` (tổng tối đa `2×top`); số mã tối đa trả về khi `INCREASE`/`DECREASE` |
+| `influenceType` | `ALL` | Lấy cả tăng và giảm (trả cặp — xem §2.2) |
 
 ---
 
@@ -183,7 +193,7 @@ GET /api/v1/marketWatch/topStockInfluence?exchange=HOSE&tradingDate={today}&top=
 |-----------|------|----------|---------|-------------|
 | `exchange` | String | ✅ | - | Sàn / rổ chỉ số — bind với dropdown UI |
 | `tradingDate` | String | ✅ | - | Ngày giao dịch (yyyy-MM-dd) — xem lưu ý bên dưới |
-| `top` | Number | ❌ | `20` | Số lượng mã trả về |
+| `top` | Number | ❌ | `20` | Số lượng mã trả về **mỗi chiều** khi `ALL` (tổng tối đa `2×top` bản ghi); số lượng mã trả về khi `INCREASE`/`DECREASE` |
 | `influenceType` | String | ❌ | `ALL` | Loại ảnh hưởng: `ALL`, `INCREASE`, `DECREASE` |
 
 > ⚠️ **Lưu ý `tradingDate` (thay đổi behavior so với v1.1):** Param giữ nguyên để FE không phải đổi contract, nhưng BE **không còn hỗ trợ query lịch sử**. Dữ liệu luôn là **snapshot gần nhất** do BE tính real-time mỗi 2 phút (ngoài giờ giao dịch = snapshot cuối phiên gần nhất). BE chỉ validate format của `tradingDate`, không dùng để lookup.
@@ -216,7 +226,7 @@ Response fields **không đổi so với v1.1** — chỉ đổi nguồn dữ li
 | `influencePercent` | Number (%) | **Computed:** `value = (mc / sumMc) × ra` | Tooltip phụ |
 | `influenceIndex` | Number | **Computed:** `điểm = (value / 100) × indexValue` | **Y-axis value (bar height)** |
 | `direction` | String | **Derived:** dấu của `influenceIndex` (§2.3) | **Bar color rule** |
-| `row` | Number | **Computed:** thứ tự sau sort (§2.2) | Sort key ascending |
+| `row` | Number | **Computed:** thứ tự sau khi nối 2 nhóm DECREASE→INCREASE (§2.2, §2.4) | Sort key ascending |
 
 > **Semantic note `baseIndex`:** v1.1 map từ Vietstock `BasicIndex`; v1.2 = giá trị chỉ số hiện tại tại thời điểm BE tính. Field name và type giữ nguyên; FE hiện chỉ dùng nội bộ nên không ảnh hưởng.
 
@@ -306,7 +316,7 @@ Response fields **không đổi so với v1.1** — chỉ đổi nguồn dữ li
 - **X-axis:** `stockCode`, sort theo `row` ascending (BE đã sort).
 - **Y-axis:** `influenceIndex`. Hỗ trợ giá trị âm — bar đi xuống từ baseline 0.
 - **Bar color:** `INCREASE` → UP color (xanh) · `DECREASE` → DOWN color (đỏ).
-- **Default:** 20 bar, sàn HOSE, `influenceType = ALL`.
+- **Default:** tối đa 40 bar (20 `DECREASE` + 20 `INCREASE`), sàn HOSE, `influenceType = ALL`. Số bar thực tế có thể ít hơn nếu 1 chiều không đủ mã.
 
 ### 5.3 Interactions
 
@@ -355,6 +365,8 @@ Trọng số trong index: 12.5%
 | **API timeout / 5xx** | Error state + retry button; giữ snapshot data cũ nếu có |
 | **Slow network** | Skeleton loading; tránh layout shift khi polling |
 | **`influenceType = INCREASE`, thị trường giảm toàn diện** | Trả ít hơn `top` records hoặc rỗng → empty state |
+| **`influenceType = ALL`, thị trường lệch mạnh 1 phía** (VD toàn bộ giảm) | Chiều còn lại (`INCREASE`) trả rỗng — response chỉ còn danh sách `DECREASE`; không lỗi, không cần đủ `2×top` |
+| **`influenceType = ALL`, `top` lớn hơn số mã có sẵn ở 1 chiều** | Chiều đó trả toàn bộ số mã có (ít hơn `top`), không lỗi, không pad thêm |
 | **`tradingDate` là ngày tương lai / quá khứ** | BE bỏ qua giá trị (chỉ validate format) — data luôn là snapshot gần nhất. FE disable date picker |
 | **Đổi `exchange`** | Invalidate cache theo `exchange`; reset chart state |
 | **Mã có `mc` null / 0** (mới niêm yết, thiếu static data) | BE loại khỏi tính toán, không cộng vào `sumMc` |
@@ -422,6 +434,16 @@ Trọng số trong index: 12.5%
 | `baseIndex` semantic | ⚠️ Đổi từ Vietstock `BasicIndex` → `indexValue` hiện tại (FE không dùng hiển thị → không ảnh hưởng) |
 | Polling khuyến nghị | ⚠️ 15–30s → 2 phút (khớp interval BE) |
 
+### 7.3b I/O Compatibility (v1.2 → v1.3)
+
+| Mục | Kết luận |
+|-----|----------|
+| Request params (tên, type, required) | ✅ Giữ nguyên — chỉ đổi ý nghĩa `top` khi `influenceType=ALL` (§2.6, §3.1) |
+| Response fields (tên, type) | ✅ Giữ nguyên 100% — không field nào đổi tên/type |
+| **Số bản ghi trả về khi `ALL`** | 🔴 **Breaking:** trước đúng bằng `top`, giờ tối đa `2×top` (cặp DECREASE + INCREASE) — FE cần xử lý mảng dài hơn dự kiến, không giả định `length === top` |
+| Số bản ghi khi `INCREASE`/`DECREASE` | ✅ Không đổi — vẫn tối đa `top` |
+| `row` ordering khi `ALL` | ⚠️ Đổi từ "sort theo `|điểm|` gộp" → "nhóm DECREASE trước, INCREASE sau" — FE render bar chart theo `row` mới, thứ tự trái→phải sẽ khác v1.2 |
+
 ### 7.4 Acceptance Criteria
 
 - [ ] Tab Market Watch hiển thị section "Nhóm dẫn dắt thị trường" với bar chart + dropdown sàn.
@@ -429,6 +451,8 @@ Trọng số trong index: 12.5%
 - [ ] BE job tính đúng công thức §2.4, chạy interval 2 phút, cache theo `indexCode`.
 - [ ] Mã `mc` null/0 bị loại khỏi `sumMc`; `ra` null → value = 0; `indexValue` null → giữ cache cũ.
 - [ ] `influenceType` filter đúng: ALL / INCREASE / DECREASE (§2.2).
+- [ ] `influenceType=ALL` trả **cặp** — tối đa `top` mã DECREASE + tối đa `top` mã INCREASE (tổng tối đa `2×top`); `row` đánh theo thứ tự DECREASE trước, INCREASE sau (§2.2, §2.4).
+- [ ] `influenceType=ALL` khi 1 chiều rỗng (thị trường lệch mạnh 1 phía) → chỉ trả chiều còn lại, không lỗi (§6).
 - [ ] Bar chart render đúng `influenceIndex` trên Y-axis, hỗ trợ giá trị âm.
 - [ ] Bar color: `INCREASE` → xanh, `DECREASE` → đỏ (theo NHSV design system).
 - [ ] Bar order: sort theo `row` ascending (trái → phải).

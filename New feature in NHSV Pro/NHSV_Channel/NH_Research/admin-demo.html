@@ -216,6 +216,15 @@
   }
   .pdf-no { font-size: 11px; color: var(--muted); }
 
+  /* ── Stock tag cell (list) ── */
+  .stock-tag-cell { display: flex; flex-wrap: wrap; gap: 4px; max-width: 170px; }
+  .stock-chip-sm {
+    font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+    background: #f1f5f9; color: var(--slate); border: 1px solid var(--border); white-space: nowrap;
+  }
+  .stock-chip-more { background: var(--bg); color: var(--muted); }
+  .stock-none { font-size: 11.5px; color: var(--muted); }
+
   /* ── Lang badge (list) ── */
   .lang-flags {
     display: flex; gap: 4px; margin-top: 3px;
@@ -380,6 +389,28 @@
   .upload-file-size { font-size: 11px; color: var(--muted); margin-top: 1px; }
   .upload-remove { margin-left: auto; font-size: 11px; color: var(--red); cursor: pointer; }
 
+  /* ── Stock tag input (form) ── */
+  .stock-tag-input {
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+    border: 1px solid var(--border); border-radius: 7px; padding: 6px 8px;
+    min-height: 38px; background: white; cursor: text; transition: border-color .15s, box-shadow .15s;
+  }
+  .stock-tag-input:focus-within { border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.15); }
+  .stock-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--blue-light); color: var(--blue); font-size: 12px; font-weight: 700;
+    padding: 4px 4px 4px 10px; border-radius: 20px; white-space: nowrap;
+  }
+  .stock-chip-remove {
+    cursor: pointer; font-size: 10px; color: var(--blue); width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center; border-radius: 50%; opacity: .65;
+  }
+  .stock-chip-remove:hover { background: rgba(26,74,138,.18); opacity: 1; }
+  .stock-tag-field {
+    border: none; outline: none; flex: 1; min-width: 110px; font-size: 12.5px;
+    padding: 4px 2px; font-family: inherit; background: transparent;
+  }
+
   /* ── Form divider ── */
   .form-divider {
     height: 1px; background: var(--border); margin: 18px 0;
@@ -527,6 +558,7 @@
             <th class="col-stt">#</th>
             <th>Category</th>
             <th>Tiêu đề</th>
+            <th>Mã CK</th>
             <th>Ngôn ngữ</th>
             <th>PDF</th>
             <th>Trạng thái</th>
@@ -546,6 +578,13 @@
             <td class="col-title">
               <div class="title-text">VƯỢT QUA RUNG LẮC</div>
               <div class="title-preview">Thị trường tiếp tục hồi phục dù áp lực cung gia tăng trong phiên...</div>
+            </td>
+            <td>
+              <div class="stock-tag-cell">
+                <span class="stock-chip-sm">VCB</span>
+                <span class="stock-chip-sm">BID</span>
+                <span class="stock-chip-sm">CTG</span>
+              </div>
             </td>
             <td>
               <div class="lang-flags">
@@ -580,6 +619,7 @@
               <div class="title-text">TRIỂN VỌNG KINH TẾ Q3/2026</div>
               <div class="title-preview">Tăng trưởng GDP dự báo đạt 6.8% trong quý 3, động lực từ xuất khẩu...</div>
             </td>
+            <td><span class="stock-none">—</span></td>
             <td>
               <div class="lang-flags">
                 <span class="lang-flag lang-vie">VIE</span>
@@ -614,6 +654,11 @@
               <div class="title-preview">Điều chỉnh giá mục tiêu sau kết quả kinh doanh Q1/2026...</div>
             </td>
             <td>
+              <div class="stock-tag-cell">
+                <span class="stock-chip-sm">HPG</span>
+              </div>
+            </td>
+            <td>
               <div class="lang-flags">
                 <span class="lang-flag lang-vie">VIE</span>
                 <span class="lang-flag lang-eng-missing" title="Chưa có bản tiếng Anh">ENG</span>
@@ -646,6 +691,7 @@
               <div class="title-text">NHỊP HỒI KHẢ QUAN</div>
               <div class="title-preview">Thị trường chuyển biến tích cực, lực cầu bắt đáy rõ trong phiên chiều...</div>
             </td>
+            <td><span class="stock-none">—</span></td>
             <td>
               <div class="lang-flags">
                 <span class="lang-flag lang-vie">VIE</span>
@@ -680,6 +726,14 @@
               <div class="title-preview">Tác động của quyết định lãi suất Fed đến thị trường Việt Nam...</div>
             </td>
             <td>
+              <div class="stock-tag-cell">
+                <span class="stock-chip-sm">VCB</span>
+                <span class="stock-chip-sm">BID</span>
+                <span class="stock-chip-sm">CTG</span>
+                <span class="stock-chip-sm stock-chip-more">+1</span>
+              </div>
+            </td>
+            <td>
               <div class="lang-flags">
                 <span class="lang-flag lang-vie">VIE</span>
                 <span class="lang-flag lang-eng">ENG</span>
@@ -712,6 +766,7 @@
               <div class="title-text">ĐIỂM LẠI TUẦN — 26/05–30/05</div>
               <div class="title-preview">Tuần giao dịch cuối tháng 5 với nhiều biến động từ dòng vốn ngoại...</div>
             </td>
+            <td><span class="stock-none">—</span></td>
             <td>
               <div class="lang-flags">
                 <span class="lang-flag lang-vie">VIE</span>
@@ -774,6 +829,16 @@
           <option value="COMPANY">Doanh nghiệp (COMPANY)</option>
           <option value="MACRO">Vĩ mô (MACRO)</option>
         </select>
+      </div>
+
+      <!-- Mã CK liên quan — dùng chung, A-06 -->
+      <div class="form-group">
+        <label class="form-label">Mã CK liên quan <span style="font-weight:400;color:var(--muted)">(không bắt buộc, tối đa 10 mã)</span></label>
+        <div class="stock-tag-input" id="create-stock-tags" onclick="focusStockInput('create')">
+          <input type="text" class="stock-tag-field" id="create-stock-input" placeholder="+ Nhập mã..."
+            list="stock-code-list" onkeydown="handleStockCodeKeydown(event,'create')">
+        </div>
+        <div class="form-hint">Autocomplete từ danh mục mã CK · Enter hoặc dấu phẩy để thêm mã</div>
       </div>
 
       <!-- Language tabs -->
@@ -866,6 +931,19 @@
           <option>Doanh nghiệp (COMPANY)</option>
           <option>Vĩ mô (MACRO)</option>
         </select>
+      </div>
+
+      <!-- Mã CK liên quan — dùng chung, A-06, pre-filled -->
+      <div class="form-group">
+        <label class="form-label">Mã CK liên quan <span style="font-weight:400;color:var(--muted)">(không bắt buộc, tối đa 10 mã)</span></label>
+        <div class="stock-tag-input" id="edit-stock-tags" onclick="focusStockInput('edit')">
+          <span class="stock-chip">VCB<span class="stock-chip-remove" onclick="removeStockChip(event,this)">✕</span></span>
+          <span class="stock-chip">BID<span class="stock-chip-remove" onclick="removeStockChip(event,this)">✕</span></span>
+          <span class="stock-chip">CTG<span class="stock-chip-remove" onclick="removeStockChip(event,this)">✕</span></span>
+          <input type="text" class="stock-tag-field" id="edit-stock-input" placeholder="+ Nhập mã..."
+            list="stock-code-list" onkeydown="handleStockCodeKeydown(event,'edit')">
+        </div>
+        <div class="form-hint">Autocomplete từ danh mục mã CK · Enter hoặc dấu phẩy để thêm mã</div>
       </div>
 
       <!-- Language tabs -->
@@ -970,6 +1048,17 @@
 </div>
 
 
+<datalist id="stock-code-list">
+  <option value="VCB"><option value="BID"><option value="CTG"><option value="TCB">
+  <option value="MBB"><option value="ACB"><option value="VPB"><option value="STB">
+  <option value="HDB"><option value="TPB"><option value="HPG"><option value="HSG">
+  <option value="NKG"><option value="VIC"><option value="VHM"><option value="VRE">
+  <option value="MSN"><option value="MWG"><option value="FPT"><option value="GAS">
+  <option value="PLX"><option value="POW"><option value="SSI"><option value="VND">
+  <option value="VCI"><option value="SAB"><option value="VNM"><option value="GVR">
+  <option value="PNJ">
+</datalist>
+
 <script>
   function openModal(type) {
     document.getElementById('modal-' + type).classList.add('open');
@@ -1022,6 +1111,54 @@
   }
   function removeUpload(modalId) {
     document.getElementById(modalId + '-upload-preview').style.display = 'none';
+  }
+
+  // ── Stock tag input (A-06 — Mã CK liên quan) ──
+  const MAX_STOCK_TAGS = 10;
+
+  function focusStockInput(modalId) {
+    document.getElementById(modalId + '-stock-input').focus();
+  }
+
+  function addStockChip(modalId, rawValue) {
+    const code = rawValue.trim().toUpperCase();
+    if (!code) return;
+    const container = document.getElementById(modalId + '-stock-tags');
+    const input = document.getElementById(modalId + '-stock-input');
+    const existing = Array.from(container.querySelectorAll('.stock-chip'))
+      .map(chip => chip.firstChild.textContent.trim());
+
+    if (existing.includes(code)) {
+      input.value = '';
+      return;
+    }
+    if (existing.length >= MAX_STOCK_TAGS) {
+      alert('Tối đa ' + MAX_STOCK_TAGS + ' mã/bài.');
+      input.value = '';
+      return;
+    }
+
+    const chip = document.createElement('span');
+    chip.className = 'stock-chip';
+    chip.innerHTML = code + '<span class="stock-chip-remove" onclick="removeStockChip(event,this)">✕</span>';
+    container.insertBefore(chip, input);
+    input.value = '';
+  }
+
+  function removeStockChip(e, el) {
+    e.stopPropagation();
+    el.parentElement.remove();
+  }
+
+  function handleStockCodeKeydown(e, modalId) {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      addStockChip(modalId, e.target.value);
+    } else if (e.key === 'Backspace' && e.target.value === '') {
+      const container = document.getElementById(modalId + '-stock-tags');
+      const chips = container.querySelectorAll('.stock-chip');
+      if (chips.length) chips[chips.length - 1].remove();
+    }
   }
 </script>
 </body>
