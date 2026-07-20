@@ -237,12 +237,12 @@
       <div class="summary-label">API mới App gọi (attempt-log, journey-log)</div>
     </div>
     <div class="summary-card">
-      <div class="summary-number" style="color:#c27803">11</div>
-      <div class="summary-label">Step trong hành trình mở TK (07)</div>
+      <div class="summary-number" style="color:#c27803">12</div>
+      <div class="summary-label">Step trong hành trình mở TK (07) — +1 PDPD consent, 2026-07-20</div>
     </div>
     <div class="summary-card">
-      <div class="summary-number" style="color:#e02424">1</div>
-      <div class="summary-label">Gap FE chưa xử lý (01 — xem tab "Cần chốt")</div>
+      <div class="summary-number" style="color:#0e9f6e">2/2</div>
+      <div class="summary-label">Sub-feature có FE Issue đầy đủ (01 + 07, gộp 1 file)</div>
     </div>
   </div>
 
@@ -270,7 +270,7 @@
           </div>
           <div class="step-content">
             <div class="step-title">Song song: App gọi <code>POST /ekycs/journey-log</code> tại mỗi màn hình</div>
-            <div class="step-desc">Từ lúc gửi OTP tới lúc hoàn tất mở TK — 10 step App-facing (sub-feature 07), độc lập với luồng attempt-log.</div>
+            <div class="step-desc">Từ màn hình đồng ý xử lý dữ liệu cá nhân tới lúc hoàn tất mở TK — 11 step App-facing (sub-feature 07), độc lập với luồng attempt-log.</div>
           </div>
         </div>
         <div class="flow-step">
@@ -318,10 +318,10 @@
           <tr><td>Mục đích</td><td>Audit fraud/biometric mọi lần thử eKYC</td><td>Bằng chứng compliance toàn cảnh hành trình mở TK</td></tr>
           <tr><td>Bảng DB</td><td><code>ekyc_attempt_log</code></td><td><code>ekyc_journey_log</code></td></tr>
           <tr><td>Retention</td><td><strong>Append-only</strong> — giữ mọi lần thử vĩnh viễn, kể cả fail</td><td>Chỉ giữ hành trình <strong>thành công</strong>; bỏ dở &gt;8h → xóa</td></tr>
-          <tr><td>API App gọi</td><td><code>POST /ekycs/attempt-log</code></td><td><code>POST /ekycs/journey-log</code> (×10 step)</td></tr>
+          <tr><td>API App gọi</td><td><code>POST /ekycs/attempt-log</code></td><td><code>POST /ekycs/journey-log</code> (×11 step)</td></tr>
           <tr><td>Khóa liên kết</td><td><code>identifier_id</code> / <code>phone_no</code></td><td><code>session_id</code> (App generate); <code>e_kyc_id</code> cho step ký HĐ</td></tr>
           <tr><td>Ai ghi thêm ngoài App</td><td>BE tự update outcome khi Lotte reject / khi APPROVED</td><td>BE tự ghi step <code>ECONTRACT_SIGN_COMPLETED</code> qua webhook FPT</td></tr>
-          <tr><td>FE Issue doc</td><td><span class="tag tag-gap">❌ Chưa có</span></td><td><span class="tag tag-fe">✅ FE_Issue.md</span></td></tr>
+          <tr><td>FE Issue doc</td><td><span class="tag tag-fe">✅ FE_Issue.md (Phần A)</span></td><td><span class="tag tag-fe">✅ FE_Issue.md (Phần B)</span></td></tr>
         </tbody>
       </table>
     </div>
@@ -385,9 +385,9 @@
     <div>
       <div class="split-col-title" style="color:var(--success)"><span class="tag tag-fe">FE</span> App (nhsv-mts-rn)</div>
 
-      <div class="alert alert-warning" style="margin-top:0">
-        <span class="alert-icon">⚠️</span>
-        <div>Mô tả dưới đây lấy từ spec BE (Phần A, Section 7) — <strong>chưa có Issue FE riêng</strong> để FE Lead confirm effort. Xem tab "Cần chốt".</div>
+      <div class="alert alert-success" style="margin-top:0">
+        <span class="alert-icon">✅</span>
+        <div>Issue FE đã có: <code>Issues/FE_Issue.md</code> (Phần A) — mới thêm 2026-07-20, gộp chung file với Phần B (07).</div>
       </div>
 
       <div class="card">
@@ -426,6 +426,7 @@
             <li><code>POST /lotte/ekycs</code> giữ nguyên — <strong>không thêm field mới</strong> vào API đó.</li>
             <li>6 VNPT log ID App đã có sẵn trong luồng hiện tại — chỉ cần gửi kèm, không tính toán thêm.</li>
             <li>Max 5 MB/ảnh sau decode, max 1 MB cho <code>sdkRawLogs</code>.</li>
+            <li><strong>[Mới]</strong> Mất kết nối mạng giữa chừng → App phải <strong>tự động retry</strong> gửi lại log, không bỏ qua vĩnh viễn (áp dụng chung với Phần B, xem tab "Cần chốt").</li>
           </ul>
         </div>
       </div>
@@ -448,24 +449,29 @@
 
   <div class="card">
     <div class="card-header" onclick="toggleCard(this)">
-      <span class="card-icon">🧭</span> 11 step trong hành trình
+      <span class="card-icon">🧭</span> 12 step trong hành trình
       <span class="chevron">▼</span>
     </div>
     <div class="card-body">
+      <div class="alert alert-warning" style="margin-top:0">
+        <span class="alert-icon">⚠️</span>
+        <div><strong>Mới 2026-07-20:</strong> step 1 (<code>PERSONAL_DATA_PROCESSING_CONSENT</code>) — consent xử lý dữ liệu cá nhân, khác với step 10 (điều khoản hợp đồng). Nút "Tiếp theo" phải disabled tới khi khách tick.</div>
+      </div>
       <table class="data-table">
         <thead><tr><th>#</th><th>Step</th><th>Ai ghi</th><th>Ghi chú</th></tr></thead>
         <tbody>
-          <tr><td>1</td><td><code>EKYC_SEND_OTP</code></td><td><span class="tag tag-fe">App</span></td><td>Gửi OTP xác thực SĐT</td></tr>
-          <tr><td>2</td><td><code>EKYC_VERIFY_OTP</code></td><td><span class="tag tag-fe">App</span></td><td>Xác thực OTP thành công</td></tr>
-          <tr><td>3</td><td><code>GO_TO_ID_CARD_GUIDE</code></td><td><span class="tag tag-fe">App</span></td><td>Nhập SĐT/email/quốc tịch/nghề nghiệp, xem hướng dẫn</td></tr>
-          <tr><td>4</td><td><code>EKYC_FACE_SCAN</code></td><td><span class="tag tag-fe">App</span></td><td>Toàn bộ kết quả VNPT SDK, kể cả base64 ảnh</td></tr>
-          <tr><td>5</td><td><code>PERSONAL_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Ngày sinh, địa chỉ, FATCA...</td></tr>
-          <tr><td>6</td><td><code>ACCOUNT_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Loại TK, chi nhánh, margin/derivative flags</td></tr>
-          <tr><td>7</td><td><code>BANK_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>TK ngân hàng nhận tiền</td></tr>
-          <tr><td>8</td><td><code>INVESTMENT_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Mục tiêu đầu tư, khẩu vị rủi ro</td></tr>
-          <tr><td>9</td><td><code>TERMS_AND_CONDITIONS_CONFIRMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Toàn văn điều khoản khách đã đọc, không chỉ cờ đồng ý</td></tr>
-          <tr><td>10</td><td><code>ACCOUNT_OPENING_COMPLETED</code></td><td><span class="tag tag-fe">App</span></td><td><strong>Mốc chốt</strong> — session được giữ vĩnh viễn từ đây</td></tr>
-          <tr><td>11</td><td><code>ECONTRACT_SIGN_COMPLETED</code></td><td><span class="tag tag-be">BE (webhook FPT)</span></td><td>Không qua App, khóa liên kết <code>e_kyc_id</code></td></tr>
+          <tr style="background:var(--warning-light)"><td>1</td><td><code>PERSONAL_DATA_PROCESSING_CONSENT</code></td><td><span class="tag tag-fe">App</span></td><td>Tick "Đồng ý xử lý dữ liệu cá nhân" — màn hình đầu tiên, sau khi nhập SĐT, trước khi gửi OTP. Chặn nút "Tiếp theo" tới khi tick</td></tr>
+          <tr><td>2</td><td><code>EKYC_SEND_OTP</code></td><td><span class="tag tag-fe">App</span></td><td>Gửi OTP xác thực SĐT</td></tr>
+          <tr><td>3</td><td><code>EKYC_VERIFY_OTP</code></td><td><span class="tag tag-fe">App</span></td><td>Xác thực OTP thành công</td></tr>
+          <tr><td>4</td><td><code>GO_TO_ID_CARD_GUIDE</code></td><td><span class="tag tag-fe">App</span></td><td>Nhập SĐT/email/quốc tịch/nghề nghiệp, xem hướng dẫn</td></tr>
+          <tr><td>5</td><td><code>EKYC_FACE_SCAN</code></td><td><span class="tag tag-fe">App</span></td><td>Toàn bộ kết quả VNPT SDK, kể cả base64 ảnh</td></tr>
+          <tr><td>6</td><td><code>PERSONAL_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Ngày sinh, địa chỉ, FATCA...</td></tr>
+          <tr><td>7</td><td><code>ACCOUNT_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Loại TK, chi nhánh, margin/derivative flags</td></tr>
+          <tr><td>8</td><td><code>BANK_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>TK ngân hàng nhận tiền</td></tr>
+          <tr><td>9</td><td><code>INVESTMENT_INFORMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Mục tiêu đầu tư, khẩu vị rủi ro</td></tr>
+          <tr><td>10</td><td><code>TERMS_AND_CONDITIONS_CONFIRMATION</code></td><td><span class="tag tag-fe">App</span></td><td>Toàn văn điều khoản khách đã đọc, không chỉ cờ đồng ý</td></tr>
+          <tr><td>11</td><td><code>ACCOUNT_OPENING_COMPLETED</code></td><td><span class="tag tag-fe">App</span></td><td><strong>Mốc chốt</strong> — session được giữ vĩnh viễn từ đây</td></tr>
+          <tr><td>12</td><td><code>ECONTRACT_SIGN_COMPLETED</code></td><td><span class="tag tag-be">BE (webhook FPT)</span></td><td>Không qua App, khóa liên kết <code>e_kyc_id</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -516,7 +522,7 @@
 
       <div class="alert alert-success" style="margin-top:0">
         <span class="alert-icon">✅</span>
-        <div>Issue FE đã có: <code>Issues/FE_Issue.md</code> — App cần sửa ~9 màn hình.</div>
+        <div>Issue FE đã có: <code>Issues/FE_Issue.md</code> — App cần sửa ~10 màn hình (đã tính màn hình PDPD consent mới).</div>
       </div>
 
       <div class="card">
@@ -527,11 +533,13 @@
         <div class="card-body">
           <ul style="font-size:13px;color:var(--text);padding-left:18px;line-height:1.9">
             <li>App sinh <strong>1 <code>sessionId</code></strong> khi bắt đầu hành trình, dùng xuyên suốt tới bước cuối.</li>
+            <li><strong>[Mới]</strong> Bước 1 (đồng ý xử lý dữ liệu cá nhân) là <strong>điều kiện chặn</strong> duy nhất trong 12 step — nút "Tiếp theo" disabled tới khi khách tick checkbox. Các step còn lại chỉ log, không chặn luồng.</li>
             <li>Gọi log <strong>ngay khi bước hoàn tất</strong> — kể cả khi bước đó <strong>thất bại</strong> (<code>status: FAILED</code>).</li>
             <li>Việc log <strong>không được</strong> làm chậm/chặn luồng chính mở tài khoản — không loading chờ log, không rollback nếu log fail.</li>
             <li>Bước quét khuôn mặt: gửi <strong>toàn bộ</strong> dữ liệu SDK kể cả base64 ảnh, không lọc field.</li>
-            <li>Bước điều khoản: gửi <strong>toàn văn</strong> nội dung điều khoản khách đã đọc.</li>
-            <li>Không cần xử lý gì cho step 11 (ký hợp đồng) — BE tự ghi qua webhook.</li>
+            <li>Bước điều khoản hợp đồng (step 10) và bước đồng ý xử lý dữ liệu cá nhân (step 1): cả 2 nên gửi <strong>toàn văn</strong> nội dung điều khoản khách đã đọc — 2 consent khác nhau, không dùng chung state.</li>
+            <li>Không cần xử lý gì cho step 12 (ký hợp đồng) — BE tự ghi qua webhook.</li>
+            <li><strong>[Mới]</strong> Mất kết nối mạng giữa chừng ở bất kỳ bước nào → App phải <strong>tự động retry</strong> gửi lại log, không bỏ qua vĩnh viễn.</li>
           </ul>
         </div>
       </div>
@@ -548,14 +556,18 @@
   <div class="section-sub">Tổng hợp từ BE Issue, FE Issue, và README Review Log — chưa xong thì chưa nên bắt đầu sprint</div>
 
   <div class="rec-item">
-    <div><div class="rec-priority pri-high">🔴 GAP</div></div>
+    <div><div class="rec-priority pri-low">✅ ĐÃ CHỐT</div></div>
     <div>
-      <div class="rec-title">Sub-feature 01 chưa có FE Issue</div>
-      <div class="rec-desc">
-        Spec BE (Phần A) yêu cầu App gọi <code>POST /ekycs/attempt-log</code> kèm <code>sdkRawLogs</code>/<code>vnptRawData</code>/ảnh khi lần thử pre-submit thất bại — nhưng PRD mục 5 lại ghi "App không cần làm thêm gì", và chưa có Issue FE nào ghi nhận việc này (khác với 07, đã có issue riêng).
-        <br><br>
-        <strong>Quyết định 2026-07-20:</strong> giữ nguyên scope hiện có, chưa tự viết FE issue cho 01 — cần PO/BE Lead xác nhận trước khi implement BE Task 5.
-      </div>
+      <div class="rec-title">Xung đột purge policy — bằng chứng consent PDPD được giữ vĩnh viễn</div>
+      <div class="rec-desc">Step <code>PERSONAL_DATA_PROCESSING_CONSENT</code> nằm trong <code>ekyc_journey_log</code> — <strong>quyết định 2026-07-20: loại trừ khỏi purge job</strong> (thêm điều kiện <code>AND step != 'PERSONAL_DATA_PROCESSING_CONSENT'</code>), giữ vĩnh viễn giống <code>ekyc_attempt_log</code>, không tách bảng riêng. Xem <code>BE_Spec.md</code> Phần B Section 7, PRD mục 4.4.</div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div><div class="rec-priority pri-low">✅ ĐÃ CHỐT</div></div>
+    <div>
+      <div class="rec-title">Retry log khi mất kết nối mạng giữa chừng</div>
+      <div class="rec-desc">Quyết định 2026-07-20: áp dụng cho <strong>tất cả màn hình</strong> ở cả Phần A + Phần B — nếu request log lỗi do mất mạng, App phải tự động retry gửi lại, không bỏ qua vĩnh viễn. Chi tiết cơ chế (số lần, thời điểm retry) do FE Lead quyết định khi implement. Xem <code>FE_Issue.md</code> mục "Business rule chung".</div>
     </div>
   </div>
 
@@ -563,15 +575,23 @@
     <div><div class="rec-priority pri-high">🔴 CAO</div></div>
     <div>
       <div class="rec-title">PDPD review — lưu PII + ảnh sinh trắc học nguyên văn</div>
-      <div class="rec-desc">Cả 2 sub-feature lưu LONGTEXT nguyên văn (không mã hoá field) — cần Compliance/Legal xác nhận đáp ứng Nghị định 13/2023 trước khi go-live.</div>
+      <div class="rec-desc">Cả 2 sub-feature lưu LONGTEXT nguyên văn (không mã hoá field) — cần Compliance/Legal xác nhận đáp ứng Nghị định 13/2023 trước khi go-live. Giải thích PDPD là gì: xem <code>Scope_1/Planning/PRD.md</code> mục 6.</div>
     </div>
   </div>
 
   <div class="rec-item">
     <div><div class="rec-priority pri-medium">🟡 TRUNG BÌNH</div></div>
     <div>
-      <div class="rec-title">FE Lead xác nhận effort sửa ~9 màn hình App (sub-feature 07)</div>
-      <div class="rec-desc">Xem <code>Issues/FE_Issue.md</code> mục "Cần confirm thêm" — bao gồm cả hành vi retry khi mất kết nối mạng giữa chừng.</div>
+      <div class="rec-title">FE Lead xác nhận effort sửa màn hình cho cả 2 sub-feature</div>
+      <div class="rec-desc">Xem <code>Issues/FE_Issue.md</code> mục "Cần confirm thêm" — ~10-11 màn cho Phần B (07) + các điểm gọi <code>attempt-log</code> cho Phần A (01).</div>
+    </div>
+  </div>
+
+  <div class="rec-item">
+    <div><div class="rec-priority pri-medium">🟡 TRUNG BÌNH</div></div>
+    <div>
+      <div class="rec-title">[Mới] Xác nhận link/văn bản "Điều khoản xử lý dữ liệu cá nhân" cho UI</div>
+      <div class="rec-desc">Step <code>PERSONAL_DATA_PROCESSING_CONSENT</code> (bổ sung 2026-07-20) cần link/văn bản chính thức để App hiển thị đúng trên màn hình — chỉ cho UI, <strong>không cần</strong> gửi kèm payload log (đơn giản hoá 2026-07-20: payload chỉ cần <code>{ isAgree: true, phoneNo }</code>).</div>
     </div>
   </div>
 
@@ -579,7 +599,7 @@
     <div><div class="rec-priority pri-medium">🟡 TRUNG BÌNH</div></div>
     <div>
       <div class="rec-title">Xác nhận field <code>contractNo</code> trên entity EContract</div>
-      <div class="rec-desc">Dev kiểm tra khi implement Task 13 (webhook hook) — field có sẵn trực tiếp hay cần bổ sung.</div>
+      <div class="rec-desc">Dev kiểm tra khi implement hook ký hợp đồng — field có sẵn trực tiếp hay cần bổ sung.</div>
     </div>
   </div>
 

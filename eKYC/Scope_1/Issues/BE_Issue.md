@@ -256,184 +256,41 @@ Implement 3 endpoints theo `BE_Spec.md` (Phần A) Section 4 (đã có response 
 
 # Phần B — Sub-feature 07: Compliance Journey Log
 
-> **Kiến trúc:** 10 step đầu do **App gọi** `POST /api/v1/ekycs/journey-log` real-time tại từng màn hình; step thứ 11 (`ECONTRACT_SIGN_COMPLETED`) do **Backend tự ghi** qua webhook FPT có sẵn — App không liên quan tới step này. Retention: chỉ giữ hành trình **thành công** (`ACCOUNT_OPENING_COMPLETED`); hành trình bỏ dở >8h bị purge tự động. Chi tiết đầy đủ: `BE_Spec.md` (Phần B).
+> **Kiến trúc:** 11 step đầu do **App gọi** `POST /api/v1/ekycs/journey-log` real-time tại từng màn hình (step 1 mới — `PERSONAL_DATA_PROCESSING_CONSENT`, bổ sung 2026-07-20); step thứ 12 (`ECONTRACT_SIGN_COMPLETED`) do **Backend tự ghi** qua webhook FPT có sẵn — App không liên quan tới step này. Retention: chỉ giữ hành trình **thành công** (`ACCOUNT_OPENING_COMPLETED`); hành trình bỏ dở >8h bị purge tự động. Chi tiết đầy đủ: `BE_Spec.md` (Phần B).
 
-## Task 8 — Liquibase Changeset: tạo table `ekyc_journey_log`
+## Yêu cầu chức năng
 
-**File:** `src/main/resources/config/liquibase/changelog/20260715000001_add_ekyc_journey_log.xml`
+1. **Ghi lại từng bước của hành trình mở tài khoản** — mỗi khi khách hoàn tất 1 trong 11 bước đầu (từ đồng ý xử lý dữ liệu cá nhân tới hoàn tất mở tài khoản — xem danh sách đầy đủ ở `BE_Spec.md` Phần B Section 2), hệ thống nhận và lưu lại **toàn bộ** thông tin khách đã thấy/nhập tại đúng bước đó, kể cả khi bước đó thất bại — không tóm tắt, không lọc field.
+2. **Tự động ghi nhận thời điểm khách ký hợp đồng điện tử** — bước thứ 12, riêng bước này hệ thống tự ghi nhận ngay khi đối tác FPT xác nhận khách đã ký xong, không cần App gửi gì, và không phụ thuộc khách có đang mở app hay không (khách có thể ký muộn hơn, ở phiên/thiết bị khác).
+3. **Chỉ giữ lại log của hành trình mở tài khoản thành công** — xem "Quy tắc nghiệp vụ" bên dưới để biết chính xác "thành công" được xác định tại đâu.
+4. **Công cụ tra soát nội bộ cho compliance/audit** (không blocking go-live) — khi cần tra một hành trình cụ thể, dev có công cụ tra theo mã hành trình/CCCD/mã tài khoản, xuất ra 1 file xem được nội bộ — không phải màn hình sống, không public.
 
-Tạo bảng `ekyc_journey_log` theo schema đầy đủ ở spec Section 3.1 + 3.2:
+## Quy tắc nghiệp vụ
 
-- `id` BIGINT AUTO_INCREMENT PRIMARY KEY
-- `session_id` VARCHAR(64) — định danh 1 hành trình, App generate; NULL cho step `ECONTRACT_SIGN_COMPLETED`
-- `phone_no` VARCHAR(20), `identifier_id` VARCHAR(20)
-- `e_kyc_id` BIGINT (FK → `e_kyc.id`) — NULL tới khi `ACCOUNT_OPENING_COMPLETED`, là khóa chính cho step 11
-- `step` VARCHAR(50) NOT NULL, `status` VARCHAR(20) NOT NULL (`SUCCESS`/`FAILED`)
-- `payload` LONGTEXT NOT NULL — toàn bộ field App/webhook gửi, giữ nguyên kể cả base64 ảnh
-- `created_at` DATETIME NOT NULL
-- Index: `session_id`, `identifier_id`, `phone_no`, `e_kyc_id`, `step`, `created_at`
+- **Mốc "thành công" là khi hồ sơ mở tài khoản được hệ thống xác nhận đã nhận** (bước gửi hồ sơ hoàn chỉnh, bước 9 trong PRD) — **không phải** khi khách ký hợp đồng (bước 10), và **không phải** khi nhân viên duyệt hồ sơ lần cuối (bước 11). Đây là quyết định đã chốt (PRD mục 4.4): nếu sau đó hồ sơ bị nhân viên từ chối, log hành trình **vẫn được coi là thành công** theo định nghĩa này và giữ lại vĩnh viễn, vì mốc chốt nằm ở bước gửi hồ sơ, không phải bước duyệt cuối.
+- **Hành trình không đạt mốc "thành công" trong vòng 8 giờ kể từ lúc bắt đầu** (không có lỗi rõ ràng, khách chỉ đơn giản không tiếp tục) → toàn bộ log của hành trình đó bị xóa hoàn toàn, không giữ lại bước nào — kể cả bước đồng ý xử lý dữ liệu cá nhân đã ghi ở bước 1.
+- **Việc ghi log không được làm chậm hoặc chặn luồng chính mở tài khoản của khách** — đây là instrumentation nền, khách hàng không nhìn thấy và không bị ảnh hưởng nếu việc ghi log gặp lỗi.
+- **Không kiểm tra tính hợp lệ nội dung nghiệp vụ của dữ liệu App gửi lên** — hệ thống chỉ lưu lại đúng nguyên trạng những gì App gửi, không đánh giá đúng/sai của từng field bên trong.
+- **Hai loại nhật ký độc lập, không share dữ liệu:** log hành trình (mục này) và log lần thử xác thực khuôn mặt/giấy tờ (sub-feature 01, Phần A) tách biệt hoàn toàn, vì chính sách lưu trữ ngược nhau (01 giữ mọi lần thử kể cả fail vĩnh viễn; 07 xóa hành trình không thành công) — chỉ liên kết qua CCCD/mã tài khoản khi cần đối chiếu chéo.
 
-XML changeset đầy đủ: spec Section 3.2.
+## Acceptance Criteria
 
----
+- [ ] Cả 11 bước App-facing đều được lưu đúng thời điểm, đúng thứ tự, gắn với 1 mã hành trình xuyên suốt từ đầu tới cuối (kể cả khi 1 bước thất bại).
+- [ ] Bước "Đồng ý xử lý dữ liệu cá nhân" (mới, bổ sung 2026-07-20) được lưu đúng, ngay trước bước gửi OTP.
+- [ ] Thiếu thông tin bắt buộc trong yêu cầu ghi log → hệ thống báo lỗi rõ ràng, không lưu row rác.
+- [ ] Dữ liệu khách nhập/xác nhận tại mỗi bước được lưu **đầy đủ, nguyên trạng** — không bị cắt bớt field, kể cả ảnh sinh trắc học ở bước quét khuôn mặt.
+- [ ] Khi FPT xác nhận khách ký hợp đồng xong, hệ thống tự động ghi nhận đúng khách, đúng thời điểm — không cần App gọi gì thêm, không phụ thuộc App còn mở hay không.
+- [ ] Sau 8 giờ, hành trình bỏ dở (chưa đạt mốc gửi hồ sơ thành công) bị xóa hoàn toàn — verify bằng cách để 1 hành trình test dừng giữa đường, đợi qua 8h, tra lại không còn thấy log nào của hành trình đó.
+- [ ] Hành trình đã đạt mốc "thành công" — log được giữ lại vĩnh viễn, không bị xóa theo thời gian, **kể cả khi hồ sơ bị nhân viên từ chối sau đó**.
+- [ ] Với 1 hành trình mở tài khoản thành công đầy đủ (từ đồng ý dữ liệu cá nhân tới ký hợp đồng), tra lại thấy đủ 12 bước, đúng thứ tự thời gian, đúng khách.
 
-## Task 9 — JPA Entity: `EKycJourneyLog.java` + enum `JourneyStepEnum`
-
-**Package:** `com.nhsv.ekyc.domain` (entity), `com.nhsv.ekyc.constant` (enum)
-
-Copy nguyên cấu trúc field từ spec Section 4. Enum `JourneyStepEnum` gồm đúng 11 giá trị theo thứ tự spec Section 2:
-
-```java
-public enum JourneyStepEnum {
-    EKYC_SEND_OTP,
-    EKYC_VERIFY_OTP,
-    GO_TO_ID_CARD_GUIDE,
-    EKYC_FACE_SCAN,
-    PERSONAL_INFORMATION,
-    ACCOUNT_INFORMATION,
-    BANK_INFORMATION,
-    INVESTMENT_INFORMATION,
-    TERMS_AND_CONDITIONS_CONFIRMATION,
-    ACCOUNT_OPENING_COMPLETED,   // mốc chốt retention
-    ECONTRACT_SIGN_COMPLETED     // backend-only
-}
-```
-
-`payload` map bằng `@Lob`, lưu JSON nguyên văn — **không** parse thành cột riêng (khác hẳn cách tiếp cận của `ekyc_attempt_log`).
-
----
-
-## Task 10 — Repository: `EKycJourneyLogRepository.java`
-
-**Package:** `com.nhsv.ekyc.repository`
-
-Cần tối thiểu:
-
-```java
-@Repository
-public interface EKycJourneyLogRepository extends JpaRepository<EKycJourneyLog, Long> {
-
-    List<EKycJourneyLog> findBySessionIdOrderByCreatedAtAsc(String sessionId);
-
-    boolean existsBySessionIdAndStep(String sessionId, String step);
-
-    @Modifying
-    @Query(value = """
-        DELETE FROM ekyc_journey_log
-        WHERE session_id IN (
-          SELECT session_id FROM (
-            SELECT session_id, MIN(created_at) AS started_at
-            FROM ekyc_journey_log
-            WHERE session_id IS NOT NULL
-            GROUP BY session_id
-            HAVING SUM(CASE WHEN step = 'ACCOUNT_OPENING_COMPLETED' THEN 1 ELSE 0 END) = 0
-               AND started_at < :cutoff
-          ) t
-        )
-        """, nativeQuery = true)
-    int deleteAbandonedSessionsOlderThan(@Param("cutoff") ZonedDateTime cutoff);
-}
-```
-
-Query purge đầy đủ: spec Section 7.
-
----
-
-## Task 11 — Service: `EKycJourneyLogService.java`
-
-**Package:** `com.nhsv.ekyc.service`
-
-Hai method chính:
-
-**`processJourneyLog(EKycJourneyLogRequest req)`** — xử lý 10 step App-facing:
-- Validate `sessionId`, `step`, `status`, `payload` bắt buộc → thiếu field nào trả `400 INVALID_PARAMETER`.
-- Validate `step` thuộc `JourneyStepEnum` (10 giá trị App-facing, loại trừ `ECONTRACT_SIGN_COMPLETED`) → sai giá trị trả `400 INVALID_VALUE`.
-- **Không** validate business rule nội dung `payload` — theo triết lý "Light Validation at TradeX" (`tradex-api-conventions.md`).
-- Ghi 1 row mới, `created_at = now()`, trả về `{ id }`.
-
-**`logEcontractSigned(Long eKycId, EContractStatusReq request)`** — gọi từ webhook FPT (Task 13), **không** qua REST endpoint public:
-- `session_id = NULL`, `e_kyc_id` = tham số truyền vào.
-- `payload` gồm: `envelopeId`, `refId`, `contactId`, `contractStatus`, `contractIdAction`, `contractNo` (nếu có), `signFileContent` (base64), `webhookReceivedAt`.
-- Chi tiết payload: spec Section 6.
-
----
-
-## Task 12 — REST Resource: `POST /api/v1/ekycs/journey-log`
-
-**Package:** `com.nhsv.ekyc.web.rest`
-
-```typescript
-// Request
-{
-  sessionId: string,
-  phoneNo?: string,
-  identifierId?: string,
-  step: string,              // 1 trong 10 step App-facing
-  status: "SUCCESS" | "FAILED",
-  payload: object
-}
-
-// Response 200
-{ id: number }
-```
-
-Integration type: **TradeX-native** (theo `tradex-api-conventions.md` Response Format Standards) — không dùng `success`/`code: "0000"` kiểu Lotte.
-
----
-
-## Task 13 — Modify `EContractCustomServiceImpl.getEContractStatus()`
-
-**File:** `EContractCustomServiceImpl.java` (đã tồn tại — nhận callback ký hợp đồng từ FPT, đã xác thực chữ ký RSA)
-
-Thêm hook ngay tại điểm xác nhận khách ký xong (spec Section 6):
-
-```java
-if (contactId.equals(eContract.getIdentifierId())) {
-    if (contactIdAction.equals(ContactIdAction.signed) && contractStatus.equals(ContractStatus.processing)) {
-        eContractInfo.setCustomerSignatueStatus(contactIdAction.name());
-
-        // ── THÊM MỚI ──
-        eKycJourneyLogService.logEcontractSigned(
-            eContract.getEKyc().geteKycId(),
-            request  // EContractStatusReq — chứa envelopeId, refId, contactId, contractStatus
-        );
-        // ──────────────
-
-        ... // logic ký hợp đồng hiện tại giữ nguyên
-```
-
-Logic ký hợp đồng hiện tại **không đổi** — chỉ thêm 1 lệnh gọi.
-
----
-
-## Task 14 — Scheduled Purge Job
-
-**Package:** `com.nhsv.ekyc.scheduler` (hoặc theo convention project hiện tại)
-
-```java
-@Scheduled(cron = "0 0 * * * *") // mỗi giờ, đầu giờ
-public void purgeAbandonedJourneys() {
-    journeyLogRepository.deleteAbandonedSessionsOlderThan(ZonedDateTime.now().minusHours(8));
-}
-```
-
-Ngưỡng 8h khớp với `EKYC_SESSION_ID_EXPIRE_TIME` thực tế (`ekyc-admin/.../constant/Constants.java:235`) — không hardcode số riêng, tham chiếu cùng hằng số nếu có thể. `ECONTRACT_SIGN_COMPLETED` không bị ảnh hưởng bởi job này (`session_id IS NULL`).
-
----
-
-## Task 15 — Export Tool (nội bộ, không blocking go-live)
-
-Script CLI trong repo `ekyc-admin`, BE dev chạy tay khi compliance/audit cần tra soát 1 hành trình cụ thể:
-
-- Input: `--sessionId=` hoặc `--identifierId=` hoặc `--eKycId=`.
-- Query `ekyc_journey_log` theo khóa tương ứng, `ORDER BY created_at ASC` → render vào template `journey.html` (đã được PM duyệt phần visualization).
-- Output: file HTML tĩnh, gửi nội bộ khi có yêu cầu — không publish/host công khai.
-
-> Không phải màn hình sống, không cần đưa vào cùng sprint go-live của Task 8-14 — có thể làm sau khi có case audit thực tế đầu tiên.
+> Chi tiết kỹ thuật đầy đủ (schema, API contract, code mẫu) cho các mục trên: `BE_Spec.md` (Phần B).
 
 ---
 
 ## Acceptance Criteria
+
+> Acceptance Criteria của Sub-feature 07 nằm trong Phần B ở trên (đã viết theo style BA/PO). Mục dưới đây chỉ còn Sub-feature 01.
 
 ### Sub-feature 01
 
@@ -459,40 +316,27 @@ Script CLI trong repo `ekyc-admin`, BE dev chạy tay khi compliance/audit cần
 - [ ] `liveness_card_front_fake_prob`/`liveness_card_rear_fake_prob` lưu đúng giá trị riêng biệt theo từng mặt — verify test case có giá trị khác nhau giữa 2 mặt để đảm bảo không bị ghi đè lẫn nhau.
 - [ ] 6 cột `vnpt_*_log_id` được lưu đúng khi App gửi kèm — verify bằng cách tra ngược 1 attempt và xác nhận logID khớp với App log gốc.
 
-### Sub-feature 07
-
-- [ ] Bảng `ekyc_journey_log` được tạo qua Liquibase changeset — migration chạy thành công trên dev/staging.
-- [ ] `POST /api/v1/ekycs/journey-log` nhận đủ 10 step App-facing, lưu 1 row/lần gọi, trả về `{ id }` — HTTP 200.
-- [ ] Thiếu `sessionId`/`step`/`status`/`payload` → trả `400 INVALID_PARAMETER`.
-- [ ] `step` không thuộc 10 giá trị App-facing hợp lệ → trả `400 INVALID_VALUE`.
-- [ ] `payload` được lưu **nguyên văn** (kể cả base64 ảnh ở `EKYC_FACE_SCAN`) — không bị BE parse/lọc field nào.
-- [ ] Khi FPT webhook báo khách ký hợp đồng thành công (`customerSignatueStatus = signed`), BE **tự động** ghi 1 row `step = ECONTRACT_SIGN_COMPLETED`, `session_id = NULL`, `e_kyc_id` đúng khách — không qua endpoint `/journey-log`, không phụ thuộc App còn mở hay không.
-- [ ] Scheduled job chạy mỗi giờ, xóa toàn bộ row của session nào **quá 8h** mà chưa có row `ACCOUNT_OPENING_COMPLETED`.
-- [ ] Session đã có row `ACCOUNT_OPENING_COMPLETED` — dữ liệu được giữ **vĩnh viễn**, không bị purge job động tới dù có tuổi bao lâu.
-- [ ] Row `ECONTRACT_SIGN_COMPLETED` không bị ảnh hưởng bởi purge job (do `session_id IS NULL`, job chỉ xét theo `session_id`).
-- [ ] Verify bằng test case thực tế: 1 hành trình đủ 10 step + đợi webhook FPT → tra ra đủ 11 row theo đúng `e_kyc_id`, `ORDER BY created_at ASC` đúng thứ tự nghiệp vụ.
-
 ---
 
 ## Implementation Notes
 
 - **JHipster pattern:** Theo convention hiện tại của project — nếu project dùng MapStruct thì tạo Mapper tương ứng cho cả 2 sub-feature.
 - **Image storage là sub-feature riêng (Scope 2, chưa có tài liệu):** `imageFrontBase64`/`imageBackBase64` (sub-feature 01) → upload lên S3/MinIO cần `ImageStorageService`. Scope/retention policy đang chờ PM confirm — nếu chưa confirm, có thể tạm bỏ qua upload thật và để `image_front_url`/`image_back_url` = null, nhưng **KHÔNG bỏ qua việc lưu `vnpt_raw_data` và `sdk_raw_logs`** (2 cột raw JSON này độc lập với image storage, không cần chờ confirm). Sub-feature 07 lưu ảnh trực tiếp trong `payload` (base64 nguyên văn), không phụ thuộc `ImageStorageService`.
-- **Privacy:** PM sẽ quyết định retention policy cho toàn bộ `ekyc_attempt_log` (bao gồm cả raw JSON). Chưa implement auto-purge trong scope này (append-only, không xóa). Riêng `ekyc_journey_log` **đã có** cơ chế purge (Task 14) nhưng **chưa qua PDPD review** cho việc lưu base64 ảnh sinh trắc học + PII nguyên văn ở hành trình thành công — cần chốt trước khi go-live (xem mục "Cần confirm" bên dưới).
+- **Privacy:** PM sẽ quyết định retention policy cho toàn bộ `ekyc_attempt_log` (bao gồm cả raw JSON). Chưa implement auto-purge trong scope này (append-only, không xóa). Riêng `ekyc_journey_log` **đã có** cơ chế purge (xem `BE_Spec.md` Phần B Section 7) nhưng **chưa qua PDPD review** cho việc lưu base64 ảnh sinh trắc học + PII nguyên văn ở hành trình thành công — cần chốt trước khi go-live (xem mục "Cần confirm" bên dưới).
 - **`ekyc_ext` không xóa:** Giữ nguyên bảng cũ. `ekyc_attempt_log` là bổ sung cấu trúc, không thay thế.
 - **Partial data OK (sub-feature 01):** App có thể gửi partial data (nhiều field null) — BE vẫn lưu, không reject. Ngoại lệ: `sdkRawLogs` nên được gửi đầy đủ mỗi khi SDK đã chạy log key tương ứng — xem validation rule ở Task 5.
 - **`sdk_raw_logs` không cần parse phía BE:** Cột này tồn tại thuần cho mục đích audit — BE không cần hiểu cấu trúc JSON bên trong, chỉ lưu và trả về nguyên văn khi query detail.
 - **07 độc lập với 01:** Không join, không share bảng — 2 bảng dùng chung service nhưng vận hành độc lập, liên kết qua `identifier_id`/`e_kyc_id` khi cần đối chiếu chéo (xem README "Quan hệ với sub-feature khác").
-- **FE issue đi kèm:** App cần sửa ~9 màn hình để gọi `POST /api/v1/ekycs/journey-log` đúng thời điểm — xem `FE_Issue.md` (mới tạo cùng đợt). BE endpoint (Task 12) nên xong trước để FE có API test.
+- **FE issue đi kèm:** App cần sửa ~10-11 màn hình (đã tính 1 màn hình mới cho PERSONAL_DATA_PROCESSING_CONSENT) để gọi `POST /api/v1/ekycs/journey-log` đúng thời điểm — xem `FE_Issue.md` (Phần B). BE endpoint `POST /ekycs/journey-log` nên xong trước để FE có API test. `FE_Issue.md` (Phần A) cover phần FE của sub-feature 01 (App gọi `POST /ekycs/attempt-log`) — gộp chung 1 file, bổ sung 2026-07-20.
 
 ---
 
 ## Cần chốt trước khi implement Phần B (Sub-feature 07)
 
-- [ ] FE Lead xác nhận effort sửa ~9 màn hình App (xem FE issue đi kèm).
+- [ ] FE Lead xác nhận effort sửa ~10 màn hình App (xem FE issue đi kèm).
 - [ ] PDPD review: payload lưu đầy đủ PII + base64 ảnh sinh trắc học — cần xác nhận cách lưu này (LONGTEXT nguyên văn, không mã hoá field) đáp ứng yêu cầu bảo vệ dữ liệu cá nhân.
-- [ ] Xác nhận field `contractNo` có sẵn trực tiếp trên entity `EContract`/`EContractInfo` hay cần bổ sung (dev kiểm tra khi implement Task 13).
+- [ ] Xác nhận field `contractNo` có sẵn trực tiếp trên entity `EContract`/`EContractInfo` hay cần bổ sung (dev kiểm tra khi implement — xem `BE_Spec.md` Phần B Section 6).
 
 ---
 
-**Document Status:** ✅ Complete | For: BE Dev (ekyc-admin team) | Next Steps: BE Lead + FE Lead xác nhận mục "Cần chốt" ở trên → dev implement Task 1-14 (Task 15 làm sau, không blocking) theo thứ tự → QA verify theo Acceptance Criteria → Admin UI team implement theo `FE_Issue_Admin_Attempt_History.md` (Scope 2, sau go-live)
+**Document Status:** ✅ Complete | For: BE Dev (ekyc-admin team), BA/PO | Next Steps: BE Lead + FE Lead xác nhận mục "Cần chốt" ở trên → dev implement theo Phần A (Task 1-7) + Phần B (Yêu cầu chức năng + Quy tắc nghiệp vụ) → QA verify theo Acceptance Criteria → Admin UI team implement theo `Scope_2/Issues/02_FE_Issue_Admin_Attempt_History.md` (Scope 2, sau go-live)

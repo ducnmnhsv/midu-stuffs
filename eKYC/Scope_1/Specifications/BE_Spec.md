@@ -2,7 +2,7 @@
 
 **Feature:** Sub-feature 01 (Biometric Attempt Log) + Sub-feature 07 (Compliance Journey Log) — gộp chung 1 spec vì cùng service, cùng đợt implement Scope 1
 **Service:** `ekyc-admin` (Java / JHipster)
-**Date:** 2026-07-20 (gộp 2 spec — 01 v2.1 từ 2026-07-08, 07 v2.0 từ 2026-07-15)
+**Date:** 2026-07-20 (gộp 2 spec — 01 v2.1 từ 2026-07-08, 07 v2.0 từ 2026-07-15; rút ngắn code mẫu/Liquibase XML trùng lặp cùng ngày)
 **Issue liên quan:** `../Issues/BE_Issue.md` (Phần A + Phần B)
 
 ---
@@ -184,135 +184,7 @@ ALTER TABLE e_kyc
 
 **File:** `src/main/resources/config/liquibase/changelog/20260524000001_add_ekyc_attempt_log.xml`
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-
-    <changeSet id="20260524000001" author="duc.nguyen">
-        <createTable tableName="ekyc_attempt_log">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="identifier_id" type="varchar(20)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="phone_no" type="varchar(20)"/>
-            <column name="attempt_number" type="int">
-                <constraints nullable="false"/>
-            </column>
-            <column name="attempt_at" type="datetime">
-                <constraints nullable="false"/>
-            </column>
-            <column name="final_ekyc_id" type="bigint"/>
-            <column name="outcome" type="varchar(30)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="failure_step" type="varchar(50)"/>
-            <column name="failure_code" type="varchar(100)"/>
-            <column name="failure_message" type="varchar(500)"/>
-            <column name="vnpt_status_code" type="int"/>
-            <column name="vnpt_citizen_id" type="varchar(20)"/>
-            <column name="vnpt_old_citizen_id" type="varchar(20)"/>
-            <column name="vnpt_name" type="varchar(100)"/>
-            <column name="vnpt_card_type" type="varchar(10)"/>
-            <column name="vnpt_citizen_id_prob" type="double"/>
-            <column name="vnpt_mrz_valid_score" type="int"/>
-            <column name="vnpt_is_tampered" type="varchar(5)"/>
-            <column name="vnpt_id_fake_warning" type="varchar(50)"/>
-            <column name="vnpt_id_fake_prob" type="double"/>
-            <column name="vnpt_duplication_warning" type="boolean"/>
-            <column name="vnpt_dob_fake_warning" type="boolean"/>
-            <column name="vnpt_address_fake_warning" type="boolean"/>
-            <column name="vnpt_issuedate_fake_warning" type="boolean"/>
-            <column name="vnpt_name_fake_warning" type="varchar(50)"/>
-            <column name="vnpt_front_recaptured" type="varchar(20)"/>
-            <column name="vnpt_front_edited_prob" type="double"/>
-            <column name="vnpt_front_photocopied" type="varchar(20)"/>
-            <column name="vnpt_back_recaptured" type="varchar(20)"/>
-            <column name="vnpt_back_edited_prob" type="double"/>
-            <column name="vnpt_back_photocopied" type="varchar(20)"/>
-            <column name="vnpt_front_blur_score" type="double"/>
-            <column name="vnpt_front_luminance_score" type="double"/>
-            <column name="vnpt_back_blur_score" type="double"/>
-            <column name="vnpt_back_luminance_score" type="double"/>
-            <column name="vnpt_match_id" type="varchar(10)"/>
-            <column name="vnpt_match_name" type="varchar(10)"/>
-            <column name="vnpt_match_bod" type="varchar(10)"/>
-            <column name="vnpt_match_sex" type="varchar(10)"/>
-            <column name="vnpt_nationality" type="varchar(50)"/>
-            <column name="vnpt_citizen_id_chip" type="varchar(20)"/>
-            <column name="vnpt_qr_match_summary" type="varchar(20)"/>
-            <column name="mrz_line1" type="varchar(50)"/>
-            <column name="mrz_line2" type="varchar(50)"/>
-            <column name="mrz_line3" type="varchar(50)"/>
-            <column name="mrz_overall_prob" type="double"/>
-            <column name="mrz_cross_check" type="varchar(20)"/>
-            <column name="mrz_check_id" type="varchar(10)"/>
-            <column name="mrz_check_dob" type="varchar(10)"/>
-            <column name="mrz_check_gender" type="varchar(10)"/>
-            <column name="mrz_check_expiry" type="varchar(10)"/>
-            <column name="liveness_card_front_result" type="varchar(20)"/>
-            <column name="liveness_card_rear_result" type="varchar(20)"/>
-            <column name="liveness_face_result" type="varchar(20)"/>
-            <column name="face_mask_result" type="varchar(20)"/>
-            <column name="liveness_card_front_fake_prob" type="double"/>
-            <column name="liveness_card_front_fake_print_prob" type="double"/>
-            <column name="liveness_card_front_face_swapping" type="boolean"/>
-            <column name="liveness_card_rear_fake_prob" type="double"/>
-            <column name="liveness_card_rear_fake_print_prob" type="double"/>
-            <column name="liveness_card_rear_face_swapping" type="boolean"/>
-            <column name="liveness_face_multiple_faces" type="boolean"/>
-            <column name="face_compare_msg" type="varchar(20)"/>
-            <column name="face_compare_prob" type="double"/>
-            <column name="face_compare_match_warning" type="varchar(20)"/>
-            <column name="face_compare_multiple_faces" type="boolean"/>
-            <column name="vnpt_ocr_log_id" type="varchar(150)"/>
-            <column name="vnpt_card_liveness_front_log_id" type="varchar(150)"/>
-            <column name="vnpt_card_liveness_rear_log_id" type="varchar(150)"/>
-            <column name="vnpt_face_liveness_log_id" type="varchar(150)"/>
-            <column name="vnpt_face_compare_log_id" type="varchar(150)"/>
-            <column name="vnpt_face_mask_log_id" type="varchar(150)"/>
-            <column name="image_front_url" type="varchar(500)"/>
-            <column name="image_back_url" type="varchar(500)"/>
-            <column name="vnpt_raw_data" type="longtext"/>
-            <column name="sdk_raw_logs" type="longtext"/>
-        </createTable>
-
-        <addForeignKeyConstraint
-            constraintName="fk_ekyc_attempt_final"
-            baseTableName="ekyc_attempt_log" baseColumnNames="final_ekyc_id"
-            referencedTableName="e_kyc" referencedColumnNames="id"
-            onDelete="SET NULL"/>
-
-        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_identifier">
-            <column name="identifier_id"/>
-        </createIndex>
-        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_phone">
-            <column name="phone_no"/>
-        </createIndex>
-        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_at">
-            <column name="attempt_at"/>
-        </createIndex>
-        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_outcome">
-            <column name="outcome"/>
-        </createIndex>
-        <createIndex tableName="ekyc_attempt_log" indexName="idx_ekyc_attempt_final_ekyc">
-            <column name="final_ekyc_id"/>
-        </createIndex>
-    </changeSet>
-
-    <changeSet id="20260524000002" author="duc.nguyen">
-        <addColumn tableName="e_kyc">
-            <column name="total_attempts" type="int"/>
-            <column name="first_attempt_at" type="datetime"/>
-        </addColumn>
-    </changeSet>
-
-</databaseChangeLog>
-```
+Sinh 1:1 từ schema SQL ở Section 0.1 (mọi cột giữ đúng tên/kiểu) + đổi 2 cột `total_attempts`, `first_attempt_at` trên `e_kyc` (Section 0.2) trong 1 changeset thứ 2. Không cần liệt kê lại XML — convert trực tiếp từ CREATE TABLE, thêm FK `fk_ekyc_attempt_final` (`final_ekyc_id` → `e_kyc.id`, `ON DELETE SET NULL`) và 5 index đã khai báo ở Section 0.1.
 
 ### 0.4 Mapping VNPT Response → `ekyc_attempt_log`
 
@@ -435,111 +307,46 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 {
   "logID": "<vnpt-log-id>",
   "statusCode": 200,
-  "message": "IDG-00000000",
-  "server_version": "1.6.16",
-  "challengeCode": "INNOVATIONCENTER",
-  "imgs": {
-    "img_front": "<bucket-path>/front.jpg",
-    "img_back": "<bucket-path>/back.jpg"
-  },
+  "imgs": { "img_front": "<bucket-path>/front.jpg", "img_back": "<bucket-path>/back.jpg" },
   "object": {
-    "msg": "OK",
-    "msg_back": "OK",
-    "type_id": 6,
-    "back_type_id": 6,
     "card_type": "CĂN CƯỚC",
-
     "id": "001099999999",
-    "id_probs": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+    "id_probs": [1.0, "... (12 phần tử, theo từng ký tự)"],
     "citizen_id": "-",
     "citizen_id_prob": 0,
 
-    "name": "NGUYEN VAN A",
-    "name_prob": 1,
-    "name_fake_warning": "real",
-    "name_fake_warning_prob": 0.2,
-
-    "gender": "Nam",
-    "birth_day": "01/01/1990",
-    "birth_day_prob": 0.999,
-    "nationality": "Việt Nam",
-    "issue_date": "18/12/2024",
-    "issue_date_prob": 0.994,
-    "issue_place": "BỘ CÔNG AN",
-    "issue_place_prob": 0.999,
-    "expiry_date": "01/01/2039",
-    "expiry_date_prob": 0.999,
-    "valid_date": "01/01/2039",
-    "valid_date_prob": 0.999,
-    "expire_warning": "no",
-    "back_expire_warning": "no",
+    "name": "NGUYEN VAN A", "name_prob": 1,
+    "gender": "Nam", "birth_day": "01/01/1990", "nationality": "Việt Nam",
+    "issue_date": "18/12/2024", "issue_place": "BỘ CÔNG AN", "expiry_date": "01/01/2039",
 
     "mrz": [
       "IDVNM0099999999001099999999<<4",
       "9001011M3901011VNM<<<<<<<<<<<4",
       "NGUYEN<<VAN<A<<<<<<<<<<<<<<<<<"
     ],
-    "mrz_prob": 0.994,
-    "mrz_probs": [0.996, 0.999, 0.986],
-    "mrz_valid_score": 100,
+    "mrz_prob": 0.994, "mrz_valid_score": 100,
 
     "tampering": { "is_legal": "yes", "warning": [] },
-    "id_fake_warning": "no",
-    "id_fake_prob": 0,
-    "dupplication_warning": false,
-    "dob_fake_warning": false,
-    "address_fake_warning": false,
-    "issuedate_fake_warning": false,
-    "general_warning": [],
-    "corner_warning": "no",
-    "back_corner_warning": "no",
+    "id_fake_warning": "no", "id_fake_prob": 0,
+    "dupplication_warning": false, "dob_fake_warning": false,
+    "address_fake_warning": false, "issuedate_fake_warning": false,
 
     "checking_result_front": {
       "recaptured_result": "0", "recaptured_prob": 0.106,
       "edited_result": "0", "edited_prob": 0.151,
-      "check_photocopied_result": "0", "check_photocopied_prob": 0,
-      "corner_cut_result": "0", "corner_cut_prob": [0.096, 0.096, 0.096, 0.096]
+      "check_photocopied_result": "0", "check_photocopied_prob": 0
     },
-    "checking_result_back": {
-      "recaptured_result": "0", "recaptured_prob": 0.085,
-      "edited_result": "0", "edited_prob": 0,
-      "check_photocopied_result": "0", "check_photocopied_prob": 0,
-      "corner_cut_result": "0", "corner_cut_prob": [0.100, 0.100, 0.100, 0.100]
-    },
-    "quality_front": {
-      "blur_score": 0.208, "luminance_score": 0.675, "bright_spot_score": 0,
-      "resolution": [440, 704],
-      "final_result": { "blurred_likelihood": "unlikely", "low_resolution_likelihood": "unlikely", "bad_luminance_likelihood": "unlikely", "bright_spot_likelihood": "unlikely" }
-    },
-    "quality_back": {
-      "blur_score": 0.048, "luminance_score": 0.667, "bright_spot_score": 0,
-      "resolution": [423, 678],
-      "final_result": { "blurred_likelihood": "unlikely", "low_resolution_likelihood": "unlikely", "bad_luminance_likelihood": "unlikely", "bright_spot_likelihood": "unlikely" }
-    },
+    "checking_result_back": "(cùng cấu trúc checking_result_front, giá trị riêng cho mặt sau)",
+
+    "quality_front": { "blur_score": 0.208, "luminance_score": 0.675, "resolution": [440, 704] },
+    "quality_back": "(cùng cấu trúc quality_front, giá trị riêng cho mặt sau)",
 
     "match_front_back": { "match_id": "yes", "match_name": "yes", "match_bod": "yes", "match_sex": "yes" },
+    "match_qr": { "match_id_qr": "yes", "match_name_qr": "yes", "match_issue_date_qr": "yes", "match_bod_qr": "yes" },
+    "dict_qr": { "SoCCCD": "001099999999", "SoCMND": "-", "name": "Nguyễn Văn A", "gender": "Nam" },
 
-    "match_qr": {
-      "match_id_qr": "yes", "match_name_qr": "yes",
-      "match_issue_date_qr": "yes", "match_bod_qr": "yes"
-    },
-    "dict_qr": {
-      "SoCCCD": "001099999999", "SoCMND": "-",
-      "name": "Nguyễn Văn A", "gender": "Nam",
-      "birth_day": "01011990", "issue_date": "18122024",
-      "recent_location": "<địa chỉ đã ẩn danh>"
-    },
-
-    "new_post_code": [
-      { "type": "address", "city": ["01", "Thành phố Hà Nội", 1], "district": ["", "", 1], "ward": ["00004", "Phường Ba Đình", 1], "detail": "<đã ẩn danh>" },
-      { "type": "hometown", "city": ["01", "Thành phố Hà Nội", 1], "district": ["", "", 1], "ward": ["00004", "Phường Ba Đình", 1], "detail": "" }
-    ],
-
-    "origin_location": "<đã ẩn danh>",
-    "recent_location": "<đã ẩn danh>",
-    "place_birth": "<đã ẩn danh>",
-    "features": "-",
-    "features_prob": 0
+    "new_post_code": "[ { type, city:[code,name,flag], district, ward, detail }, ... ] — mảng lồng nhau, chỉ cần khi tra cứu sâu",
+    "recent_location": "<đã ẩn danh>"
   }
 }
 ```
@@ -561,29 +368,12 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
     "statusCode": 200,
     "object": {
       "liveness": "success",
-      "liveness_msg": "Giấy tờ thật",
-      "fake_liveness": false,
-      "fake_liveness_prob": 0.106,
-      "fake_print_photo": false,
-      "fake_print_photo_prob": 0,
-      "face_swapping": false,
-      "face_swapping_prob": 0.036
+      "fake_liveness": false, "fake_liveness_prob": 0.106,
+      "fake_print_photo": false, "fake_print_photo_prob": 0,
+      "face_swapping": false, "face_swapping_prob": 0.036
     }
   },
-  "livenessCardRear": {
-    "logID": "<vnpt-log-id>",
-    "statusCode": 200,
-    "object": {
-      "liveness": "success",
-      "liveness_msg": "Giấy tờ thật",
-      "fake_liveness": false,
-      "fake_liveness_prob": 0.086,
-      "fake_print_photo": false,
-      "fake_print_photo_prob": 0,
-      "face_swapping": false,
-      "face_swapping_prob": 0
-    }
-  },
+  "livenessCardRear": "(cùng cấu trúc livenessCardFront, giá trị riêng cho mặt sau)",
   "livenessFace": {
     "logID": "<vnpt-log-id>",
     "statusCode": 200,
@@ -636,6 +426,8 @@ Các trường này **không có trong VNPT OCR response** — do SDK trả về
 
 **File:** `domain/EKycAttemptLog.java`
 
+Map 1:1 với schema Section 0.1 — mỗi cột `snake_case` → field Java `camelCase`, đúng nullable như đã khai báo. Không liệt kê lại toàn bộ 90+ field ở đây; chỉ nêu các field cần chú ý khi generate entity:
+
 ```java
 @Entity
 @Table(name = "ekyc_attempt_log")
@@ -647,18 +439,6 @@ public class EKycAttemptLog implements Serializable {
 
     @Column(name = "identifier_id", nullable = false)
     private String identifierId;
-
-    @Column(name = "phone_no")
-    private String phoneNo;
-
-    @Column(name = "attempt_number", nullable = false)
-    private Integer attemptNumber;
-
-    @Column(name = "attempt_at", nullable = false)
-    private ZonedDateTime attemptAt;
-
-    @Column(name = "final_ekyc_id")
-    private Long finalEkycId;
 
     @Column(name = "outcome", nullable = false)
     private String outcome;  // VNPT_FAILED / LOTTE_REJECTED / USER_ABANDONED / SUCCESS
@@ -672,220 +452,25 @@ public class EKycAttemptLog implements Serializable {
     @Column(name = "failure_message")
     private String failureMessage;
 
-    // VNPT OCR
-    @Column(name = "vnpt_status_code")
-    private Integer vnptStatusCode;
-
-    @Column(name = "vnpt_citizen_id")
-    private String vnptCitizenId;
-
-    @Column(name = "vnpt_old_citizen_id")
-    private String vnptOldCitizenId;   // object.citizen_id — CMND cũ, "-" nếu không có
-
-    @Column(name = "vnpt_name")
-    private String vnptName;
-
-    @Column(name = "vnpt_card_type")
-    private String vnptCardType;
-
-    @Column(name = "vnpt_citizen_id_prob")
-    private Double vnptCitizenIdProb;
-
-    @Column(name = "vnpt_mrz_valid_score")
-    private Integer vnptMrzValidScore;
-
-    // Fraud Detection
-    @Column(name = "vnpt_is_tampered")
-    private String vnptIsTampered;
-
-    @Column(name = "vnpt_id_fake_warning")
-    private String vnptIdFakeWarning;
-
-    @Column(name = "vnpt_id_fake_prob")
-    private Double vnptIdFakeProb;
-
-    @Column(name = "vnpt_duplication_warning")
-    private Boolean vnptDuplicationWarning;
-
-    @Column(name = "vnpt_dob_fake_warning")
-    private Boolean vnptDobFakeWarning;
-
-    @Column(name = "vnpt_address_fake_warning")
-    private Boolean vnptAddressFakeWarning;
-
-    @Column(name = "vnpt_issuedate_fake_warning")
-    private Boolean vnptIssuedateFakeWarning;
-
-    @Column(name = "vnpt_name_fake_warning")
-    private String vnptNameFakeWarning;
-
-    // Card Integrity
-    @Column(name = "vnpt_front_recaptured")
-    private String vnptFrontRecaptured;
-
-    @Column(name = "vnpt_front_edited_prob")
-    private Double vnptFrontEditedProb;
-
-    @Column(name = "vnpt_front_photocopied")
-    private String vnptFrontPhotocopied;
-
-    @Column(name = "vnpt_back_recaptured")
-    private String vnptBackRecaptured;
-
-    @Column(name = "vnpt_back_edited_prob")
-    private Double vnptBackEditedProb;
-
-    @Column(name = "vnpt_back_photocopied")
-    private String vnptBackPhotocopied;
-
-    // Image Quality
-    @Column(name = "vnpt_front_blur_score")
-    private Double vnptFrontBlurScore;
-
-    @Column(name = "vnpt_front_luminance_score")
-    private Double vnptFrontLuminanceScore;
-
-    @Column(name = "vnpt_back_blur_score")
-    private Double vnptBackBlurScore;
-
-    @Column(name = "vnpt_back_luminance_score")
-    private Double vnptBackLuminanceScore;
-
-    // Cross-validation
-    @Column(name = "vnpt_match_id")
-    private String vnptMatchId;
-
-    @Column(name = "vnpt_match_name")
-    private String vnptMatchName;
-
-    @Column(name = "vnpt_match_bod")
-    private String vnptMatchBod;
+    // ── Các field còn lại map 1:1 theo Section 0.1 (snake_case → camelCase) ──
+    // VD: vnpt_status_code → vnptStatusCode, vnpt_old_citizen_id → vnptOldCitizenId,
+    // liveness_card_front_fake_prob → livenessCardFrontFakeProb, v.v.
+    // 3 field dưới đây nêu riêng vì tên cột KHÔNG map thẳng theo field JSON gốc (dễ code sai):
 
     @Column(name = "vnpt_match_sex")
-    private String vnptMatchSex;   // object.match_front_back.match_sex — thay cho "matchValidDate" không tồn tại
-
-    // Extended OCR Fields
-    @Column(name = "vnpt_nationality")
-    private String vnptNationality;
+    private String vnptMatchSex;   // object.match_front_back.match_sex — KHÔNG PHẢI "matchValidDate" (field không tồn tại)
 
     @Column(name = "vnpt_citizen_id_chip")
-    private String vnptCitizenIdChip;   // object.dict_qr.SoCCCD (QR/chip decode)
+    private String vnptCitizenIdChip;   // object.dict_qr.SoCCCD — KHÔNG PHẢI object.citizenIdChip (field không tồn tại)
 
-    // QR Cross-Check
-    @Column(name = "vnpt_qr_match_summary")
-    private String vnptQrMatchSummary;   // PASS / FAIL / SKIPPED — BE tự suy ra từ object.match_qr.*
-
-    // MRZ Raw Data
-    @Column(name = "mrz_line1")
-    private String mrzLine1;
-
-    @Column(name = "mrz_line2")
-    private String mrzLine2;
-
-    @Column(name = "mrz_line3")
-    private String mrzLine3;   // object.mrz[2] — dòng họ tên (CCCD gắn chip có 3 dòng MRZ)
-
-    @Column(name = "mrz_overall_prob")
-    private Double mrzOverallProb;
-
-    // MRZ Cross-Check (computed by App, sent to BE)
-    @Column(name = "mrz_cross_check")
-    private String mrzCrossCheck;   // PASS / PARTIAL_FAIL / FAIL / SKIPPED
-
-    @Column(name = "mrz_check_id")
-    private String mrzCheckId;      // MATCH / MISMATCH
-
-    @Column(name = "mrz_check_dob")
-    private String mrzCheckDob;
-
-    @Column(name = "mrz_check_gender")
-    private String mrzCheckGender;
-
-    @Column(name = "mrz_check_expiry")
-    private String mrzCheckExpiry;
-
-    // Liveness Results (SDK logs)
-    @Column(name = "liveness_card_front_result")
-    private String livenessCardFrontResult;
-
-    @Column(name = "liveness_card_rear_result")
-    private String livenessCardRearResult;
-
-    @Column(name = "liveness_face_result")
-    private String livenessFaceResult;
-
-    @Column(name = "face_mask_result")
-    private String faceMaskResult;
-
-    // Card Liveness Fraud Detail — tách theo mặt (xem note 2026-07-08 ở Section 0.5)
-    @Column(name = "liveness_card_front_fake_prob")
-    private Double livenessCardFrontFakeProb;
-
-    @Column(name = "liveness_card_front_fake_print_prob")
-    private Double livenessCardFrontFakePrintProb;
-
-    @Column(name = "liveness_card_front_face_swapping")
-    private Boolean livenessCardFrontFaceSwapping;
-
-    @Column(name = "liveness_card_rear_fake_prob")
-    private Double livenessCardRearFakeProb;
-
-    @Column(name = "liveness_card_rear_fake_print_prob")
-    private Double livenessCardRearFakePrintProb;
-
-    @Column(name = "liveness_card_rear_face_swapping")
-    private Boolean livenessCardRearFaceSwapping;
-
-    @Column(name = "liveness_face_multiple_faces")
-    private Boolean livenessFaceMultipleFaces;
-
-    // Face Compare
-    @Column(name = "face_compare_msg")
-    private String faceCompareMsg;   // MATCH / NOMATCH
-
-    @Column(name = "face_compare_prob")
-    private Double faceCompareProb;   // thang 0-100 theo VNPT thực tế (không phải 0-1)
-
-    @Column(name = "face_compare_match_warning")
-    private String faceCompareMatchWarning;
-
-    @Column(name = "face_compare_multiple_faces")
-    private Boolean faceCompareMultipleFaces;
-
-    // VNPT Log IDs — đối chiếu chéo khi audit/tranh chấp
-    @Column(name = "vnpt_ocr_log_id")
-    private String vnptOcrLogId;
-
-    @Column(name = "vnpt_card_liveness_front_log_id")
-    private String vnptCardLivenessFrontLogId;
-
-    @Column(name = "vnpt_card_liveness_rear_log_id")
-    private String vnptCardLivenessRearLogId;
-
-    @Column(name = "vnpt_face_liveness_log_id")
-    private String vnptFaceLivenessLogId;
-
-    @Column(name = "vnpt_face_compare_log_id")
-    private String vnptFaceCompareLogId;
-
-    @Column(name = "vnpt_face_mask_log_id")
-    private String vnptFaceMaskLogId;
-
-    // Image Storage (S3 / MinIO)
-    @Column(name = "image_front_url")
-    private String imageFrontUrl;
-
-    @Column(name = "image_back_url")
-    private String imageBackUrl;
-
-    // Raw Data — audit đầy đủ, không qua parse/lọc field
+    // Raw Data — audit đầy đủ, không qua parse/lọc field, dùng @Lob
     @Lob
     @Column(name = "vnpt_raw_data")
-    private String vnptRawData;   // Raw JSON của LOG_OCR (VNPT server response)
+    private String vnptRawData;   // Raw JSON của LOG_OCR
 
     @Lob
     @Column(name = "sdk_raw_logs")
-    private String sdkRawLogs;    // Raw JSON gộp của 7 SDK log key còn lại (liveness x3, mask, compare, image paths)
+    private String sdkRawLogs;    // Raw JSON gộp 7 SDK log key còn lại — App gửi nguyên văn
 
     // getters/setters omitted for brevity
 }
@@ -928,7 +513,6 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
     log.setAttemptAt(ZonedDateTime.now());
     log.setOutcome("SUCCESS"); // default — sẽ update sang LOTTE_REJECTED nếu fail sau đó
 
-    // Map VNPT data
     if (StringUtils.isNotBlank(req.getRawData())) {
         log.setVnptRawData(req.getRawData());
         try {
@@ -938,66 +522,26 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
             log.setVnptStatusCode(vnpt.getStatusCode());
             VNPTDataBase64.VNPTObject obj = vnpt.getObject();
             if (obj != null) {
-                // ⚠️ 2026-07-08: obj.getId() — KHÔNG dùng obj.getCitizenId() (field không tồn tại trong response thật)
+                // ⚠️ obj.getId() — KHÔNG dùng obj.getCitizenId() (field không tồn tại trong response thật)
                 log.setVnptCitizenId(obj.getId());
-                log.setVnptOldCitizenId(obj.getCitizenIdOld()); // map JSON field "citizen_id" — CMND cũ, "-" nếu không có
-                log.setVnptName(obj.getName());
-                log.setVnptCardType(obj.getCardType());
-                log.setVnptCitizenIdProb(obj.getCitizenIdProb());
-                log.setVnptMrzValidScore(obj.getMrzValidScore());
+                log.setVnptOldCitizenId(obj.getCitizenIdOld()); // "citizen_id" — CMND cũ, "-" nếu không có
 
-                // Fraud flags
-                if (obj.getTampering() != null) {
-                    log.setVnptIsTampered(obj.getTampering().getIsLegal());
-                }
-                log.setVnptIdFakeWarning(obj.getIdFakeWarning());
-                log.setVnptIdFakeProb(obj.getIdFakeProb());
-                log.setVnptDuplicationWarning(obj.isDupplicationWarning());
-                log.setVnptDobFakeWarning(obj.isDobFakeWarning());
-                log.setVnptAddressFakeWarning(obj.isAddressFakeWarning());
-                log.setVnptIssuedateFakeWarning(obj.isIssuedateFakeWarning());
-                log.setVnptNameFakeWarning(obj.getNameFakeWarning());
+                // Set thẳng các field còn lại của nhóm OCR/Fraud/Card Integrity/Image Quality (obj.getName() → setVnptName(),
+                // obj.getCheckingResultFront().getEditedProb() → setVnptFrontEditedProb(), v.v.) — map 1:1 theo Section 0.4, không gotcha.
 
-                // Card integrity - front
-                if (obj.getCheckingResultFront() != null) {
-                    log.setVnptFrontRecaptured(obj.getCheckingResultFront().getRecapturedResult());
-                    log.setVnptFrontEditedProb(obj.getCheckingResultFront().getEditedProb());
-                    log.setVnptFrontPhotocopied(obj.getCheckingResultFront().getCheckPhotocopiedResult());
-                }
-                // Card integrity - back
-                if (obj.getCheckingResultBack() != null) {
-                    log.setVnptBackRecaptured(obj.getCheckingResultBack().getRecapturedResult());
-                    log.setVnptBackEditedProb(obj.getCheckingResultBack().getEditedProb());
-                    log.setVnptBackPhotocopied(obj.getCheckingResultBack().getCheckPhotocopiedResult());
-                }
-
-                // Image quality
-                if (obj.getQualityFront() != null) {
-                    log.setVnptFrontBlurScore(obj.getQualityFront().getBlurScore());
-                    log.setVnptFrontLuminanceScore(obj.getQualityFront().getLuminanceScore());
-                }
-                if (obj.getQualityBack() != null) {
-                    log.setVnptBackBlurScore(obj.getQualityBack().getBlurScore());
-                    log.setVnptBackLuminanceScore(obj.getQualityBack().getLuminanceScore());
-                }
-
-                // Cross-validation
                 if (obj.getMatchFrontBack() != null) {
                     log.setVnptMatchId(obj.getMatchFrontBack().getMatchId());
                     log.setVnptMatchName(obj.getMatchFrontBack().getMatchName());
                     log.setVnptMatchBod(obj.getMatchFrontBack().getMatchBod());
-                    // ⚠️ 2026-07-08: field thật là match_sex, KHÔNG có match_valid_date
-                    log.setVnptMatchSex(obj.getMatchFrontBack().getMatchSex());
+                    log.setVnptMatchSex(obj.getMatchFrontBack().getMatchSex()); // ⚠️ KHÔNG có match_valid_date
                 }
 
-                // Extended OCR
                 log.setVnptNationality(obj.getNationality());
-                // ⚠️ 2026-07-08: obj.getCitizenIdChip() không tồn tại — giá trị đúng nằm trong QR decode
                 if (obj.getDictQr() != null) {
-                    log.setVnptCitizenIdChip(obj.getDictQr().getSoCCCD());
+                    log.setVnptCitizenIdChip(obj.getDictQr().getSoCCCD()); // ⚠️ obj.getCitizenIdChip() không tồn tại
                 }
 
-                // QR Cross-Check — mới 2026-07-08, BE tự suy ra PASS/FAIL, App không cần gửi thêm
+                // QR Cross-Check — BE tự suy ra PASS/FAIL/SKIPPED, App không cần gửi thêm
                 if (obj.getMatchQr() != null) {
                     boolean allYes = "yes".equals(obj.getMatchQr().getMatchIdQr())
                         && "yes".equals(obj.getMatchQr().getMatchNameQr())
@@ -1009,8 +553,7 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
                 }
             }
 
-            // ── MRZ Raw Data ──
-            // vnpt.getMrz() trả về List<String> — CCCD gắn chip trả 3 dòng (2 dòng dữ liệu + 1 dòng họ tên)
+            // MRZ: vnpt.getMrz() trả List<String> — CCCD gắn chip trả 3 dòng (không phải 2)
             if (vnpt.getMrz() != null && vnpt.getMrz().size() >= 2) {
                 log.setMrzLine1(vnpt.getMrz().get(0));
                 log.setMrzLine2(vnpt.getMrz().get(1));
@@ -1019,31 +562,21 @@ private EKycAttemptLog buildAttemptLog(EKycAddReq req, int attemptNumber) {
                 log.setMrzLine3(vnpt.getMrz().get(2));
             }
             log.setMrzOverallProb(vnpt.getMrzProb());
-            // MRZ cross-check fields được App tính toán và gửi kèm request
-            // → set từ req.getMrzCrossCheck(), req.getMrzCheckId(), v.v.
-            // → xem Section 5 (pre-submit API) và Section 3 (post-submit request)
+            // mrzCrossCheck/mrzCheckId/... do App tính và gửi kèm request — set trực tiếp từ req, không tính lại ở đây
 
-            // ── Image upload (post-submit path) ──
-            // VNPTDataBase64.Img chứa imgFront / imgBack dưới dạng base64
+            // Ảnh (post-submit path) — VNPTDataBase64.Img.imgFront/imgBack base64, upload S3/MinIO
             if (vnpt.getImg() != null) {
                 if (StringUtils.isNotBlank(vnpt.getImg().getImgFront())) {
-                    String frontUrl = imageStorageService.uploadBase64(
-                        vnpt.getImg().getImgFront(),
-                        "ekyc/" + req.getIdentifierId() + "/attempt-" + attemptNumber + "-front.jpg"
-                    );
-                    log.setImageFrontUrl(frontUrl);
+                    log.setImageFrontUrl(imageStorageService.uploadBase64(
+                        vnpt.getImg().getImgFront(), "ekyc/" + req.getIdentifierId() + "/attempt-" + attemptNumber + "-front.jpg"));
                 }
                 if (StringUtils.isNotBlank(vnpt.getImg().getImgBack())) {
-                    String backUrl = imageStorageService.uploadBase64(
-                        vnpt.getImg().getImgBack(),
-                        "ekyc/" + req.getIdentifierId() + "/attempt-" + attemptNumber + "-back.jpg"
-                    );
-                    log.setImageBackUrl(backUrl);
+                    log.setImageBackUrl(imageStorageService.uploadBase64(
+                        vnpt.getImg().getImgBack(), "ekyc/" + req.getIdentifierId() + "/attempt-" + attemptNumber + "-back.jpg"));
                 }
             }
         } catch (Exception e) {
-            // Parse fail → vẫn lưu raw_data, không throw
-            logger.warn("Failed to parse VNPT rawData for attempt log", e);
+            logger.warn("Failed to parse VNPT rawData for attempt log", e); // parse fail → vẫn lưu raw_data, không throw
         }
     }
     return log;
@@ -1161,7 +694,7 @@ SELECT * FROM e_kyc WHERE id = (SELECT final_ekyc_id FROM ekyc_attempt_log WHERE
 | `USER_ABANDONED` | `ABANDONED` | Đã APPROVED về mặt Lotte nhưng chưa ký HĐ trong 48h |
 | `VNPT_FAILED` / `MRZ_FAILED` / `FACE_COMPARE_FAILED` | `NOT_SUBMITTED` | **Chưa từng chạm tới Lotte** — fail ngay ở bước SDK phía App |
 
-**Response 200 — khách đã mở TK thành công:**
+**Response 200:**
 
 ```json
 {
@@ -1177,23 +710,7 @@ SELECT * FROM e_kyc WHERE id = (SELECT final_ekyc_id FROM ekyc_attempt_log WHERE
 }
 ```
 
-**Response 200 — khách CHƯA mở TK (chỉ có attempt fail, không có `e_kyc` row nào):**
-
-```json
-{
-  "identifierId": "038yyyyyyyy",
-  "fullName": "NGUYEN VAN B",
-  "phoneNo": "09yyyyyyyy",
-  "totalAttempts": 2,
-  "successfulAttempt": null,
-  "accountNumber": null,
-  "accountStatus": "NOT_SUBMITTED",
-  "firstAttemptAt": "2026-06-30T14:02:00+07:00",
-  "accountOpenedAt": null,
-  "lastFailureStep": "VNPT_LIVENESS",
-  "lastFailureMessage": "Liveness khuôn mặt thất bại — nghi ngờ ảnh giả"
-}
-```
+Case khách **chưa** mở TK (chỉ có attempt fail, không có `e_kyc` row nào): `accountNumber`/`accountOpenedAt`/`successfulAttempt` = `null`, `accountStatus` = `NOT_SUBMITTED`, và thêm 2 field `lastFailureStep`/`lastFailureMessage` (lấy từ lần thử gần nhất) — xem bảng field mapping dưới đây.
 
 **Field mapping khi không có `e_kyc`:**
 
@@ -1288,100 +805,23 @@ Response 200:
 ```
 GET /api/admin/ekyc/attempts/{identifierId}/{attemptNumber}
 
-Response 200:
+Response 200 — field của ekyc_attempt_log (Section 0.1) nhóm lại theo camelCase object cho FE dễ render:
 {
-  "attemptNumber": 1,
-  "attemptAt": "...",
-  "outcome": "VNPT_FAILED",
-
-  "vnptOcr": {
-    "citizenId": "038xxx",
-    "oldCitizenId": "-",
-    "name": "NGUYEN VAN A",
-    "cardType": "CC",
-    "citizenIdProb": 0.95,
-    "mrzValidScore": 100,
-    "nationality": "Việt Nam",
-    "citizenIdChip": "038xxxxxxxx",
-    "qrMatchSummary": "PASS"
-  },
-  "fraudDetection": {
-    "isTampered": "Y",
-    "idFakeWarning": null,
-    "idFakeProb": 0.02,
-    "duplicationWarning": false,
-    "dobFakeWarning": false,
-    "addressFakeWarning": false,
-    "issuedateFakeWarning": false
-  },
-  "cardIntegrity": {
-    "frontRecaptured": "REAL",
-    "frontEditedProb": 0.01,
-    "frontPhotocopied": "ORIGINAL",
-    "backRecaptured": "REAL",
-    "backEditedProb": 0.01
-  },
-  "imageQuality": {
-    "frontBlurScore": 0.23,
-    "frontLuminanceScore": 0.75,
-    "backBlurScore": 0.72,
-    "backLuminanceScore": 0.80
-  },
-  "crossValidation": {
-    "matchId": "MATCH",
-    "matchName": "MATCH",
-    "matchBod": "MATCH",
-    "matchSex": "MATCH"
-  },
-  "livenessResults": {
-    "cardFrontResult": "success",
-    "cardRearResult": "success",
-    "faceResult": "failure",
-    "maskResult": "success",
-    "cardFrontFakeProb": 0.12,
-    "cardFrontFakePrintProb": 0.05,
-    "cardFrontFaceSwapping": false,
-    "cardRearFakeProb": 0.09,
-    "cardRearFakePrintProb": 0,
-    "cardRearFaceSwapping": false,
-    "faceMultipleFaces": false
-  },
-  "faceCompare": {
-    "msg": "MATCH",
-    "prob": 91.0,
-    "matchWarning": "no",
-    "multipleFaces": false
-  },
-  "vnptLogIds": {
-    "ocr": "2076b017-7601-11f1-aa3e-475548588d85-4d2d722b-Zuulserver",
-    "cardLivenessFront": "1b9acacc-7601-11f1-bdd1-1f31c32b8112-702fe89a-Zuulserver",
-    "cardLivenessRear": "20768948-7601-11f1-ac87-b73f3ca2f7f2-6636f4df-Zuulserver",
-    "faceLiveness": "23bf2e86-7602-11f1-aa3e-c122f0288833-2fc5eb94-Zuulserver",
-    "faceCompare": "23c018e1-7602-11f1-ac87-75a8dc21ac2c-c187695f-Zuulserver",
-    "faceMask": "23bc6f8c-7602-11f1-bd72-098ea85a785c-060a2def-Zuulserver"
-  },
-  "images": {
-    "frontUrl": "https://minio.example.com/ekyc/038xxx/attempt-1-front.jpg",
-    "backUrl": "https://minio.example.com/ekyc/038xxx/attempt-1-back.jpg"
-  },
-  "mrz": {
-    "line1": "IDVNM030207010063<<<<<<<<<<<<<<<",
-    "line2": "0301230M3001158VNM<<<<<<<<<<<<<<4",
-    "line3": "NGUYEN<<VAN<A<<<<<<<<<<<<<<<<<",
-    "overallProb": 0.97,
-    "validScore": 9,
-    "crossCheck": "PASS",
-    "checks": {
-      "id":     "MATCH",
-      "dob":    "MATCH",
-      "gender": "MATCH",
-      "expiry": "MATCH"
-    }
-  }
+  "attemptNumber": 1, "attemptAt": "...", "outcome": "VNPT_FAILED",
+  "vnptOcr": { "citizenId": "038xxx", "oldCitizenId": "-", "name": "NGUYEN VAN A", "citizenIdChip": "038xxxxxxxx", "qrMatchSummary": "PASS", "...": "còn lại: cardType/citizenIdProb/mrzValidScore/nationality" },
+  "fraudDetection": { "isTampered": "Y", "idFakeProb": 0.02, "...": "duplication/dob/address/issuedateFakeWarning" },
+  "cardIntegrity": { "frontRecaptured": "REAL", "frontEditedProb": 0.01, "...": "back tương tự" },
+  "imageQuality": { "frontBlurScore": 0.23, "frontLuminanceScore": 0.75, "...": "back tương tự" },
+  "crossValidation": { "matchId": "MATCH", "matchName": "MATCH", "matchBod": "MATCH", "matchSex": "MATCH" },
+  "livenessResults": { "cardFrontResult": "success", "faceResult": "failure", "cardFrontFakeProb": 0.12, "cardFrontFaceSwapping": false, "faceMultipleFaces": false, "...": "cardRear tương tự cardFront" },
+  "faceCompare": { "msg": "MATCH", "prob": 91.0, "matchWarning": "no", "multipleFaces": false },
+  "vnptLogIds": { "ocr": "...", "cardLivenessFront": "...", "cardLivenessRear": "...", "faceLiveness": "...", "faceCompare": "...", "faceMask": "..." },
+  "images": { "frontUrl": "https://minio.../attempt-1-front.jpg", "backUrl": "..." },
+  "mrz": { "line1": "IDVNM...", "line2": "...", "line3": "NGUYEN<<VAN<A...", "crossCheck": "PASS", "checks": { "id": "MATCH", "dob": "MATCH", "gender": "MATCH", "expiry": "MATCH" } }
 }
 ```
 
-> Cập nhật 2026-07-08: `matchValidDate` → `matchSex` (field cũ không tồn tại), `fakeLivenessProb`/`fakePrintPhotoProb` tách theo mặt trước/sau, thêm `qrMatchSummary`, `faceSwapping`, `multipleFaces`, và object `vnptLogIds` mới — xem lý do ở Section 0.4/0.5.
+> `crossValidation.matchSex` (không phải `matchValidDate` — field không tồn tại), `livenessResults`/`faceCompare` đều có `faceSwapping`/`multipleFaces`, và `vnptLogIds` — xem lý do map ở Section 0.4/0.5.
 
 ---
 
@@ -1420,71 +860,27 @@ public class EKycAttemptLogService {
         log.setFailureCode(req.getFailureCode());
         log.setFailureMessage(req.getFailureMessage());
 
-        // Extract VNPT fields từ rawData nếu có
+        // Extract VNPT fields từ rawData nếu có (xem buildAttemptLog, Section 2.3)
         if (StringUtils.isNotBlank(req.getVnptRawData())) {
             buildAttemptLog(log, req.getVnptRawData(), identifierId, attemptNumber);
         }
 
-        // Lưu nguyên văn 7 SDK log key còn lại — KHÔNG parse, KHÔNG lọc field.
-        // Đảm bảo audit đầy đủ dù App gửi field mà BE chưa có cột riêng để map.
+        // sdkRawLogs: lưu NGUYÊN VĂN, KHÔNG parse/lọc field — audit đầy đủ dù BE chưa có cột riêng cho field đó
         if (StringUtils.isNotBlank(req.getSdkRawLogs())) {
             log.setSdkRawLogs(req.getSdkRawLogs());
         }
 
-        // Map MRZ fields từ request (SDK-only, không có trong rawData)
-        log.setMrzLine1(req.getMrzLine1());
-        log.setMrzLine2(req.getMrzLine2());
-        log.setMrzLine3(req.getMrzLine3());   // mới 2026-07-08 — dòng họ tên MRZ
-        log.setMrzOverallProb(req.getMrzProb());
-        log.setVnptMrzValidScore(req.getMrzValidScore());
-        log.setMrzCrossCheck(req.getMrzCrossCheck());
-        log.setMrzCheckId(req.getMrzCheckId());
-        log.setMrzCheckDob(req.getMrzCheckDob());
-        log.setMrzCheckGender(req.getMrzCheckGender());
-        log.setMrzCheckExpiry(req.getMrzCheckExpiry());
+        // Set thẳng 1:1 các field còn lại từ request (MRZ, liveness/face-compare, 6 VNPT log ID) —
+        // đều là field App tự tính/có sẵn, không cần xử lý gì thêm phía BE. Tên field DTO khớp tên cột (camelCase).
 
-        // Map liveness & face compare fields
-        log.setLivenessCardFrontResult(req.getLivenessCardFrontResult());
-        log.setLivenessCardRearResult(req.getLivenessCardRearResult());
-        log.setLivenessFaceResult(req.getLivenessFaceResult());
-        log.setFaceMaskResult(req.getFaceMaskResult());
-
-        // Card liveness fraud detail — tách theo mặt (sửa 2026-07-08, xem Section 0.5)
-        log.setLivenessCardFrontFakeProb(req.getLivenessCardFrontFakeProb());
-        log.setLivenessCardFrontFakePrintProb(req.getLivenessCardFrontFakePrintProb());
-        log.setLivenessCardFrontFaceSwapping(req.getLivenessCardFrontFaceSwapping());
-        log.setLivenessCardRearFakeProb(req.getLivenessCardRearFakeProb());
-        log.setLivenessCardRearFakePrintProb(req.getLivenessCardRearFakePrintProb());
-        log.setLivenessCardRearFaceSwapping(req.getLivenessCardRearFaceSwapping());
-        log.setLivenessFaceMultipleFaces(req.getLivenessFaceMultipleFaces());
-
-        log.setFaceCompareMsg(req.getFaceCompareMsg());
-        log.setFaceCompareProb(req.getFaceCompareProb());
-        log.setFaceCompareMatchWarning(req.getFaceCompareMatchWarning());
-        log.setFaceCompareMultipleFaces(req.getFaceCompareMultipleFaces());
-
-        // VNPT log IDs — App đã có sẵn trong luồng /lotte/ekycs, chỉ cần gửi kèm (mới 2026-07-08)
-        log.setVnptOcrLogId(req.getOcrLogId());
-        log.setVnptCardLivenessFrontLogId(req.getCardLivenessFrontLogId());
-        log.setVnptCardLivenessRearLogId(req.getCardLivenessRearLogId());
-        log.setVnptFaceLivenessLogId(req.getFaceLivenessLogId());
-        log.setVnptFaceCompareLogId(req.getFaceCompareLogId());
-        log.setVnptFaceMaskLogId(req.getFaceMaskLogId());
-
-        // Upload ảnh nếu có
+        // Upload ảnh nếu có, theo cùng convention path với buildAttemptLog (Section 2.3)
         if (StringUtils.isNotBlank(req.getImageFrontBase64())) {
-            String frontUrl = imageStorageService.uploadBase64(
-                req.getImageFrontBase64(),
-                "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-front.jpg"
-            );
-            log.setImageFrontUrl(frontUrl);
+            log.setImageFrontUrl(imageStorageService.uploadBase64(
+                req.getImageFrontBase64(), "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-front.jpg"));
         }
         if (StringUtils.isNotBlank(req.getImageBackBase64())) {
-            String backUrl = imageStorageService.uploadBase64(
-                req.getImageBackBase64(),
-                "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-back.jpg"
-            );
-            log.setImageBackUrl(backUrl);
+            log.setImageBackUrl(imageStorageService.uploadBase64(
+                req.getImageBackBase64(), "ekyc/" + identifierId + "/attempt-" + attemptNumber + "-back.jpg"));
         }
 
         EKycAttemptLog saved = eKycAttemptLogRepository.save(log);
@@ -1834,7 +1230,7 @@ Thiết kế cũ (`Journey_API_Reference.md`) dựa trên interceptor bắt 11 A
 ## 1. Kiến trúc tổng quan
 
 ```
-App (nhsv-mts-rn) → mỗi khi khách hoàn tất 1 trong 10 bước đầu (xem Section 2)
+App (nhsv-mts-rn) → mỗi khi khách hoàn tất 1 trong 11 bước đầu (xem Section 2)
        │
        ▼
 POST /api/v1/ekycs/journey-log   (service: ekyc-admin)
@@ -1866,7 +1262,7 @@ Khi cần tra soát (compliance/audit) → chạy export tool (Section 8)
 
 **Vì sao 2 cơ chế ghi khác nhau trong cùng 1 bảng:**
 
-| | 10 step đầu (App-facing) | `ECONTRACT_SIGN_COMPLETED` |
+| | 11 step đầu (App-facing) | `ECONTRACT_SIGN_COMPLETED` |
 |---|---|---|
 | Ai ghi | App gọi API | Backend tự ghi |
 | Vì sao | Data chỉ tồn tại ở local state App (form chưa submit) | Nguồn dữ liệu là webhook FPT — single source of truth, không phụ thuộc App còn mở hay không, thiết bị nào |
@@ -1874,23 +1270,28 @@ Khi cần tra soát (compliance/audit) → chạy export tool (Section 8)
 
 ---
 
-## 2. Danh sách 11 step
+## 2. Danh sách 12 step
+
+> **Bổ sung 2026-07-20:** thêm step `PERSONAL_DATA_PROCESSING_CONSENT` — consent **hoàn toàn mới**, khác với `TERMS_AND_CONDITIONS_CONFIRMATION` (step 10, đồng ý điều khoản hợp đồng mở TK). Đây là consent xử lý dữ liệu cá nhân theo Nghị định 13/2023, phải xin **ngay sau khi có SĐT, trước khi gửi OTP** — tức trước khi bất kỳ dữ liệu SDK/sinh trắc học nào được thu thập. FE bắt buộc: checkbox chưa tick thì disable nút "Tiếp theo" (xem `Issues/FE_Issue.md`).
 
 | # | `step` | Ai ghi | Nguồn | Ghi chú |
 |---|---|---|---|---|
-| 1 | `EKYC_SEND_OTP` | App | Bổ sung 2026-07-15 | Gửi OTP xác thực SĐT |
-| 2 | `EKYC_VERIFY_OTP` | App | Bổ sung 2026-07-15 | Xác thực OTP thành công |
-| 3 | `GO_TO_ID_CARD_GUIDE` | App | result.json (PM cung cấp) | Khách xem hướng dẫn chụp CCCD; nhập SĐT/email/nationality/occupation |
-| 4 | `EKYC_FACE_SCAN` | App | result.json | Toàn bộ kết quả VNPT SDK (OCR, liveness, face-compare) — kể cả base64 ảnh |
-| 5 | `PERSONAL_INFORMATION` | App | result.json | Thông tin cá nhân xác nhận (birth_dt, address, FATCA...) |
-| 6 | `ACCOUNT_INFORMATION` | App | result.json | Loại tài khoản, chi nhánh, margin/derivative flags |
-| 7 | `BANK_INFORMATION` | App | result.json | Tài khoản ngân hàng nhận tiền |
-| 8 | `INVESTMENT_INFORMATION` | App | result.json | Mục tiêu đầu tư, khẩu vị rủi ro |
-| 9 | `TERMS_AND_CONDITIONS_CONFIRMATION` | App | result.json | Đồng ý điều khoản hợp đồng — **thay thế hoàn toàn sub-feature 05 cũ** |
-| 10 | `ACCOUNT_OPENING_COMPLETED` | App | result.json | **Mốc chốt** — session được giữ vĩnh viễn kể từ đây |
-| 11 | `ECONTRACT_SIGN_COMPLETED` | **Backend** (webhook FPT) | Bổ sung 2026-07-15 | Khách ký hợp đồng điện tử thành công — xem Section 6 |
+| 1 | `PERSONAL_DATA_PROCESSING_CONSENT` | App | Bổ sung 2026-07-20 | Khách tick "Tôi đã đọc và đồng ý với Điều khoản và điều kiện xử lý dữ liệu cá nhân" — màn hình đầu tiên, ngay sau khi nhập SĐT, trước khi gửi OTP. **Giữ vĩnh viễn**, không bị purge dù session bỏ dở (ngoại lệ duy nhất — xem Section 7) |
+| 2 | `EKYC_SEND_OTP` | App | Bổ sung 2026-07-15 | Gửi OTP xác thực SĐT |
+| 3 | `EKYC_VERIFY_OTP` | App | Bổ sung 2026-07-15 | Xác thực OTP thành công |
+| 4 | `GO_TO_ID_CARD_GUIDE` | App | result.json (PM cung cấp) | Khách xem hướng dẫn chụp CCCD; nhập SĐT/email/nationality/occupation |
+| 5 | `EKYC_FACE_SCAN` | App | result.json | Toàn bộ kết quả VNPT SDK (OCR, liveness, face-compare) — kể cả base64 ảnh |
+| 6 | `PERSONAL_INFORMATION` | App | result.json | Thông tin cá nhân xác nhận (birth_dt, address, FATCA...) |
+| 7 | `ACCOUNT_INFORMATION` | App | result.json | Loại tài khoản, chi nhánh, margin/derivative flags |
+| 8 | `BANK_INFORMATION` | App | result.json | Tài khoản ngân hàng nhận tiền |
+| 9 | `INVESTMENT_INFORMATION` | App | result.json | Mục tiêu đầu tư, khẩu vị rủi ro |
+| 10 | `TERMS_AND_CONDITIONS_CONFIRMATION` | App | result.json | Đồng ý điều khoản hợp đồng — **thay thế hoàn toàn sub-feature 05 cũ** |
+| 11 | `ACCOUNT_OPENING_COMPLETED` | App | result.json | **Mốc chốt** — session được giữ vĩnh viễn kể từ đây |
+| 12 | `ECONTRACT_SIGN_COMPLETED` | **Backend** (webhook FPT) | Bổ sung 2026-07-15 | Khách ký hợp đồng điện tử thành công — xem Section 6 |
 
 > Các API query thuần túy của luồng eKYC cũ (bank list, branch list, partner validate, econtract URL polling) **không** log riêng ở tầng này — không phải hành động compliance-relevant của khách hàng, chỉ là dữ liệu hỗ trợ màn hình.
+>
+> **Payload cho `PERSONAL_DATA_PROCESSING_CONSENT`** (đơn giản hoá 2026-07-20 — khác với step `TERMS_AND_CONDITIONS_CONFIRMATION`, không cần gửi toàn văn/version điều khoản): `{ isAgree: true, phoneNo }` là đủ — chỉ cần ghi nhận việc khách đã tick, không cần phức tạp hoá payload.
 
 ---
 
@@ -1902,12 +1303,12 @@ Khi cần tra soát (compliance/audit) → chạy export tool (Section 8)
 CREATE TABLE ekyc_journey_log (
   id              BIGINT AUTO_INCREMENT PRIMARY KEY,
 
-  session_id      VARCHAR(64)  NOT NULL COMMENT 'Định danh 1 hành trình — App generate khi bắt đầu, gửi kèm 10 step đầu. NULL cho step ECONTRACT_SIGN_COMPLETED (dùng e_kyc_id).',
+  session_id      VARCHAR(64)  NOT NULL COMMENT 'Định danh 1 hành trình — App generate khi bắt đầu, gửi kèm 11 step đầu. NULL cho step ECONTRACT_SIGN_COMPLETED (dùng e_kyc_id).',
   phone_no        VARCHAR(20)           COMMENT 'Khóa phụ trước khi có eKycId',
   identifier_id   VARCHAR(20)           COMMENT 'Số CCCD — có từ step EKYC_FACE_SCAN trở đi',
   e_kyc_id        BIGINT                COMMENT 'FK → e_kyc.id. NULL cho tới step ACCOUNT_OPENING_COMPLETED. Là khóa liên kết chính cho step ECONTRACT_SIGN_COMPLETED.',
 
-  step            VARCHAR(50)  NOT NULL COMMENT 'Enum theo 11 step — xem Section 2',
+  step            VARCHAR(50)  NOT NULL COMMENT 'Enum theo 12 step — xem Section 2',
   status          VARCHAR(20)  NOT NULL COMMENT 'SUCCESS / FAILED',
   payload         LONGTEXT     NOT NULL COMMENT 'Toàn bộ field App/webhook gửi cho step này — giữ nguyên, kể cả base64 ảnh',
 
@@ -1927,58 +1328,7 @@ CREATE TABLE ekyc_journey_log (
 
 **File:** `src/main/resources/config/liquibase/changelog/20260715000001_add_ekyc_journey_log.xml`
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.9.xsd">
-
-    <changeSet id="20260715000001" author="duc.nguyen">
-        <createTable tableName="ekyc_journey_log">
-            <column name="id" type="bigint" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-            <column name="session_id" type="varchar(64)"/>
-            <column name="phone_no" type="varchar(20)"/>
-            <column name="identifier_id" type="varchar(20)"/>
-            <column name="e_kyc_id" type="bigint"/>
-            <column name="step" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="status" type="varchar(20)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="payload" type="longtext">
-                <constraints nullable="false"/>
-            </column>
-            <column name="created_at" type="datetime">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_session">
-            <column name="session_id"/>
-        </createIndex>
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_identifier">
-            <column name="identifier_id"/>
-        </createIndex>
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_phone">
-            <column name="phone_no"/>
-        </createIndex>
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_ekyc">
-            <column name="e_kyc_id"/>
-        </createIndex>
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_step">
-            <column name="step"/>
-        </createIndex>
-        <createIndex tableName="ekyc_journey_log" indexName="idx_journey_created">
-            <column name="created_at"/>
-        </createIndex>
-    </changeSet>
-
-</databaseChangeLog>
-```
+Sinh 1:1 từ schema SQL ở Section 3.1 (cùng tên/kiểu cột) + 6 index đã khai báo ở đó (`session_id`, `identifier_id`, `phone_no`, `e_kyc_id`, `step`, `created_at`). Không cần liệt kê lại XML.
 
 ---
 
@@ -2028,6 +1378,7 @@ public class EKycJourneyLog implements Serializable {
 
 ```java
 public enum JourneyStepEnum {
+    PERSONAL_DATA_PROCESSING_CONSENT,   // mới 2026-07-20 — trước EKYC_SEND_OTP
     EKYC_SEND_OTP,
     EKYC_VERIFY_OTP,
     GO_TO_ID_CARD_GUIDE,
@@ -2044,7 +1395,7 @@ public enum JourneyStepEnum {
 
 ---
 
-## 5. API Contract — 10 step App-facing
+## 5. API Contract — 11 step App-facing
 
 **`POST /api/v1/ekycs/journey-log`** — service `ekyc-admin`, integration type **TradeX-native** (theo `tradex-api-conventions.md` Response Format Standards).
 
@@ -2052,9 +1403,9 @@ public enum JourneyStepEnum {
 // Request
 {
   sessionId: string,           // bắt buộc — App generate 1 lần/hành trình, gửi kèm mọi step
-  phoneNo?: string,             // bắt buộc tới khi có identifierId
+  phoneNo?: string,             // bắt buộc từ step PERSONAL_DATA_PROCESSING_CONSENT trở đi (chưa có identifierId lúc này)
   identifierId?: string,        // có từ step EKYC_FACE_SCAN trở đi
-  step: string,                  // bắt buộc — 1 trong 10 step Section 2 (trừ ECONTRACT_SIGN_COMPLETED)
+  step: string,                  // bắt buộc — 1 trong 11 step Section 2 (trừ ECONTRACT_SIGN_COMPLETED)
   status: "SUCCESS" | "FAILED",
   payload: object                // bắt buộc — toàn bộ field màn hình đó, giữ nguyên (kể cả base64 ảnh ở EKYC_FACE_SCAN)
 }
@@ -2065,7 +1416,7 @@ public enum JourneyStepEnum {
 
 **Validation:**
 - `sessionId`, `step`, `status`, `payload` bắt buộc → thiếu field nào trả `400 INVALID_PARAMETER` theo chuẩn `tradex-api-conventions.md`.
-- `step` phải thuộc `JourneyStepEnum` (10 giá trị App-facing) → sai giá trị trả `400` với `code: INVALID_VALUE`.
+- `step` phải thuộc `JourneyStepEnum` (11 giá trị App-facing) → sai giá trị trả `400` với `code: INVALID_VALUE`.
 - Không validate business rule của payload (nội dung form) — theo triết lý "Light Validation at TradeX" trong `tradex-api-conventions.md`.
 
 ---
@@ -2113,6 +1464,8 @@ if (contactId.equals(eContract.getIdentifierId())) {
 
 Giữ nguyên quyết định 2026-07-06(a): **chỉ giữ hành trình thành công**. Ngưỡng "bỏ dở" = 8 giờ, khớp `EKYC_SESSION_ID_EXPIRE_TIME` thực tế (`ekyc-admin/.../constant/Constants.java:235`).
 
+> **Ngoại lệ chốt 2026-07-20 (giải quyết theo PRD mục 4.4, ngoại lệ giữ vĩnh viễn bằng chứng consent):** riêng row `step = PERSONAL_DATA_PROCESSING_CONSENT` **luôn được giữ vĩnh viễn**, không bị purge dù session đó bỏ dở — vì đây là bằng chứng consent xử lý dữ liệu cá nhân, cần tồn tại độc lập với việc khách có hoàn tất mở tài khoản hay không (tương tự lý do `ekyc_attempt_log` không xóa dù outcome fail). Đây là **ngoại lệ duy nhất** — mọi step khác vẫn bị xóa theo đúng rule chung nếu session không đạt `ACCOUNT_OPENING_COMPLETED` trong 8h.
+
 ```java
 @Scheduled(cron = "0 0 * * * *") // mỗi giờ, đầu giờ
 public void purgeAbandonedJourneys() {
@@ -2131,10 +1484,11 @@ WHERE session_id IN (
     HAVING SUM(CASE WHEN step = 'ACCOUNT_OPENING_COMPLETED' THEN 1 ELSE 0 END) = 0
        AND started_at < NOW() - INTERVAL 8 HOUR
   ) t
-);
+)
+AND step != 'PERSONAL_DATA_PROCESSING_CONSENT';  -- mới 2026-07-20: loại trừ khỏi purge, giữ vĩnh viễn
 ```
 
-Không cần bảng phụ theo dõi trạng thái session — job tự suy ra "chưa hoàn tất" bằng cách kiểm tra thiếu row `ACCOUNT_OPENING_COMPLETED`. `ECONTRACT_SIGN_COMPLETED` không ảnh hưởng job này (luôn xảy ra sau khi session đã được giữ vĩnh viễn).
+Không cần bảng phụ theo dõi trạng thái session — job tự suy ra "chưa hoàn tất" bằng cách kiểm tra thiếu row `ACCOUNT_OPENING_COMPLETED`. `ECONTRACT_SIGN_COMPLETED` không ảnh hưởng job này (luôn xảy ra sau khi session đã được giữ vĩnh viễn). Sau khi purge 1 session bỏ dở, chỉ còn lại đúng 1 row `PERSONAL_DATA_PROCESSING_CONSENT` — đây là hành vi có chủ đích (bằng chứng consent), không phải bug.
 
 ---
 
@@ -2161,10 +1515,11 @@ Theo quyết định Phase 1 "không có màn hình admin" (README Review Log 20
 
 ## 10. Việc cần chốt trước khi implement
 
-- [ ] FE Lead xác nhận effort: cần sửa ~8 màn hình App để gọi `POST /ekycs/journey-log` tại đúng thời điểm mỗi step.
+- [ ] FE Lead xác nhận effort: cần sửa ~10 màn hình App (bổ sung 1 màn hình PDPD consent, 2026-07-20) để gọi `POST /ekycs/journey-log` tại đúng thời điểm mỗi step.
 - [ ] PDPD review: payload lưu đầy đủ PII + base64 ảnh sinh trắc học — cần xác nhận cách lưu này (LONGTEXT nguyên văn, không mã hoá field) đáp ứng yêu cầu bảo vệ dữ liệu cá nhân.
 - [ ] Xác nhận field `contractNo` có sẵn trực tiếp trên entity `EContract`/`EContractInfo` hay cần bổ sung (dev kiểm tra khi implement Section 6).
+- [x] **[Đã chốt 2026-07-20]** Xung đột purge policy giữa `PERSONAL_DATA_PROCESSING_CONSENT` và `ekyc_attempt_log` (PRD mục 4.4) — PO quyết định: **giữ row consent này vĩnh viễn**, loại trừ khỏi purge job (xem Section 7). Không cần tách bảng riêng — chỉ thêm điều kiện `AND step != 'PERSONAL_DATA_PROCESSING_CONSENT'` vào query xóa.
 
 ---
 
-**Document Status:** ✅ Complete | For: BE Dev (ekyc-admin team) | Next Steps: BE Lead + FE Lead xác nhận mục "Cần chốt" trong `BE_Issue.md` → implement Phần A + Phần B theo Task 1-14 (Task 15 sau) → QA verify theo Acceptance Criteria
+**Document Status:** ✅ Complete | For: BE Dev (ekyc-admin team) | Next Steps: BE Lead + FE Lead xác nhận mục "Cần chốt" trong `BE_Issue.md` → implement Phần A (Task 1-7) + Phần B (Yêu cầu chức năng & Quy tắc nghiệp vụ trong BE_Issue.md) → QA verify theo Acceptance Criteria

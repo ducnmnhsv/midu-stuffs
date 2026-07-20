@@ -305,7 +305,7 @@
         </ul>
       </div>
     </div>
-    <p style="margin-top:12px;font-size:12px">Chi tiết đầy đủ: <code>Planning/PRD_eKYC_v2.md</code> mục 7 (Out of scope) và <code>README.md</code> Status Tracker.</p>
+    <p style="margin-top:12px;font-size:12px">Chi tiết đầy đủ: <code>Scope_1/Planning/PRD.md</code> mục 7 (Out of scope) và <code>README.md</code> Status Tracker.</p>
   </section>
 
   <!-- Flow -->
@@ -515,8 +515,8 @@
     </div>
 
     <div class="card" style="margin-top:16px">
-      <h3>11 step hành trình mở tài khoản — Compliance Journey Log (redesign v2.0, 2026-07-15)</h3>
-      <p style="font-size:12px;margin-top:4px">App gọi <code>POST /ekycs/journey-log</code> tại 10 màn hình đầu, gửi kèm <strong>toàn bộ state màn hình đó</strong> (không chỉ tóm tắt) — vì nhiều field (occupation, tax_cd, text điều khoản đầy đủ...) chỉ tồn tại ở local state App, một interceptor bắt request API nghiệp vụ sẽ không thấy được. 10 step: <code>EKYC_SEND_OTP</code>, <code>EKYC_VERIFY_OTP</code>, <code>GO_TO_ID_CARD_GUIDE</code>, <code>EKYC_FACE_SCAN</code>, <code>PERSONAL_INFORMATION</code>, <code>ACCOUNT_INFORMATION</code>, <code>BANK_INFORMATION</code>, <code>INVESTMENT_INFORMATION</code>, <code>TERMS_AND_CONDITIONS_CONFIRMATION</code>, <code>ACCOUNT_OPENING_COMPLETED</code> (mốc chốt retention). Step thứ 11, <code>ECONTRACT_SIGN_COMPLETED</code>, do <strong>Backend tự ghi</strong> qua webhook FPT có sẵn (không qua App) — khóa liên kết <code>e_kyc_id</code>. Chi tiết đầy đủ: <code>Scope_1/Specifications/BE_Spec.md (Phần B)</code>.</p>
+      <h3>12 step hành trình mở tài khoản — Compliance Journey Log (redesign v2.0, 2026-07-15; +1 step PDPD consent, 2026-07-20)</h3>
+      <p style="font-size:12px;margin-top:4px">App gọi <code>POST /ekycs/journey-log</code> tại 11 màn hình đầu, gửi kèm <strong>toàn bộ state màn hình đó</strong> (không chỉ tóm tắt) — vì nhiều field (occupation, tax_cd, text điều khoản đầy đủ...) chỉ tồn tại ở local state App, một interceptor bắt request API nghiệp vụ sẽ không thấy được. 11 step: <code>PERSONAL_DATA_PROCESSING_CONSENT</code> (mới 2026-07-20 — checkbox bắt buộc, chặn nút "Tiếp theo"), <code>EKYC_SEND_OTP</code>, <code>EKYC_VERIFY_OTP</code>, <code>GO_TO_ID_CARD_GUIDE</code>, <code>EKYC_FACE_SCAN</code>, <code>PERSONAL_INFORMATION</code>, <code>ACCOUNT_INFORMATION</code>, <code>BANK_INFORMATION</code>, <code>INVESTMENT_INFORMATION</code>, <code>TERMS_AND_CONDITIONS_CONFIRMATION</code>, <code>ACCOUNT_OPENING_COMPLETED</code> (mốc chốt retention). Step thứ 12, <code>ECONTRACT_SIGN_COMPLETED</code>, do <strong>Backend tự ghi</strong> qua webhook FPT có sẵn (không qua App) — khóa liên kết <code>e_kyc_id</code>. Chi tiết đầy đủ: <code>Scope_1/Specifications/BE_Spec.md (Phần B)</code>.</p>
       <div class="alert alert-yellow" style="margin-top:10px;font-size:12px">
         <strong>Redesign 2026-07-15:</strong> thay thế hoàn toàn thiết kế cũ (API-call-based, interceptor, chỉ lưu <code>response_summary</code>) — cũng gộp luôn sub-feature 05 (Contract Terms Checkbox Log, đã xóa) vào step <code>TERMS_AND_CONDITIONS_CONFIRMATION</code>. Vẫn giữ quyết định 2026-07-06: chỉ giữ hành trình <strong>thành công</strong>, xóa sau 8h nếu chưa tới <code>ACCOUNT_OPENING_COMPLETED</code>.
       </div>
