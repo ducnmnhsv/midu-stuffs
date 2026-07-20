@@ -88,5 +88,5 @@ print(json.dumps({
         "additionalContext": context
     }
 }))
-'
+' || exit 0
 exit 0
