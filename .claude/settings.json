@@ -4,6 +4,17 @@
     "ECC_GATEGUARD": "off"
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./.claude/skills/prompt-loop/hooks/on-submit.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
