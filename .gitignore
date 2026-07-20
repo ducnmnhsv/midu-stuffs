@@ -6,3 +6,7 @@ TradeX MCP/Knowledge based/ekyc-admin/
 
 # Claude sessions — sync thủ công qua scripts/claude-save.sh & claude-restore.sh
 # .claude-sessions/ KHÔNG bị ignore để có thể commit lên GitHub
+
+# Prompt Improvement Loop — raw signal log (may contain verbatim prompts) and local disable toggle
+.claude/skills/prompt-loop/data/learnings.jsonl
+.claude/skills/prompt-loop/data/disabled
