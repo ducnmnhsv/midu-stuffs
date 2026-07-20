@@ -1,6 +1,6 @@
-# eKYC v3.0 — Tổng quan
+# eKYC v4.0 — Tổng quan
 
-Hệ thống lưu trữ biometric log + compliance journey log cho quá trình mở tài khoản qua eKYC (VNPT). **Scope 1 (đang triển khai) thuần backend/DB — không có màn hình admin nào.** Tra cứu hành trình, dashboard analytics, MRZ validation và lưu ảnh CCCD đều để Scope 2.
+Hệ thống ghi nhật ký hành trình mở tài khoản qua eKYC (VNPT) — **1 luồng duy nhất** (từ 2026-07-20, gộp biometric attempt log + compliance journey log trước đây). **Scope 1 (đang triển khai) thuần backend/DB — không có màn hình admin nào.** Tra cứu hành trình, dashboard analytics, MRZ validation và lưu ảnh CCCD đều để Scope 2.
 
 **Vấn đề cốt lõi:** `CustomEKycService.java:211` xóa records PENDING cũ khi user retry → không có audit trail, không trace được lý do fail.
 
@@ -11,7 +11,7 @@ Hệ thống lưu trữ biometric log + compliance journey log cho quá trình m
 > Folder nhóm theo **Scope** (2026-07-15), và bên trong mỗi Scope nhóm tiếp theo **loại tài liệu** (`Planning/` / `Specifications/` / `Issues/` / `demos/`) dùng chung cho mọi sub-feature — thay vì mỗi sub-feature có cây thư mục riêng (tránh phân mảnh nhiều folder con chỉ có 1 file).
 >
 > **Naming convention theo Scope (2026-07-20):**
-> - **Scope_1** (đã gộp hoàn toàn theo loại tài liệu) — tên file chỉ còn `PRD.md` / `BE_Spec.md` / `BE_Issue.md` / `FE_Issue.md`, không còn số thứ tự sub-feature ở đầu tên (sub-feature nào nằm trong Phần A/Phần B đọc trong file). Ưu tiên nhận biết loại tài liệu ngay từ tên file khi list folder. PRD riêng của Scope 1 (tách khỏi PRD chung 2026-07-20) — vì nội dung đã 100% là yêu cầu Scope 1, không còn phần chung với Scope 2.
+> - **Scope_1** (đã gộp hoàn toàn theo loại tài liệu, rồi gộp tiếp theo audience 2026-07-20) — chỉ còn 2 file: `Planning/PRD.md` (business, prose-only — PM/BA/Compliance đọc) và `Tech_Spec.md` (kỹ thuật, có "Phần FE" + "Phần BE" — FE và BE Dev cùng đọc 1 file, thay thế `Specifications/BE_Spec.md` + `Issues/BE_Issue.md` + `Issues/FE_Issue.md` cũ). Không còn folder `Specifications/`/`Issues/` riêng cho Scope 1 — 01 (Biometric Attempt Log) đã gộp hoàn toàn vào luồng Journey Log (07) từ 2026-07-20.
 > - **Scope_2** (chưa gộp — mỗi sub-feature vẫn 1 issue/spec riêng, chưa có PRD riêng) — vẫn giữ số thứ tự sub-feature (01, 02...) ở đầu tên file, xuyên suốt lịch sử review log, để biết file nào thuộc sub-feature nào.
 
 ```
@@ -21,14 +21,10 @@ eKYC/
 │
 ├── Scope_1/                                        🔄 Đang triển khai — thuần backend/DB, KHÔNG có admin UI
 │   ├── Planning/
-│   │   └── PRD.md               ← Yêu cầu nghiệp vụ riêng cho Scope 1 (tách khỏi Planning/PRD_eKYC_v2.md cũ, 2026-07-20)
-│   ├── Specifications/
-│   │   └── BE_Spec.md          ← 1 file BE spec duy nhất — Phần A (canonical DB schema/service/REST cho 01) + Phần B (redesign v2.0 cho 07). Gộp 2026-07-20, thay thế 01_Biometric_Attempt_Log_Backend_Spec.md + 07_Compliance_Journey_Log_Backend_Spec.md cũ
-│   ├── Issues/
-│   │   ├── BE_Issue.md         ← 14 BE tasks — gộp chung 01 + 07 (thay thế 01_BE_Issue_Biometric_Log_Storage.md cũ)
-│   │   └── FE_Issue.md         ← Phần A (attempt-log, sub-feature 01, mới 2026-07-20) + Phần B (journey-log tại 11 bước, sub-feature 07, mới 2026-07-16; +1 bước PDPD consent 2026-07-20)
+│   │   └── PRD.md               ← Yêu cầu nghiệp vụ (business, prose-only) — PM/BA/Compliance đọc
+│   ├── Tech_Spec.md             ← 1 file kỹ thuật duy nhất cho cả FE + BE (gộp 2026-07-20, thay thế Specifications/BE_Spec.md + Issues/BE_Issue.md + Issues/FE_Issue.md cũ) — 01 + 07 gộp hoàn toàn thành 1 luồng; VNPT data là payload của step EKYC_FACE_SCAN, chỉ ghi khi thành công
 │   └── demos/
-│       └── Overview.html       ← Tổng hợp yêu cầu BE + FE của Scope 1 (cập nhật 2026-07-20 — trước đó chỉ là phân tích gap VNPT SDK)
+│       └── Overview.html       ← Tổng hợp yêu cầu BE + FE của Scope 1 (⚠️ chưa cập nhật theo Tech_Spec.md — vẫn phản ánh cấu trúc 3 file cũ)
 │
 └── Scope_2/                                        ⏸ Sau — chưa triển khai, mọi thứ hiển thị lên admin page (+ Story vãng lai chưa thiết kế)
     ├── Specifications/
@@ -43,11 +39,12 @@ eKYC/
 ```
 
 **Sub-feature không có file vật lý (chỉ ghi nhận trong README):**
-- **05 Contract Terms Checkbox Log** — ĐÃ XÓA (2026-07-15). Gộp vào `BE_Spec.md` (Phần B) — step `TERMS_AND_CONDITIONS_CONFIRMATION` đã bao phủ trọn vẹn mục đích của 05 (lưu `isAgree` + timestamp). Xem Review Log bên dưới.
+- **01 Biometric Attempt Log** — ĐÃ GỘP HOÀN TOÀN vào luồng Journey Log (2026-07-20, theo PRD v4.0 mục 4). Không còn bảng/API riêng — dữ liệu VNPT SDK giờ là payload của step `EKYC_FACE_SCAN` trong `Tech_Spec.md`, và **chỉ ghi khi verification thành công** (đảo ngược so với append-only trước đây). Xem Review Log bên dưới.
+- **05 Contract Terms Checkbox Log** — ĐÃ XÓA (2026-07-15). Gộp vào `Tech_Spec.md` — step `TERMS_AND_CONDITIONS_CONFIRMATION` đã bao phủ trọn vẹn mục đích của 05 (lưu `isAgree` + timestamp). Xem Review Log bên dưới.
 - **06 Image Storage** (Scope 2) — deferred, phụ thuộc MinIO/S3 infra, chưa có tài liệu.
 - **08 Incomplete Journey Log** (Scope 2) — placeholder cho Story vãng lai (hành trình chưa hoàn tất + retry eKYC), chưa brainstorm, chưa có tài liệu.
 
-> ✅ Gap "sub-feature 01 chưa có FE issue" (ghi nhận 2026-07-20a) đã đóng — xem Review Log 2026-07-20(e).
+> ⚠️ **Gap mới (2026-07-20):** `Scope_2/Issues/02_FE_Issue_Admin_Attempt_History.md` và `Scope_2/Specifications/03_Dashboard_API_Spec.md` vẫn tham chiếu bảng/API `ekyc_attempt_log` cũ (đã xóa khỏi Scope 1) — cần viết lại để trỏ vào `ekyc_journey_log` khi mở lại Scope 2.
 
 ---
 
@@ -59,8 +56,7 @@ eKYC/
 
 | Sub-feature | Ghi chú |
 |-------------|---------|
-| 01 Biometric Attempt Log (backend) | Spec: `Scope_1/Specifications/BE_Spec.md` (Phần A — canonical). Issue BE gộp chung với 07: `Scope_1/Issues/BE_Issue.md`. Issue FE gộp chung với 07: `Scope_1/Issues/FE_Issue.md` (Phần A — App gọi `/ekycs/attempt-log`) |
-| 07 Compliance Journey Log | Redesign v2.0 — spec: `Scope_1/Specifications/BE_Spec.md` (Phần B). Issue BE gộp chung với 01 (file trên); Issue FE gộp chung với 01: `Scope_1/Issues/FE_Issue.md` (Phần B — App gọi API tại 11 bước). Chờ BE Lead + FE Lead xác nhận effort + PDPD review (giải thích PDPD: `Scope_1/Planning/PRD.md` mục 6) |
+| 01 + 07 — Nhật ký Hành trình Mở tài khoản (gộp 2026-07-20) | 1 luồng duy nhất — kỹ thuật: `Scope_1/Tech_Spec.md` (Phần FE + Phần BE trong 1 file, App gọi API tại 11 bước, bước 5 chỉ gọi khi VNPT thành công). Chờ BE Lead + FE Lead xác nhận effort + PDPD review (giải thích PDPD: `Scope_1/Planning/PRD.md` mục 6) |
 
 **Scope 2 — Sau (2026-07-06: mọi hiển thị log lên admin page đều defer; 2026-07-15: bổ sung Story vãng lai):**
 
@@ -78,20 +74,17 @@ eKYC/
 
 **Scope 1 (backend/DB only):**
 ```
-Sub-feature 01 (BE — biometric log, attempt-log API)
-  └─→ (độc lập) Sub-feature 07 (BE — App gọi journey-log API tại 10 màn hình + BE hook webhook FPT, bảng riêng ekyc_journey_log — xem BE_Spec.md Phần B)
+01 + 07 — Nhật ký Hành trình Mở tài khoản (BE — App gọi journey-log API tại 11 bước + BE hook webhook FPT, 1 bảng ekyc_journey_log duy nhất — xem Tech_Spec.md)
 ```
-> 05 (Contract Terms Checkbox Log) đã gộp vào 07 — không còn là dependency riêng, xem Review Log 2026-07-15.
+> 05 (Contract Terms Checkbox Log) đã gộp vào 07 (2026-07-15); 01 (Biometric Attempt Log) đã gộp vào 07 (2026-07-20) — không còn là sub-feature độc lập, xem Review Log tương ứng.
 
 **Scope 2 (deferred — tất cả phụ thuộc Scope 1 đã live):**
 ```
-Sub-feature 01 (phải live)
-  └─→ Sub-feature 02 (FE Admin — danh sách + detail hành trình)
-  └─→ Sub-feature 03 (FE Dashboard Analytics, cần thêm BE dashboard API)
+01 + 07 (phải live, giờ là 1 luồng duy nhất — xem Scope 1 ở trên)
+  └─→ Sub-feature 02 (FE Admin — danh sách + detail hành trình) — ⚠️ cần viết lại spec để query bảng ekyc_journey_log mới (xem gap ở trên)
+  └─→ Sub-feature 03 (FE Dashboard Analytics, cần thêm BE dashboard API) — ⚠️ tương tự, cần viết lại
   └─→ Sub-feature 04 (App MRZ Validation)
   └─→ Sub-feature 06 (Image Storage — MinIO/S3, phục vụ hiển thị ảnh trên 02/03)
-
-Sub-feature 07 (phải live)
   └─→ Sub-feature 08 (Incomplete Journey Log — vãng lai + retry eKYC, chưa thiết kế)
 ```
 
@@ -134,7 +127,10 @@ Sub-feature 07 (phải live)
 - **2026-07-20 (g):** **Viết lại PRD theo style BA/PO, gọn hơn** — PO yêu cầu tránh dài dòng/quá nhiều code. Rút gọn `Planning/PRD_eKYC_v2.md` (233→169 dòng): bỏ bảng lịch sử thay đổi chi tiết từng ngày (đã có ở Review Log này), nén 5 câu hỏi Section 7 xuống còn câu hỏi mở duy nhất, bỏ hết SQL/JSON/code inline (chi tiết kỹ thuật trỏ sang `BE_Spec.md`).
 - **2026-07-20 (h):** **Tách PRD riêng cho Scope 1** — PO yêu cầu 1 PRD độc lập cho các task Scope 1, không dùng chung `Planning/` với Scope 2. Chuyển `Planning/PRD_eKYC_v2.md` → `Scope_1/Planning/PRD.md` (đổi tên, bỏ hậu tố `_v2`, cùng convention không-số-thứ-tự với `BE_Spec.md`/`BE_Issue.md`/`FE_Issue.md`). Nội dung giữ nguyên 100% từ bản rút gọn (g) — chỉ đổi vị trí + sửa lại đường dẫn tương đối (`../README.md`, `../Specifications/...`). `Planning/` (thư mục gốc, dùng chung) giờ chỉ còn `eKYC-summary.html` — tài liệu thực sự cross-scope duy nhất. Cập nhật link chéo ở README (tree, Shared Resources), `eKYC-summary.html`, `Overview.html`. Scope 2 chưa có PRD riêng — sẽ tạo khi mở lại scope.
 - **2026-07-20 (i):** **Bổ sung mục "FE cần làm" / "BE cần làm" vào `Scope_1/Planning/PRD.md`** — PO yêu cầu PRD chi tiết hơn, tham khảo cấu trúc từ PRD dự án trước (Derivatives sub-account có ma trận trách nhiệm FE/BE; Event Calendar có section riêng "BE — Sync Job" / "FE — Yêu cầu kỹ thuật"). Thêm 3 mục mới (10-12): ma trận tổng quan trách nhiệm FE vs BE theo hạng mục, mục 11 "FE cần làm" (theo sub-feature 01/07 + rule chung, ở mức nghiệp vụ — không code), mục 12 "BE cần làm" (tương tự). Cả 2 mục đều trỏ sang `FE_Issue.md`/`BE_Spec.md`+`BE_Issue.md` cho chi tiết kỹ thuật đầy đủ — PRD chỉ nêu "làm gì", không nêu "làm thế nào". 169 → 226 dòng.
+- **2026-07-20 (j):** **PRD v4.0 — Gộp sub-feature 01 (Biometric Attempt Log) vào 07 (Compliance Journey Log) thành 1 luồng duy nhất** — PO chốt lại thiết kế ở `Scope_1/Planning/PRD.md` mục 4: mục tiêu Scope 1 là bằng chứng hành trình mở tài khoản, không phải phân tích/thống kê thất bại biometric, nên không cần giữ vĩnh viễn riêng các lần thử fail của bước xác thực khuôn mặt/CCCD (VNPT) như thiết kế 01 cũ. **Thay đổi cốt lõi:** bước `EKYC_FACE_SCAN` giờ **chỉ ghi log khi VNPT xác thực thành công** — đảo ngược quyết định append-only đã chốt cho 01 (2026-07-01 → 2026-07-08); dữ liệu VNPT SDK (OCR, liveness, fraud detection, face compare) giờ là payload JSON của step này thay vì ~90 cột DB riêng. **Bổ sung mới:** liên kết ngược các session thất bại trước đó (trong vòng 8h) về tài khoản khi khách mở thành công (PRD mục 4.4) — đảm bảo lịch sử retry không mất khi tra soát; purge job đổi điều kiện từ "thiếu step ACCOUNT_OPENING_COMPLETED" sang "e_kyc_id IS NULL" để bao phủ cả 2 trường hợp. **Loại bỏ khỏi Scope 1:** Admin REST API cũ (`/api/admin/ekyc/attempts/*`) và cột `e_kyc.total_attempts`/`first_attempt_at` — các thành phần này thực chất phục vụ Scope 2 (Admin Attempt History, đã defer), không thuộc phạm vi "0 UI" của Scope 1; công cụ tra soát nội bộ dùng export script đã có sẵn. Cập nhật toàn bộ `BE_Spec.md` (viết lại thành 1 tài liệu thống nhất, không còn Phần A/Phần B, ~1526 → ~525 dòng), `BE_Issue.md` (bỏ Task 1-7 kiểu Java/SQL, viết lại toàn bộ theo style BA/PO nhất quán với phần đã có), `FE_Issue.md` (bỏ phần gọi `attempt-log`, thêm business rule riêng bước 5 "chỉ gọi khi thành công", xác nhận App không còn gọi API đó nữa). **Gap ghi nhận cho Scope 2:** `Scope_2/Issues/02_FE_Issue_Admin_Attempt_History.md` và `Scope_2/Specifications/03_Dashboard_API_Spec.md` vẫn tham chiếu bảng/API cũ — cần viết lại khi mở lại Scope 2 (chưa xử lý trong lần sync này, ngoài phạm vi Scope 1).
+- **2026-07-20 (k):** **Mở rộng `Scope_1/Planning/PRD.md` mục 4.1 + mục 8** — theo yêu cầu PO. Mục 4.1: thêm bảng liệt kê dữ liệu nghiệp vụ ghi lại ở từng bước trong 12 bước hành trình (trước đây chỉ liệt kê tên bước dạng câu văn), giúp đọc nhanh mà không cần mở tài liệu kỹ thuật. Mục 8: câu hỏi mở về tuân thủ Nghị định 13/2023 (lưu vĩnh viễn dữ liệu nhạy cảm) được tách thành 5 câu hỏi cụ thể hơn (đánh giá tác động dữ liệu nhạy cảm, biện pháp bảo mật kỹ thuật, thời hạn lưu trữ gắn với nghĩa vụ luật định thay vì "vĩnh viễn" tuyệt đối, quyền yêu cầu xóa dữ liệu của khách, mục đích lưu IP), kèm 1 đoạn sơ bộ đánh giá (không thay thế rà soát pháp lý chính thức) nêu rõ những điểm thiết kế đã có căn cứ hợp lý — giúp Compliance/Legal rà soát nhanh hơn thay vì bắt đầu từ đầu.
+- **2026-07-20 (l):** **Gộp `Specifications/BE_Spec.md` + `Issues/BE_Issue.md` + `Issues/FE_Issue.md` thành 1 file `Tech_Spec.md`** — theo yêu cầu PO: "cả FE & BE đều vào đây đọc cho đỡ phân mảnh". Rule C3 (`Planning/` = prose-only, no code) khiến việc nhét thẳng nội dung này vào `PRD.md` không khả thi — đã trình bày trade-off cho PO và thống nhất phương án: giữ `PRD.md` thuần business (Planning/, prose-only, đúng rule), gộp 3 file kỹ thuật (Specifications/ + Issues/, đều đã là code/technical detail) thành 1 file `Tech_Spec.md` đặt trực tiếp dưới `Scope_1/` — không còn thuộc riêng loại "Specifications" hay "Issues" nữa vì giờ chứa cả hai. Cấu trúc file mới: phần đầu dùng chung (bối cảnh, kiến trúc, danh sách 12 step, quy tắc nghiệp vụ chung), sau đó tách "Phần FE" và "Phần BE" — mỗi phần có Yêu cầu chức năng + Acceptance Criteria riêng, cuối file là lịch sử thiết kế + "Cần chốt trước khi implement" dùng chung. Xóa folder `Scope_1/Specifications/` và `Scope_1/Issues/` (không còn file nào bên trong). Cập nhật toàn bộ link chéo trong `PRD.md` (mọi tham chiếu `../Specifications/BE_Spec.md`/`../Issues/BE_Issue.md`/`../Issues/FE_Issue.md` → `../Tech_Spec.md`) và README (tree, Status Tracker, Dependency Order). **Chưa xử lý trong lần này** (ghi nhận thêm gap): `Scope_1/demos/Overview.html`, `Planning/eKYC-summary.html`, và 2 file Scope_2 đã ghi nhận ở review log (j) vẫn tham chiếu cấu trúc/tên file cũ (`BE_Spec.md` Phần A/Phần B) — cần rà soát khi có nhu cầu, ngoài phạm vi yêu cầu lần này.
 
 ---
 
-**Document Status:** ✅ Updated | For: Dev Team + BA + PM | Next Steps: BE Lead + FE Lead xác nhận `Scope_1/Specifications/BE_Spec.md` (Phần B) Section 10 → implement Scope 1 (01 + 07) → go-live → mở lại Scope 2 (02 + 03 + 04 + 06 + 08). PO quyết định có cần viết FE issue cho sub-feature 01 (attempt-log) trước khi implement Task 5 hay không.
+**Document Status:** ✅ Updated | For: Dev Team + BA + PM | Next Steps: BE Lead + FE Lead xác nhận `Scope_1/Tech_Spec.md` mục "Cần chốt trước khi implement" → implement theo Phần FE + Phần BE trong cùng file → go-live → mở lại Scope 2 (02 + 03 + 04 + 06 + 08, cần viết lại 02/03 để khớp schema `ekyc_journey_log` mới).
