@@ -380,17 +380,17 @@
   <div class="page-head">
     <div>
       <div class="page-title">Khuyến nghị</div>
-      <div class="page-sub">Quản lý 3 nguồn nội dung khuyến nghị NHSV — Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày</div>
+      <div class="page-sub">Quản lý 3 nguồn nội dung khuyến nghị NHSV — v1.2: Cơ bản · Kỹ thuật hằng ngày · NHSV Rating (mobile entry point: card Home, không còn trong NHSV Channel)</div>
     </div>
   </div>
 
   <div class="subtabs" role="tablist" aria-label="Loại khuyến nghị">
-    <button class="subtab active" id="tab-dmcb" role="tab" aria-selected="true" onclick="switchView('dmcb')">Danh mục cơ bản</button>
-    <button class="subtab" id="tab-rating" role="tab" aria-selected="false" onclick="switchView('rating')">NHSV Rating</button>
+    <button class="subtab active" id="tab-dmcb" role="tab" aria-selected="true" onclick="switchView('dmcb')">Cơ bản</button>
     <button class="subtab" id="tab-kythuat" role="tab" aria-selected="false" onclick="switchView('kythuat')">Kỹ thuật hằng ngày</button>
+    <button class="subtab" id="tab-rating" role="tab" aria-selected="false" onclick="switchView('rating')">NHSV Rating</button>
   </div>
 
-  <!-- ══════════ VIEW: DANH MUC CO BAN ══════════ -->
+  <!-- ══════════ VIEW: CO BAN (v1.2) ══════════ -->
   <section class="view active" id="view-dmcb">
 
     <div class="stats">
@@ -427,19 +427,19 @@
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Mã CK</th><th>Phân khúc</th><th>Giá KN</th><th>Giá kỳ vọng</th><th>Ngày KN</th><th>Hết hiệu lực</th><th>PDF</th><th>Trạng thái</th><th>Thao tác</th>
+            <th>Mã CK</th><th>Phân khúc</th><th>Giá kỳ vọng</th><th>Ngày KN</th><th>Hết hiệu lực</th><th>Report</th><th>Trạng thái</th><th>Thao tác</th>
           </tr></thead>
           <tbody>
             <tr>
               <td class="code-cell"><div class="code">VCB</div><div class="name">Vietcombank · HOSE</div></td>
               <td><span class="chip chip-bluechip">Bluechip</span></td>
-              <td class="num">29.200</td>
               <td class="num" style="color:var(--green);font-weight:700">40.000</td>
               <td class="num">04/06/26</td>
               <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
-              <td><span class="pdf-chip">2.4 MB</span></td>
+              <td><span class="pdf-chip" title="Link NH Research">NH Research</span></td>
               <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
               <td><div class="act-group">
+                <button class="act-btn" title="Lịch sử mốc" onclick="alert('Lịch sử: 2 mốc — 04/06/26 (current) · 12/03/26')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
                 <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                 <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
               </div></td>
@@ -447,13 +447,13 @@
             <tr>
               <td class="code-cell"><div class="code">TV1</div><div class="name">Tân Tạo · HNX</div></td>
               <td><span class="chip chip-midcap">Midcap</span></td>
-              <td class="num">24.500</td>
               <td class="num" style="color:var(--green);font-weight:700">43.900</td>
               <td class="num">17/04/26</td>
               <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
-              <td><span class="pdf-chip">1.8 MB</span></td>
+              <td><span class="pdf-chip" title="Upload PDF riêng">1.8 MB</span></td>
               <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
               <td><div class="act-group">
+                <button class="act-btn" title="Lịch sử mốc" onclick="alert('Lịch sử: 1 mốc — 17/04/26 (current)')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
                 <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                 <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
               </div></td>
@@ -461,13 +461,13 @@
             <tr>
               <td class="code-cell"><div class="code">GMD</div><div class="name">Gemadept · HOSE</div></td>
               <td><span class="chip chip-bluechip">Bluechip</span></td>
-              <td class="num">75.500</td>
               <td class="num" style="color:var(--green);font-weight:700">90.000</td>
               <td class="num">02/07/26</td>
               <td class="num" style="color:var(--amber);font-weight:700">15/07/26</td>
               <td><span class="pdf-chip none">Chưa có</span></td>
               <td><span class="chip chip-expiring"><span class="chip-dot"></span>Sắp hết hiệu lực</span></td>
               <td><div class="act-group">
+                <button class="act-btn" title="Lịch sử mốc" onclick="alert('Lịch sử: 1 mốc — 02/07/26 (current)')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
                 <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
                 <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
               </div></td>
@@ -475,7 +475,6 @@
             <tr style="opacity:.55">
               <td class="code-cell"><div class="code">FPT</div><div class="name">FPT Corp · HOSE</div></td>
               <td><span class="chip chip-bluechip">Bluechip</span></td>
-              <td class="num">118.000</td>
               <td class="num">135.000</td>
               <td class="num">02/03/26</td>
               <td class="num">30/06/26</td>
@@ -641,7 +640,7 @@
         Thêm entry
       </button>
     </div>
-    <div class="fhint" style="margin:-6px 0 12px;">Xem được cả ngày trong quá khứ — gồm cả entry đã Publish và còn Nháp. Ngày không có mã nào (kể cả Nháp) → bảng trống, API trả <code>technicals: []</code>, HTTP 200 (không phải 404).</div>
+    <div class="fhint" style="margin:-6px 0 12px;">Xem được cả ngày trong quá khứ — gồm cả entry đã Publish và còn Nháp. Ngày không có mã nào (kể cả Nháp) → bảng trống, API trả <code>technicals: []</code>, HTTP 200 (không phải 404). (v1.2) Lưu ý: giới hạn "chỉ hiện 14 ngày gần nhất" chỉ áp dụng cho mobile — Admin ở đây vẫn xem/sửa được mọi ngày, không giới hạn.</div>
 
     <div class="panel">
       <div class="panel-head">
@@ -657,18 +656,18 @@
         </table>
       </div>
       <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
-        <div class="panel-meta">Entry "Nháp" <strong>không</strong> hiển thị trên app — chỉ lên app sau khi bấm "Publish ngày...". Xoá ở bảng này luôn là hard delete (khác Danh mục cơ bản dùng soft archive), áp dụng cho cả Nháp và đã publish. "Upsize" hiện gạch ngang khi không có giá trị.</div>
+        <div class="panel-meta">Entry "Nháp" <strong>không</strong> hiển thị trên app — chỉ lên app sau khi bấm "Publish ngày...". Xoá ở bảng này luôn là hard delete (khác Cơ bản dùng soft archive), áp dụng cho cả Nháp và đã publish. "Upsize" hiện gạch ngang khi không có giá trị. Mọi entry ngầm định <code>recommendationType=BUY</code> (v1 chưa cho chọn SELL/HOLD).</div>
       </div>
     </div>
   </section>
 
 </div>
 
-<!-- ══════════ MODAL: Danh mục cơ bản ══════════ -->
+<!-- ══════════ MODAL: Cơ bản (v1.2) ══════════ -->
 <div class="modal-overlay" id="modal-dmcb">
   <div class="modal">
     <div class="modal-head">
-      <div class="modal-title">Thêm khuyến nghị — Danh mục cơ bản</div>
+      <div class="modal-title">Thêm khuyến nghị — Cơ bản</div>
       <button class="modal-close" onclick="closeModal('modal-dmcb')" aria-label="Đóng">✕</button>
     </div>
     <div class="modal-body">
@@ -687,8 +686,9 @@
       </div>
       <div class="frow">
         <div class="fgroup">
-          <label class="flabel">Giá tại ngày KN <span class="req">*</span></label>
-          <input class="ftext" id="dmcb-price" type="text" inputmode="decimal" value="29200" oninput="calcPotential()">
+          <label class="flabel">Giá hiện tại <span class="opt">(tự động — thị trường)</span></label>
+          <input class="ftext" id="dmcb-price" type="text" value="31800" disabled style="color:var(--text-muted)" oninput="calcPotential()">
+          <div class="fhint">(v1.2) Lấy live từ market data service — không còn nhập tay "Giá tại ngày KN"</div>
         </div>
         <div class="fgroup">
           <label class="flabel">Giá kỳ vọng <span class="req">*</span></label>
@@ -696,8 +696,8 @@
         </div>
       </div>
       <div class="live-calc">
-        <span class="lc-l">Tiềm năng ước tính</span>
-        <span class="lc-v" id="dmcb-potential">+36,99%</span>
+        <span class="lc-l">% tiềm năng (live)</span>
+        <span class="lc-v" id="dmcb-potential">+25,79%</span>
       </div>
       <div class="frow">
         <div class="fgroup">
@@ -715,19 +715,29 @@
         <textarea class="ftextarea" placeholder="Tóm tắt lý do khuyến nghị — hiển thị ở màn chi tiết trên app..."></textarea>
       </div>
       <div class="fgroup">
-        <label class="flabel">Báo cáo PDF <span class="opt">(tuỳ chọn)</span></label>
-        <div class="upload-zone" style="padding:16px;">
-          <svg class="uz-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          <div class="uz-title" style="font-size:12px;">Kéo thả hoặc chọn PDF</div>
-          <div class="uz-hint">Tối đa 20 MB</div>
+        <label class="flabel">Report đính kèm <span class="opt">(tuỳ chọn — v1.2)</span></label>
+        <div style="display:flex;gap:16px;margin-bottom:10px;font-size:12.5px;">
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="report-source" checked onclick="toggleReportSource('nhresearch')"> Link bài NH Research</label>
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;"><input type="radio" name="report-source" onclick="toggleReportSource('upload')"> Upload PDF riêng</label>
+        </div>
+        <div id="report-nhresearch">
+          <input class="ftext" placeholder="Tìm bài NH Research đã tag mã VCB..." value="VCB — Cập nhật KQKD Q1 (12/03/2026)">
+          <div class="fhint">Autocomplete từ <code style="background:color-mix(in srgb, var(--text) 6%, var(--card));padding:1px 5px;border-radius:4px">GET /admin/api/nhResearch/articles?stockCode=VCB</code> — chỉ hiện bài đã tag mã này (A-06)</div>
+        </div>
+        <div id="report-upload" style="display:none;">
+          <div class="upload-zone" style="padding:16px;">
+            <svg class="uz-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <div class="uz-title" style="font-size:12px;">Kéo thả hoặc chọn PDF</div>
+            <div class="uz-hint">Tối đa 20 MB</div>
+          </div>
         </div>
       </div>
     </div>
     <div class="modal-foot">
-      <span class="fhint">created_by tự lấy từ session admin</span>
+      <span class="fhint">created_by tự lấy từ session admin · mã đã có mốc active → mốc cũ tự chuyển vào lịch sử</span>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-ghost" onclick="closeModal('modal-dmcb')">Hủy</button>
-        <button class="btn btn-primary" onclick="saveAndToast('modal-dmcb','Đã lưu khuyến nghị VCB')">Lưu khuyến nghị</button>
+        <button class="btn btn-primary" onclick="saveAndToast('modal-dmcb','Đã lưu mốc khuyến nghị VCB')">Lưu khuyến nghị</button>
       </div>
     </div>
   </div>
@@ -823,6 +833,11 @@
     const pct = (target / price - 1) * 100;
     el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2).replace('.', ',') + '%';
     el.classList.toggle('neg', pct < 0);
+  }
+
+  function toggleReportSource(kind) {
+    document.getElementById('report-nhresearch').style.display = kind === 'nhresearch' ? '' : 'none';
+    document.getElementById('report-upload').style.display = kind === 'upload' ? '' : 'none';
   }
 
   function simulateUpload(kind) {

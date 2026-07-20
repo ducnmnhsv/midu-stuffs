@@ -625,20 +625,20 @@
 <div class="doc-header">
   <div class="eyebrow">NHSV Pro · A-05 · UI Design</div>
   <h1>Khuyến nghị — Mobile UI Mockup</h1>
-  <div class="subtitle">Recommendation tab với 3 sub-tabs: Danh mục cơ bản · NHSV Rating · Kỹ thuật hằng ngày</div>
+  <div class="subtitle">v1.2: Entry point trên Home (card Top pick) + full-screen 3 sub-tab theo thứ tự mới: Cơ bản · Kỹ thuật · NHSV Rating</div>
   <div class="meta-row">
     <div class="meta-item"><strong>Stack:</strong> React Native</div>
     <div class="meta-item"><strong>DS:</strong> NHSV Pro v1 (Lato · #028D96 · #EBECF0)</div>
-    <div class="meta-item"><strong>Screens:</strong> 8 screens</div>
+    <div class="meta-item"><strong>Screens:</strong> 9 screens</div>
     <div class="meta-item"><strong>Status:</strong> 🎨 Design Draft</div>
-    <div class="meta-item"><strong>Date:</strong> 2026-06-17</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-20 (v1.2)</div>
   </div>
 </div>
 
 <!-- ═══════════════════════ SUMMARY ═══════════════════════ -->
 <div class="summary-bar">
   <div class="sum-card"><div class="num c-blue">3</div><div class="lbl">Sub-tabs</div></div>
-  <div class="sum-card"><div class="num c-teal">8</div><div class="lbl">Screens</div></div>
+  <div class="sum-card"><div class="num c-teal">9</div><div class="lbl">Screens</div></div>
   <div class="sum-card"><div class="num c-green">5</div><div class="lbl">Rating tiers (S→D)</div></div>
   <div class="sum-card"><div class="num c-violet">4</div><div class="lbl">Tech grid cells</div></div>
   <div class="sum-card"><div class="num c-amber">1</div><div class="lbl">Disclaimer (sticky)</div></div>
@@ -652,37 +652,37 @@
     <div class="section-hdr">
       <div class="icon" style="background:#dbeafe;">🗂️</div>
       <h2>3 Sub-tabs Overview</h2>
-      <span class="sub">Nội dung & nguồn dữ liệu</span>
+      <span class="sub">Nội dung & nguồn dữ liệu · v1.2: thứ tự Cơ bản → Kỹ thuật → Rating</span>
     </div>
     <div class="subtab-overview">
       <div class="ovw-card">
         <div class="ovw-hdr" style="background:#028D96;">
-          <div class="ovw-num">①</div>Danh mục cơ bản
+          <div class="ovw-num">①</div>Cơ bản
         </div>
         <div class="ovw-body">
-          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Danh sách cổ phiếu khuyến nghị · giá kỳ vọng · % tiềm năng</div></div>
-          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Phòng PT + market feed (giá realtime)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Danh sách cổ phiếu khuyến nghị · giá kỳ vọng · % tiềm năng · nhiều mốc/mã (lịch sử)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Phòng PT + market feed (giá realtime) — report link NH Research hoặc PDF riêng</div></div>
           <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Tất cả / Bluechip / Midcap + search</div></div>
         </div>
       </div>
       <div class="ovw-card">
+        <div class="ovw-hdr" style="background:#07A461;">
+          <div class="ovw-num">②</div>Kỹ thuật
+        </div>
+        <div class="ovw-body">
+          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Vùng mua + Cắt lỗ (chung 1 row) · Mục tiêu · Upsize (kỹ thuật ngắn hạn, chỉ MUA)</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Vietstock → Phòng PT xử lý thủ công</div></div>
+          <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Rolling 14 ngày gần nhất (không date picker) + search</div></div>
+        </div>
+      </div>
+      <div class="ovw-card">
         <div class="ovw-hdr" style="background:#9013FE;">
-          <div class="ovw-num">②</div>NHSV Rating
+          <div class="ovw-num">③</div>NHSV Rating
         </div>
         <div class="ovw-body">
           <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Bảng rating S→A→B→C→D (Cơ bản + Thị trường)</div></div>
           <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Phòng QTRR · upload Excel ~1 lần/tháng</div></div>
           <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Search theo mã (bắt buộc)</div></div>
-        </div>
-      </div>
-      <div class="ovw-card">
-        <div class="ovw-hdr" style="background:#07A461;">
-          <div class="ovw-num">③</div>Kỹ thuật hằng ngày
-        </div>
-        <div class="ovw-body">
-          <div class="ovw-row"><div class="ovw-lbl">Nội dung</div><div>Vùng mua · Mục tiêu · Cắt lỗ · Upsize (kỹ thuật ngắn hạn)</div></div>
-          <div class="ovw-row"><div class="ovw-lbl">Nguồn</div><div>Vietstock → Phòng PT xử lý thủ công</div></div>
-          <div class="ovw-row"><div class="ovw-lbl">Filter</div><div>Ngày GD (default hôm nay) + search</div></div>
         </div>
       </div>
     </div>
@@ -696,18 +696,18 @@
       <span class="sub">Navigation path</span>
     </div>
     <div class="flow">
-      <div class="flow-box entry">NHSV Channel<br><span style="font-size:10px;font-weight:400;color:#8691B3">Tab bar</span></div>
+      <div class="flow-box entry">KN_00<br><span style="font-size:10px;font-weight:400;color:#8691B3">Home · card entry</span></div>
       <div class="flow-arrow">→</div>
-      <div class="flow-box">KN_01<br><span style="font-size:10px;font-weight:400;color:#8691B3">Danh mục CB</span></div>
-      <div class="flow-arrow">↔</div>
-      <div class="flow-box">KN_03<br><span style="font-size:10px;font-weight:400;color:#8691B3">NHSV Rating</span></div>
+      <div class="flow-box">KN_01<br><span style="font-size:10px;font-weight:400;color:#8691B3">Cơ bản</span></div>
       <div class="flow-arrow">↔</div>
       <div class="flow-box">KN_04<br><span style="font-size:10px;font-weight:400;color:#8691B3">Kỹ thuật</span></div>
+      <div class="flow-arrow">↔</div>
+      <div class="flow-box">KN_03<br><span style="font-size:10px;font-weight:400;color:#8691B3">NHSV Rating</span></div>
       <div class="flow-arrow">→</div>
       <div class="flow-box terminal">KN_02 / KN_05<br><span style="font-size:10px;font-weight:400;color:#8691B3">Detail</span></div>
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);">
-      KN_06 (Search active — NHSV Rating), KN_07 (Empty — Kỹ thuật hôm nay chưa có/chưa Publish) và KN_08 (Search active — Kỹ thuật) là biến thể của các screen trên.
+      <strong>(v1.2)</strong> KN_00 thay thế lối vào cũ qua NHSV Channel tab bar — user tap 1 mini-card trên Home hoặc "Xem tất cả" → mở thẳng KN_01. Thứ tự sub-tab bên trong đổi thành Cơ bản → Kỹ thuật → Rating. KN_06 (Search active — NHSV Rating), KN_07 (Empty — Kỹ thuật 14 ngày không có data) và KN_08 (Search active — Kỹ thuật) là biến thể của các screen trên.
     </div>
   </div>
 
@@ -721,9 +721,55 @@
 
     <div class="screen-rail">
 
-      <!-- ━━━━━━━━━━━━━━━━━━━ KN_01: Danh mục cơ bản ━━━━━━━━━━━━━━━━━━━ -->
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_00: Home · Entry point (v1.2) ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
-        <div class="screen-label">KN_01 — Danh mục cơ bản</div>
+        <div class="screen-label">KN_00 — Home · Entry point</div>
+        <div class="screen-id">v1.2 · Card Top pick, vị trí sau Lịch sự kiện</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="status-bar" style="background:var(--surface-2);">
+              <span class="status-time" style="color:#1a202c;">9:41</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24" fill="#1a202c"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                <svg viewBox="0 0 24 24" fill="#1a202c"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+              </div>
+            </div>
+            <div class="scroll-area" style="padding:10px 16px 140px;">
+              <div style="background:#dfe3ea;border-radius:12px;height:110px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--fg-meta);font-size:11px;">Biểu đồ</div>
+              <div style="background:#dfe3ea;border-radius:12px;height:64px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--fg-meta);font-size:11px;">Hoạt động tích cực</div>
+              <div style="background:#dfe3ea;border-radius:12px;height:56px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--fg-meta);font-size:11px;">📅 Lịch sự kiện</div>
+
+              <!-- Khuyến nghị card (v1.2 new entry point) -->
+              <div style="background:var(--surface);border-radius:14px;padding:14px;margin-bottom:12px;border:2px solid var(--nhsv-main);box-shadow:0 2px 10px rgba(2,141,150,0.14);">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                  <div style="font-weight:700;font-size:13px;color:var(--fg-title);">🎯 Khuyến nghị NHSV</div>
+                  <div style="font-size:11px;color:var(--nhsv-main);font-weight:600;">Xem tất cả ›</div>
+                </div>
+                <div style="display:flex;gap:8px;overflow-x:auto;">
+                  <div style="background:var(--func-success-bg);border-radius:10px;padding:8px 10px;min-width:76px;flex-shrink:0;">
+                    <div style="font-weight:700;font-size:12px;color:var(--fg-title);">VCB</div>
+                    <div style="font-size:11px;color:var(--market-green);font-weight:600;">+25,4%</div>
+                  </div>
+                  <div style="background:var(--func-success-bg);border-radius:10px;padding:8px 10px;min-width:76px;flex-shrink:0;">
+                    <div style="font-weight:700;font-size:12px;color:var(--fg-title);">HPG</div>
+                    <div style="font-size:11px;color:var(--market-green);font-weight:600;">+8,1%</div>
+                  </div>
+                  <div style="background:var(--func-success-bg);border-radius:10px;padding:8px 10px;min-width:76px;flex-shrink:0;">
+                    <div style="font-weight:700;font-size:12px;color:var(--fg-title);">FPT</div>
+                    <div style="font-size:11px;color:var(--market-green);font-weight:600;">+12,0%</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:#dfe3ea;border-radius:12px;height:76px;display:flex;align-items:center;justify-content:center;color:var(--fg-meta);font-size:11px;">Kênh tin tức NHSV</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_01: Cơ bản ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_01 — Cơ bản</div>
         <div class="screen-id">List · filter Tất cả · sort newest</div>
         <div class="phone">
           <div class="phone-inner">
@@ -744,9 +790,9 @@
 
             <!-- Sub-tab bar -->
             <div class="subtab-bar">
-              <div class="subtab-item active">Danh mục</div>
-              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item active">Cơ bản</div>
               <div class="subtab-item inactive">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
             </div>
 
             <!-- Filter pills -->
@@ -865,9 +911,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -877,7 +923,7 @@
       <!-- ━━━━━━━━━━━━━━━━━━━ KN_02: Detail ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
         <div class="screen-label">KN_02 — Chi tiết khuyến nghị</div>
-        <div class="screen-id">Hero · % block · info · PDF · CTA</div>
+        <div class="screen-id">v1.2 · Hero · % block · info · Danh sách báo cáo · CTA</div>
         <div class="phone">
           <div class="phone-inner">
             <div class="nhsv-header-gradient">
@@ -944,22 +990,28 @@
                     <span class="info-key">Ngày khuyến nghị</span>
                     <span class="info-val">04/06/2026</span>
                   </div>
-                  <div class="info-row">
-                    <span class="info-key">Giá tại ngày KN</span>
-                    <span class="info-val">31.800</span>
-                  </div>
                 </div>
 
-                <!-- PDF attachment -->
+                <!-- (v1.2) Danh sách các báo cáo gần nhất — thay cho PDF attachment đơn lẻ -->
                 <div class="pdf-attach-card">
-                  <div class="info-card-title">Báo cáo phân tích</div>
+                  <div class="info-card-title">Danh sách báo cáo gần nhất</div>
                   <div class="pdf-attach-row">
                     <div class="pdf-icon-box">
                       <svg viewBox="0 0 24 24" fill="#DA1004" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
                     </div>
                     <div class="pdf-attach-info">
-                      <div class="pdf-attach-name">VCB_Analysis_Q2_2026.pdf</div>
-                      <div class="pdf-attach-size">3.2 MB · PDF</div>
+                      <div class="pdf-attach-name">04/06/2026 · VCB_Analysis_Q2_2026.pdf</div>
+                      <div class="pdf-attach-size">3.2 MB · Mốc hiện tại</div>
+                    </div>
+                    <div class="pdf-open-btn">Mở xem</div>
+                  </div>
+                  <div class="pdf-attach-row" style="margin-top:8px;border-top:1px solid var(--separator);padding-top:8px;">
+                    <div class="pdf-icon-box" style="background:var(--header-table);">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2" width="18" height="18"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="pdf-attach-info">
+                      <div class="pdf-attach-name">12/03/2026 · Bài NH Research: "VCB — Cập nhật KQKD Q1"</div>
+                      <div class="pdf-attach-size">Link NH Research · Mốc trước</div>
                     </div>
                     <div class="pdf-open-btn">Mở xem</div>
                   </div>
@@ -1001,9 +1053,9 @@
             </div>
 
             <div class="subtab-bar">
-              <div class="subtab-item inactive">Danh mục</div>
-              <div class="subtab-item active">NHSV Rating</div>
+              <div class="subtab-item inactive">Cơ bản</div>
               <div class="subtab-item inactive">Kỹ thuật</div>
+              <div class="subtab-item active">NHSV Rating</div>
             </div>
 
             <!-- Search bar -->
@@ -1112,9 +1164,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -1123,8 +1175,8 @@
 
       <!-- ━━━━━━━━━━━━━━━━━━━ KN_04: Kỹ thuật hằng ngày ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
-        <div class="screen-label">KN_04 — Kỹ thuật hằng ngày</div>
-        <div class="screen-id">Today active · 4-cell tech grid</div>
+        <div class="screen-label">KN_04 — Kỹ thuật</div>
+        <div class="screen-id">v1.2 · Rolling 14 ngày · group theo ngày · card gộp Vùng mua–Cắt lỗ</div>
         <div class="phone">
           <div class="phone-inner">
             <div class="nhsv-header-gradient">
@@ -1143,18 +1195,16 @@
             </div>
 
             <div class="subtab-bar">
-              <div class="subtab-item inactive">Danh mục</div>
-              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item inactive">Cơ bản</div>
               <div class="subtab-item active">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
             </div>
 
             <div class="date-pill-row">
-              <div class="date-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
               <div class="date-pill">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Hôm nay · 17/06
+                14 ngày gần nhất
               </div>
-              <div class="date-nav-btn" style="opacity:0.4;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
               <div class="search-mini">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <span>Tìm mã</span>
@@ -1164,7 +1214,10 @@
             <div class="scroll-area" style="padding-bottom:140px;">
               <div class="rec-list">
 
-                <!-- Tech Card 1: GMD - full 4 cells -->
+                <!-- (v1.2) Date group header: Hôm nay -->
+                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm nay · 20/07</div>
+
+                <!-- Tech Card 1: GMD - full 4 cells, row 1 = Vùng mua + Cắt lỗ (v1.2 gộp), row 2 = Mục tiêu + Upsize -->
                 <div class="tech-card">
                   <div class="tech-top">
                     <div class="rec-code-block">
@@ -1184,19 +1237,19 @@
                       </div>
                       <div class="tech-cell-val">75,50 – 76,50</div>
                     </div>
-                    <div class="tech-cell target">
-                      <div class="tech-cell-lbl">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
-                        Mục tiêu
-                      </div>
-                      <div class="tech-cell-val">90,00</div>
-                    </div>
                     <div class="tech-cell loss">
                       <div class="tech-cell-lbl">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
                         Cắt lỗ
                       </div>
                       <div class="tech-cell-val">73,00</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">90,00</div>
                     </div>
                     <div class="tech-cell up">
                       <div class="tech-cell-lbl">
@@ -1228,22 +1281,25 @@
                       </div>
                       <div class="tech-cell-val">23,00 – 23,80</div>
                     </div>
-                    <div class="tech-cell target">
-                      <div class="tech-cell-lbl">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
-                        Mục tiêu
-                      </div>
-                      <div class="tech-cell-val">27,20</div>
-                    </div>
-                    <div class="tech-cell loss" style="grid-column: span 2;">
+                    <div class="tech-cell loss">
                       <div class="tech-cell-lbl">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
                         Cắt lỗ
                       </div>
                       <div class="tech-cell-val">22,40</div>
                     </div>
+                    <div class="tech-cell target" style="grid-column: span 2;">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">27,20</div>
+                    </div>
                   </div>
                 </div>
+
+                <!-- (v1.2) Date group header: Hôm qua -->
+                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm qua · 19/07</div>
 
                 <!-- Tech Card 3: HPG -->
                 <div class="tech-card">
@@ -1265,19 +1321,19 @@
                       </div>
                       <div class="tech-cell-val">≥ 27,50</div>
                     </div>
-                    <div class="tech-cell target">
-                      <div class="tech-cell-lbl">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
-                        Mục tiêu
-                      </div>
-                      <div class="tech-cell-val">31,00</div>
-                    </div>
                     <div class="tech-cell loss">
                       <div class="tech-cell-lbl">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
                         Cắt lỗ
                       </div>
                       <div class="tech-cell-val">26,20</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">31,00</div>
                     </div>
                     <div class="tech-cell up">
                       <div class="tech-cell-lbl">
@@ -1294,9 +1350,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -1446,9 +1502,9 @@
             </div>
 
             <div class="subtab-bar">
-              <div class="subtab-item inactive">Danh mục</div>
-              <div class="subtab-item active">NHSV Rating</div>
+              <div class="subtab-item inactive">Cơ bản</div>
               <div class="subtab-item inactive">Kỹ thuật</div>
+              <div class="subtab-item active">NHSV Rating</div>
             </div>
 
             <div class="search-active">
@@ -1503,9 +1559,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -1515,7 +1571,7 @@
       <!-- ━━━━━━━━━━━━━━━━━━━ KN_07: Empty State ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
         <div class="screen-label">KN_07 — Empty: Kỹ thuật chưa có</div>
-        <div class="screen-id">Hôm nay Phòng PT chưa upload, hoặc đã nhập nhưng chưa Publish (2026-07-13)</div>
+        <div class="screen-id">v1.2 · Cả 14 ngày gần nhất không có entry Published nào</div>
         <div class="phone">
           <div class="phone-inner">
             <div class="nhsv-header-gradient">
@@ -1534,18 +1590,16 @@
             </div>
 
             <div class="subtab-bar">
-              <div class="subtab-item inactive">Danh mục</div>
-              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item inactive">Cơ bản</div>
               <div class="subtab-item active">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
             </div>
 
             <div class="date-pill-row">
-              <div class="date-nav-btn"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
               <div class="date-pill">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                Hôm nay · 17/06
+                14 ngày gần nhất
               </div>
-              <div class="date-nav-btn" style="opacity:0.4;"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
               <div class="search-mini">
                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <span>Tìm mã</span>
@@ -1561,9 +1615,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -1592,9 +1646,9 @@
             </div>
 
             <div class="subtab-bar">
-              <div class="subtab-item inactive">Danh mục</div>
-              <div class="subtab-item inactive">NHSV Rating</div>
+              <div class="subtab-item inactive">Cơ bản</div>
               <div class="subtab-item active">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
             </div>
 
             <div class="search-active">
@@ -1603,7 +1657,7 @@
                 <input value="GMD" placeholder="Tìm theo mã CK..." readonly>
                 <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
               </div>
-              <div style="font-family:'Lato',sans-serif;font-size:11px;color:#8691B3;margin-top:8px;">1 mã khớp với "GMD" · Hôm nay · 17/06</div>
+              <div style="font-family:'Lato',sans-serif;font-size:11px;color:#8691B3;margin-top:8px;">1 mã khớp với "GMD" trong 14 ngày gần nhất · Hôm nay · 20/07</div>
             </div>
 
             <div class="scroll-area" style="padding-bottom:140px;">
@@ -1629,19 +1683,19 @@
                       </div>
                       <div class="tech-cell-val">75,50 – 76,50</div>
                     </div>
-                    <div class="tech-cell target">
-                      <div class="tech-cell-lbl">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
-                        Mục tiêu
-                      </div>
-                      <div class="tech-cell-val">90,00</div>
-                    </div>
                     <div class="tech-cell loss">
                       <div class="tech-cell-lbl">
                         <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
                         Cắt lỗ
                       </div>
                       <div class="tech-cell-val">73,00</div>
+                    </div>
+                    <div class="tech-cell target">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">90,00</div>
                     </div>
                     <div class="tech-cell up">
                       <div class="tech-cell-lbl">
@@ -1658,9 +1712,9 @@
             </div>
 
             <div class="bottom-nav">
-              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
-              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
               <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
             </div>
           </div>
@@ -1750,7 +1804,7 @@
             <tr><td>Upsize</td><td><span class="token-hex">#F2F6FB</span></td><td><span class="token-hex">#2F4A4B</span></td><td>arrow-up neutral</td></tr>
           </tbody>
         </table>
-        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Grid 2×2 · gap 6px · cell padding 8/10 · Lato 13/700 tabular-nums</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Grid 2×2 · gap 6px · cell padding 8/10 · Lato 13/700 tabular-nums · v1.2: row 1 = Vùng mua + Cắt lỗ (gộp), row 2 = Mục tiêu + Upsize</div>
       </div>
 
       <!-- Action badge -->
@@ -1767,7 +1821,7 @@
             <tr><td>Percent</td><td>opacity 0.85 trên cùng badge</td></tr>
           </tbody>
         </table>
-        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Nếu khuyến nghị "BÁN" hoặc "HOLD" → đổi sang #DA1004 hoặc #8691B3</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">v1.2: schema hỗ trợ sẵn BÁN/HOLD (đổi màu #DA1004/#8691B3 khi cần) nhưng v1 admin chỉ tạo được MUA — badge luôn xanh #07A461</div>
       </div>
 
       <!-- Search mini pill -->
@@ -1783,7 +1837,7 @@
             <tr><td>Tap → </td><td>Mở KN_08 (search-active state, tái dùng input pattern của KN_06)</td></tr>
           </tbody>
         </table>
-        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Đồng bộ với overview "Filter: Ngày GD + search" — trước đây thiếu ở KN_04/KN_07, đã bổ sung</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">v1.2: date-pill giờ chỉ là badge tĩnh "14 ngày gần nhất" (bỏ nav-btn prev/next) — không còn chọn được ngày đơn lẻ trên mobile</div>
       </div>
 
     </div>
@@ -1805,7 +1859,7 @@
           <li><span class="check-icon check-pass">✓</span> Card tap zone full row · &gt;120pt vertical</li>
           <li><span class="check-icon check-pass">✓</span> PDF button: 30pt + hitSlop để đạt 44pt</li>
           <li><span class="check-icon check-pass">✓</span> Rating row: 44pt+ height cho tap</li>
-          <li><span class="check-icon check-pass">✓</span> Date nav buttons (◀ ▶): 28pt + hitSlop 8</li>
+          <li><span class="check-icon check-pass">✓</span> Home entry card (v1.2): mini-card carousel tap zone ≥ 60pt</li>
           <li><span class="check-icon check-pass">✓</span> Search input: 36pt height (+ hit area)</li>
           <li><span class="check-icon check-pass">✓</span> Search mini pill (Kỹ thuật): 32pt height + hitSlop để đạt 44pt</li>
           <li><span class="check-icon check-pass">✓</span> CTA "Xem cổ phiếu": full-width 48pt</li>
@@ -1839,8 +1893,8 @@
         <div class="comp-title">Content & States</div>
         <ul class="checklist">
           <li><span class="check-icon check-pass">✓</span> Disclaimer luôn ở cuối screen (mọi sub-tab)</li>
-          <li><span class="check-icon check-pass">✓</span> Empty state Kỹ thuật hôm nay với icon đồng hồ</li>
-          <li><span class="check-icon check-pass">✓</span> Date pill "Hôm nay" emphasized với #07A461</li>
+          <li><span class="check-icon check-pass">✓</span> Empty state Kỹ thuật (v1.2: cả 14 ngày không có data) với icon đồng hồ</li>
+          <li><span class="check-icon check-pass">✓</span> Date group header ("Hôm nay", "Hôm qua"...) phân tách rõ trong list 14 ngày</li>
           <li><span class="check-icon check-pass">✓</span> Search highlight matched substring (VC trong VCB)</li>
           <li><span class="check-icon check-pass">✓</span> Upsize ẩn nếu null (không hiển thị placeholder)</li>
           <li><span class="check-icon check-pass">✓</span> Vùng mua hiển thị range "X – Y" hoặc "≥ X"</li>
@@ -1884,7 +1938,7 @@
 </div><!-- /content -->
 
 <div style="text-align:center;padding:20px 0 32px;font-size:11px;color:var(--muted);">
-  Document Status: 🎨 Design Draft &nbsp;|&nbsp; For: Mobile FE, Phòng Phân tích, Phòng QTRR &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma node trên trang "Official - Light Mode"
+  Document Status: 🎨 Design Draft (v1.2 — 2026-07-20) &nbsp;|&nbsp; For: Mobile FE, Phòng Phân tích, Phòng QTRR &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma node trên trang "Official - Light Mode". Đồng bộ với `PRD.md` v1.2 — xem các đoạn đánh dấu (v1.2) trong file này.
 </div>
 
 </body>

@@ -6,7 +6,7 @@
 
 | Ngày | Thay đổi |
 |---|---|
-| 2026-07-15 | Redesign toàn diện Nhật ký Hành trình (mục 4.5) — đổi từ ghi log theo API nghiệp vụ sang ghi log theo từng màn hình (App chủ động gửi), lưu đầy đủ dữ liệu thay vì chỉ tóm tắt; gộp mục 4.4 (Xác nhận điều khoản) vào chung nhật ký hành trình — không còn là mục riêng. Tài liệu kỹ thuật: `Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md`, thay thế `Journey_API_Reference.md` bên dưới |
+| 2026-07-15 | Redesign toàn diện Nhật ký Hành trình (mục 4.5) — đổi từ ghi log theo API nghiệp vụ sang ghi log theo từng màn hình (App chủ động gửi), lưu đầy đủ dữ liệu thay vì chỉ tóm tắt; gộp mục 4.4 (Xác nhận điều khoản) vào chung nhật ký hành trình — không còn là mục riêng. Tài liệu kỹ thuật: `Scope_1/Specifications/BE_Spec.md` (Phần B), thay thế `Journey_API_Reference.md` bên dưới |
 | 2026-07-08 (b) | ⚠️ *Đã được thay thế bởi redesign 2026-07-15 ở trên.* Tạo tài liệu kỹ thuật `07_Compliance_Journey_Log/Specifications/Journey_API_Reference.md` — danh sách đầy đủ 11 API cần log trong hành trình mở tài khoản, đã đối chiếu trực tiếp với source code app thực tế (không phải suy đoán). Đây là phần chi tiết kỹ thuật lẽ ra phải được chuyển sang tài liệu riêng khi PRD viết lại prose-only (2026-07-07) nhưng bị bỏ sót cho mục Nhật ký Hành trình — nay đã bổ sung |
 | 2026-07-08 (a) | Bổ sung mô tả các tín hiệu chống gian lận mới phát hiện được khi đối chiếu với sample log thực tế từ đối tác VNPT (đối chiếu QR trên CCCD, phát hiện nhiều khuôn mặt trong ảnh, phát hiện đổi mặt/deepfake) vào mục 4.2 và 4.3 — không đổi phạm vi hay Phase, chỉ làm rõ hơn dữ liệu đã có sẵn từ VNPT mà mục 4.2 bản trước mô tả chung chung |
 | 2026-07-07 | Viết lại toàn bộ tài liệu theo hướng dễ đọc cho người không chuyên kỹ thuật — chuyển chi tiết kỹ thuật (schema, API, field mapping) sang tài liệu tham chiếu riêng, chỉ giữ yêu cầu nghiệp vụ ở đây |
@@ -202,7 +202,7 @@ Tài liệu này tập trung vào yêu cầu nghiệp vụ, không đi sâu vào
 
 - Thiết kế kỹ thuật đầy đủ cho nhật ký lần thử xác thực (mục 4.1–4.3) — nằm trong hồ sơ đặc tả của sub-feature "Biometric Attempt Log"
 - Danh sách task triển khai cho developer của sub-feature trên
-- Thiết kế kỹ thuật đầy đủ cho Nhật ký Hành trình (mục 4.5, đã redesign 2026-07-15 — gộp luôn việc ghi thời điểm đồng ý điều khoản ở mục 4.4, không còn là sub-feature riêng) — `Scope_1/Specifications/07_Compliance_Journey_Log_Backend_Spec.md`, đã đối chiếu trực tiếp với source code app
+- Thiết kế kỹ thuật đầy đủ cho Nhật ký Hành trình (mục 4.5, đã redesign 2026-07-15 — gộp luôn việc ghi thời điểm đồng ý điều khoản ở mục 4.4, không còn là sub-feature riêng) — `Scope_1/Specifications/BE_Spec.md` (Phần B), đã đối chiếu trực tiếp với source code app
 - Bản tổng hợp trực quan (sơ đồ luồng, bảng dữ liệu) cho ai muốn xem nhanh cả góc nhìn kỹ thuật
 - Tài liệu tổng quan (README) mô tả cấu trúc toàn bộ các sub-feature và trạng thái từng phần
 
