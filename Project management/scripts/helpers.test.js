@@ -17,7 +17,7 @@ test('migrateV2ToV3 copies projects through unchanged', () => {
 });
 
 test('dateToWeekIndex converts a date to the correct week index', () => {
-  const { dateToWeekIndex } = loadHelpers(['dateToWeekIndex']);
+  const { dateToWeekIndex } = loadHelpers(['MS_PER_DAY', 'MS_PER_WEEK', 'dateToWeekIndex']);
   assert.equal(dateToWeekIndex('2026-07-01', '2026-07-01'), 0);
   assert.equal(dateToWeekIndex('2026-07-08', '2026-07-01'), 1);
   assert.equal(dateToWeekIndex('2026-07-14', '2026-07-01'), 1);
@@ -45,7 +45,7 @@ test('computeTrackOffWeeks is null unless both plan and actual end exist', () =>
 });
 
 test('computeAvgTrackOffWeeks excludes tasks without actual data, never treats them as zero', () => {
-  const { computeAvgTrackOffWeeks } = loadHelpers(['computeAvgTrackOffWeeks']);
+  const { computeAvgTrackOffWeeks } = loadHelpers(['computeTrackOffWeeks', 'computeAvgTrackOffWeeks']);
   assert.equal(computeAvgTrackOffWeeks([{ end: 5, actualEnd: null }]), null);
   assert.equal(computeAvgTrackOffWeeks([{ end: 5, actualEnd: 7 }, { end: 3, actualEnd: null }]), 2);
   assert.equal(computeAvgTrackOffWeeks([{ end: 5, actualEnd: 7 }, { end: 3, actualEnd: 5 }]), 2);
