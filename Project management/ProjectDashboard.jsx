@@ -808,14 +808,25 @@ function GanttView({
                         )}
                       </span>
                     </div>
-                    {weeks.map((_, i) => {
-                      const filled = hasSpan && i >= task.start && i <= task.end;
-                      return (
-                        <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {filled && <div style={{ height: 16, width: '78%', borderRadius: 4, background: c.fg, opacity: task.progress >= 100 ? 1 : 0.75 }} />}
-                        </div>
-                      );
-                    })}
+                    {weeks.map((_, i) => (
+                      <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}` }} />
+                    ))}
+                    {hasSpan && (
+                      <div
+                        data-bar-for={task.id}
+                        style={{
+                          gridColumn: `${task.start + 2} / ${task.end + 3}`,
+                          gridRow: 1,
+                          alignSelf: 'center',
+                          height: 16,
+                          margin: '0 4px',
+                          borderRadius: 4,
+                          background: c.fg,
+                          opacity: task.progress >= 100 ? 1 : 0.75,
+                          position: 'relative',
+                        }}
+                      />
+                    )}
                     {editingProgressId === task.id && (
                       <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3">
                         <input type="range" min="0" max="100" step="5" value={task.progress} onChange={e => onProgressChange(section.id, task.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
