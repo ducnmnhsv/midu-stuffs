@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Copy, Check, AlertTriangle, Loader2, RotateCcw, X, History, RefreshCcw } from 'lucide-react';
 
-const STORAGE_KEY = 'ptd:state:v2';
+const STORAGE_KEY = 'ptd:state:v3';
+const LEGACY_STORAGE_KEY = 'ptd:state:v2';
 
 const COLORS = {
   navy: '#0B2545',
@@ -219,6 +220,10 @@ function todayLabel() {
   return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function migrateV2ToV3(oldParsed) {
+  return { projects: (oldParsed.projects || []).map(p => ({ ...p })) };
+}
+
 function formatDateLabel(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
@@ -335,13 +340,22 @@ export default function ProjectDashboard() {
         setProjects(parsed.projects || []);
         setSelectedId((parsed.projects || [])[0]?.id ?? null);
         setDigestSelection((parsed.projects || []).map(p => p.id));
-      } else {
-        const seed = seedData();
-        setProjects(seed);
-        setSelectedId(seed[0].id);
-        setDigestSelection(seed.map(p => p.id));
-        persist(seed);
+        return;
       }
+      const legacy = await window.storage.get(LEGACY_STORAGE_KEY);
+      if (legacy && legacy.value) {
+        const migrated = migrateV2ToV3(JSON.parse(legacy.value));
+        setProjects(migrated.projects);
+        setSelectedId(migrated.projects[0]?.id ?? null);
+        setDigestSelection(migrated.projects.map(p => p.id));
+        persist(migrated.projects);
+        return;
+      }
+      const seed = seedData();
+      setProjects(seed);
+      setSelectedId(seed[0].id);
+      setDigestSelection(seed.map(p => p.id));
+      persist(seed);
     } catch (e) {
       const seed = seedData();
       setProjects(seed);
