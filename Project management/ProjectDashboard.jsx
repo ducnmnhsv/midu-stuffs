@@ -451,6 +451,29 @@ export default function ProjectDashboard() {
     }));
   }
 
+  function updateTaskSpanByDate(projectId, sectionId, taskId, { startDate, endDate, actual }) {
+    update(prev => prev.map(p => {
+      if (p.id !== projectId) return p;
+      const anchor = p.weekStartDate || todayISO();
+      const newStart = dateToWeekIndex(startDate, anchor);
+      const newEnd = dateToWeekIndex(endDate, anchor);
+      const weeks = ensureWeeksLength(p.weeks, Math.max(newStart, newEnd) + 1);
+      const fields = actual ? { actualStart: newStart, actualEnd: newEnd } : { start: newStart, end: newEnd };
+      return {
+        ...p,
+        weeks,
+        sections: p.sections.map(s => s.id !== sectionId ? s : {
+          ...s,
+          tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, ...fields }),
+        }),
+      };
+    }));
+  }
+
+  function updateProjectWeekStartDate(projectId, dateStr) {
+    update(prev => prev.map(p => p.id !== projectId ? p : { ...p, weekStartDate: dateStr }));
+  }
+
   function deleteTask(projectId, sectionId, taskId) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
@@ -689,6 +712,8 @@ export default function ProjectDashboard() {
                   ? <GanttView
                       project={selectedProject}
                       onUpdateTaskSpan={(sectionId, taskId, fields) => updateTaskSpan(selectedProject.id, sectionId, taskId, fields)}
+                      onUpdateTaskSpanByDate={(sectionId, taskId, fields) => updateTaskSpanByDate(selectedProject.id, sectionId, taskId, fields)}
+                      onUpdateWeekStartDate={dateStr => updateProjectWeekStartDate(selectedProject.id, dateStr)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
                       onSetCurrentWeek={idx => setCurrentWeek(selectedProject.id, idx)}
@@ -742,7 +767,7 @@ export default function ProjectDashboard() {
 // ---------- Gantt view ----------
 
 function GanttView({
-  project, onUpdateTaskSpan, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
+  project, onUpdateTaskSpan, onUpdateTaskSpanByDate, onUpdateWeekStartDate, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   addingWeek, setAddingWeek, weekDraftLabel, setWeekDraftLabel, onAddWeek,
@@ -903,9 +928,20 @@ function GanttView({
                       );
                     })()}
                     {editingProgressId === task.id && (
-                      <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3">
+                      <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3 flex-wrap">
                         <input type="range" min="0" max="100" step="5" value={task.progress} onChange={e => onProgressChange(section.id, task.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
                         <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{task.progress}%</span>
+                        {project.weekStartDate && hasSpan && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+                            <input type="date" defaultValue={weekIndexToDate(task.start, project.weekStartDate)}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: e.target.value, endDate: weekIndexToDate(task.end, project.weekStartDate) })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                            →
+                            <input type="date" defaultValue={weekIndexToDate(task.end, project.weekStartDate)}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: weekIndexToDate(task.start, project.weekStartDate), endDate: e.target.value })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                          </span>
+                        )}
                         <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>Xong</button>
                       </div>
                     )}
@@ -960,6 +996,16 @@ function GanttView({
         ) : (
           <button onClick={() => setAddingWeek(true)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.textMuted, background: 'transparent', border: 'none', cursor: 'pointer' }}><Plus size={13} /> Thêm cột tuần</button>
         )}
+        <label className="flex items-center gap-1.5" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+          W1 bắt đầu:
+          <input
+            type="date"
+            value={project.weekStartDate || ''}
+            onChange={e => onUpdateWeekStartDate(e.target.value)}
+            className="rounded px-1.5 py-0.5"
+            style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }}
+          />
+        </label>
         <span style={{ fontSize: 11, color: COLORS.textFaint, marginLeft: 'auto' }}>Click vào tiêu đề tuần để đặt "hôm nay"</span>
       </div>
     </div>
