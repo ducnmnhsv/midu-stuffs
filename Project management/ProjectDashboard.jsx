@@ -211,6 +211,40 @@ function getOverdueTasks(project) {
   return flattenTasks(project).filter(t => isTaskOverdue(t, project));
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const MS_PER_WEEK = 7 * MS_PER_DAY;
+
+function dateToWeekIndex(dateStr, weekStartDate) {
+  const ms = new Date(`${dateStr}T00:00:00Z`).getTime() - new Date(`${weekStartDate}T00:00:00Z`).getTime();
+  return Math.floor(ms / MS_PER_WEEK);
+}
+
+function weekIndexToDate(index, weekStartDate) {
+  const base = new Date(`${weekStartDate}T00:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + index * 7);
+  return base.toISOString().slice(0, 10);
+}
+
+function ensureWeeksLength(weeks, neededLength) {
+  if (neededLength <= weeks.length) return weeks;
+  const extra = [];
+  for (let i = weeks.length; i < neededLength; i++) extra.push(`W${i + 1}`);
+  return [...weeks, ...extra];
+}
+
+function computeTrackOffWeeks(planEnd, actualEnd) {
+  if (planEnd === null || planEnd === undefined || actualEnd === null || actualEnd === undefined) return null;
+  return actualEnd - planEnd;
+}
+
+function computeAvgTrackOffWeeks(tasks) {
+  const diffs = tasks
+    .map(t => computeTrackOffWeeks(t.end, t.actualEnd))
+    .filter(d => d !== null);
+  if (!diffs.length) return null;
+  return diffs.reduce((s, d) => s + d, 0) / diffs.length;
+}
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
