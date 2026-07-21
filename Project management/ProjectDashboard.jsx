@@ -441,6 +441,16 @@ export default function ProjectDashboard() {
     }));
   }
 
+  function updateTaskSpan(projectId, sectionId, taskId, fields) {
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      sections: p.sections.map(s => s.id !== sectionId ? s : {
+        ...s,
+        tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, ...fields }),
+      }),
+    }));
+  }
+
   function deleteTask(projectId, sectionId, taskId) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
@@ -678,6 +688,7 @@ export default function ProjectDashboard() {
                 selectedProject.viewType === 'gantt'
                   ? <GanttView
                       project={selectedProject}
+                      onUpdateTaskSpan={(sectionId, taskId, fields) => updateTaskSpan(selectedProject.id, sectionId, taskId, fields)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
                       onSetCurrentWeek={idx => setCurrentWeek(selectedProject.id, idx)}
@@ -731,7 +742,7 @@ export default function ProjectDashboard() {
 // ---------- Gantt view ----------
 
 function GanttView({
-  project, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
+  project, onUpdateTaskSpan, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   addingWeek, setAddingWeek, weekDraftLabel, setWeekDraftLabel, onAddWeek,
@@ -739,12 +750,57 @@ function GanttView({
 }) {
   const nameColWidth = 280;
   const weeks = project.weeks;
+  const gridRef = React.useRef(null);
+  const [drag, setDrag] = React.useState(null); // { sectionId, taskId, mode: 'move'|'resize-start'|'resize-end', startClientX, origStart, origEnd, previewStart, previewEnd }
   const nowLeft = weeks.length ? `calc(${nameColWidth}px + (100% - ${nameColWidth}px) * ${(project.currentWeekIndex + 0.5) / weeks.length})` : null;
   const gridTemplate = `${nameColWidth}px repeat(${weeks.length}, minmax(46px, 1fr))`;
 
+  function colWidth() {
+    if (!gridRef.current) return 46;
+    const rect = gridRef.current.getBoundingClientRect();
+    return (rect.width - nameColWidth) / Math.max(weeks.length, 1);
+  }
+
+  function beginDrag(e, sectionId, taskId, mode, origStart, origEnd) {
+    e.preventDefault();
+    setDrag({ sectionId, taskId, mode, startClientX: e.clientX, origStart, origEnd, previewStart: origStart, previewEnd: origEnd });
+  }
+
+  React.useEffect(() => {
+    if (!drag) return undefined;
+    function onMove(e) {
+      const deltaWeeks = Math.round((e.clientX - drag.startClientX) / colWidth());
+      setDrag(d => {
+        if (!d) return d;
+        let previewStart = d.origStart;
+        let previewEnd = d.origEnd;
+        if (d.mode === 'move') {
+          previewStart = d.origStart + deltaWeeks;
+          previewEnd = d.origEnd + deltaWeeks;
+        } else if (d.mode === 'resize-start') {
+          previewStart = Math.min(d.origStart + deltaWeeks, d.origEnd);
+        } else if (d.mode === 'resize-end') {
+          previewEnd = Math.max(d.origEnd + deltaWeeks, d.origStart);
+        }
+        previewStart = Math.max(0, Math.min(previewStart, weeks.length - 1));
+        previewEnd = Math.max(0, Math.min(previewEnd, weeks.length - 1));
+        return { ...d, previewStart, previewEnd };
+      });
+    }
+    function onUp() {
+      setDrag(d => {
+        if (d) onUpdateTaskSpan(d.sectionId, d.taskId, { start: d.previewStart, end: d.previewEnd });
+        return null;
+      });
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => window.removeEventListener('pointermove', onMove);
+  }, [drag, weeks.length]);
+
   return (
     <div className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
-      <div className="relative" style={{ overflowX: 'auto' }}>
+      <div ref={gridRef} className="relative" style={{ overflowX: 'auto' }}>
         {nowLeft && (
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: nowLeft, width: 2, background: COLORS.navy, zIndex: 5, pointerEvents: 'none' }}>
             <div className="mono" style={{ position: 'absolute', top: -2, left: 4, fontSize: 10, background: COLORS.navy, color: '#fff', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>hôm nay</div>
@@ -811,22 +867,38 @@ function GanttView({
                     {weeks.map((_, i) => (
                       <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, gridColumn: i + 2, gridRow: 1 }} />
                     ))}
-                    {hasSpan && (
-                      <div
-                        data-bar-for={task.id}
-                        style={{
-                          gridColumn: `${task.start + 2} / ${task.end + 3}`,
-                          gridRow: 1,
-                          alignSelf: 'center',
-                          height: 16,
-                          margin: '0 4px',
-                          borderRadius: 4,
-                          background: c.fg,
-                          opacity: task.progress >= 100 ? 1 : 0.75,
-                          position: 'relative',
-                        }}
-                      />
-                    )}
+                    {hasSpan && (() => {
+                      const isDragging = drag && drag.taskId === task.id;
+                      const barStart = isDragging ? drag.previewStart : task.start;
+                      const barEnd = isDragging ? drag.previewEnd : task.end;
+                      return (
+                        <div
+                          data-bar-for={task.id}
+                          onPointerDown={e => beginDrag(e, section.id, task.id, 'move', task.start, task.end)}
+                          style={{
+                            gridColumn: `${barStart + 2} / ${barEnd + 3}`,
+                            gridRow: 1,
+                            alignSelf: 'center',
+                            height: 16,
+                            margin: '0 4px',
+                            borderRadius: 4,
+                            background: c.fg,
+                            opacity: task.progress >= 100 ? 1 : 0.75,
+                            position: 'relative',
+                            cursor: 'grab',
+                          }}
+                        >
+                          <div
+                            onPointerDown={e => { e.stopPropagation(); beginDrag(e, section.id, task.id, 'resize-start', task.start, task.end); }}
+                            style={{ position: 'absolute', left: -4, top: 0, bottom: 0, width: 8, cursor: 'ew-resize' }}
+                          />
+                          <div
+                            onPointerDown={e => { e.stopPropagation(); beginDrag(e, section.id, task.id, 'resize-end', task.start, task.end); }}
+                            style={{ position: 'absolute', right: -4, top: 0, bottom: 0, width: 8, cursor: 'ew-resize' }}
+                          />
+                        </div>
+                      );
+                    })()}
                     {editingProgressId === task.id && (
                       <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3">
                         <input type="range" min="0" max="100" step="5" value={task.progress} onChange={e => onProgressChange(section.id, task.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
