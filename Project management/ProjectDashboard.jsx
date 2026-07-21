@@ -455,8 +455,11 @@ export default function ProjectDashboard() {
     update(prev => prev.map(p => {
       if (p.id !== projectId) return p;
       const anchor = p.weekStartDate || todayISO();
-      const newStart = dateToWeekIndex(startDate, anchor);
-      const newEnd = dateToWeekIndex(endDate, anchor);
+      const rawStart = dateToWeekIndex(startDate, anchor);
+      const rawEnd = dateToWeekIndex(endDate, anchor);
+      if (Number.isNaN(rawStart) || Number.isNaN(rawEnd)) return p;
+      const newStart = Math.max(0, rawStart);
+      const newEnd = Math.max(0, rawEnd);
       const weeks = ensureWeeksLength(p.weeks, Math.max(newStart, newEnd) + 1);
       const fields = actual ? { actualStart: newStart, actualEnd: newEnd } : { start: newStart, end: newEnd };
       return {
@@ -933,11 +936,11 @@ function GanttView({
                         <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{task.progress}%</span>
                         {project.weekStartDate && hasSpan && (
                           <span className="flex items-center gap-1" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
-                            <input type="date" defaultValue={weekIndexToDate(task.start, project.weekStartDate)}
+                            <input key={`start-${task.start}-${task.end}`} type="date" defaultValue={weekIndexToDate(task.start, project.weekStartDate)}
                               onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: e.target.value, endDate: weekIndexToDate(task.end, project.weekStartDate) })}
                               className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
                             →
-                            <input type="date" defaultValue={weekIndexToDate(task.end, project.weekStartDate)}
+                            <input key={`end-${task.start}-${task.end}`} type="date" defaultValue={weekIndexToDate(task.end, project.weekStartDate)}
                               onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: weekIndexToDate(task.start, project.weekStartDate), endDate: e.target.value })}
                               className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
                           </span>
