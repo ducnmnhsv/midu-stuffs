@@ -496,6 +496,14 @@ const TASKS = [
     blocks: [], blockedBy: ["NHP-GTGD-BE"], note: "Draft.",
   },
   {
+    id: "NHP-FRGN-BE", title: "BE: Foreign Trading Summary — đổi foreignerSummary thành aggregate theo sàn",
+    area: "NHSV-Pro", feature: "Market_Watch", type: "BE",
+    status: "backlog", priority: "P2", deadline: null,
+    owner: "BE team", jira: null,
+    doc: "New feature in NHSV Pro/Market_Watch/Foreign_Trading_Summary/BE_Issue.md",
+    blocks: [], blockedBy: [], note: "Thay response của foreignerSummary (per-symbol → per-market), không tạo route mới. Cần BE xác nhận chưa có consumer trước khi đổi breaking.",
+  },
+  {
     id: "NHP-TREEMAP", title: "Spec: Sector Treemap (Market Watch)",
     area: "NHSV-Pro", feature: "Market_Watch", type: "Spec",
     status: "in_progress", priority: "P1", deadline: null,
