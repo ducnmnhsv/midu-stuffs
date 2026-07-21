@@ -785,7 +785,7 @@ function GanttView({
               {section.tasks.map(task => {
                 const overdue = isTaskOverdue(task, project);
                 const c = statusColor(task.progress);
-                const hasSpan = task.start !== null && task.start !== undefined;
+                const hasSpan = task.start !== null && task.start !== undefined && task.end !== null && task.end !== undefined;
                 return (
                   <div key={task.id} style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}` }} className="group">
                     <div className="px-2 py-1.5 flex items-center gap-2" style={{ fontSize: 12.5 }}>
@@ -809,7 +809,7 @@ function GanttView({
                       </span>
                     </div>
                     {weeks.map((_, i) => (
-                      <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}` }} />
+                      <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, gridColumn: i + 2, gridRow: 1 }} />
                     ))}
                     {hasSpan && (
                       <div
