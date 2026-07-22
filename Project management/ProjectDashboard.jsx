@@ -245,6 +245,53 @@ function computeAvgTrackOffWeeks(tasks) {
   return diffs.reduce((s, d) => s + d, 0) / diffs.length;
 }
 
+const AXIS_PAD_MS = 30 * MS_PER_DAY;
+
+function realTaskDates(project) {
+  const out = [];
+  project.sections.forEach(s => s.tasks.forEach(t => {
+    [t.dueDate, t.actualCompletionDate].forEach(v => {
+      if (v && v !== 'TBD' && v !== 'Done') {
+        const d = new Date(`${v}T00:00:00Z`).getTime();
+        if (!isNaN(d)) out.push(d);
+      }
+    });
+  }));
+  return out;
+}
+
+function computeDateAxis(project) {
+  const dates = realTaskDates(project);
+  const todayMs = Date.now();
+  if (!dates.length) return { min: todayMs - AXIS_PAD_MS, max: todayMs + AXIS_PAD_MS };
+  return { min: Math.min(...dates, todayMs) - AXIS_PAD_MS, max: Math.max(...dates, todayMs) + AXIS_PAD_MS };
+}
+
+function dateToAxisPercent(dateStr, axis) {
+  const d = new Date(`${dateStr}T00:00:00Z`).getTime();
+  const pct = ((d - axis.min) / (axis.max - axis.min)) * 100;
+  return Math.max(0, Math.min(100, pct));
+}
+
+function axisPercentToDate(pct, axis) {
+  const ms = axis.min + (pct / 100) * (axis.max - axis.min);
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function computeTrackOffDays(dueDate, actualCompletionDate) {
+  if (!actualCompletionDate || !dueDate || dueDate === 'TBD' || dueDate === 'Done') return null;
+  const due = new Date(`${dueDate}T00:00:00Z`).getTime();
+  const actual = new Date(`${actualCompletionDate}T00:00:00Z`).getTime();
+  if (isNaN(due) || isNaN(actual)) return null;
+  return Math.round((actual - due) / MS_PER_DAY);
+}
+
+function computeAvgTrackOffDays(tasks) {
+  const diffs = tasks.map(t => computeTrackOffDays(t.dueDate, t.actualCompletionDate)).filter(d => d !== null);
+  if (!diffs.length) return null;
+  return diffs.reduce((s, d) => s + d, 0) / diffs.length;
+}
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }

@@ -50,3 +50,36 @@ test('computeAvgTrackOffWeeks excludes tasks without actual data, never treats t
   assert.equal(computeAvgTrackOffWeeks([{ end: 5, actualEnd: 7 }, { end: 3, actualEnd: null }]), 2);
   assert.equal(computeAvgTrackOffWeeks([{ end: 5, actualEnd: 7 }, { end: 3, actualEnd: 5 }]), 2);
 });
+
+test('computeDateAxis pads around the real due dates present in a project', () => {
+  const { computeDateAxis, realTaskDates, AXIS_PAD_MS, MS_PER_DAY } = loadHelpers(['MS_PER_DAY', 'AXIS_PAD_MS', 'computeDateAxis', 'realTaskDates']);
+  const project = { sections: [{ tasks: [
+    { dueDate: '2026-08-01' }, { dueDate: 'TBD' }, { dueDate: '2026-09-01' },
+  ] }] };
+  const axis = computeDateAxis(project);
+  assert.ok(axis.min < new Date('2026-08-01T00:00:00Z').getTime());
+  assert.ok(axis.max > new Date('2026-09-01T00:00:00Z').getTime());
+});
+
+test('dateToAxisPercent / axisPercentToDate round-trip and clamp to [0,100]', () => {
+  const { dateToAxisPercent, axisPercentToDate } = loadHelpers(['dateToAxisPercent', 'axisPercentToDate']);
+  const axis = { min: new Date('2026-01-01T00:00:00Z').getTime(), max: new Date('2026-02-01T00:00:00Z').getTime() };
+  assert.equal(dateToAxisPercent('2026-01-01', axis), 0);
+  assert.equal(dateToAxisPercent('2026-02-01', axis), 100);
+  assert.equal(dateToAxisPercent('2025-01-01', axis), 0);
+  assert.equal(axisPercentToDate(0, axis), '2026-01-01');
+});
+
+test('computeTrackOffDays ignores TBD/Done sentinels and missing actual dates', () => {
+  const { computeTrackOffDays, MS_PER_DAY } = loadHelpers(['computeTrackOffDays', 'MS_PER_DAY']);
+  assert.equal(computeTrackOffDays('TBD', '2026-08-05'), null);
+  assert.equal(computeTrackOffDays('2026-08-01', null), null);
+  assert.equal(computeTrackOffDays('2026-08-01', '2026-08-05'), 4);
+  assert.equal(computeTrackOffDays('2026-08-05', '2026-08-01'), -4);
+});
+
+test('computeAvgTrackOffDays excludes tasks without actual data', () => {
+  const { computeAvgTrackOffDays, computeTrackOffDays, MS_PER_DAY } = loadHelpers(['computeAvgTrackOffDays', 'computeTrackOffDays', 'MS_PER_DAY']);
+  assert.equal(computeAvgTrackOffDays([{ dueDate: 'TBD', actualCompletionDate: null }]), null);
+  assert.equal(computeAvgTrackOffDays([{ dueDate: '2026-08-01', actualCompletionDate: '2026-08-05' }, { dueDate: 'TBD', actualCompletionDate: null }]), 4);
+});
