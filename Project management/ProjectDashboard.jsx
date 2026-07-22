@@ -460,6 +460,7 @@ export default function ProjectDashboard() {
       if (Number.isNaN(rawStart) || Number.isNaN(rawEnd)) return p;
       const newStart = Math.max(0, rawStart);
       const newEnd = Math.max(0, rawEnd);
+      if (newStart > newEnd) return p;
       const weeks = ensureWeeksLength(p.weeks, Math.max(newStart, newEnd) + 1);
       const fields = actual ? { actualStart: newStart, actualEnd: newEnd } : { start: newStart, end: newEnd };
       return {
