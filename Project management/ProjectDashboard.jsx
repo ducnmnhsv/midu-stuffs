@@ -805,7 +805,7 @@ export default function ProjectDashboard() {
                       className="w-full p-3 flex items-center justify-between"
                       style={{ background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                     >
-                      <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{p.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{displayName(p, uiLang)}</span>
                       <span className="flex items-center gap-3">
                         <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{p.sections.length} section</span>
                         <MiniBar progress={overallProgress(p)} width={60} />
@@ -831,7 +831,7 @@ export default function ProjectDashboard() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <h2 style={{ fontSize: 19, fontWeight: 700 }}>{selectedProject.name}</h2>
+                  <h2 style={{ fontSize: 19, fontWeight: 700 }}>{displayName(selectedProject, uiLang)}</h2>
                   {selectedProject.viewType === 'gantt' && (() => {
                     const avgOff = computeAvgTrackOffWeeks(flattenTasks(selectedProject));
                     if (avgOff === null) return null;
