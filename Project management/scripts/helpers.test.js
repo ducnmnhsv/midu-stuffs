@@ -83,3 +83,17 @@ test('computeAvgTrackOffDays excludes tasks without actual data', () => {
   assert.equal(computeAvgTrackOffDays([{ dueDate: 'TBD', actualCompletionDate: null }]), null);
   assert.equal(computeAvgTrackOffDays([{ dueDate: '2026-08-01', actualCompletionDate: '2026-08-05' }, { dueDate: 'TBD', actualCompletionDate: null }]), 4);
 });
+
+test('displayName falls back to the VI name when nameEn is empty', () => {
+  const { displayName } = loadHelpers(['displayName']);
+  assert.equal(displayName({ name: 'Việt', nameEn: 'English' }, 'en'), 'English');
+  assert.equal(displayName({ name: 'Việt', nameEn: '' }, 'en'), 'Việt');
+  assert.equal(displayName({ name: 'Việt', nameEn: undefined }, 'en'), 'Việt');
+  assert.equal(displayName({ name: 'Việt', nameEn: 'English' }, 'vi'), 'Việt');
+});
+
+test('displayClause falls back the same way as displayName', () => {
+  const { displayClause } = loadHelpers(['displayClause']);
+  assert.equal(displayClause({ clause: 'Điều 5', clauseEn: 'Article 5' }, 'en'), 'Article 5');
+  assert.equal(displayClause({ clause: 'Điều 5', clauseEn: '' }, 'en'), 'Điều 5');
+});

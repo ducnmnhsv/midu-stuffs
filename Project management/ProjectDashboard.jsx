@@ -3,6 +3,7 @@ import { Plus, Trash2, Copy, Check, AlertTriangle, Loader2, RotateCcw, X, Histor
 
 const STORAGE_KEY = 'ptd:state:v3';
 const LEGACY_STORAGE_KEY = 'ptd:state:v2';
+const UI_LANG_KEY = 'ptd:uiLang';
 
 const COLORS = {
   navy: '#0B2545',
@@ -311,6 +312,16 @@ function formatDateLabel(iso) {
   return `${d}/${m}/${y}`;
 }
 
+function displayName(entity, uiLang) {
+  if (uiLang === 'en' && entity.nameEn && entity.nameEn.trim()) return entity.nameEn;
+  return entity.name;
+}
+
+function displayClause(task, uiLang) {
+  if (uiLang === 'en' && task.clauseEn && task.clauseEn.trim()) return task.clauseEn;
+  return task.clause;
+}
+
 function composeReportBlock(name, overall, data, overdueNames) {
   const lines = [];
   lines.push(`${name} — ${overall}%`);
@@ -411,10 +422,17 @@ export default function ProjectDashboard() {
   const [digestDate, setDigestDate] = useState('latest');
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [expandedWbsIds, setExpandedWbsIds] = useState([]);
+  const [uiLang, setUiLang] = useState('vi');
 
   useEffect(() => { load(); }, []);
 
+  function changeUiLang(lang) {
+    setUiLang(lang);
+    window.storage.set(UI_LANG_KEY, lang).catch(() => {});
+  }
+
   async function load() {
+    window.storage.get(UI_LANG_KEY).then(res => { if (res && res.value) setUiLang(res.value); });
     try {
       const res = await window.storage.get(STORAGE_KEY);
       if (res && res.value) {
@@ -667,6 +685,14 @@ export default function ProjectDashboard() {
           <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
             <div style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase' }}>Project Tracker</div>
             <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>Dashboard</div>
+            <div className="flex gap-1 mt-2 rounded p-0.5" style={{ background: 'rgba(255,255,255,0.08)', width: 'fit-content' }}>
+              {['vi', 'en'].map(lang => (
+                <button key={lang} onClick={() => changeUiLang(lang)}
+                  style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', textTransform: 'uppercase', background: uiLang === lang ? COLORS.teal : 'transparent', color: '#fff' }}>
+                  {lang}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
