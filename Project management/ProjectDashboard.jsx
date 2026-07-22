@@ -724,7 +724,7 @@ export default function ProjectDashboard() {
                     className="w-full text-left p-2 rounded"
                     style={{ background: isActive ? 'rgba(15,163,163,0.25)' : 'transparent', border: isActive ? `1px solid ${COLORS.teal}` : '1px solid transparent', cursor: 'pointer' }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingRight: 18 }}>{p.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingRight: 18 }}>{displayName(p, uiLang)}</div>
                     <div className="flex items-center gap-2 mt-1.5">
                       <MiniBar progress={overallProgress(p)} width={80} />
                       <span className="mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{overallProgress(p)}%</span>
@@ -818,7 +818,7 @@ export default function ProjectDashboard() {
                     </button>
                     {isExpanded && (
                       <div className="p-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-                        <ProjectWbsCards project={p} />
+                        <ProjectWbsCards project={p} uiLang={uiLang} />
                       </div>
                     )}
                   </div>
@@ -864,6 +864,7 @@ export default function ProjectDashboard() {
                 selectedProject.viewType === 'gantt'
                   ? <GanttView
                       project={selectedProject}
+                      uiLang={uiLang}
                       onUpdateTaskSpan={(sectionId, taskId, fields) => updateTaskSpan(selectedProject.id, sectionId, taskId, fields)}
                       onUpdateTaskSpanByDate={(sectionId, taskId, fields) => updateTaskSpanByDate(selectedProject.id, sectionId, taskId, fields)}
                       onUpdateWeekStartDate={dateStr => updateProjectWeekStartDate(selectedProject.id, dateStr)}
@@ -881,6 +882,7 @@ export default function ProjectDashboard() {
                     />
                   : <ChecklistView
                       project={selectedProject}
+                      uiLang={uiLang}
                       onUpdateTaskDate={(sectionId, taskId, field, dateStr) => updateTaskDueDate(selectedProject.id, sectionId, taskId, field, dateStr)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
@@ -894,7 +896,7 @@ export default function ProjectDashboard() {
               )}
 
               {projectTab === 'wbs' && (
-                <ProjectWbsCards project={selectedProject} />
+                <ProjectWbsCards project={selectedProject} uiLang={uiLang} />
               )}
 
               {projectTab === 'report' && (
@@ -925,7 +927,7 @@ export default function ProjectDashboard() {
 // ---------- Gantt view ----------
 
 function GanttView({
-  project, onUpdateTaskSpan, onUpdateTaskSpanByDate, onUpdateWeekStartDate, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
+  project, uiLang, onUpdateTaskSpan, onUpdateTaskSpanByDate, onUpdateWeekStartDate, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   addingWeek, setAddingWeek, weekDraftLabel, setWeekDraftLabel, onAddWeek,
@@ -1013,7 +1015,7 @@ function GanttView({
             <div key={section.id}>
               <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, background: COLORS.tealSoft, borderBottom: `1px solid ${COLORS.border}` }}>
                 <div className="px-2 py-1.5 flex items-center justify-between group">
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: COLORS.navy }}>{section.name}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: COLORS.navy }}>{displayName(section, uiLang)}</span>
                   <span className="flex items-center gap-2 opacity-0 group-hover:opacity-100">
                     <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted }}>{secProgress}%</span>
                     {confirmDelete && confirmDelete.type === 'section' && confirmDelete.id === section.id ? (
@@ -1040,7 +1042,7 @@ function GanttView({
                         <ProgressPill progress={task.progress} />
                       </button>
                       <span style={{ flex: 1 }}>
-                        {task.name}
+                        {displayName(task, uiLang)}
                         {task.pic && <span className="mono" style={{ display: 'block', fontSize: 10.5, color: COLORS.textFaint }}>{task.pic}</span>}
                       </span>
                       {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
@@ -1213,7 +1215,7 @@ function GanttView({
 // ---------- Checklist view ----------
 
 function ChecklistView({
-  project, onUpdateTaskDate, editingProgressId, setEditingProgressId, onProgressChange,
+  project, uiLang, onUpdateTaskDate, editingProgressId, setEditingProgressId, onProgressChange,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   confirmDelete, setConfirmDelete, onDeleteTask, onDeleteSection,
@@ -1260,7 +1262,7 @@ function ChecklistView({
           <div key={section.id}>
             <div className="px-3 py-2 flex items-center justify-between group" style={{ background: COLORS.tealSoft, borderBottom: `1px solid ${COLORS.border}` }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>
-                {section.name}{section.pic ? <span className="mono" style={{ fontWeight: 500, color: COLORS.textMuted, fontSize: 12 }}> · PIC: {section.pic}</span> : null}
+                {displayName(section, uiLang)}{section.pic ? <span className="mono" style={{ fontWeight: 500, color: COLORS.textMuted, fontSize: 12 }}> · PIC: {section.pic}</span> : null}
               </span>
               <span className="flex items-center gap-2">
                 <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{secProgress}%</span>
@@ -1282,9 +1284,9 @@ function ChecklistView({
                     <ProgressPill progress={task.progress} />
                   </button>
                   {task.no != null && <span className="mono" style={{ fontSize: 10.5, color: COLORS.textFaint, minWidth: 20 }}>#{task.no}</span>}
-                  <span style={{ fontSize: 13, flex: 1 }}>{task.name}</span>
+                  <span style={{ fontSize: 13, flex: 1 }}>{displayName(task, uiLang)}</span>
                   {task.pic && <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted, minWidth: 70 }}>{task.pic}</span>}
-                  {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{task.clause}</span>}
+                  {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{displayClause(task, uiLang)}</span>}
                   {task.dueDate !== 'TBD' && task.dueDate !== 'Done' ? (
                     <input type="date" value={task.dueDate} onChange={e => onUpdateTaskDate(section.id, task.id, 'dueDate', e.target.value)}
                       className="mono rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5, minWidth: 90, color: overdue ? COLORS.danger : undefined, fontWeight: overdue ? 700 : 500 }} />
@@ -1551,7 +1553,7 @@ function taskTrackOffLabel(task, project) {
   return { off, label: `${off > 0 ? '+' : ''}${off}d` };
 }
 
-function ProjectWbsCards({ project }) {
+function ProjectWbsCards({ project, uiLang }) {
   return (
     <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
       {project.sections.map(section => {
@@ -1559,17 +1561,18 @@ function ProjectWbsCards({ project }) {
         return (
           <div key={section.id} className="rounded p-3" style={{ background: COLORS.tealSoft, border: `1px solid ${COLORS.border}` }}>
             <div className="flex items-center justify-between mb-2">
-              <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{section.name}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{displayName(section, uiLang)}</span>
               <span className="mono" style={{ fontSize: 12, color: COLORS.teal }}>{secProgress}%</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {section.tasks.map(task => {
                 const overdue = isTaskOverdue(task, project);
                 const trackOff = taskTrackOffLabel(task, project);
+                const taskLabel = displayName(task, uiLang);
                 return (
                   <span
                     key={task.id}
-                    title={task.name}
+                    title={taskLabel}
                     className="flex items-center gap-1"
                     style={{
                       fontSize: 11.5, padding: '3px 8px', borderRadius: 999,
@@ -1579,7 +1582,7 @@ function ProjectWbsCards({ project }) {
                     }}
                   >
                     {overdue && <AlertTriangle size={11} />}
-                    {task.name.length > 28 ? `${task.name.slice(0, 28)}…` : task.name} · {task.progress}%
+                    {taskLabel.length > 28 ? `${taskLabel.slice(0, 28)}…` : taskLabel} · {task.progress}%
                     {trackOff && (
                       <span className="mono" style={{ fontWeight: 700, color: trackOff.off > 0 ? COLORS.danger : COLORS.success }}>
                         {trackOff.label}
