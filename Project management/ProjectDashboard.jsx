@@ -30,6 +30,9 @@ const UI_TEXT = {
     statProjects: 'Số dự án', statAvgProgress: 'Trung bình tiến độ', statOverdue: 'Task quá hạn',
     tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
     sectionsAndTasks: 'Sections & Tasks', today: 'hôm nay',
+    xoa: 'Xóa', huy: 'Hủy', them: 'Thêm', themTask: '+ Thêm task', themSection: '+ Thêm section',
+    themWeek: '+ Thêm cột tuần', tenTaskPlaceholder: 'Tên task', tenSectionPlaceholder: 'Tên section',
+    clausePlaceholder: 'Điều/clause', picPlaceholder: 'PIC', xong: 'Xong',
   },
   en: {
     dashboardTitle: 'Project Tracker', dashboardSubtitle: 'Dashboard',
@@ -37,6 +40,9 @@ const UI_TEXT = {
     statProjects: 'Projects', statAvgProgress: 'Avg. progress', statOverdue: 'Overdue tasks',
     tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
     sectionsAndTasks: 'Sections & Tasks', today: 'today',
+    xoa: 'Delete', huy: 'Cancel', them: 'Add', themTask: '+ Add task', themSection: '+ Add section',
+    themWeek: '+ Add week column', tenTaskPlaceholder: 'Task name', tenSectionPlaceholder: 'Section name',
+    clausePlaceholder: 'Article/clause', picPlaceholder: 'PIC', xong: 'Done',
   },
 };
 
@@ -1037,8 +1043,8 @@ function GanttView({
                     <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted }}>{secProgress}%</span>
                     {confirmDelete && confirmDelete.type === 'section' && confirmDelete.id === section.id ? (
                       <span className="flex gap-1">
-                        <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                        <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                       </span>
                     ) : (
                       <IconBtn title="Xóa section" onClick={() => setConfirmDelete({ type: 'section', id: section.id })}><Trash2 size={12} /></IconBtn>
@@ -1066,8 +1072,8 @@ function GanttView({
                       <span className="opacity-0 group-hover:opacity-100">
                         {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
                           <span className="flex gap-1">
-                            <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                            <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                            <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                            <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                           </span>
                         ) : (
                           <IconBtn title="Xóa task" onClick={() => setConfirmDelete({ type: 'task', id: task.id })}><Trash2 size={12} /></IconBtn>
@@ -1159,7 +1165,7 @@ function GanttView({
                               className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
                           </span>
                         )}
-                        <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>Xong</button>
+                        <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].xong}</button>
                       </div>
                     )}
                   </div>
@@ -1169,7 +1175,7 @@ function GanttView({
               {addingTaskSection === section.id ? (
                 <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
                   <div className="px-2 py-1.5 flex items-center gap-1" style={{ gridColumn: `1 / span ${weeks.length + 1}` }}>
-                    <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder="Tên task" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, maxWidth: 260 }} />
+                    <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder={UI_TEXT[uiLang].tenTaskPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, maxWidth: 260 }} />
                     <span style={{ fontSize: 11, color: COLORS.textMuted }}>Từ tuần</span>
                     <select value={taskDraft.start} onChange={e => setTaskDraft(d => ({ ...d, start: e.target.value }))} className="rounded px-1 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
                       {weeks.map((w, i) => <option key={i} value={i}>{w}</option>)}
@@ -1178,14 +1184,14 @@ function GanttView({
                     <select value={taskDraft.end} onChange={e => setTaskDraft(d => ({ ...d, end: e.target.value }))} className="rounded px-1 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
                       {weeks.map((w, i) => <option key={i} value={i}>{w}</option>)}
                     </select>
-                    <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+                    <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
                     <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
                   </div>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}` }}>
                   <button onClick={() => setAddingTaskSection(section.id)} className="px-2 py-1.5 flex items-center gap-1" style={{ fontSize: 12, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', gridColumn: `1 / span ${weeks.length + 1}`, justifyContent: 'flex-start', width: '100%', textAlign: 'left' }}>
-                    <Plus size={13} /> Thêm task
+                    <Plus size={13} /> {UI_TEXT[uiLang].themTask}
                   </button>
                 </div>
               )}
@@ -1197,21 +1203,21 @@ function GanttView({
       <div className="flex items-center gap-4 p-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
         {addingSectionProject === project.id ? (
           <div className="flex items-center gap-1">
-            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder="Tên section" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
-            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder={UI_TEXT[uiLang].tenSectionPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
+            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingSectionProject(null)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> Thêm section</button>
+          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> {UI_TEXT[uiLang].themSection}</button>
         )}
         {addingWeek ? (
           <div className="flex items-center gap-1">
             <input autoFocus value={weekDraftLabel} onChange={e => setWeekDraftLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddWeek(project.id)} placeholder="vd. Oct W1" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
-            <button onClick={() => onAddWeek(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <button onClick={() => onAddWeek(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingWeek(false)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingWeek(true)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.textMuted, background: 'transparent', border: 'none', cursor: 'pointer' }}><Plus size={13} /> Thêm cột tuần</button>
+          <button onClick={() => setAddingWeek(true)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.textMuted, background: 'transparent', border: 'none', cursor: 'pointer' }}><Plus size={13} /> {UI_TEXT[uiLang].themWeek}</button>
         )}
         <label className="flex items-center gap-1.5" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
           W1 bắt đầu:
@@ -1285,8 +1291,8 @@ function ChecklistView({
                 <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{secProgress}%</span>
                 {confirmDelete && confirmDelete.type === 'section' && confirmDelete.id === section.id ? (
                   <span className="flex gap-1">
-                    <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                    <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                    <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                    <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                   </span>
                 ) : (
                   <IconBtn title="Xóa section" onClick={() => setConfirmDelete({ type: 'section', id: section.id })}><Trash2 size={12} /></IconBtn>
@@ -1359,8 +1365,8 @@ function ChecklistView({
                   <span className="opacity-0 group-hover:opacity-100">
                     {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
                       <span className="flex gap-1">
-                        <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                        <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                       </span>
                     ) : (
                       <IconBtn title="Xóa task" onClick={() => setConfirmDelete({ type: 'task', id: task.id })}><Trash2 size={12} /></IconBtn>
@@ -1377,7 +1383,7 @@ function ChecklistView({
                     <>
                       <input type="range" min="0" max="100" step="5" value={t.progress} onChange={e => onProgressChange(section.id, t.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
                       <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{t.progress}%</span>
-                      <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>Xong</button>
+                      <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].xong}</button>
                     </>
                   );
                 })()}
@@ -1385,16 +1391,16 @@ function ChecklistView({
             )}
             {addingTaskSection === section.id ? (
               <div className="px-3 py-2 flex items-center gap-1 flex-wrap" style={{ borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
-                <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder="Tên task" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, minWidth: 200 }} />
-                <input value={taskDraft.clause} onChange={e => setTaskDraft(d => ({ ...d, clause: e.target.value }))} placeholder="Điều/clause" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
-                <input value={taskDraft.pic} onChange={e => setTaskDraft(d => ({ ...d, pic: e.target.value }))} placeholder="PIC" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 90 }} />
+                <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder={UI_TEXT[uiLang].tenTaskPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, minWidth: 200 }} />
+                <input value={taskDraft.clause} onChange={e => setTaskDraft(d => ({ ...d, clause: e.target.value }))} placeholder={UI_TEXT[uiLang].clausePlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
+                <input value={taskDraft.pic} onChange={e => setTaskDraft(d => ({ ...d, pic: e.target.value }))} placeholder={UI_TEXT[uiLang].picPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 90 }} />
                 <input value={taskDraft.dueDate} onChange={e => setTaskDraft(d => ({ ...d, dueDate: e.target.value }))} placeholder="YYYY-MM-DD / TBD" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 130 }} />
-                <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+                <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
                 <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
               </div>
             ) : (
               <button onClick={() => setAddingTaskSection(section.id)} className="px-3 py-1.5 flex items-center gap-1" style={{ fontSize: 12, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${COLORS.border}`, width: '100%', textAlign: 'left' }}>
-                <Plus size={13} /> Thêm task
+                <Plus size={13} /> {UI_TEXT[uiLang].themTask}
               </button>
             )}
           </div>
@@ -1403,12 +1409,12 @@ function ChecklistView({
       <div className="p-3">
         {addingSectionProject === project.id ? (
           <div className="flex items-center gap-1">
-            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder="Tên section" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
-            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder={UI_TEXT[uiLang].tenSectionPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
+            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingSectionProject(null)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> Thêm section</button>
+          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> {UI_TEXT[uiLang].themSection}</button>
         )}
       </div>
     </div>
