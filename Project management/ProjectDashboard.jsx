@@ -353,7 +353,7 @@ export default function ProjectDashboard() {
   const [editingProgressId, setEditingProgressId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [addingTaskSection, setAddingTaskSection] = useState(null);
-  const [taskDraft, setTaskDraft] = useState({ name: '', clause: '', dueDate: '', start: '', end: '' });
+  const [taskDraft, setTaskDraft] = useState({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' });
   const [addingSectionProject, setAddingSectionProject] = useState(null);
   const [sectionDraftName, setSectionDraftName] = useState('');
   const [addingWeek, setAddingWeek] = useState(false);
@@ -508,10 +508,10 @@ export default function ProjectDashboard() {
         ...s,
         tasks: [...s.tasks, project.viewType === 'gantt'
           ? { id: uid(), name: taskDraft.name.trim(), pic: '', progress: 0, start: taskDraft.start === '' ? project.currentWeekIndex : Number(taskDraft.start), end: taskDraft.end === '' ? project.currentWeekIndex : Number(taskDraft.end) }
-          : { id: uid(), name: taskDraft.name.trim(), progress: 0, clause: taskDraft.clause || '', dueDate: taskDraft.dueDate || 'TBD' }],
+          : { id: uid(), name: taskDraft.name.trim(), progress: 0, clause: taskDraft.clause || '', dueDate: taskDraft.dueDate || 'TBD', pic: taskDraft.pic || '' }],
       }),
     }));
-    setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' });
+    setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' });
     setAddingTaskSection(null);
   }
 
@@ -1017,7 +1017,7 @@ function GanttView({
                       {weeks.map((w, i) => <option key={i} value={i}>{w}</option>)}
                     </select>
                     <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
-                    <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' }); }}><X size={14} /></IconBtn>
+                    <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
                   </div>
                 </div>
               ) : (
@@ -1106,6 +1106,7 @@ function ChecklistView({
                   </button>
                   {task.no != null && <span className="mono" style={{ fontSize: 10.5, color: COLORS.textFaint, minWidth: 20 }}>#{task.no}</span>}
                   <span style={{ fontSize: 13, flex: 1 }}>{task.name}</span>
+                  {task.pic && <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted, minWidth: 70 }}>{task.pic}</span>}
                   {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{task.clause}</span>}
                   <span className="mono" style={{ fontSize: 11.5, color: overdue ? COLORS.danger : COLORS.textMuted, fontWeight: overdue ? 700 : 500, minWidth: 90, textAlign: 'right' }}>
                     {task.dueDate === 'TBD' ? 'TBD' : task.dueDate === 'Done' ? 'Done' : task.dueDate}
@@ -1142,9 +1143,10 @@ function ChecklistView({
               <div className="px-3 py-2 flex items-center gap-1 flex-wrap" style={{ borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
                 <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder="Tên task" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, minWidth: 200 }} />
                 <input value={taskDraft.clause} onChange={e => setTaskDraft(d => ({ ...d, clause: e.target.value }))} placeholder="Điều/clause" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
+                <input value={taskDraft.pic} onChange={e => setTaskDraft(d => ({ ...d, pic: e.target.value }))} placeholder="PIC" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 90 }} />
                 <input value={taskDraft.dueDate} onChange={e => setTaskDraft(d => ({ ...d, dueDate: e.target.value }))} placeholder="YYYY-MM-DD / TBD" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 130 }} />
                 <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
-                <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' }); }}><X size={14} /></IconBtn>
+                <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
               </div>
             ) : (
               <button onClick={() => setAddingTaskSection(section.id)} className="px-3 py-1.5 flex items-center gap-1" style={{ fontSize: 12, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${COLORS.border}`, width: '100%', textAlign: 'left' }}>
