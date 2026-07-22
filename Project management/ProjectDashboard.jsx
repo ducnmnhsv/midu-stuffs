@@ -784,7 +784,7 @@ export default function ProjectDashboard() {
                   })()}
                 </div>
                 <div className="flex gap-1 rounded p-1" style={{ background: COLORS.border }}>
-                  {[['timeline', 'Timeline'], ['report', 'Weekly Report']].map(([k, label]) => (
+                  {[['timeline', 'Timeline'], ['wbs', 'WBS'], ['report', 'Weekly Report']].map(([k, label]) => (
                     <button key={k} onClick={() => setProjectTab(k)} style={{ fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', background: projectTab === k ? COLORS.card : 'transparent', color: projectTab === k ? COLORS.navy : COLORS.textMuted }}>
                       {label}
                     </button>
@@ -823,6 +823,10 @@ export default function ProjectDashboard() {
                       confirmDelete={confirmDelete} setConfirmDelete={setConfirmDelete}
                       onDeleteTask={deleteTask} onDeleteSection={deleteSection}
                     />
+              )}
+
+              {projectTab === 'wbs' && (
+                <ProjectWbsCards project={selectedProject} />
               )}
 
               {projectTab === 'report' && (
