@@ -1138,26 +1138,34 @@ function ChecklistView({
   confirmDelete, setConfirmDelete, onDeleteTask, onDeleteSection,
 }) {
   const axis = computeDateAxis(project);
-  const trackRef = React.useRef(null);
-  const [dragDueId, setDragDueId] = React.useState(null); // { sectionId, taskId } currently being dragged, or null
+  // { sectionId, taskId, trackLeft, trackWidth, previewDate } currently being dragged, or null.
+  // trackLeft/trackWidth are captured from the dragged marker's OWN track div at drag-start
+  // (pointerdown), so the pixel math always reads that specific row's geometry — never a
+  // shared ref that could point at whichever row's track happened to mount/update last.
+  const [drag, setDrag] = React.useState(null);
 
   React.useEffect(() => {
-    if (!dragDueId) return undefined;
+    if (!drag) return undefined;
     function onMove(e) {
-      if (!trackRef.current) return;
-      const rect = trackRef.current.getBoundingClientRect();
-      const pct = ((e.clientX - rect.left) / rect.width) * 100;
+      const pct = ((e.clientX - drag.trackLeft) / drag.trackWidth) * 100;
       const dateStr = axisPercentToDate(pct, axis);
-      onUpdateTaskDate(dragDueId.sectionId, dragDueId.taskId, 'dueDate', dateStr);
+      setDrag(d => (d ? { ...d, previewDate: dateStr } : d));
     }
-    function onUp() { setDragDueId(null); }
+    function onUp() {
+      setDrag(d => {
+        if (d) {
+          onUpdateTaskDate(d.sectionId, d.taskId, 'dueDate', d.previewDate);
+        }
+        return null;
+      });
+    }
     window.addEventListener('pointermove', onMove);
-    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointerup', onUp, { once: true });
     return () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
     };
-  }, [dragDueId, axis.min, axis.max, onUpdateTaskDate]);
+  }, [drag, axis.min, axis.max, onUpdateTaskDate]);
 
   return (
     <div className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
@@ -1203,19 +1211,26 @@ function ChecklistView({
                     <span className="mono" style={{ fontSize: 11.5, color: COLORS.textMuted, minWidth: 90, textAlign: 'right' }}>{task.dueDate}</span>
                   )}
                   {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
-                  <div ref={task.dueDate !== 'TBD' && task.dueDate !== 'Done' ? trackRef : undefined} style={{ position: 'relative', width: 160, height: 18, background: '#F2F2F2', borderRadius: 4, flexShrink: 0 }}>
+                  <div style={{ position: 'relative', width: 160, height: 18, background: '#F2F2F2', borderRadius: 4, flexShrink: 0 }}>
                     <div style={{ position: 'absolute', left: `${dateToAxisPercent(todayISO(), axis)}%`, top: 0, bottom: 0, width: 2, background: COLORS.navy }} />
-                    {task.dueDate !== 'TBD' && task.dueDate !== 'Done' && (
-                      <div
-                        onPointerDown={() => setDragDueId({ sectionId: section.id, taskId: task.id })}
-                        title={task.dueDate}
-                        style={{
-                          position: 'absolute', top: 2, width: 14, height: 14, borderRadius: '50%',
-                          left: `calc(${dateToAxisPercent(task.dueDate, axis)}% - 7px)`,
-                          background: COLORS.teal, border: '2px solid #fff', cursor: 'grab',
-                        }}
-                      />
-                    )}
+                    {task.dueDate !== 'TBD' && task.dueDate !== 'Done' && (() => {
+                      const isDraggingThis = drag && drag.taskId === task.id;
+                      const displayDate = isDraggingThis ? drag.previewDate : task.dueDate;
+                      return (
+                        <div
+                          onPointerDown={e => {
+                            const rect = e.currentTarget.parentElement.getBoundingClientRect();
+                            setDrag({ sectionId: section.id, taskId: task.id, trackLeft: rect.left, trackWidth: rect.width, previewDate: task.dueDate });
+                          }}
+                          title={displayDate}
+                          style={{
+                            position: 'absolute', top: 2, width: 14, height: 14, borderRadius: '50%',
+                            left: `calc(${dateToAxisPercent(displayDate, axis)}% - 7px)`,
+                            background: COLORS.teal, border: '2px solid #fff', cursor: 'grab',
+                          }}
+                        />
+                      );
+                    })()}
                   </div>
                   <span className="opacity-0 group-hover:opacity-100">
                     {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
