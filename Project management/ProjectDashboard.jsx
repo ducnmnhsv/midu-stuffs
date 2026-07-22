@@ -488,6 +488,20 @@ export default function ProjectDashboard() {
     }));
   }
 
+  function updateTaskDueDate(projectId, sectionId, taskId, field, dateStr) {
+    // Guard against empty/invalid input (e.g. a cleared <input type="date">) — an invalid
+    // dateStr would silently turn into NaN downstream (dateToAxisPercent, isTaskOverdue),
+    // rendering the marker at a broken position. Ignore the write instead of storing garbage.
+    if (!dateStr || isNaN(new Date(`${dateStr}T00:00:00Z`).getTime())) return;
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      sections: p.sections.map(s => s.id !== sectionId ? s : {
+        ...s,
+        tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, [field]: dateStr }),
+      }),
+    }));
+  }
+
   function updateTaskSpan(projectId, sectionId, taskId, fields) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
@@ -790,6 +804,7 @@ export default function ProjectDashboard() {
                     />
                   : <ChecklistView
                       project={selectedProject}
+                      onUpdateTaskDate={(sectionId, taskId, field, dateStr) => updateTaskDueDate(selectedProject.id, sectionId, taskId, field, dateStr)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
                       addingTaskSection={addingTaskSection} setAddingTaskSection={setAddingTaskSection}
@@ -1117,13 +1132,39 @@ function GanttView({
 // ---------- Checklist view ----------
 
 function ChecklistView({
-  project, editingProgressId, setEditingProgressId, onProgressChange,
+  project, onUpdateTaskDate, editingProgressId, setEditingProgressId, onProgressChange,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   confirmDelete, setConfirmDelete, onDeleteTask, onDeleteSection,
 }) {
+  const axis = computeDateAxis(project);
+  const trackRef = React.useRef(null);
+  const [dragDueId, setDragDueId] = React.useState(null); // { sectionId, taskId } currently being dragged, or null
+
+  React.useEffect(() => {
+    if (!dragDueId) return undefined;
+    function onMove(e) {
+      if (!trackRef.current) return;
+      const rect = trackRef.current.getBoundingClientRect();
+      const pct = ((e.clientX - rect.left) / rect.width) * 100;
+      const dateStr = axisPercentToDate(pct, axis);
+      onUpdateTaskDate(dragDueId.sectionId, dragDueId.taskId, 'dueDate', dateStr);
+    }
+    function onUp() { setDragDueId(null); }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [dragDueId, axis.min, axis.max, onUpdateTaskDate]);
+
   return (
     <div className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+      <div className="flex items-center px-3 py-1.5" style={{ borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
+        <span style={{ flex: 1, fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase' }}>PIC / Điều khoản / Due date</span>
+        <span style={{ width: 160, fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Timeline</span>
+      </div>
       {project.sections.map(section => {
         const secProgress = section.tasks.length ? Math.round(section.tasks.reduce((s, t) => s + t.progress, 0) / section.tasks.length) : 0;
         return (
@@ -1155,10 +1196,27 @@ function ChecklistView({
                   <span style={{ fontSize: 13, flex: 1 }}>{task.name}</span>
                   {task.pic && <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted, minWidth: 70 }}>{task.pic}</span>}
                   {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{task.clause}</span>}
-                  <span className="mono" style={{ fontSize: 11.5, color: overdue ? COLORS.danger : COLORS.textMuted, fontWeight: overdue ? 700 : 500, minWidth: 90, textAlign: 'right' }}>
-                    {task.dueDate === 'TBD' ? 'TBD' : task.dueDate === 'Done' ? 'Done' : task.dueDate}
-                  </span>
+                  {task.dueDate !== 'TBD' && task.dueDate !== 'Done' ? (
+                    <input type="date" value={task.dueDate} onChange={e => onUpdateTaskDate(section.id, task.id, 'dueDate', e.target.value)}
+                      className="mono rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5, minWidth: 90, color: overdue ? COLORS.danger : undefined, fontWeight: overdue ? 700 : 500 }} />
+                  ) : (
+                    <span className="mono" style={{ fontSize: 11.5, color: COLORS.textMuted, minWidth: 90, textAlign: 'right' }}>{task.dueDate}</span>
+                  )}
                   {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
+                  <div ref={task.dueDate !== 'TBD' && task.dueDate !== 'Done' ? trackRef : undefined} style={{ position: 'relative', width: 160, height: 18, background: '#F2F2F2', borderRadius: 4, flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', left: `${dateToAxisPercent(todayISO(), axis)}%`, top: 0, bottom: 0, width: 2, background: COLORS.navy }} />
+                    {task.dueDate !== 'TBD' && task.dueDate !== 'Done' && (
+                      <div
+                        onPointerDown={() => setDragDueId({ sectionId: section.id, taskId: task.id })}
+                        title={task.dueDate}
+                        style={{
+                          position: 'absolute', top: 2, width: 14, height: 14, borderRadius: '50%',
+                          left: `calc(${dateToAxisPercent(task.dueDate, axis)}% - 7px)`,
+                          background: COLORS.teal, border: '2px solid #fff', cursor: 'grab',
+                        }}
+                      />
+                    )}
+                  </div>
                   <span className="opacity-0 group-hover:opacity-100">
                     {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
                       <span className="flex gap-1">
