@@ -23,6 +23,23 @@ const COLORS = {
   border: '#E3E7EC',
 };
 
+const UI_TEXT = {
+  vi: {
+    dashboardTitle: 'Project Tracker', dashboardSubtitle: 'Dashboard',
+    weeklyDigest: '📋 Weekly Digest', wbsOverview: '🧩 WBS tổng thể', duAn: 'Dự án',
+    statProjects: 'Số dự án', statAvgProgress: 'Trung bình tiến độ', statOverdue: 'Task quá hạn',
+    tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
+    sectionsAndTasks: 'Sections & Tasks', today: 'hôm nay',
+  },
+  en: {
+    dashboardTitle: 'Project Tracker', dashboardSubtitle: 'Dashboard',
+    weeklyDigest: '📋 Weekly Digest', wbsOverview: '🧩 Overall WBS', duAn: 'Projects',
+    statProjects: 'Projects', statAvgProgress: 'Avg. progress', statOverdue: 'Overdue tasks',
+    tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
+    sectionsAndTasks: 'Sections & Tasks', today: 'today',
+  },
+};
+
 function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
@@ -683,8 +700,8 @@ export default function ProjectDashboard() {
       <div className="flex" style={{ minHeight: '100vh' }}>
         <aside className="w-64 flex flex-col" style={{ background: COLORS.navy, color: '#fff', flexShrink: 0 }}>
           <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-            <div style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase' }}>Project Tracker</div>
-            <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>Dashboard</div>
+            <div style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase' }}>{UI_TEXT[uiLang].dashboardTitle}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>{UI_TEXT[uiLang].dashboardSubtitle}</div>
             <div className="flex gap-1 mt-2 rounded p-0.5" style={{ background: 'rgba(255,255,255,0.08)', width: 'fit-content' }}>
               {['vi', 'en'].map(lang => (
                 <button key={lang} onClick={() => changeUiLang(lang)}
@@ -700,7 +717,7 @@ export default function ProjectDashboard() {
             className="mx-3 mt-3 p-2 rounded flex items-center justify-between"
             style={{ background: mainView === 'digest' ? COLORS.teal : 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
           >
-            <span>📋 Weekly Digest</span>
+            <span>{UI_TEXT[uiLang].weeklyDigest}</span>
             {totalOverdue > 0 && <span className="mono" style={{ background: COLORS.danger, borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>{totalOverdue}</span>}
           </button>
 
@@ -709,10 +726,10 @@ export default function ProjectDashboard() {
             className="mx-3 mt-2 p-2 rounded flex items-center justify-between"
             style={{ background: mainView === 'wbs-overview' ? COLORS.teal : 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
           >
-            <span>🧩 WBS tổng thể</span>
+            <span>{UI_TEXT[uiLang].wbsOverview}</span>
           </button>
 
-          <div className="px-3 mt-4" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Dự án</div>
+          <div className="px-3 mt-4" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{UI_TEXT[uiLang].duAn}</div>
           <div className="flex-1 overflow-auto px-2 mt-1">
             {projects.map(p => {
               const overdueCount = getOverdueTasks(p).length;
@@ -768,15 +785,15 @@ export default function ProjectDashboard() {
         <main className="flex-1 overflow-auto">
           <div className="flex items-center gap-6 px-6 py-3" style={{ background: COLORS.card, borderBottom: `1px solid ${COLORS.border}` }}>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Số dự án</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statProjects}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700 }}>{projects.length}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Trung bình tiến độ</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statAvgProgress}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: COLORS.teal }}>{avgOverall}%</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Task quá hạn</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statOverdue}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: totalOverdue > 0 ? COLORS.danger : COLORS.success }}>{totalOverdue}</div>
             </div>
             <div className="ml-auto flex items-center gap-2" style={{ fontSize: 12, color: COLORS.textMuted }}>
@@ -852,7 +869,7 @@ export default function ProjectDashboard() {
                   })()}
                 </div>
                 <div className="flex gap-1 rounded p-1" style={{ background: COLORS.border }}>
-                  {[['timeline', 'Timeline'], ['wbs', 'WBS'], ['report', 'Weekly Report']].map(([k, label]) => (
+                  {[['timeline', UI_TEXT[uiLang].tabTimeline], ['wbs', UI_TEXT[uiLang].tabWbs], ['report', UI_TEXT[uiLang].tabReport]].map(([k, label]) => (
                     <button key={k} onClick={() => setProjectTab(k)} style={{ fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', background: projectTab === k ? COLORS.card : 'transparent', color: projectTab === k ? COLORS.navy : COLORS.textMuted }}>
                       {label}
                     </button>
@@ -996,12 +1013,12 @@ function GanttView({
       <div ref={gridRef} className="relative" style={{ overflowX: 'auto' }}>
         {nowLeft && (
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: nowLeft, width: 2, background: COLORS.navy, zIndex: 5, pointerEvents: 'none' }}>
-            <div className="mono" style={{ position: 'absolute', top: -2, left: 4, fontSize: 10, background: COLORS.navy, color: '#fff', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>hôm nay</div>
+            <div className="mono" style={{ position: 'absolute', top: -2, left: 4, fontSize: 10, background: COLORS.navy, color: '#fff', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>{UI_TEXT[uiLang].today}</div>
           </div>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
-          <div className="p-2 flex items-center" style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>Sections & Tasks</div>
+          <div className="p-2 flex items-center" style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>{UI_TEXT[uiLang].sectionsAndTasks}</div>
           {weeks.map((w, idx) => (
             <button key={idx} onClick={() => onSetCurrentWeek(idx)} title="Đặt làm tuần hiện tại" className="mono text-center py-2" style={{ fontSize: 11, fontWeight: idx === project.currentWeekIndex ? 700 : 500, color: idx === project.currentWeekIndex ? COLORS.navy : COLORS.textMuted, background: 'transparent', border: 'none', borderLeft: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
               {w}
