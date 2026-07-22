@@ -97,3 +97,29 @@ test('displayClause falls back the same way as displayName', () => {
   assert.equal(displayClause({ clause: 'Điều 5', clauseEn: 'Article 5' }, 'en'), 'Article 5');
   assert.equal(displayClause({ clause: 'Điều 5', clauseEn: '' }, 'en'), 'Điều 5');
 });
+
+test('normalizeReportForLang wraps an old flat draft/history into {vi, en}', () => {
+  const { normalizeReportForLang } = loadHelpers(['emptyDraft', 'normalizeReportForLang']);
+  const oldProject = {
+    id: 'p1',
+    report: {
+      draft: { doneLastWeek: 'a', planNextWeek: 'b', issues: 'c' },
+      history: [{ id: 'h1', date: '2026-07-01', doneLastWeek: 'x', planNextWeek: 'y', issues: 'z', overall: 50, overdueSnapshot: [] }],
+    },
+  };
+  const normalized = normalizeReportForLang(oldProject);
+  assert.deepEqual(normalized.report.draft.vi, { doneLastWeek: 'a', planNextWeek: 'b', issues: 'c' });
+  assert.deepEqual(normalized.report.draft.en, { doneLastWeek: '', planNextWeek: '', issues: '' });
+  assert.deepEqual(normalized.report.history[0].vi, { doneLastWeek: 'x', planNextWeek: 'y', issues: 'z' });
+  assert.equal(normalized.report.history[0].overall, 50);
+});
+
+test('normalizeReportForLang is a no-op on an already-normalized project', () => {
+  const { normalizeReportForLang } = loadHelpers(['emptyDraft', 'normalizeReportForLang']);
+  const newProject = {
+    id: 'p1',
+    report: { draft: { vi: { doneLastWeek: 'a', planNextWeek: '', issues: '' }, en: { doneLastWeek: '', planNextWeek: '', issues: '' } }, history: [] },
+  };
+  const normalized = normalizeReportForLang(newProject);
+  assert.deepEqual(normalized, newProject);
+});

@@ -54,6 +54,17 @@ function emptyDraft() {
   return { doneLastWeek: '', planNextWeek: '', issues: '' };
 }
 
+function normalizeReportForLang(project) {
+  const draft = project.report.draft;
+  const alreadyNormalized = draft && draft.vi && draft.en;
+  const history = project.report.history.map(h => {
+    if (h.vi && h.en) return h;
+    return { id: h.id, date: h.date, overall: h.overall, overdueSnapshot: h.overdueSnapshot, vi: { doneLastWeek: h.doneLastWeek, planNextWeek: h.planNextWeek, issues: h.issues }, en: emptyDraft() };
+  });
+  if (alreadyNormalized) return { ...project, report: { ...project.report, history } };
+  return { ...project, report: { draft: { vi: draft, en: emptyDraft() }, history } };
+}
+
 // ---------- seed data — real data pulled from Midu's Google Sheet ----------
 // (TT134 draft circular checklist, Research team feature Gantt, C06 - RAR biometric enrollment Gantt)
 // Week-column placement (which cells are shaded) isn't retrievable via text export of the sheet,
@@ -357,8 +368,8 @@ function composeReportBlock(name, overall, data, overdueNames) {
   return lines.join('\n');
 }
 
-function composeProjectReport(project) {
-  return composeReportBlock(project.name, overallProgress(project), project.report.draft, getOverdueTasks(project).map(t => t.name));
+function composeProjectReport(project, lang) {
+  return composeReportBlock(project.name, overallProgress(project), project.report.draft[lang], getOverdueTasks(project).map(t => t.name));
 }
 
 function findEntryForDate(project, dateStr) {
@@ -460,27 +471,29 @@ export default function ProjectDashboard() {
       const res = await window.storage.get(STORAGE_KEY);
       if (res && res.value) {
         const parsed = JSON.parse(res.value);
-        setProjects(parsed.projects || []);
-        setSelectedId((parsed.projects || [])[0]?.id ?? null);
-        setDigestSelection((parsed.projects || []).map(p => p.id));
+        const normalized = (parsed.projects || []).map(normalizeReportForLang);
+        setProjects(normalized);
+        setSelectedId(normalized[0]?.id ?? null);
+        setDigestSelection(normalized.map(p => p.id));
         return;
       }
       const legacy = await window.storage.get(LEGACY_STORAGE_KEY);
       if (legacy && legacy.value) {
         const migrated = migrateV2ToV3(JSON.parse(legacy.value));
-        setProjects(migrated.projects);
-        setSelectedId(migrated.projects[0]?.id ?? null);
-        setDigestSelection(migrated.projects.map(p => p.id));
-        persist(migrated.projects);
+        const normalized = migrated.projects.map(normalizeReportForLang);
+        setProjects(normalized);
+        setSelectedId(normalized[0]?.id ?? null);
+        setDigestSelection(normalized.map(p => p.id));
+        persist(normalized);
         return;
       }
-      const seed = seedData();
+      const seed = seedData().map(normalizeReportForLang);
       setProjects(seed);
       setSelectedId(seed[0].id);
       setDigestSelection(seed.map(p => p.id));
       persist(seed);
     } catch (e) {
-      const seed = seedData();
+      const seed = seedData().map(normalizeReportForLang);
       setProjects(seed);
       setSelectedId(seed[0].id);
       setDigestSelection(seed.map(p => p.id));
@@ -638,21 +651,30 @@ export default function ProjectDashboard() {
 
   function addProject() {
     if (!newProjectName.trim()) return;
-    const np = { id: uid(), name: newProjectName.trim(), viewType: 'gantt', weeks: ['W1', 'W2', 'W3', 'W4'], currentWeekIndex: 0, sections: [{ id: uid(), name: 'General', tasks: [] }], report: { draft: emptyDraft(), history: [] } };
+    const np = { id: uid(), name: newProjectName.trim(), viewType: 'gantt', weeks: ['W1', 'W2', 'W3', 'W4'], currentWeekIndex: 0, sections: [{ id: uid(), name: 'General', tasks: [] }], report: { draft: { vi: emptyDraft(), en: emptyDraft() }, history: [] } };
     update(prev => [...prev, np]);
     setSelectedId(np.id);
     setNewProjectName('');
     setDigestSelection(prev => [...(prev || []), np.id]);
   }
 
-  function updateReportField(projectId, field, value) {
-    update(prev => prev.map(p => p.id !== projectId ? p : { ...p, report: { ...p.report, draft: { ...p.report.draft, [field]: value } } }));
-  }
-
-  function appendIssue(projectId, text) {
+  function updateReportField(projectId, lang, field, value) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
-      report: { ...p.report, draft: { ...p.report.draft, issues: p.report.draft.issues ? `${p.report.draft.issues}\n- ${text}` : `- ${text}` } },
+      report: { ...p.report, draft: { ...p.report.draft, [lang]: { ...p.report.draft[lang], [field]: value } } },
+    }));
+  }
+
+  function appendIssue(projectId, lang, text) {
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      report: {
+        ...p.report,
+        draft: {
+          ...p.report.draft,
+          [lang]: { ...p.report.draft[lang], issues: p.report.draft[lang].issues ? `${p.report.draft[lang].issues}\n- ${text}` : `- ${text}` },
+        },
+      },
     }));
   }
 
@@ -662,7 +684,7 @@ export default function ProjectDashboard() {
       const dateIso = todayISO();
       const overall = overallProgress(p);
       const overdueSnapshot = getOverdueTasks(p).map(t => t.name);
-      const entry = { id: uid(), date: dateIso, ...p.report.draft, overall, overdueSnapshot };
+      const entry = { id: uid(), date: dateIso, vi: p.report.draft.vi, en: p.report.draft.en, overall, overdueSnapshot };
       const existingIdx = p.report.history.findIndex(h => h.date === dateIso);
       const history = existingIdx >= 0
         ? p.report.history.map((h, i) => i === existingIdx ? entry : h)
@@ -674,7 +696,7 @@ export default function ProjectDashboard() {
   function restoreDraftFromEntry(projectId, entry) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
-      report: { ...p.report, draft: { doneLastWeek: entry.doneLastWeek, planNextWeek: entry.planNextWeek, issues: entry.issues } },
+      report: { ...p.report, draft: { vi: entry.vi, en: entry.en } },
     }));
   }
 
@@ -685,7 +707,7 @@ export default function ProjectDashboard() {
   }
 
   function resetToSeed() {
-    const seed = seedData();
+    const seed = seedData().map(normalizeReportForLang);
     update(() => seed);
     setSelectedId(seed[0].id);
     setDigestSelection(seed.map(p => p.id));
@@ -924,10 +946,10 @@ export default function ProjectDashboard() {
 
               {projectTab === 'report' && (
                 <ReportForm
-                  project={selectedProject}
-                  onChange={(field, val) => updateReportField(selectedProject.id, field, val)}
+                  project={selectedProject} uiLang={uiLang}
+                  onChange={(field, val) => updateReportField(selectedProject.id, uiLang, field, val)}
                   overdue={getOverdueTasks(selectedProject)}
-                  onAppendIssue={text => appendIssue(selectedProject.id, text)}
+                  onAppendIssue={text => appendIssue(selectedProject.id, uiLang, text)}
                   onCopy={copyText} copied={copied}
                   onLog={() => logReport(selectedProject.id)}
                   onRestore={entry => restoreDraftFromEntry(selectedProject.id, entry)}
@@ -1423,23 +1445,30 @@ function ChecklistView({
 
 // ---------- Report form (draft + history) ----------
 
-function ReportForm({ project, onChange, overdue, onAppendIssue, onCopy, copied, onLog, onRestore, currentOverall, expandedHistoryId, setExpandedHistoryId }) {
-  const text = composeProjectReport(project);
+function ReportForm({ project, uiLang, onChange, overdue, onAppendIssue, onCopy, copied, onLog, onRestore, currentOverall, expandedHistoryId, setExpandedHistoryId }) {
+  const text = composeProjectReport(project, uiLang);
   const key = `report-${project.id}`;
   const history = project.report.history;
+  const draft = project.report.draft[uiLang];
 
   return (
     <div>
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         <div className="rounded p-4" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}` }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>✅ Tuần trước đã làm gì</label>
-          <textarea value={project.report.draft.doneLastWeek} onChange={e => onChange('doneLastWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Hoàn tất BOM approval..." />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>
+            {uiLang === 'en' ? '✅ Done last week' : '✅ Tuần trước đã làm gì'} <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.doneLastWeek} onChange={e => onChange('doneLastWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Hoàn tất BOM approval..." />
 
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>🔜 Tuần tới định làm gì</label>
-          <textarea value={project.report.draft.planNextWeek} onChange={e => onChange('planNextWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Setup server & license..." />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>
+            {uiLang === 'en' ? '🔜 Plan for next week' : '🔜 Tuần tới định làm gì'} <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.planNextWeek} onChange={e => onChange('planNextWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Setup server & license..." />
 
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>⚠️ Issue / bottleneck</label>
-          <textarea value={project.report.draft.issues} onChange={e => onChange('issues', e.target.value)} rows={3} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="Không có" />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>
+            ⚠️ Issue / bottleneck <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.issues} onChange={e => onChange('issues', e.target.value)} rows={3} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="Không có" />
 
           {overdue.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1497,7 +1526,7 @@ function ReportForm({ project, onChange, overdue, onAppendIssue, onCopy, copied,
               {isExpanded && (
                 <div className="px-4 pb-3 flex items-start gap-3">
                   <pre className="mono" style={{ flex: 1, fontSize: 12, background: '#FAFBFC', border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: 10, whiteSpace: 'pre-wrap', margin: 0 }}>
-                    {composeReportBlock(project.name, entry.overall, entry, entry.overdueSnapshot || [])}
+                    {composeReportBlock(project.name, entry.overall, entry[uiLang], entry.overdueSnapshot || [])}
                   </pre>
                   <button onClick={() => onRestore(entry)} className="flex items-center gap-1" style={{ fontSize: 11.5, background: COLORS.tealSoft, color: COLORS.teal, border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     <RefreshCcw size={12} /> Khôi phục vào draft
