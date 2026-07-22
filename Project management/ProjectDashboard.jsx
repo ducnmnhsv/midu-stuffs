@@ -55,6 +55,9 @@ function emptyDraft() {
 }
 
 function normalizeReportForLang(project) {
+  if (!project.report) {
+    return { ...project, report: { draft: { vi: emptyDraft(), en: emptyDraft() }, history: [] } };
+  }
   const draft = project.report.draft;
   const alreadyNormalized = draft && draft.vi && draft.en;
   const history = project.report.history.map(h => {
