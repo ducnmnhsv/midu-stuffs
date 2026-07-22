@@ -701,7 +701,18 @@ export default function ProjectDashboard() {
           {mainView === 'project' && selectedProject && (
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 style={{ fontSize: 19, fontWeight: 700 }}>{selectedProject.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 style={{ fontSize: 19, fontWeight: 700 }}>{selectedProject.name}</h2>
+                  {selectedProject.viewType === 'gantt' && (() => {
+                    const avgOff = computeAvgTrackOffWeeks(flattenTasks(selectedProject));
+                    if (avgOff === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 12, color: avgOff > 0 ? COLORS.danger : COLORS.success, marginLeft: 12 }}>
+                        Trung bình trễ: {avgOff > 0 ? '+' : ''}{avgOff.toFixed(1)} tuần
+                      </span>
+                    );
+                  })()}
+                </div>
                 <div className="flex gap-1 rounded p-1" style={{ background: COLORS.border }}>
                   {[['timeline', 'Timeline'], ['report', 'Weekly Report']].map(([k, label]) => (
                     <button key={k} onClick={() => setProjectTab(k)} style={{ fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', background: projectTab === k ? COLORS.card : 'transparent', color: projectTab === k ? COLORS.navy : COLORS.textMuted }}>
@@ -790,9 +801,9 @@ function GanttView({
     return (rect.width - nameColWidth) / Math.max(weeks.length, 1);
   }
 
-  function beginDrag(e, sectionId, taskId, mode, origStart, origEnd) {
+  function beginDrag(e, sectionId, taskId, mode, origStart, origEnd, barKind = 'plan') {
     e.preventDefault();
-    setDrag({ sectionId, taskId, mode, startClientX: e.clientX, origStart, origEnd, previewStart: origStart, previewEnd: origEnd });
+    setDrag({ sectionId, taskId, mode, barKind, startClientX: e.clientX, origStart, origEnd, previewStart: origStart, previewEnd: origEnd });
   }
 
   React.useEffect(() => {
@@ -818,7 +829,12 @@ function GanttView({
     }
     function onUp() {
       setDrag(d => {
-        if (d) onUpdateTaskSpan(d.sectionId, d.taskId, { start: d.previewStart, end: d.previewEnd });
+        if (d) {
+          const fields = d.barKind === 'actual'
+            ? { actualStart: d.previewStart, actualEnd: d.previewEnd }
+            : { start: d.previewStart, end: d.previewEnd };
+          onUpdateTaskSpan(d.sectionId, d.taskId, fields);
+        }
         return null;
       });
     }
@@ -900,7 +916,7 @@ function GanttView({
                       <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, gridColumn: i + 2, gridRow: 1 }} />
                     ))}
                     {hasSpan && (() => {
-                      const isDragging = drag && drag.taskId === task.id;
+                      const isDragging = drag && drag.taskId === task.id && drag.barKind === 'plan';
                       const barStart = isDragging ? drag.previewStart : task.start;
                       const barEnd = isDragging ? drag.previewEnd : task.end;
                       return (
@@ -931,6 +947,29 @@ function GanttView({
                         </div>
                       );
                     })()}
+                    {task.actualStart !== null && task.actualStart !== undefined && task.actualEnd !== null && task.actualEnd !== undefined && (() => {
+                      const isDraggingActual = drag && drag.taskId === task.id && drag.barKind === 'actual';
+                      const aStart = isDraggingActual ? drag.previewStart : task.actualStart;
+                      const aEnd = isDraggingActual ? drag.previewEnd : task.actualEnd;
+                      const trackOff = computeTrackOffWeeks(task.end, task.actualEnd);
+                      return (
+                        <div
+                          data-actual-bar-for={task.id}
+                          onPointerDown={e => beginDrag(e, section.id, task.id, 'move', task.actualStart, task.actualEnd, 'actual')}
+                          style={{
+                            gridColumn: `${aStart + 2} / ${aEnd + 3}`,
+                            gridRow: 1,
+                            alignSelf: 'end',
+                            height: 6,
+                            margin: '0 4px 2px 4px',
+                            borderRadius: 3,
+                            background: trackOff !== null && trackOff > 0 ? COLORS.danger : COLORS.success,
+                            cursor: 'grab',
+                          }}
+                          title={trackOff !== null ? `${trackOff > 0 ? '+' : ''}${trackOff} tuần so với plan` : ''}
+                        />
+                      );
+                    })()}
                     {editingProgressId === task.id && (
                       <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3 flex-wrap">
                         <input type="range" min="0" max="100" step="5" value={task.progress} onChange={e => onProgressChange(section.id, task.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
@@ -943,6 +982,18 @@ function GanttView({
                             →
                             <input key={`end-${task.start}-${task.end}`} type="date" defaultValue={weekIndexToDate(task.end, project.weekStartDate)}
                               onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: weekIndexToDate(task.start, project.weekStartDate), endDate: e.target.value })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                          </span>
+                        )}
+                        {project.weekStartDate && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+                            Thực tế:
+                            <input key={`actual-start-${task.actualStart}-${task.actualEnd}`} type="date" defaultValue={task.actualStart != null ? weekIndexToDate(task.actualStart, project.weekStartDate) : ''}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: e.target.value, endDate: task.actualEnd != null ? weekIndexToDate(task.actualEnd, project.weekStartDate) : e.target.value, actual: true })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                            →
+                            <input key={`actual-end-${task.actualStart}-${task.actualEnd}`} type="date" defaultValue={task.actualEnd != null ? weekIndexToDate(task.actualEnd, project.weekStartDate) : ''}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: task.actualStart != null ? weekIndexToDate(task.actualStart, project.weekStartDate) : e.target.value, endDate: e.target.value, actual: true })}
                               className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
                           </span>
                         )}
