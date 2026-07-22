@@ -432,7 +432,7 @@ export default function ProjectDashboard() {
   }
 
   async function load() {
-    window.storage.get(UI_LANG_KEY).then(res => { if (res && res.value) setUiLang(res.value); });
+    window.storage.get(UI_LANG_KEY).then(res => { if (res && res.value) setUiLang(res.value); }).catch(() => {});
     try {
       const res = await window.storage.get(STORAGE_KEY);
       if (res && res.value) {
