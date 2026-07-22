@@ -773,6 +773,15 @@ export default function ProjectDashboard() {
                       </span>
                     );
                   })()}
+                  {selectedProject.viewType === 'checklist' && (() => {
+                    const avgOff = computeAvgTrackOffDays(flattenTasks(selectedProject));
+                    if (avgOff === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 12, color: avgOff > 0 ? COLORS.danger : COLORS.success, marginLeft: 12 }}>
+                        Trung bình trễ: {avgOff > 0 ? '+' : ''}{avgOff.toFixed(1)} ngày
+                      </span>
+                    );
+                  })()}
                 </div>
                 <div className="flex gap-1 rounded p-1" style={{ background: COLORS.border }}>
                   {[['timeline', 'Timeline'], ['report', 'Weekly Report']].map(([k, label]) => (
@@ -1210,6 +1219,17 @@ function ChecklistView({
                   ) : (
                     <span className="mono" style={{ fontSize: 11.5, color: COLORS.textMuted, minWidth: 90, textAlign: 'right' }}>{task.dueDate}</span>
                   )}
+                  <input type="date" value={task.actualCompletionDate || ''} onChange={e => onUpdateTaskDate(section.id, task.id, 'actualCompletionDate', e.target.value)}
+                    title="Ngày hoàn thành thực tế" className="mono rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5, minWidth: 90 }} />
+                  {task.actualCompletionDate && (() => {
+                    const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+                    if (off === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: off > 0 ? COLORS.danger : COLORS.success }}>
+                        {off > 0 ? `+${off}d` : `${off}d`}
+                      </span>
+                    );
+                  })()}
                   {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
                   <div style={{ position: 'relative', width: 160, height: 18, background: '#F2F2F2', borderRadius: 4, flexShrink: 0 }}>
                     <div style={{ position: 'absolute', left: `${dateToAxisPercent(todayISO(), axis)}%`, top: 0, bottom: 0, width: 2, background: COLORS.navy }} />
@@ -1227,6 +1247,19 @@ function ChecklistView({
                             position: 'absolute', top: 2, width: 14, height: 14, borderRadius: '50%',
                             left: `calc(${dateToAxisPercent(displayDate, axis)}% - 7px)`,
                             background: COLORS.teal, border: '2px solid #fff', cursor: 'grab',
+                          }}
+                        />
+                      );
+                    })()}
+                    {task.actualCompletionDate && (() => {
+                      const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+                      return (
+                        <div
+                          title={off !== null ? `${off > 0 ? '+' : ''}${off} ngày so với due date` : ''}
+                          style={{
+                            position: 'absolute', top: 5, width: 8, height: 8,
+                            left: `calc(${dateToAxisPercent(task.actualCompletionDate, axis)}% - 4px)`,
+                            background: off !== null && off > 0 ? COLORS.danger : COLORS.success,
                           }}
                         />
                       );
