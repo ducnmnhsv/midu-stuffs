@@ -378,17 +378,17 @@ function findEntryForDate(project, dateStr) {
   return candidates.reduce((a, b) => (a.date >= b.date ? a : b));
 }
 
-function composeDigest(projects, headerDateLabel, selection) {
+function composeDigest(projects, headerDateLabel, selection, lang) {
   const header = `Weekly Status Update — ${headerDateLabel}`;
   const body = projects.map(p => {
     if (selection === 'latest') {
-      return composeProjectReport(p);
+      return composeProjectReport(p, lang);
     }
     const entry = findEntryForDate(p, selection);
     if (!entry) {
-      return composeProjectReport(p) + '\n(chưa có log cho ngày này, hiển thị bản nháp hiện tại)';
+      return composeProjectReport(p, lang) + '\n(chưa có log cho ngày này, hiển thị bản nháp hiện tại)';
     }
-    return composeReportBlock(p.name, entry.overall, entry, entry.overdueSnapshot || []);
+    return composeReportBlock(p.name, entry.overall, entry[lang], entry.overdueSnapshot || []);
   }).join('\n\n');
   return `${header}\n\n${body}`;
 }
@@ -834,7 +834,7 @@ export default function ProjectDashboard() {
           {mainView === 'digest' && (
             <DigestView
               projects={projects} selection={digestSelection} setSelection={setDigestSelection}
-              onCopy={copyText} copied={copied}
+              onCopy={copyText} copied={copied} uiLang={uiLang}
               digestDate={digestDate} setDigestDate={setDigestDate} allHistoryDates={allHistoryDates}
             />
           )}
@@ -1543,11 +1543,12 @@ function ReportForm({ project, uiLang, onChange, overdue, onAppendIssue, onCopy,
 
 // ---------- Digest view ----------
 
-function DigestView({ projects, selection, setSelection, onCopy, copied, digestDate, setDigestDate, allHistoryDates }) {
+function DigestView({ projects, selection, setSelection, onCopy, copied, digestDate, setDigestDate, allHistoryDates, uiLang }) {
+  const [copyLang, setCopyLang] = React.useState(uiLang);
   const sel = selection && selection.length ? selection : projects.map(p => p.id);
   const included = projects.filter(p => sel.includes(p.id));
   const headerLabel = digestDate === 'latest' ? todayLabel() : formatDateLabel(digestDate);
-  const text = composeDigest(included, headerLabel, digestDate);
+  const text = composeDigest(included, headerLabel, digestDate, copyLang);
   const key = 'digest';
 
   function toggle(id) {
@@ -1579,9 +1580,15 @@ function DigestView({ projects, selection, setSelection, onCopy, copied, digestD
       <div className="rounded p-4" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}` }}>
         <div className="flex items-center justify-between mb-2">
           <h3 style={{ fontSize: 15, fontWeight: 700 }}>Weekly Status Update — {headerLabel}</h3>
-          <button onClick={() => onCopy(key, text)} className="flex items-center gap-1" style={{ fontSize: 12.5, background: copied === key ? COLORS.success : COLORS.navy, color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer' }}>
-            {copied === key ? <><Check size={14} /> Đã copy</> : <><Copy size={14} /> Copy toàn bộ</>}
-          </button>
+          <div className="flex items-center gap-2">
+            <select value={copyLang} onChange={e => setCopyLang(e.target.value)} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
+              <option value="vi">VI</option>
+              <option value="en">EN</option>
+            </select>
+            <button onClick={() => onCopy(key, text)} className="flex items-center gap-1" style={{ fontSize: 12.5, background: copied === key ? COLORS.success : COLORS.navy, color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer' }}>
+              {copied === key ? <><Check size={14} /> Đã copy</> : <><Copy size={14} /> Copy toàn bộ</>}
+            </button>
+          </div>
         </div>
         <textarea readOnly value={text} rows={22} className="w-full rounded p-3 mono" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12.5, background: '#FAFBFC', resize: 'vertical' }} />
         <div style={{ fontSize: 11, color: COLORS.textFaint, marginTop: 6 }}>

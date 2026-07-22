@@ -123,3 +123,18 @@ test('normalizeReportForLang is a no-op on an already-normalized project', () =>
   const normalized = normalizeReportForLang(newProject);
   assert.deepEqual(normalized, newProject);
 });
+
+test('composeDigest picks the requested language from each project entry', () => {
+  const { composeDigest } = loadHelpers(['flattenTasks', 'overallProgress', 'isTaskOverdue', 'getOverdueTasks', 'composeReportBlock', 'composeProjectReport', 'findEntryForDate', 'composeDigest']);
+  const project = {
+    name: 'Demo', report: {
+      draft: { vi: { doneLastWeek: 'vi-done', planNextWeek: '', issues: '' }, en: { doneLastWeek: 'en-done', planNextWeek: '', issues: '' } },
+      history: [],
+    },
+    sections: [],
+  };
+  const viText = composeDigest([project], '21/07/2026', 'latest', 'vi');
+  const enText = composeDigest([project], '21/07/2026', 'latest', 'en');
+  assert.ok(viText.includes('vi-done'));
+  assert.ok(enText.includes('en-done'));
+});
