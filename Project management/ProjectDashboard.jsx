@@ -410,6 +410,7 @@ export default function ProjectDashboard() {
   const [digestSelection, setDigestSelection] = useState(null);
   const [digestDate, setDigestDate] = useState('latest');
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [expandedWbsIds, setExpandedWbsIds] = useState([]);
 
   useEffect(() => { load(); }, []);
 
@@ -677,6 +678,14 @@ export default function ProjectDashboard() {
             {totalOverdue > 0 && <span className="mono" style={{ background: COLORS.danger, borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>{totalOverdue}</span>}
           </button>
 
+          <button
+            onClick={() => setMainView('wbs-overview')}
+            className="mx-3 mt-2 p-2 rounded flex items-center justify-between"
+            style={{ background: mainView === 'wbs-overview' ? COLORS.teal : 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
+          >
+            <span>🧩 WBS tổng thể</span>
+          </button>
+
           <div className="px-3 mt-4" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Dự án</div>
           <div className="flex-1 overflow-auto px-2 mt-1">
             {projects.map(p => {
@@ -757,6 +766,39 @@ export default function ProjectDashboard() {
               onCopy={copyText} copied={copied}
               digestDate={digestDate} setDigestDate={setDigestDate} allHistoryDates={allHistoryDates}
             />
+          )}
+
+          {mainView === 'wbs-overview' && (
+            <div className="p-6 grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+              {projects.map(p => {
+                const isExpanded = expandedWbsIds.includes(p.id);
+                return (
+                  <div key={p.id} className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, gridColumn: isExpanded ? '1 / -1' : undefined }}>
+                    <button
+                      onClick={() => setExpandedWbsIds(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
+                      className="w-full p-3 flex items-center justify-between"
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{p.name}</span>
+                      <span className="flex items-center gap-3">
+                        <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{p.sections.length} section</span>
+                        <MiniBar progress={overallProgress(p)} width={60} />
+                        <span className="mono" style={{ fontSize: 12, color: COLORS.teal }}>{overallProgress(p)}%</span>
+                        {getOverdueTasks(p).length > 0 && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11, color: COLORS.danger }}><AlertTriangle size={11} /> {getOverdueTasks(p).length}</span>
+                        )}
+                        <span style={{ fontSize: 11, color: COLORS.textFaint }}>{isExpanded ? '▲' : '▾'}</span>
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <div className="p-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+                        <ProjectWbsCards project={p} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {mainView === 'project' && selectedProject && (
