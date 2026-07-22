@@ -1465,3 +1465,61 @@ function DigestView({ projects, selection, setSelection, onCopy, copied, digestD
     </div>
   );
 }
+
+// ---------- WBS view ----------
+
+function taskTrackOffLabel(task, project) {
+  if (project.viewType === 'gantt') {
+    const off = computeTrackOffWeeks(task.end, task.actualEnd);
+    if (off === null) return null;
+    return { off, label: `${off > 0 ? '+' : ''}${off}w` };
+  }
+  const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+  if (off === null) return null;
+  return { off, label: `${off > 0 ? '+' : ''}${off}d` };
+}
+
+function ProjectWbsCards({ project }) {
+  return (
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+      {project.sections.map(section => {
+        const secProgress = section.tasks.length ? Math.round(section.tasks.reduce((s, t) => s + t.progress, 0) / section.tasks.length) : 0;
+        return (
+          <div key={section.id} className="rounded p-3" style={{ background: COLORS.tealSoft, border: `1px solid ${COLORS.border}` }}>
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{section.name}</span>
+              <span className="mono" style={{ fontSize: 12, color: COLORS.teal }}>{secProgress}%</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {section.tasks.map(task => {
+                const overdue = isTaskOverdue(task, project);
+                const trackOff = taskTrackOffLabel(task, project);
+                return (
+                  <span
+                    key={task.id}
+                    title={task.name}
+                    className="flex items-center gap-1"
+                    style={{
+                      fontSize: 11.5, padding: '3px 8px', borderRadius: 999,
+                      background: overdue ? COLORS.dangerBg : COLORS.card,
+                      color: overdue ? COLORS.danger : COLORS.navy,
+                      border: `1px solid ${overdue ? COLORS.danger : COLORS.border}`,
+                    }}
+                  >
+                    {overdue && <AlertTriangle size={11} />}
+                    {task.name.length > 28 ? `${task.name.slice(0, 28)}…` : task.name} · {task.progress}%
+                    {trackOff && (
+                      <span className="mono" style={{ fontWeight: 700, color: trackOff.off > 0 ? COLORS.danger : COLORS.success }}>
+                        {trackOff.label}
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
