@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Plus, Trash2, Copy, Check, AlertTriangle, Loader2, RotateCcw, X, History, RefreshCcw } from 'lucide-react';
 
-const STORAGE_KEY = 'ptd:state:v2';
+const STORAGE_KEY = 'ptd:state:v3';
+const LEGACY_STORAGE_KEY = 'ptd:state:v2';
+const UI_LANG_KEY = 'ptd:uiLang';
 
 const COLORS = {
   navy: '#0B2545',
@@ -21,12 +23,49 @@ const COLORS = {
   border: '#E3E7EC',
 };
 
+const UI_TEXT = {
+  vi: {
+    dashboardTitle: 'Project Tracker', dashboardSubtitle: 'Dashboard',
+    weeklyDigest: '📋 Weekly Digest', wbsOverview: '🧩 WBS tổng thể', duAn: 'Dự án',
+    statProjects: 'Số dự án', statAvgProgress: 'Trung bình tiến độ', statOverdue: 'Task quá hạn',
+    tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
+    sectionsAndTasks: 'Sections & Tasks', today: 'hôm nay',
+    xoa: 'Xóa', huy: 'Hủy', them: 'Thêm', themTask: '+ Thêm task', themSection: '+ Thêm section',
+    themWeek: '+ Thêm cột tuần', tenTaskPlaceholder: 'Tên task', tenSectionPlaceholder: 'Tên section',
+    clausePlaceholder: 'Điều/clause', picPlaceholder: 'PIC', xong: 'Xong',
+  },
+  en: {
+    dashboardTitle: 'Project Tracker', dashboardSubtitle: 'Dashboard',
+    weeklyDigest: '📋 Weekly Digest', wbsOverview: '🧩 Overall WBS', duAn: 'Projects',
+    statProjects: 'Projects', statAvgProgress: 'Avg. progress', statOverdue: 'Overdue tasks',
+    tabTimeline: 'Timeline', tabWbs: 'WBS', tabReport: 'Weekly Report',
+    sectionsAndTasks: 'Sections & Tasks', today: 'today',
+    xoa: 'Delete', huy: 'Cancel', them: 'Add', themTask: '+ Add task', themSection: '+ Add section',
+    themWeek: '+ Add week column', tenTaskPlaceholder: 'Task name', tenSectionPlaceholder: 'Section name',
+    clausePlaceholder: 'Article/clause', picPlaceholder: 'PIC', xong: 'Done',
+  },
+};
+
 function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
 function emptyDraft() {
   return { doneLastWeek: '', planNextWeek: '', issues: '' };
+}
+
+function normalizeReportForLang(project) {
+  if (!project.report) {
+    return { ...project, report: { draft: { vi: emptyDraft(), en: emptyDraft() }, history: [] } };
+  }
+  const draft = project.report.draft;
+  const alreadyNormalized = draft && draft.vi && draft.en;
+  const history = project.report.history.map(h => {
+    if (h.vi && h.en) return h;
+    return { id: h.id, date: h.date, overall: h.overall, overdueSnapshot: h.overdueSnapshot, vi: { doneLastWeek: h.doneLastWeek, planNextWeek: h.planNextWeek, issues: h.issues }, en: emptyDraft() };
+  });
+  if (alreadyNormalized) return { ...project, report: { ...project.report, history } };
+  return { ...project, report: { draft: { vi: draft, en: emptyDraft() }, history } };
 }
 
 // ---------- seed data — real data pulled from Midu's Google Sheet ----------
@@ -210,6 +249,87 @@ function getOverdueTasks(project) {
   return flattenTasks(project).filter(t => isTaskOverdue(t, project));
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const MS_PER_WEEK = 7 * MS_PER_DAY;
+
+function dateToWeekIndex(dateStr, weekStartDate) {
+  const ms = new Date(`${dateStr}T00:00:00Z`).getTime() - new Date(`${weekStartDate}T00:00:00Z`).getTime();
+  return Math.floor(ms / MS_PER_WEEK);
+}
+
+function weekIndexToDate(index, weekStartDate) {
+  const base = new Date(`${weekStartDate}T00:00:00Z`);
+  base.setUTCDate(base.getUTCDate() + index * 7);
+  return base.toISOString().slice(0, 10);
+}
+
+function ensureWeeksLength(weeks, neededLength) {
+  if (neededLength <= weeks.length) return weeks;
+  const extra = [];
+  for (let i = weeks.length; i < neededLength; i++) extra.push(`W${i + 1}`);
+  return [...weeks, ...extra];
+}
+
+function computeTrackOffWeeks(planEnd, actualEnd) {
+  if (planEnd === null || planEnd === undefined || actualEnd === null || actualEnd === undefined) return null;
+  return actualEnd - planEnd;
+}
+
+function computeAvgTrackOffWeeks(tasks) {
+  const diffs = tasks
+    .map(t => computeTrackOffWeeks(t.end, t.actualEnd))
+    .filter(d => d !== null);
+  if (!diffs.length) return null;
+  return diffs.reduce((s, d) => s + d, 0) / diffs.length;
+}
+
+const AXIS_PAD_MS = 30 * MS_PER_DAY;
+
+function realTaskDates(project) {
+  const out = [];
+  project.sections.forEach(s => s.tasks.forEach(t => {
+    [t.dueDate, t.actualCompletionDate].forEach(v => {
+      if (v && v !== 'TBD' && v !== 'Done') {
+        const d = new Date(`${v}T00:00:00Z`).getTime();
+        if (!isNaN(d)) out.push(d);
+      }
+    });
+  }));
+  return out;
+}
+
+function computeDateAxis(project) {
+  const dates = realTaskDates(project);
+  const todayMs = Date.now();
+  if (!dates.length) return { min: todayMs - AXIS_PAD_MS, max: todayMs + AXIS_PAD_MS };
+  return { min: Math.min(...dates, todayMs) - AXIS_PAD_MS, max: Math.max(...dates, todayMs) + AXIS_PAD_MS };
+}
+
+function dateToAxisPercent(dateStr, axis) {
+  const d = new Date(`${dateStr}T00:00:00Z`).getTime();
+  const pct = ((d - axis.min) / (axis.max - axis.min)) * 100;
+  return Math.max(0, Math.min(100, pct));
+}
+
+function axisPercentToDate(pct, axis) {
+  const ms = axis.min + (pct / 100) * (axis.max - axis.min);
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
+function computeTrackOffDays(dueDate, actualCompletionDate) {
+  if (!actualCompletionDate || !dueDate || dueDate === 'TBD' || dueDate === 'Done') return null;
+  const due = new Date(`${dueDate}T00:00:00Z`).getTime();
+  const actual = new Date(`${actualCompletionDate}T00:00:00Z`).getTime();
+  if (isNaN(due) || isNaN(actual)) return null;
+  return Math.round((actual - due) / MS_PER_DAY);
+}
+
+function computeAvgTrackOffDays(tasks) {
+  const diffs = tasks.map(t => computeTrackOffDays(t.dueDate, t.actualCompletionDate)).filter(d => d !== null);
+  if (!diffs.length) return null;
+  return diffs.reduce((s, d) => s + d, 0) / diffs.length;
+}
+
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -219,10 +339,24 @@ function todayLabel() {
   return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function migrateV2ToV3(oldParsed) {
+  return { projects: (oldParsed.projects || []).map(p => ({ ...p })) };
+}
+
 function formatDateLabel(iso) {
   if (!iso) return '';
   const [y, m, d] = iso.split('-');
   return `${d}/${m}/${y}`;
+}
+
+function displayName(entity, uiLang) {
+  if (uiLang === 'en' && entity.nameEn && entity.nameEn.trim()) return entity.nameEn;
+  return entity.name;
+}
+
+function displayClause(task, uiLang) {
+  if (uiLang === 'en' && task.clauseEn && task.clauseEn.trim()) return task.clauseEn;
+  return task.clause;
 }
 
 function composeReportBlock(name, overall, data, overdueNames) {
@@ -237,8 +371,8 @@ function composeReportBlock(name, overall, data, overdueNames) {
   return lines.join('\n');
 }
 
-function composeProjectReport(project) {
-  return composeReportBlock(project.name, overallProgress(project), project.report.draft, getOverdueTasks(project).map(t => t.name));
+function composeProjectReport(project, lang) {
+  return composeReportBlock(project.name, overallProgress(project), project.report.draft[lang], getOverdueTasks(project).map(t => t.name));
 }
 
 function findEntryForDate(project, dateStr) {
@@ -247,17 +381,17 @@ function findEntryForDate(project, dateStr) {
   return candidates.reduce((a, b) => (a.date >= b.date ? a : b));
 }
 
-function composeDigest(projects, headerDateLabel, selection) {
+function composeDigest(projects, headerDateLabel, selection, lang) {
   const header = `Weekly Status Update — ${headerDateLabel}`;
   const body = projects.map(p => {
     if (selection === 'latest') {
-      return composeProjectReport(p);
+      return composeProjectReport(p, lang);
     }
     const entry = findEntryForDate(p, selection);
     if (!entry) {
-      return composeProjectReport(p) + '\n(chưa có log cho ngày này, hiển thị bản nháp hiện tại)';
+      return composeProjectReport(p, lang) + '\n(chưa có log cho ngày này, hiển thị bản nháp hiện tại)';
     }
-    return composeReportBlock(p.name, entry.overall, entry, entry.overdueSnapshot || []);
+    return composeReportBlock(p.name, entry.overall, entry[lang], entry.overdueSnapshot || []);
   }).join('\n\n');
   return `${header}\n\n${body}`;
 }
@@ -314,7 +448,7 @@ export default function ProjectDashboard() {
   const [editingProgressId, setEditingProgressId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [addingTaskSection, setAddingTaskSection] = useState(null);
-  const [taskDraft, setTaskDraft] = useState({ name: '', clause: '', dueDate: '', start: '', end: '' });
+  const [taskDraft, setTaskDraft] = useState({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' });
   const [addingSectionProject, setAddingSectionProject] = useState(null);
   const [sectionDraftName, setSectionDraftName] = useState('');
   const [addingWeek, setAddingWeek] = useState(false);
@@ -324,26 +458,45 @@ export default function ProjectDashboard() {
   const [digestSelection, setDigestSelection] = useState(null);
   const [digestDate, setDigestDate] = useState('latest');
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [expandedWbsIds, setExpandedWbsIds] = useState([]);
+  const [uiLang, setUiLang] = useState('vi');
 
   useEffect(() => { load(); }, []);
 
+  function changeUiLang(lang) {
+    setUiLang(lang);
+    window.storage.set(UI_LANG_KEY, lang).catch(() => {});
+  }
+
   async function load() {
+    window.storage.get(UI_LANG_KEY).then(res => { if (res && res.value) setUiLang(res.value); }).catch(() => {});
     try {
       const res = await window.storage.get(STORAGE_KEY);
       if (res && res.value) {
         const parsed = JSON.parse(res.value);
-        setProjects(parsed.projects || []);
-        setSelectedId((parsed.projects || [])[0]?.id ?? null);
-        setDigestSelection((parsed.projects || []).map(p => p.id));
-      } else {
-        const seed = seedData();
-        setProjects(seed);
-        setSelectedId(seed[0].id);
-        setDigestSelection(seed.map(p => p.id));
-        persist(seed);
+        const normalized = (parsed.projects || []).map(normalizeReportForLang);
+        setProjects(normalized);
+        setSelectedId(normalized[0]?.id ?? null);
+        setDigestSelection(normalized.map(p => p.id));
+        return;
       }
+      const legacy = await window.storage.get(LEGACY_STORAGE_KEY);
+      if (legacy && legacy.value) {
+        const migrated = migrateV2ToV3(JSON.parse(legacy.value));
+        const normalized = migrated.projects.map(normalizeReportForLang);
+        setProjects(normalized);
+        setSelectedId(normalized[0]?.id ?? null);
+        setDigestSelection(normalized.map(p => p.id));
+        persist(normalized);
+        return;
+      }
+      const seed = seedData().map(normalizeReportForLang);
+      setProjects(seed);
+      setSelectedId(seed[0].id);
+      setDigestSelection(seed.map(p => p.id));
+      persist(seed);
     } catch (e) {
-      const seed = seedData();
+      const seed = seedData().map(normalizeReportForLang);
       setProjects(seed);
       setSelectedId(seed[0].id);
       setDigestSelection(seed.map(p => p.id));
@@ -393,6 +546,57 @@ export default function ProjectDashboard() {
     }));
   }
 
+  function updateTaskDueDate(projectId, sectionId, taskId, field, dateStr) {
+    // Guard against empty/invalid input (e.g. a cleared <input type="date">) — an invalid
+    // dateStr would silently turn into NaN downstream (dateToAxisPercent, isTaskOverdue),
+    // rendering the marker at a broken position. Ignore the write instead of storing garbage.
+    if (!dateStr || isNaN(new Date(`${dateStr}T00:00:00Z`).getTime())) return;
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      sections: p.sections.map(s => s.id !== sectionId ? s : {
+        ...s,
+        tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, [field]: dateStr }),
+      }),
+    }));
+  }
+
+  function updateTaskSpan(projectId, sectionId, taskId, fields) {
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      sections: p.sections.map(s => s.id !== sectionId ? s : {
+        ...s,
+        tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, ...fields }),
+      }),
+    }));
+  }
+
+  function updateTaskSpanByDate(projectId, sectionId, taskId, { startDate, endDate, actual }) {
+    update(prev => prev.map(p => {
+      if (p.id !== projectId) return p;
+      const anchor = p.weekStartDate || todayISO();
+      const rawStart = dateToWeekIndex(startDate, anchor);
+      const rawEnd = dateToWeekIndex(endDate, anchor);
+      if (Number.isNaN(rawStart) || Number.isNaN(rawEnd)) return p;
+      const newStart = Math.max(0, rawStart);
+      const newEnd = Math.max(0, rawEnd);
+      if (newStart > newEnd) return p;
+      const weeks = ensureWeeksLength(p.weeks, Math.max(newStart, newEnd) + 1);
+      const fields = actual ? { actualStart: newStart, actualEnd: newEnd } : { start: newStart, end: newEnd };
+      return {
+        ...p,
+        weeks,
+        sections: p.sections.map(s => s.id !== sectionId ? s : {
+          ...s,
+          tasks: s.tasks.map(t => t.id !== taskId ? t : { ...t, ...fields }),
+        }),
+      };
+    }));
+  }
+
+  function updateProjectWeekStartDate(projectId, dateStr) {
+    update(prev => prev.map(p => p.id !== projectId ? p : { ...p, weekStartDate: dateStr }));
+  }
+
   function deleteTask(projectId, sectionId, taskId) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
@@ -423,10 +627,10 @@ export default function ProjectDashboard() {
         ...s,
         tasks: [...s.tasks, project.viewType === 'gantt'
           ? { id: uid(), name: taskDraft.name.trim(), pic: '', progress: 0, start: taskDraft.start === '' ? project.currentWeekIndex : Number(taskDraft.start), end: taskDraft.end === '' ? project.currentWeekIndex : Number(taskDraft.end) }
-          : { id: uid(), name: taskDraft.name.trim(), progress: 0, clause: taskDraft.clause || '', dueDate: taskDraft.dueDate || 'TBD' }],
+          : { id: uid(), name: taskDraft.name.trim(), progress: 0, clause: taskDraft.clause || '', dueDate: taskDraft.dueDate || 'TBD', pic: taskDraft.pic || '' }],
       }),
     }));
-    setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' });
+    setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' });
     setAddingTaskSection(null);
   }
 
@@ -450,21 +654,30 @@ export default function ProjectDashboard() {
 
   function addProject() {
     if (!newProjectName.trim()) return;
-    const np = { id: uid(), name: newProjectName.trim(), viewType: 'gantt', weeks: ['W1', 'W2', 'W3', 'W4'], currentWeekIndex: 0, sections: [{ id: uid(), name: 'General', tasks: [] }], report: { draft: emptyDraft(), history: [] } };
+    const np = { id: uid(), name: newProjectName.trim(), viewType: 'gantt', weeks: ['W1', 'W2', 'W3', 'W4'], currentWeekIndex: 0, sections: [{ id: uid(), name: 'General', tasks: [] }], report: { draft: { vi: emptyDraft(), en: emptyDraft() }, history: [] } };
     update(prev => [...prev, np]);
     setSelectedId(np.id);
     setNewProjectName('');
     setDigestSelection(prev => [...(prev || []), np.id]);
   }
 
-  function updateReportField(projectId, field, value) {
-    update(prev => prev.map(p => p.id !== projectId ? p : { ...p, report: { ...p.report, draft: { ...p.report.draft, [field]: value } } }));
-  }
-
-  function appendIssue(projectId, text) {
+  function updateReportField(projectId, lang, field, value) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
-      report: { ...p.report, draft: { ...p.report.draft, issues: p.report.draft.issues ? `${p.report.draft.issues}\n- ${text}` : `- ${text}` } },
+      report: { ...p.report, draft: { ...p.report.draft, [lang]: { ...p.report.draft[lang], [field]: value } } },
+    }));
+  }
+
+  function appendIssue(projectId, lang, text) {
+    update(prev => prev.map(p => p.id !== projectId ? p : {
+      ...p,
+      report: {
+        ...p.report,
+        draft: {
+          ...p.report.draft,
+          [lang]: { ...p.report.draft[lang], issues: p.report.draft[lang].issues ? `${p.report.draft[lang].issues}\n- ${text}` : `- ${text}` },
+        },
+      },
     }));
   }
 
@@ -474,7 +687,7 @@ export default function ProjectDashboard() {
       const dateIso = todayISO();
       const overall = overallProgress(p);
       const overdueSnapshot = getOverdueTasks(p).map(t => t.name);
-      const entry = { id: uid(), date: dateIso, ...p.report.draft, overall, overdueSnapshot };
+      const entry = { id: uid(), date: dateIso, vi: p.report.draft.vi, en: p.report.draft.en, overall, overdueSnapshot };
       const existingIdx = p.report.history.findIndex(h => h.date === dateIso);
       const history = existingIdx >= 0
         ? p.report.history.map((h, i) => i === existingIdx ? entry : h)
@@ -486,7 +699,7 @@ export default function ProjectDashboard() {
   function restoreDraftFromEntry(projectId, entry) {
     update(prev => prev.map(p => p.id !== projectId ? p : {
       ...p,
-      report: { ...p.report, draft: { doneLastWeek: entry.doneLastWeek, planNextWeek: entry.planNextWeek, issues: entry.issues } },
+      report: { ...p.report, draft: { vi: entry.vi, en: entry.en } },
     }));
   }
 
@@ -497,7 +710,7 @@ export default function ProjectDashboard() {
   }
 
   function resetToSeed() {
-    const seed = seedData();
+    const seed = seedData().map(normalizeReportForLang);
     update(() => seed);
     setSelectedId(seed[0].id);
     setDigestSelection(seed.map(p => p.id));
@@ -518,8 +731,16 @@ export default function ProjectDashboard() {
       <div className="flex" style={{ minHeight: '100vh' }}>
         <aside className="w-64 flex flex-col" style={{ background: COLORS.navy, color: '#fff', flexShrink: 0 }}>
           <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.12)' }}>
-            <div style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase' }}>Project Tracker</div>
-            <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>Dashboard</div>
+            <div style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase' }}>{UI_TEXT[uiLang].dashboardTitle}</div>
+            <div style={{ fontSize: 17, fontWeight: 700, marginTop: 2 }}>{UI_TEXT[uiLang].dashboardSubtitle}</div>
+            <div className="flex gap-1 mt-2 rounded p-0.5" style={{ background: 'rgba(255,255,255,0.08)', width: 'fit-content' }}>
+              {['vi', 'en'].map(lang => (
+                <button key={lang} onClick={() => changeUiLang(lang)}
+                  style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', textTransform: 'uppercase', background: uiLang === lang ? COLORS.teal : 'transparent', color: '#fff' }}>
+                  {lang}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
@@ -527,11 +748,19 @@ export default function ProjectDashboard() {
             className="mx-3 mt-3 p-2 rounded flex items-center justify-between"
             style={{ background: mainView === 'digest' ? COLORS.teal : 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
           >
-            <span>📋 Weekly Digest</span>
+            <span>{UI_TEXT[uiLang].weeklyDigest}</span>
             {totalOverdue > 0 && <span className="mono" style={{ background: COLORS.danger, borderRadius: 999, padding: '1px 7px', fontSize: 11 }}>{totalOverdue}</span>}
           </button>
 
-          <div className="px-3 mt-4" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Dự án</div>
+          <button
+            onClick={() => setMainView('wbs-overview')}
+            className="mx-3 mt-2 p-2 rounded flex items-center justify-between"
+            style={{ background: mainView === 'wbs-overview' ? COLORS.teal : 'rgba(255,255,255,0.06)', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
+          >
+            <span>{UI_TEXT[uiLang].wbsOverview}</span>
+          </button>
+
+          <div className="px-3 mt-4" style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>{UI_TEXT[uiLang].duAn}</div>
           <div className="flex-1 overflow-auto px-2 mt-1">
             {projects.map(p => {
               const overdueCount = getOverdueTasks(p).length;
@@ -543,7 +772,7 @@ export default function ProjectDashboard() {
                     className="w-full text-left p-2 rounded"
                     style={{ background: isActive ? 'rgba(15,163,163,0.25)' : 'transparent', border: isActive ? `1px solid ${COLORS.teal}` : '1px solid transparent', cursor: 'pointer' }}
                   >
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingRight: 18 }}>{p.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingRight: 18 }}>{displayName(p, uiLang)}</div>
                     <div className="flex items-center gap-2 mt-1.5">
                       <MiniBar progress={overallProgress(p)} width={80} />
                       <span className="mono" style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)' }}>{overallProgress(p)}%</span>
@@ -587,15 +816,15 @@ export default function ProjectDashboard() {
         <main className="flex-1 overflow-auto">
           <div className="flex items-center gap-6 px-6 py-3" style={{ background: COLORS.card, borderBottom: `1px solid ${COLORS.border}` }}>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Số dự án</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statProjects}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700 }}>{projects.length}</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Trung bình tiến độ</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statAvgProgress}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: COLORS.teal }}>{avgOverall}%</div>
             </div>
             <div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>Task quá hạn</div>
+              <div style={{ fontSize: 11, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: 0.5 }}>{UI_TEXT[uiLang].statOverdue}</div>
               <div className="mono" style={{ fontSize: 20, fontWeight: 700, color: totalOverdue > 0 ? COLORS.danger : COLORS.success }}>{totalOverdue}</div>
             </div>
             <div className="ml-auto flex items-center gap-2" style={{ fontSize: 12, color: COLORS.textMuted }}>
@@ -608,17 +837,70 @@ export default function ProjectDashboard() {
           {mainView === 'digest' && (
             <DigestView
               projects={projects} selection={digestSelection} setSelection={setDigestSelection}
-              onCopy={copyText} copied={copied}
+              onCopy={copyText} copied={copied} uiLang={uiLang}
               digestDate={digestDate} setDigestDate={setDigestDate} allHistoryDates={allHistoryDates}
             />
+          )}
+
+          {mainView === 'wbs-overview' && (
+            <div className="p-6 grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))' }}>
+              {projects.map(p => {
+                const isExpanded = expandedWbsIds.includes(p.id);
+                return (
+                  <div key={p.id} className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, gridColumn: isExpanded ? '1 / -1' : undefined }}>
+                    <button
+                      onClick={() => setExpandedWbsIds(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
+                      className="w-full p-3 flex items-center justify-between"
+                      style={{ background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <span style={{ fontSize: 14, fontWeight: 700, color: COLORS.navy }}>{displayName(p, uiLang)}</span>
+                      <span className="flex items-center gap-3">
+                        <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{p.sections.length} section</span>
+                        <MiniBar progress={overallProgress(p)} width={60} />
+                        <span className="mono" style={{ fontSize: 12, color: COLORS.teal }}>{overallProgress(p)}%</span>
+                        {getOverdueTasks(p).length > 0 && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11, color: COLORS.danger }}><AlertTriangle size={11} /> {getOverdueTasks(p).length}</span>
+                        )}
+                        <span style={{ fontSize: 11, color: COLORS.textFaint }}>{isExpanded ? '▲' : '▾'}</span>
+                      </span>
+                    </button>
+                    {isExpanded && (
+                      <div className="p-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+                        <ProjectWbsCards project={p} uiLang={uiLang} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
 
           {mainView === 'project' && selectedProject && (
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 style={{ fontSize: 19, fontWeight: 700 }}>{selectedProject.name}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 style={{ fontSize: 19, fontWeight: 700 }}>{displayName(selectedProject, uiLang)}</h2>
+                  {selectedProject.viewType === 'gantt' && (() => {
+                    const avgOff = computeAvgTrackOffWeeks(flattenTasks(selectedProject));
+                    if (avgOff === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 12, color: avgOff > 0 ? COLORS.danger : COLORS.success, marginLeft: 12 }}>
+                        Trung bình trễ: {avgOff > 0 ? '+' : ''}{avgOff.toFixed(1)} tuần
+                      </span>
+                    );
+                  })()}
+                  {selectedProject.viewType === 'checklist' && (() => {
+                    const avgOff = computeAvgTrackOffDays(flattenTasks(selectedProject));
+                    if (avgOff === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 12, color: avgOff > 0 ? COLORS.danger : COLORS.success, marginLeft: 12 }}>
+                        Trung bình trễ: {avgOff > 0 ? '+' : ''}{avgOff.toFixed(1)} ngày
+                      </span>
+                    );
+                  })()}
+                </div>
                 <div className="flex gap-1 rounded p-1" style={{ background: COLORS.border }}>
-                  {[['timeline', 'Timeline'], ['report', 'Weekly Report']].map(([k, label]) => (
+                  {[['timeline', UI_TEXT[uiLang].tabTimeline], ['wbs', UI_TEXT[uiLang].tabWbs], ['report', UI_TEXT[uiLang].tabReport]].map(([k, label]) => (
                     <button key={k} onClick={() => setProjectTab(k)} style={{ fontSize: 13, fontWeight: 600, padding: '5px 12px', borderRadius: 5, border: 'none', cursor: 'pointer', background: projectTab === k ? COLORS.card : 'transparent', color: projectTab === k ? COLORS.navy : COLORS.textMuted }}>
                       {label}
                     </button>
@@ -630,6 +912,10 @@ export default function ProjectDashboard() {
                 selectedProject.viewType === 'gantt'
                   ? <GanttView
                       project={selectedProject}
+                      uiLang={uiLang}
+                      onUpdateTaskSpan={(sectionId, taskId, fields) => updateTaskSpan(selectedProject.id, sectionId, taskId, fields)}
+                      onUpdateTaskSpanByDate={(sectionId, taskId, fields) => updateTaskSpanByDate(selectedProject.id, sectionId, taskId, fields)}
+                      onUpdateWeekStartDate={dateStr => updateProjectWeekStartDate(selectedProject.id, dateStr)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
                       onSetCurrentWeek={idx => setCurrentWeek(selectedProject.id, idx)}
@@ -644,6 +930,8 @@ export default function ProjectDashboard() {
                     />
                   : <ChecklistView
                       project={selectedProject}
+                      uiLang={uiLang}
+                      onUpdateTaskDate={(sectionId, taskId, field, dateStr) => updateTaskDueDate(selectedProject.id, sectionId, taskId, field, dateStr)}
                       editingProgressId={editingProgressId} setEditingProgressId={setEditingProgressId}
                       onProgressChange={(sid, tid, val) => updateTaskProgress(selectedProject.id, sid, tid, val)}
                       addingTaskSection={addingTaskSection} setAddingTaskSection={setAddingTaskSection}
@@ -655,12 +943,16 @@ export default function ProjectDashboard() {
                     />
               )}
 
+              {projectTab === 'wbs' && (
+                <ProjectWbsCards project={selectedProject} uiLang={uiLang} />
+              )}
+
               {projectTab === 'report' && (
                 <ReportForm
-                  project={selectedProject}
-                  onChange={(field, val) => updateReportField(selectedProject.id, field, val)}
+                  project={selectedProject} uiLang={uiLang}
+                  onChange={(field, val) => updateReportField(selectedProject.id, uiLang, field, val)}
                   overdue={getOverdueTasks(selectedProject)}
-                  onAppendIssue={text => appendIssue(selectedProject.id, text)}
+                  onAppendIssue={text => appendIssue(selectedProject.id, uiLang, text)}
                   onCopy={copyText} copied={copied}
                   onLog={() => logReport(selectedProject.id)}
                   onRestore={entry => restoreDraftFromEntry(selectedProject.id, entry)}
@@ -683,7 +975,7 @@ export default function ProjectDashboard() {
 // ---------- Gantt view ----------
 
 function GanttView({
-  project, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
+  project, uiLang, onUpdateTaskSpan, onUpdateTaskSpanByDate, onUpdateWeekStartDate, editingProgressId, setEditingProgressId, onProgressChange, onSetCurrentWeek,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   addingWeek, setAddingWeek, weekDraftLabel, setWeekDraftLabel, onAddWeek,
@@ -691,20 +983,73 @@ function GanttView({
 }) {
   const nameColWidth = 280;
   const weeks = project.weeks;
+  const gridRef = React.useRef(null);
+  const [drag, setDrag] = React.useState(null); // { sectionId, taskId, mode: 'move'|'resize-start'|'resize-end', startClientX, origStart, origEnd, previewStart, previewEnd }
   const nowLeft = weeks.length ? `calc(${nameColWidth}px + (100% - ${nameColWidth}px) * ${(project.currentWeekIndex + 0.5) / weeks.length})` : null;
   const gridTemplate = `${nameColWidth}px repeat(${weeks.length}, minmax(46px, 1fr))`;
 
+  function colWidth() {
+    if (!gridRef.current) return 46;
+    const rect = gridRef.current.getBoundingClientRect();
+    return (rect.width - nameColWidth) / Math.max(weeks.length, 1);
+  }
+
+  function beginDrag(e, sectionId, taskId, mode, origStart, origEnd, barKind = 'plan') {
+    e.preventDefault();
+    setDrag({ sectionId, taskId, mode, barKind, startClientX: e.clientX, origStart, origEnd, previewStart: origStart, previewEnd: origEnd });
+  }
+
+  React.useEffect(() => {
+    if (!drag) return undefined;
+    function onMove(e) {
+      const deltaWeeks = Math.round((e.clientX - drag.startClientX) / colWidth());
+      setDrag(d => {
+        if (!d) return d;
+        let previewStart = d.origStart;
+        let previewEnd = d.origEnd;
+        if (d.mode === 'move') {
+          previewStart = d.origStart + deltaWeeks;
+          previewEnd = d.origEnd + deltaWeeks;
+        } else if (d.mode === 'resize-start') {
+          previewStart = Math.min(d.origStart + deltaWeeks, d.origEnd);
+        } else if (d.mode === 'resize-end') {
+          previewEnd = Math.max(d.origEnd + deltaWeeks, d.origStart);
+        }
+        previewStart = Math.max(0, Math.min(previewStart, weeks.length - 1));
+        previewEnd = Math.max(0, Math.min(previewEnd, weeks.length - 1));
+        return { ...d, previewStart, previewEnd };
+      });
+    }
+    function onUp() {
+      setDrag(d => {
+        if (d) {
+          const fields = d.barKind === 'actual'
+            ? { actualStart: d.previewStart, actualEnd: d.previewEnd }
+            : { start: d.previewStart, end: d.previewEnd };
+          onUpdateTaskSpan(d.sectionId, d.taskId, fields);
+        }
+        return null;
+      });
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [drag, weeks.length]);
+
   return (
     <div className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
-      <div className="relative" style={{ overflowX: 'auto' }}>
+      <div ref={gridRef} className="relative" style={{ overflowX: 'auto' }}>
         {nowLeft && (
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: nowLeft, width: 2, background: COLORS.navy, zIndex: 5, pointerEvents: 'none' }}>
-            <div className="mono" style={{ position: 'absolute', top: -2, left: 4, fontSize: 10, background: COLORS.navy, color: '#fff', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>hôm nay</div>
+            <div className="mono" style={{ position: 'absolute', top: -2, left: 4, fontSize: 10, background: COLORS.navy, color: '#fff', padding: '1px 5px', borderRadius: 3, whiteSpace: 'nowrap' }}>{UI_TEXT[uiLang].today}</div>
           </div>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
-          <div className="p-2 flex items-center" style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>Sections & Tasks</div>
+          <div className="p-2 flex items-center" style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>{UI_TEXT[uiLang].sectionsAndTasks}</div>
           {weeks.map((w, idx) => (
             <button key={idx} onClick={() => onSetCurrentWeek(idx)} title="Đặt làm tuần hiện tại" className="mono text-center py-2" style={{ fontSize: 11, fontWeight: idx === project.currentWeekIndex ? 700 : 500, color: idx === project.currentWeekIndex ? COLORS.navy : COLORS.textMuted, background: 'transparent', border: 'none', borderLeft: `1px solid ${COLORS.border}`, cursor: 'pointer' }}>
               {w}
@@ -718,13 +1063,13 @@ function GanttView({
             <div key={section.id}>
               <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, background: COLORS.tealSoft, borderBottom: `1px solid ${COLORS.border}` }}>
                 <div className="px-2 py-1.5 flex items-center justify-between group">
-                  <span style={{ fontSize: 12.5, fontWeight: 700, color: COLORS.navy }}>{section.name}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: COLORS.navy }}>{displayName(section, uiLang)}</span>
                   <span className="flex items-center gap-2 opacity-0 group-hover:opacity-100">
                     <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted }}>{secProgress}%</span>
                     {confirmDelete && confirmDelete.type === 'section' && confirmDelete.id === section.id ? (
                       <span className="flex gap-1">
-                        <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                        <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                       </span>
                     ) : (
                       <IconBtn title="Xóa section" onClick={() => setConfirmDelete({ type: 'section', id: section.id })}><Trash2 size={12} /></IconBtn>
@@ -737,7 +1082,7 @@ function GanttView({
               {section.tasks.map(task => {
                 const overdue = isTaskOverdue(task, project);
                 const c = statusColor(task.progress);
-                const hasSpan = task.start !== null && task.start !== undefined;
+                const hasSpan = task.start !== null && task.start !== undefined && task.end !== null && task.end !== undefined;
                 return (
                   <div key={task.id} style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}` }} className="group">
                     <div className="px-2 py-1.5 flex items-center gap-2" style={{ fontSize: 12.5 }}>
@@ -745,34 +1090,107 @@ function GanttView({
                         <ProgressPill progress={task.progress} />
                       </button>
                       <span style={{ flex: 1 }}>
-                        {task.name}
+                        {displayName(task, uiLang)}
                         {task.pic && <span className="mono" style={{ display: 'block', fontSize: 10.5, color: COLORS.textFaint }}>{task.pic}</span>}
                       </span>
                       {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
                       <span className="opacity-0 group-hover:opacity-100">
                         {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
                           <span className="flex gap-1">
-                            <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                            <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                            <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                            <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                           </span>
                         ) : (
                           <IconBtn title="Xóa task" onClick={() => setConfirmDelete({ type: 'task', id: task.id })}><Trash2 size={12} /></IconBtn>
                         )}
                       </span>
                     </div>
-                    {weeks.map((_, i) => {
-                      const filled = hasSpan && i >= task.start && i <= task.end;
+                    {weeks.map((_, i) => (
+                      <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, gridColumn: i + 2, gridRow: 1 }} />
+                    ))}
+                    {hasSpan && (() => {
+                      const isDragging = drag && drag.taskId === task.id && drag.barKind === 'plan';
+                      const barStart = isDragging ? drag.previewStart : task.start;
+                      const barEnd = isDragging ? drag.previewEnd : task.end;
                       return (
-                        <div key={i} style={{ borderLeft: `1px solid ${COLORS.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {filled && <div style={{ height: 16, width: '78%', borderRadius: 4, background: c.fg, opacity: task.progress >= 100 ? 1 : 0.75 }} />}
+                        <div
+                          data-bar-for={task.id}
+                          onPointerDown={e => beginDrag(e, section.id, task.id, 'move', task.start, task.end)}
+                          style={{
+                            gridColumn: `${barStart + 2} / ${barEnd + 3}`,
+                            gridRow: 1,
+                            alignSelf: 'center',
+                            height: 16,
+                            margin: '0 4px',
+                            borderRadius: 4,
+                            background: c.fg,
+                            opacity: task.progress >= 100 ? 1 : 0.75,
+                            position: 'relative',
+                            cursor: 'grab',
+                          }}
+                        >
+                          <div
+                            onPointerDown={e => { e.stopPropagation(); beginDrag(e, section.id, task.id, 'resize-start', task.start, task.end); }}
+                            style={{ position: 'absolute', left: -4, top: 0, bottom: 0, width: 8, cursor: 'ew-resize' }}
+                          />
+                          <div
+                            onPointerDown={e => { e.stopPropagation(); beginDrag(e, section.id, task.id, 'resize-end', task.start, task.end); }}
+                            style={{ position: 'absolute', right: -4, top: 0, bottom: 0, width: 8, cursor: 'ew-resize' }}
+                          />
                         </div>
                       );
-                    })}
+                    })()}
+                    {task.actualStart !== null && task.actualStart !== undefined && task.actualEnd !== null && task.actualEnd !== undefined && (() => {
+                      const isDraggingActual = drag && drag.taskId === task.id && drag.barKind === 'actual';
+                      const aStart = isDraggingActual ? drag.previewStart : task.actualStart;
+                      const aEnd = isDraggingActual ? drag.previewEnd : task.actualEnd;
+                      const trackOff = computeTrackOffWeeks(task.end, task.actualEnd);
+                      return (
+                        <div
+                          data-actual-bar-for={task.id}
+                          onPointerDown={e => beginDrag(e, section.id, task.id, 'move', task.actualStart, task.actualEnd, 'actual')}
+                          style={{
+                            gridColumn: `${aStart + 2} / ${aEnd + 3}`,
+                            gridRow: 1,
+                            alignSelf: 'end',
+                            height: 6,
+                            margin: '0 4px 2px 4px',
+                            borderRadius: 3,
+                            background: trackOff !== null && trackOff > 0 ? COLORS.danger : COLORS.success,
+                            cursor: 'grab',
+                          }}
+                          title={trackOff !== null ? `${trackOff > 0 ? '+' : ''}${trackOff} tuần so với plan` : ''}
+                        />
+                      );
+                    })()}
                     {editingProgressId === task.id && (
-                      <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3">
+                      <div style={{ gridColumn: `1 / span ${weeks.length + 1}`, background: '#FAFBFC', borderTop: `1px dashed ${COLORS.border}`, padding: '6px 12px' }} className="flex items-center gap-3 flex-wrap">
                         <input type="range" min="0" max="100" step="5" value={task.progress} onChange={e => onProgressChange(section.id, task.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
                         <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{task.progress}%</span>
-                        <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>Xong</button>
+                        {project.weekStartDate && hasSpan && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+                            <input key={`start-${task.start}-${task.end}`} type="date" defaultValue={weekIndexToDate(task.start, project.weekStartDate)}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: e.target.value, endDate: weekIndexToDate(task.end, project.weekStartDate) })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                            →
+                            <input key={`end-${task.start}-${task.end}`} type="date" defaultValue={weekIndexToDate(task.end, project.weekStartDate)}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: weekIndexToDate(task.start, project.weekStartDate), endDate: e.target.value })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                          </span>
+                        )}
+                        {project.weekStartDate && (
+                          <span className="flex items-center gap-1" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+                            Thực tế:
+                            <input key={`actual-start-${task.actualStart}-${task.actualEnd}`} type="date" defaultValue={task.actualStart != null ? weekIndexToDate(task.actualStart, project.weekStartDate) : ''}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: e.target.value, endDate: task.actualEnd != null ? weekIndexToDate(task.actualEnd, project.weekStartDate) : e.target.value, actual: true })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                            →
+                            <input key={`actual-end-${task.actualStart}-${task.actualEnd}`} type="date" defaultValue={task.actualEnd != null ? weekIndexToDate(task.actualEnd, project.weekStartDate) : ''}
+                              onChange={e => onUpdateTaskSpanByDate(section.id, task.id, { startDate: task.actualStart != null ? weekIndexToDate(task.actualStart, project.weekStartDate) : e.target.value, endDate: e.target.value, actual: true })}
+                              className="rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }} />
+                          </span>
+                        )}
+                        <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].xong}</button>
                       </div>
                     )}
                   </div>
@@ -782,7 +1200,7 @@ function GanttView({
               {addingTaskSection === section.id ? (
                 <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
                   <div className="px-2 py-1.5 flex items-center gap-1" style={{ gridColumn: `1 / span ${weeks.length + 1}` }}>
-                    <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder="Tên task" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, maxWidth: 260 }} />
+                    <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder={UI_TEXT[uiLang].tenTaskPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, maxWidth: 260 }} />
                     <span style={{ fontSize: 11, color: COLORS.textMuted }}>Từ tuần</span>
                     <select value={taskDraft.start} onChange={e => setTaskDraft(d => ({ ...d, start: e.target.value }))} className="rounded px-1 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
                       {weeks.map((w, i) => <option key={i} value={i}>{w}</option>)}
@@ -791,14 +1209,14 @@ function GanttView({
                     <select value={taskDraft.end} onChange={e => setTaskDraft(d => ({ ...d, end: e.target.value }))} className="rounded px-1 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
                       {weeks.map((w, i) => <option key={i} value={i}>{w}</option>)}
                     </select>
-                    <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
-                    <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' }); }}><X size={14} /></IconBtn>
+                    <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
+                    <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
                   </div>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, minWidth: nameColWidth + weeks.length * 46, borderBottom: `1px solid ${COLORS.border}` }}>
                   <button onClick={() => setAddingTaskSection(section.id)} className="px-2 py-1.5 flex items-center gap-1" style={{ fontSize: 12, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', gridColumn: `1 / span ${weeks.length + 1}`, justifyContent: 'flex-start', width: '100%', textAlign: 'left' }}>
-                    <Plus size={13} /> Thêm task
+                    <Plus size={13} /> {UI_TEXT[uiLang].themTask}
                   </button>
                 </div>
               )}
@@ -810,22 +1228,32 @@ function GanttView({
       <div className="flex items-center gap-4 p-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
         {addingSectionProject === project.id ? (
           <div className="flex items-center gap-1">
-            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder="Tên section" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
-            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder={UI_TEXT[uiLang].tenSectionPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
+            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingSectionProject(null)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> Thêm section</button>
+          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> {UI_TEXT[uiLang].themSection}</button>
         )}
         {addingWeek ? (
           <div className="flex items-center gap-1">
             <input autoFocus value={weekDraftLabel} onChange={e => setWeekDraftLabel(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddWeek(project.id)} placeholder="vd. Oct W1" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
-            <button onClick={() => onAddWeek(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <button onClick={() => onAddWeek(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingWeek(false)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingWeek(true)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.textMuted, background: 'transparent', border: 'none', cursor: 'pointer' }}><Plus size={13} /> Thêm cột tuần</button>
+          <button onClick={() => setAddingWeek(true)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.textMuted, background: 'transparent', border: 'none', cursor: 'pointer' }}><Plus size={13} /> {UI_TEXT[uiLang].themWeek}</button>
         )}
+        <label className="flex items-center gap-1.5" style={{ fontSize: 11.5, color: COLORS.textMuted }}>
+          W1 bắt đầu:
+          <input
+            type="date"
+            value={project.weekStartDate || ''}
+            onChange={e => onUpdateWeekStartDate(e.target.value)}
+            className="rounded px-1.5 py-0.5"
+            style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5 }}
+          />
+        </label>
         <span style={{ fontSize: 11, color: COLORS.textFaint, marginLeft: 'auto' }}>Click vào tiêu đề tuần để đặt "hôm nay"</span>
       </div>
     </div>
@@ -835,27 +1263,61 @@ function GanttView({
 // ---------- Checklist view ----------
 
 function ChecklistView({
-  project, editingProgressId, setEditingProgressId, onProgressChange,
+  project, uiLang, onUpdateTaskDate, editingProgressId, setEditingProgressId, onProgressChange,
   addingTaskSection, setAddingTaskSection, taskDraft, setTaskDraft, onAddTask,
   addingSectionProject, setAddingSectionProject, sectionDraftName, setSectionDraftName, onAddSection,
   confirmDelete, setConfirmDelete, onDeleteTask, onDeleteSection,
 }) {
+  const axis = computeDateAxis(project);
+  // { sectionId, taskId, trackLeft, trackWidth, previewDate } currently being dragged, or null.
+  // trackLeft/trackWidth are captured from the dragged marker's OWN track div at drag-start
+  // (pointerdown), so the pixel math always reads that specific row's geometry — never a
+  // shared ref that could point at whichever row's track happened to mount/update last.
+  const [drag, setDrag] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!drag) return undefined;
+    function onMove(e) {
+      const pct = ((e.clientX - drag.trackLeft) / drag.trackWidth) * 100;
+      const dateStr = axisPercentToDate(pct, axis);
+      setDrag(d => (d ? { ...d, previewDate: dateStr } : d));
+    }
+    function onUp() {
+      setDrag(d => {
+        if (d) {
+          onUpdateTaskDate(d.sectionId, d.taskId, 'dueDate', d.previewDate);
+        }
+        return null;
+      });
+    }
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp, { once: true });
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
+  }, [drag, axis.min, axis.max, onUpdateTaskDate]);
+
   return (
     <div className="rounded" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}`, overflow: 'hidden' }}>
+      <div className="flex items-center px-3 py-1.5" style={{ borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
+        <span style={{ flex: 1, fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase' }}>PIC / Điều khoản / Due date</span>
+        <span style={{ width: 160, fontSize: 11, fontWeight: 700, color: COLORS.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>Timeline</span>
+      </div>
       {project.sections.map(section => {
         const secProgress = section.tasks.length ? Math.round(section.tasks.reduce((s, t) => s + t.progress, 0) / section.tasks.length) : 0;
         return (
           <div key={section.id}>
             <div className="px-3 py-2 flex items-center justify-between group" style={{ background: COLORS.tealSoft, borderBottom: `1px solid ${COLORS.border}` }}>
               <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>
-                {section.name}{section.pic ? <span className="mono" style={{ fontWeight: 500, color: COLORS.textMuted, fontSize: 12 }}> · PIC: {section.pic}</span> : null}
+                {displayName(section, uiLang)}{section.pic ? <span className="mono" style={{ fontWeight: 500, color: COLORS.textMuted, fontSize: 12 }}> · PIC: {section.pic}</span> : null}
               </span>
               <span className="flex items-center gap-2">
                 <span className="mono" style={{ fontSize: 12, color: COLORS.textMuted }}>{secProgress}%</span>
                 {confirmDelete && confirmDelete.type === 'section' && confirmDelete.id === section.id ? (
                   <span className="flex gap-1">
-                    <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                    <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                    <button onClick={() => onDeleteSection(project.id, section.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                    <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                   </span>
                 ) : (
                   <IconBtn title="Xóa section" onClick={() => setConfirmDelete({ type: 'section', id: section.id })}><Trash2 size={12} /></IconBtn>
@@ -870,17 +1332,66 @@ function ChecklistView({
                     <ProgressPill progress={task.progress} />
                   </button>
                   {task.no != null && <span className="mono" style={{ fontSize: 10.5, color: COLORS.textFaint, minWidth: 20 }}>#{task.no}</span>}
-                  <span style={{ fontSize: 13, flex: 1 }}>{task.name}</span>
-                  {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{task.clause}</span>}
-                  <span className="mono" style={{ fontSize: 11.5, color: overdue ? COLORS.danger : COLORS.textMuted, fontWeight: overdue ? 700 : 500, minWidth: 90, textAlign: 'right' }}>
-                    {task.dueDate === 'TBD' ? 'TBD' : task.dueDate === 'Done' ? 'Done' : task.dueDate}
-                  </span>
+                  <span style={{ fontSize: 13, flex: 1 }}>{displayName(task, uiLang)}</span>
+                  {task.pic && <span className="mono" style={{ fontSize: 11, color: COLORS.textMuted, minWidth: 70 }}>{task.pic}</span>}
+                  {task.clause && <span className="mono" style={{ fontSize: 11.5, color: COLORS.teal, background: COLORS.tealSoft, padding: '2px 7px', borderRadius: 4 }}>{displayClause(task, uiLang)}</span>}
+                  {task.dueDate !== 'TBD' && task.dueDate !== 'Done' ? (
+                    <input type="date" value={task.dueDate} onChange={e => onUpdateTaskDate(section.id, task.id, 'dueDate', e.target.value)}
+                      className="mono rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5, minWidth: 90, color: overdue ? COLORS.danger : undefined, fontWeight: overdue ? 700 : 500 }} />
+                  ) : (
+                    <span className="mono" style={{ fontSize: 11.5, color: COLORS.textMuted, minWidth: 90, textAlign: 'right' }}>{task.dueDate}</span>
+                  )}
+                  <input type="date" value={task.actualCompletionDate || ''} onChange={e => onUpdateTaskDate(section.id, task.id, 'actualCompletionDate', e.target.value)}
+                    title="Ngày hoàn thành thực tế" className="mono rounded px-1 py-0.5" style={{ border: `1px solid ${COLORS.border}`, fontSize: 11.5, minWidth: 90 }} />
+                  {task.actualCompletionDate && (() => {
+                    const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+                    if (off === null) return null;
+                    return (
+                      <span className="mono" style={{ fontSize: 10.5, fontWeight: 700, color: off > 0 ? COLORS.danger : COLORS.success }}>
+                        {off > 0 ? `+${off}d` : `${off}d`}
+                      </span>
+                    );
+                  })()}
                   {overdue && <AlertTriangle size={13} color={COLORS.danger} title="Quá hạn" />}
+                  <div style={{ position: 'relative', width: 160, height: 18, background: '#F2F2F2', borderRadius: 4, flexShrink: 0 }}>
+                    <div style={{ position: 'absolute', left: `${dateToAxisPercent(todayISO(), axis)}%`, top: 0, bottom: 0, width: 2, background: COLORS.navy }} />
+                    {task.dueDate !== 'TBD' && task.dueDate !== 'Done' && (() => {
+                      const isDraggingThis = drag && drag.taskId === task.id;
+                      const displayDate = isDraggingThis ? drag.previewDate : task.dueDate;
+                      return (
+                        <div
+                          onPointerDown={e => {
+                            const rect = e.currentTarget.parentElement.getBoundingClientRect();
+                            setDrag({ sectionId: section.id, taskId: task.id, trackLeft: rect.left, trackWidth: rect.width, previewDate: task.dueDate });
+                          }}
+                          title={displayDate}
+                          style={{
+                            position: 'absolute', top: 2, width: 14, height: 14, borderRadius: '50%',
+                            left: `calc(${dateToAxisPercent(displayDate, axis)}% - 7px)`,
+                            background: COLORS.teal, border: '2px solid #fff', cursor: 'grab',
+                          }}
+                        />
+                      );
+                    })()}
+                    {task.actualCompletionDate && (() => {
+                      const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+                      return (
+                        <div
+                          title={off !== null ? `${off > 0 ? '+' : ''}${off} ngày so với due date` : ''}
+                          style={{
+                            position: 'absolute', top: 5, width: 8, height: 8,
+                            left: `calc(${dateToAxisPercent(task.actualCompletionDate, axis)}% - 4px)`,
+                            background: off !== null && off > 0 ? COLORS.danger : COLORS.success,
+                          }}
+                        />
+                      );
+                    })()}
+                  </div>
                   <span className="opacity-0 group-hover:opacity-100">
                     {confirmDelete && confirmDelete.type === 'task' && confirmDelete.id === task.id ? (
                       <span className="flex gap-1">
-                        <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Xóa</button>
-                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>Hủy</button>
+                        <button onClick={() => onDeleteTask(project.id, section.id, task.id)} className="mono" style={{ fontSize: 10, background: COLORS.danger, color: '#fff', border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].xoa}</button>
+                        <button onClick={() => setConfirmDelete(null)} style={{ fontSize: 10, background: COLORS.border, border: 'none', borderRadius: 4, padding: '1px 5px', cursor: 'pointer' }}>{UI_TEXT[uiLang].huy}</button>
                       </span>
                     ) : (
                       <IconBtn title="Xóa task" onClick={() => setConfirmDelete({ type: 'task', id: task.id })}><Trash2 size={12} /></IconBtn>
@@ -897,7 +1408,7 @@ function ChecklistView({
                     <>
                       <input type="range" min="0" max="100" step="5" value={t.progress} onChange={e => onProgressChange(section.id, t.id, Number(e.target.value))} style={{ flex: 1, maxWidth: 240 }} />
                       <span className="mono" style={{ fontSize: 12, fontWeight: 600 }}>{t.progress}%</span>
-                      <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>Xong</button>
+                      <button onClick={() => setEditingProgressId(null)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '3px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].xong}</button>
                     </>
                   );
                 })()}
@@ -905,15 +1416,16 @@ function ChecklistView({
             )}
             {addingTaskSection === section.id ? (
               <div className="px-3 py-2 flex items-center gap-1 flex-wrap" style={{ borderBottom: `1px solid ${COLORS.border}`, background: '#FAFBFC' }}>
-                <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder="Tên task" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, minWidth: 200 }} />
-                <input value={taskDraft.clause} onChange={e => setTaskDraft(d => ({ ...d, clause: e.target.value }))} placeholder="Điều/clause" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
+                <input autoFocus value={taskDraft.name} onChange={e => setTaskDraft(d => ({ ...d, name: e.target.value }))} placeholder={UI_TEXT[uiLang].tenTaskPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, flex: 1, minWidth: 200 }} />
+                <input value={taskDraft.clause} onChange={e => setTaskDraft(d => ({ ...d, clause: e.target.value }))} placeholder={UI_TEXT[uiLang].clausePlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 100 }} />
+                <input value={taskDraft.pic} onChange={e => setTaskDraft(d => ({ ...d, pic: e.target.value }))} placeholder={UI_TEXT[uiLang].picPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 90 }} />
                 <input value={taskDraft.dueDate} onChange={e => setTaskDraft(d => ({ ...d, dueDate: e.target.value }))} placeholder="YYYY-MM-DD / TBD" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12, width: 130 }} />
-                <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
-                <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '' }); }}><X size={14} /></IconBtn>
+                <button onClick={() => onAddTask(project, section.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
+                <IconBtn onClick={() => { setAddingTaskSection(null); setTaskDraft({ name: '', clause: '', dueDate: '', start: '', end: '', pic: '' }); }}><X size={14} /></IconBtn>
               </div>
             ) : (
               <button onClick={() => setAddingTaskSection(section.id)} className="px-3 py-1.5 flex items-center gap-1" style={{ fontSize: 12, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', borderBottom: `1px solid ${COLORS.border}`, width: '100%', textAlign: 'left' }}>
-                <Plus size={13} /> Thêm task
+                <Plus size={13} /> {UI_TEXT[uiLang].themTask}
               </button>
             )}
           </div>
@@ -922,12 +1434,12 @@ function ChecklistView({
       <div className="p-3">
         {addingSectionProject === project.id ? (
           <div className="flex items-center gap-1">
-            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder="Tên section" className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
-            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>Thêm</button>
+            <input autoFocus value={sectionDraftName} onChange={e => setSectionDraftName(e.target.value)} onKeyDown={e => e.key === 'Enter' && onAddSection(project.id)} placeholder={UI_TEXT[uiLang].tenSectionPlaceholder} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }} />
+            <button onClick={() => onAddSection(project.id)} style={{ background: COLORS.teal, color: '#fff', border: 'none', borderRadius: 5, padding: '4px 10px', fontSize: 12, cursor: 'pointer' }}>{UI_TEXT[uiLang].them}</button>
             <IconBtn onClick={() => setAddingSectionProject(null)}><X size={14} /></IconBtn>
           </div>
         ) : (
-          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> Thêm section</button>
+          <button onClick={() => setAddingSectionProject(project.id)} className="flex items-center gap-1" style={{ fontSize: 12.5, color: COLORS.teal, background: 'transparent', border: 'none', cursor: 'pointer', fontWeight: 600 }}><Plus size={13} /> {UI_TEXT[uiLang].themSection}</button>
         )}
       </div>
     </div>
@@ -936,23 +1448,30 @@ function ChecklistView({
 
 // ---------- Report form (draft + history) ----------
 
-function ReportForm({ project, onChange, overdue, onAppendIssue, onCopy, copied, onLog, onRestore, currentOverall, expandedHistoryId, setExpandedHistoryId }) {
-  const text = composeProjectReport(project);
+function ReportForm({ project, uiLang, onChange, overdue, onAppendIssue, onCopy, copied, onLog, onRestore, currentOverall, expandedHistoryId, setExpandedHistoryId }) {
+  const text = composeProjectReport(project, uiLang);
   const key = `report-${project.id}`;
   const history = project.report.history;
+  const draft = project.report.draft[uiLang];
 
   return (
     <div>
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr 1fr' }}>
         <div className="rounded p-4" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}` }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>✅ Tuần trước đã làm gì</label>
-          <textarea value={project.report.draft.doneLastWeek} onChange={e => onChange('doneLastWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Hoàn tất BOM approval..." />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted }}>
+            {uiLang === 'en' ? '✅ Done last week' : '✅ Tuần trước đã làm gì'} <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.doneLastWeek} onChange={e => onChange('doneLastWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Hoàn tất BOM approval..." />
 
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>🔜 Tuần tới định làm gì</label>
-          <textarea value={project.report.draft.planNextWeek} onChange={e => onChange('planNextWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Setup server & license..." />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>
+            {uiLang === 'en' ? '🔜 Plan for next week' : '🔜 Tuần tới định làm gì'} <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.planNextWeek} onChange={e => onChange('planNextWeek', e.target.value)} rows={4} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="- Setup server & license..." />
 
-          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>⚠️ Issue / bottleneck</label>
-          <textarea value={project.report.draft.issues} onChange={e => onChange('issues', e.target.value)} rows={3} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="Không có" />
+          <label style={{ fontSize: 12, fontWeight: 700, color: COLORS.textMuted, marginTop: 12, display: 'block' }}>
+            ⚠️ Issue / bottleneck <span className="mono" style={{ color: COLORS.textFaint }}>({uiLang.toUpperCase()})</span>
+          </label>
+          <textarea value={draft.issues} onChange={e => onChange('issues', e.target.value)} rows={3} className="w-full rounded p-2 mt-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 13, resize: 'vertical' }} placeholder="Không có" />
 
           {overdue.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1010,7 +1529,7 @@ function ReportForm({ project, onChange, overdue, onAppendIssue, onCopy, copied,
               {isExpanded && (
                 <div className="px-4 pb-3 flex items-start gap-3">
                   <pre className="mono" style={{ flex: 1, fontSize: 12, background: '#FAFBFC', border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: 10, whiteSpace: 'pre-wrap', margin: 0 }}>
-                    {composeReportBlock(project.name, entry.overall, entry, entry.overdueSnapshot || [])}
+                    {composeReportBlock(project.name, entry.overall, entry[uiLang], entry.overdueSnapshot || [])}
                   </pre>
                   <button onClick={() => onRestore(entry)} className="flex items-center gap-1" style={{ fontSize: 11.5, background: COLORS.tealSoft, color: COLORS.teal, border: 'none', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                     <RefreshCcw size={12} /> Khôi phục vào draft
@@ -1027,11 +1546,12 @@ function ReportForm({ project, onChange, overdue, onAppendIssue, onCopy, copied,
 
 // ---------- Digest view ----------
 
-function DigestView({ projects, selection, setSelection, onCopy, copied, digestDate, setDigestDate, allHistoryDates }) {
+function DigestView({ projects, selection, setSelection, onCopy, copied, digestDate, setDigestDate, allHistoryDates, uiLang }) {
+  const [copyLang, setCopyLang] = React.useState(uiLang);
   const sel = selection && selection.length ? selection : projects.map(p => p.id);
   const included = projects.filter(p => sel.includes(p.id));
   const headerLabel = digestDate === 'latest' ? todayLabel() : formatDateLabel(digestDate);
-  const text = composeDigest(included, headerLabel, digestDate);
+  const text = composeDigest(included, headerLabel, digestDate, copyLang);
   const key = 'digest';
 
   function toggle(id) {
@@ -1063,15 +1583,80 @@ function DigestView({ projects, selection, setSelection, onCopy, copied, digestD
       <div className="rounded p-4" style={{ background: COLORS.card, border: `1px solid ${COLORS.border}` }}>
         <div className="flex items-center justify-between mb-2">
           <h3 style={{ fontSize: 15, fontWeight: 700 }}>Weekly Status Update — {headerLabel}</h3>
-          <button onClick={() => onCopy(key, text)} className="flex items-center gap-1" style={{ fontSize: 12.5, background: copied === key ? COLORS.success : COLORS.navy, color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer' }}>
-            {copied === key ? <><Check size={14} /> Đã copy</> : <><Copy size={14} /> Copy toàn bộ</>}
-          </button>
+          <div className="flex items-center gap-2">
+            <select value={copyLang} onChange={e => setCopyLang(e.target.value)} className="rounded px-2 py-1" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12 }}>
+              <option value="vi">VI</option>
+              <option value="en">EN</option>
+            </select>
+            <button onClick={() => onCopy(key, text)} className="flex items-center gap-1" style={{ fontSize: 12.5, background: copied === key ? COLORS.success : COLORS.navy, color: '#fff', border: 'none', borderRadius: 6, padding: '5px 12px', cursor: 'pointer' }}>
+              {copied === key ? <><Check size={14} /> Đã copy</> : <><Copy size={14} /> Copy toàn bộ</>}
+            </button>
+          </div>
         </div>
         <textarea readOnly value={text} rows={22} className="w-full rounded p-3 mono" style={{ border: `1px solid ${COLORS.border}`, fontSize: 12.5, background: '#FAFBFC', resize: 'vertical' }} />
         <div style={{ fontSize: 11, color: COLORS.textFaint, marginTop: 6 }}>
           Chọn "Hiện tại" để lấy bản nháp mới nhất, hoặc chọn 1 ngày đã log để xem lại digest tuần đó.
         </div>
       </div>
+    </div>
+  );
+}
+
+// ---------- WBS view ----------
+
+function taskTrackOffLabel(task, project) {
+  if (project.viewType === 'gantt') {
+    const off = computeTrackOffWeeks(task.end, task.actualEnd);
+    if (off === null) return null;
+    return { off, label: `${off > 0 ? '+' : ''}${off}w` };
+  }
+  const off = computeTrackOffDays(task.dueDate, task.actualCompletionDate);
+  if (off === null) return null;
+  return { off, label: `${off > 0 ? '+' : ''}${off}d` };
+}
+
+function ProjectWbsCards({ project, uiLang }) {
+  return (
+    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+      {project.sections.map(section => {
+        const secProgress = section.tasks.length ? Math.round(section.tasks.reduce((s, t) => s + t.progress, 0) / section.tasks.length) : 0;
+        return (
+          <div key={section.id} className="rounded p-3" style={{ background: COLORS.tealSoft, border: `1px solid ${COLORS.border}` }}>
+            <div className="flex items-center justify-between mb-2">
+              <span style={{ fontSize: 13, fontWeight: 700, color: COLORS.navy }}>{displayName(section, uiLang)}</span>
+              <span className="mono" style={{ fontSize: 12, color: COLORS.teal }}>{secProgress}%</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {section.tasks.map(task => {
+                const overdue = isTaskOverdue(task, project);
+                const trackOff = taskTrackOffLabel(task, project);
+                const taskLabel = displayName(task, uiLang);
+                return (
+                  <span
+                    key={task.id}
+                    title={taskLabel}
+                    className="flex items-center gap-1"
+                    style={{
+                      fontSize: 11.5, padding: '3px 8px', borderRadius: 999,
+                      background: overdue ? COLORS.dangerBg : COLORS.card,
+                      color: overdue ? COLORS.danger : COLORS.navy,
+                      border: `1px solid ${overdue ? COLORS.danger : COLORS.border}`,
+                    }}
+                  >
+                    {overdue && <AlertTriangle size={11} />}
+                    {taskLabel.length > 28 ? `${taskLabel.slice(0, 28)}…` : taskLabel} · {task.progress}%
+                    {trackOff && (
+                      <span className="mono" style={{ fontWeight: 700, color: trackOff.off > 0 ? COLORS.danger : COLORS.success }}>
+                        {trackOff.label}
+                      </span>
+                    )}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
