@@ -5,12 +5,12 @@ metadata:
   node_type: memory
   type: feedback
   originSessionId: 621ac3ea-0a5e-4acb-bb16-ab8cab3d0c28
-  modified: 2026-07-23T14:52:45.507Z
+  modified: 2026-07-23T15:06:12.566Z
 ---
 
 Khi tạo hoặc review spec/BRD/PRD/issue liên quan TradeX/NHSV Pro, phải quét ngữ cảnh để chủ động đề xuất đúng loại diagram trong 7 loại BA chuẩn (Flowchart, BPMN, Use Case, Sequence, Activity, ERD, State Machine) — thay vì mặc định generate flowchart cho mọi trường hợp.
 
-Chi tiết đầy đủ (heuristic map ngữ cảnh → diagram, quy tắc kết hợp theo loại document, quy trình áp dụng) nằm ở `Knowledge/TradeX/Diagram-Standards/BA_Diagram_Selection_Guide.md` trong repo tradex-monitoring.
+Chi tiết đầy đủ (heuristic map ngữ cảnh → diagram, quy tắc kết hợp theo loại document, quy trình áp dụng) nằm ở `Knowledge/BA-Diagram-Standards/BA_Diagram_Selection_Guide.md` trong repo tradex-monitoring (đã tách khỏi `Knowledge/TradeX/` vì đây là rule chung, không riêng TradeX).
 
 **Why:** User (Midu, PO/BA) nhận thấy agent thường chỉ generate 1 loại diagram mặc định dù ngữ cảnh cần loại khác (vd: BPMN cho multi-actor process, Sequence cho luồng gọi API giữa service, State cho lifecycle/status, ERD cho schema). Muốn agent thông minh hơn, tự chọn đúng loại theo tín hiệu trong yêu cầu.
 
