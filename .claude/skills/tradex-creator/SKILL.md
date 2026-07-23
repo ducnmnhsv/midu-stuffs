@@ -7,6 +7,8 @@ description: "Viết tài liệu TradeX — API Specification, PM/BA doc, FE Iss
 
 Chọn đúng template và đường dẫn theo loại yêu cầu. Luôn đọc `_workspace/01_analyst_findings.md` trước nếu có.
 
+Trước khi chèn diagram vào spec/doc/issue: đọc `Knowledge/BA-Diagram-Standards/BA_Diagram_Selection_Guide.md` để chọn đúng loại diagram (Flowchart/BPMN/Use Case/Sequence/Activity/ERD/State) theo ngữ cảnh, không mặc định dùng Flowchart. `Planning/` chỉ dùng diagram cấp business (Flowchart/BPMN/Use Case), không chèn Sequence/ERD/Activity kỹ thuật.
+
 ## Phân loại yêu cầu
 
 | Từ khóa | Loại output | Thư mục |

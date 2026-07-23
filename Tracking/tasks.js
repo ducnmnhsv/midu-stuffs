@@ -556,7 +556,7 @@ const TASKS = [
     area: "NHSV-Pro", feature: "NHSV_Channel", type: "PRD",
     status: "backlog", priority: "P2", deadline: null,
     owner: "PO", jira: null,
-    doc: "New feature in NHSV Pro/NHSV_Channel/Khuyen_Nghi/PRD.md",
+    doc: "New feature in NHSV Pro/NHSV_Channel/Khuyen_Nghi/Planning/PRD.md",
     blocks: [], blockedBy: [], note: "v1.2 (2026-07-20): Đổi lớn — Khuyến nghị rời NHSV Channel, thành entry point riêng trên Home (Top pick carousel, sau Lịch sự kiện). Cơ bản: bỏ giá tại ngày KN, thêm lịch sử nhiều mốc/mã. Kỹ thuật: rolling 14 ngày (không còn chỉ hôm nay), card gộp Vùng mua+Cắt lỗ. Tab order đổi: Cơ bản→Kỹ thuật→Rating. Q1/Q2 resolved. Còn chờ: Q3-Q6 (v1.1), Q7-Q10 (v1.2, gồm sequencing với A-06 NH Research). Design.html/Spec.html/admin-demo.html chưa update theo v1.2.",
   },
   {

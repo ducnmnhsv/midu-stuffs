@@ -45,7 +45,7 @@
 | A-01 | [Layout Restructure](NHSV_Channel/Layout_Restructure/) | Mobile FE | — | — | Todo |
 | A-03 | [Tab Reorder](NHSV_Channel/Tab_Reorder/) | Mobile FE | NH_Research, Khuyen_Nghi | — | Todo |
 | A-04 | [NH Research](NHSV_Channel/NH_Research/) | BE + Mobile FE + Admin | Admin_Tool | [Spec.html](NHSV_Channel/NH_Research/Spec.html) | Specced |
-| A-05 | [Khuyến nghị](NHSV_Channel/Khuyen_Nghi/) | BE + Mobile FE + Admin | Admin_Tool, Realtime_Pipeline | [Spec.html](NHSV_Channel/Khuyen_Nghi/Spec.html) | Specced |
+| A-05 | [Khuyến nghị](NHSV_Channel/Khuyen_Nghi/) | BE + Mobile FE + Admin | Admin_Tool, Realtime_Pipeline | [Feature Spec](NHSV_Channel/Khuyen_Nghi/Specifications/Feature_Specification.md) | Specced |
 | A-06 | [Search theo mã CK](NHSV_Channel/Search/) | Mobile FE | NH_Research, Khuyen_Nghi | — | Todo |
 
 ---
