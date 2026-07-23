@@ -272,6 +272,18 @@
     font-family: 'Lato', sans-serif; font-size: 11px; font-weight: 700; color: var(--fg-title);
   }
 
+  /* (v1.3) Dynamic status badge — Cơ bản & Kỹ thuật */
+  .status-badge {
+    font-family: 'Lato', sans-serif;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 3px 8px; border-radius: 5px;
+    display: inline-flex; align-items: center; gap: 3px; white-space: nowrap;
+  }
+  .status-badge svg { width: 10px; height: 10px; }
+  .status-badge.reached  { background: var(--func-success-bg); color: #07A461; }
+  .status-badge.stoploss { background: var(--func-error-bg);   color: var(--market-red); }
+  .status-badge.updating { background: var(--header-table);    color: var(--fg-meta); }
+
   /* Disclaimer footer */
   .disclaimer {
     font-family: 'Lato', sans-serif;
@@ -638,20 +650,20 @@
 <div class="doc-header">
   <div class="eyebrow">NHSV Pro · A-05 · UI Design</div>
   <h1>Khuyến nghị - Mobile UI Mockup</h1>
-  <div class="subtitle">v1.2: Entry point trên Home (card Top pick) + full-screen 3 sub-tab theo thứ tự mới: Cơ bản · Kỹ thuật · NHSV Rating</div>
+  <div class="subtitle">v1.3: Entry point trên Home + full-screen 3 sub-tab (Cơ bản · Kỹ thuật · NHSV Rating) + badge trạng thái động (Đã đạt mục tiêu / Đã chạm cắt lỗ / Đang cập nhật giá), rolling 14 ngày tự bỏ qua T7-CN</div>
   <div class="meta-row">
     <div class="meta-item"><strong>Stack:</strong> React Native</div>
     <div class="meta-item"><strong>DS:</strong> NHSV Pro v1 (Lato · #028D96 · #EBECF0)</div>
-    <div class="meta-item"><strong>Screens:</strong> 9 screens</div>
+    <div class="meta-item"><strong>Screens:</strong> 11 screens</div>
     <div class="meta-item"><strong>Status:</strong> 🎨 Design Draft</div>
-    <div class="meta-item"><strong>Date:</strong> 2026-07-20 (v1.2)</div>
+    <div class="meta-item"><strong>Date:</strong> 2026-07-23 (v1.3)</div>
   </div>
 </div>
 
 <!-- ═══════════════════════ SUMMARY ═══════════════════════ -->
 <div class="summary-bar">
   <div class="sum-card"><div class="num c-blue">3</div><div class="lbl">Sub-tabs</div></div>
-  <div class="sum-card"><div class="num c-teal">9</div><div class="lbl">Screens</div></div>
+  <div class="sum-card"><div class="num c-teal">11</div><div class="lbl">Screens</div></div>
   <div class="sum-card"><div class="num c-green">5</div><div class="lbl">Rating tiers (S→D)</div></div>
   <div class="sum-card"><div class="num c-violet">4</div><div class="lbl">Tech grid cells</div></div>
   <div class="sum-card"><div class="num c-amber">1</div><div class="lbl">Disclaimer (sticky)</div></div>
@@ -721,6 +733,7 @@
     </div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);">
       <strong>(v1.2)</strong> KN_00 thay thế lối vào cũ qua NHSV Channel tab bar - user tap 1 mini-card trên Home hoặc "Xem tất cả" → mở thẳng KN_01. Thứ tự sub-tab bên trong đổi thành Cơ bản → Kỹ thuật → Rating. KN_06 (Search active - NHSV Rating), KN_07 (Empty - Kỹ thuật 14 ngày không có data) và KN_08 (Search active - Kỹ thuật) là biến thể của các screen trên.
+      <br><strong>(v1.3)</strong> KN_09 (Cơ bản - biến thể trạng thái: "Đã đạt mục tiêu" khi % tiềm năng ≤ 0 & "Đang cập nhật giá" khi thiếu giá) và KN_10 (Kỹ thuật - badge động "Đã đạt mục tiêu" / "Đã chạm cắt lỗ" theo giá real-time) là biến thể của KN_01 / KN_04. KN_02 bổ sung dòng "No data" khi báo cáo bị gỡ. Nhóm ngày Kỹ thuật tự bỏ qua Thứ 7 & Chủ nhật.
     </div>
   </div>
 
@@ -936,7 +949,7 @@
       <!-- ━━━━━━━━━━━━━━━━━━━ KN_02: Detail ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
         <div class="screen-label">KN_02 - Chi tiết khuyến nghị</div>
-        <div class="screen-id">v1.2 · Hero · % block · info · Danh sách báo cáo · CTA</div>
+        <div class="screen-id">v1.3 · Hero · % block · Danh sách báo cáo (kèm dòng "No data") · CTA</div>
         <div class="phone">
           <div class="phone-inner">
             <div class="nhsv-header-gradient">
@@ -1027,6 +1040,17 @@
                       <div class="pdf-attach-size">Link NH Research · Mốc trước</div>
                     </div>
                     <div class="pdf-open-btn">Mở xem</div>
+                  </div>
+                  <!-- (v1.3) Báo cáo bị unpublish/xóa → hiển thị "No data" thay vì link lỗi -->
+                  <div class="pdf-attach-row" style="margin-top:8px;border-top:1px solid var(--separator);padding-top:8px;opacity:0.7;">
+                    <div class="pdf-icon-box" style="background:var(--header-table);">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="#8691B3" stroke-width="2" width="18" height="18"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+                    </div>
+                    <div class="pdf-attach-info">
+                      <div class="pdf-attach-name" style="color:var(--fg-meta);">08/01/2026 · Báo cáo khởi tạo</div>
+                      <div class="pdf-attach-size">Báo cáo không còn khả dụng · Mốc trước</div>
+                    </div>
+                    <div class="pdf-open-btn" style="color:var(--fg-meta);border-color:var(--stroke);background:var(--header-table);">No data</div>
                   </div>
                 </div>
 
@@ -1189,7 +1213,7 @@
       <!-- ━━━━━━━━━━━━━━━━━━━ KN_04: Kỹ thuật hằng ngày ━━━━━━━━━━━━━━━━━━━ -->
       <div class="screen-wrap">
         <div class="screen-label">KN_04 - Kỹ thuật</div>
-        <div class="screen-id">v1.2 · Rolling 14 ngày · group theo ngày · card gộp Vùng mua–Cắt lỗ</div>
+        <div class="screen-id">v1.3 · Rolling 14 ngày · group theo ngày (bỏ qua T7-CN)</div>
         <div class="phone">
           <div class="phone-inner">
             <div class="nhsv-header-gradient">
@@ -1228,7 +1252,7 @@
               <div class="rec-list">
 
                 <!-- (v1.2) Date group header: Hôm nay -->
-                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm nay · 20/07</div>
+                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm nay · 20/07 (T2)</div>
 
                 <!-- Tech Card 1: GMD - full 4 cells, row 1 = Vùng mua + Cắt lỗ (v1.2 gộp), row 2 = Mục tiêu + Upsize -->
                 <div class="tech-card">
@@ -1311,8 +1335,8 @@
                   </div>
                 </div>
 
-                <!-- (v1.2) Date group header: Hôm qua -->
-                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm qua · 19/07</div>
+                <!-- (v1.3) Date group header: bỏ qua T7 18/07 & CN 19/07 → nhảy thẳng về Thứ 6 -->
+                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Thứ 6 · 17/07</div>
 
                 <!-- Tech Card 3: HPG -->
                 <div class="tech-card">
@@ -1734,6 +1758,268 @@
         </div>
       </div>
 
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_09: Cơ bản - biến thể trạng thái (v1.3) ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_09 - Cơ bản · trạng thái (v1.3)</div>
+        <div class="screen-id">"Đã đạt mục tiêu" (% ≤ 0) · "Đang cập nhật giá" (thiếu giá)</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div class="header-action"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item active">Cơ bản</div>
+              <div class="subtab-item inactive">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
+            </div>
+
+            <div class="pill-row">
+              <div class="pill active">Tất cả</div>
+              <div class="pill inactive">Bluechip</div>
+              <div class="pill inactive">Midcap</div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rec-list">
+
+                <!-- (v1.3) Card A: % tiềm năng ≤ 0 → % đỏ + badge "Đã đạt mục tiêu" -->
+                <div class="rec-card">
+                  <div class="rec-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">HPG</div>
+                      <div class="rec-name">Hòa Phát<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="rec-potential">
+                      <div class="rec-pct down">-3,20%</div>
+                      <div class="rec-pct-lbl">tiềm năng</div>
+                      <span class="status-badge reached" style="margin-top:5px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"/></svg>
+                        Đã đạt mục tiêu
+                      </span>
+                    </div>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Giá HT</div>
+                      <div class="metric-val">31.000</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Kỳ vọng</div>
+                      <div class="metric-val expect">30.000</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Ngày KN</div>
+                      <div class="metric-val date">18/05/26</div>
+                    </div>
+                  </div>
+                  <div class="rec-foot">
+                    <span class="seg-badge seg-bluechip">BLUECHIP</span>
+                    <div class="pdf-btn">
+                      <svg viewBox="0 0 24 24" fill="#DA1004"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8" fill="none" stroke="white" stroke-width="2"/></svg>
+                      <span>Báo cáo</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- (v1.3) Card B: currentPrice null/0 → ẩn %, hiển thị "Đang cập nhật giá" -->
+                <div class="rec-card">
+                  <div class="rec-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">NLG</div>
+                      <div class="rec-name">Nam Long<span class="ex">HOSE</span></div>
+                    </div>
+                    <div class="rec-potential">
+                      <span class="status-badge updating">Đang cập nhật giá</span>
+                    </div>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Giá HT</div>
+                      <div class="metric-val">—</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Kỳ vọng</div>
+                      <div class="metric-val expect">52.000</div>
+                    </div>
+                    <div class="metric-cell">
+                      <div class="metric-lbl">Ngày KN</div>
+                      <div class="metric-val date">21/07/26</div>
+                    </div>
+                  </div>
+                  <div class="rec-foot">
+                    <span class="seg-badge seg-midcap">MIDCAP</span>
+                  </div>
+                </div>
+
+              </div>
+              <div class="disclaimer">Nội dung khuyến nghị do Phòng Phân tích NHSV cung cấp, chỉ mang tính chất tham khảo, không phải là lời chào mua/bán hoặc tư vấn đầu tư. NHSV không chịu trách nhiệm đối với quyết định giao dịch dựa trên thông tin này.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ━━━━━━━━━━━━━━━━━━━ KN_10: Kỹ thuật - badge trạng thái động (v1.3) ━━━━━━━━━━━━━━━━━━━ -->
+      <div class="screen-wrap">
+        <div class="screen-label">KN_10 - Kỹ thuật · badge động (v1.3)</div>
+        <div class="screen-id">"Đã đạt mục tiêu" / "Đã chạm cắt lỗ" theo giá real-time</div>
+        <div class="phone">
+          <div class="phone-inner">
+            <div class="nhsv-header-gradient">
+              <div class="status-bar">
+                <span class="status-time">9:41</span>
+                <div class="status-icons">
+                  <svg viewBox="0 0 24 24"><rect x="2" y="14" width="3" height="7" rx="1"/><rect x="7" y="10" width="3" height="11" rx="1"/><rect x="12" y="6" width="3" height="15" rx="1"/><rect x="17" y="2" width="3" height="19" rx="1"/></svg>
+                  <svg viewBox="0 0 24 24"><rect x="1" y="7" width="18" height="10" rx="2"/><rect x="20" y="10" width="3" height="4" rx="1"/><rect x="3" y="9" width="10" height="6" rx="1"/></svg>
+                </div>
+              </div>
+              <div class="header-row">
+                <div class="header-back"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></div>
+                <div class="header-title">Khuyến nghị</div>
+                <div class="header-action"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              </div>
+            </div>
+
+            <div class="subtab-bar">
+              <div class="subtab-item inactive">Cơ bản</div>
+              <div class="subtab-item active">Kỹ thuật</div>
+              <div class="subtab-item inactive">NHSV Rating</div>
+            </div>
+
+            <div class="date-pill-row">
+              <div class="date-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                14 ngày gần nhất
+              </div>
+              <div class="search-mini">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>Tìm mã</span>
+              </div>
+            </div>
+
+            <div class="scroll-area" style="padding-bottom:140px;">
+              <div class="rec-list">
+
+                <div style="font-family:'Lato',sans-serif;font-size:11px;font-weight:700;color:var(--fg-meta);text-transform:uppercase;letter-spacing:0.5px;padding:4px 2px;">Hôm nay · 20/07 (T2)</div>
+
+                <!-- (v1.3) Tech card A: giá đã vượt Mục tiêu → badge "Đã đạt mục tiêu" cạnh "MUA +X%" -->
+                <div class="tech-card">
+                  <div class="tech-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">GMD</div>
+                      <div class="rec-name">Gemadept<span class="ex">HOSE</span></div>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                      <span class="status-badge reached">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 7"/></svg>
+                        Đã đạt mục tiêu
+                      </span>
+                      <div class="tech-action-badge">
+                        MUA
+                        <span style="opacity:0.85;">+19,2%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tech-grid">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">75,50 – 76,50</div>
+                    </div>
+                    <div class="tech-cell loss">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ
+                      </div>
+                      <div class="tech-cell-val">73,00</div>
+                    </div>
+                    <div class="tech-cell target" style="grid-column: span 2;">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu · giá HT 90,50 đã vượt
+                      </div>
+                      <div class="tech-cell-val">90,00</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- (v1.3) Tech card B: giá đã thủng Cắt lỗ → badge "Đã chạm cắt lỗ" cạnh "MUA +X%" -->
+                <div class="tech-card">
+                  <div class="tech-top">
+                    <div class="rec-code-block">
+                      <div class="rec-code">MBB</div>
+                      <div class="rec-name">MB Bank<span class="ex">HOSE</span></div>
+                    </div>
+                    <div style="display:flex;gap:6px;align-items:center;">
+                      <span class="status-badge stoploss">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Đã chạm cắt lỗ
+                      </span>
+                      <div class="tech-action-badge">
+                        MUA
+                        <span style="opacity:0.85;">+14,5%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tech-grid">
+                    <div class="tech-cell buy">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#07A461" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 12 10 16 18 8"/></svg>
+                        Vùng mua
+                      </div>
+                      <div class="tech-cell-val">23,00 – 23,80</div>
+                    </div>
+                    <div class="tech-cell loss">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#DA1004" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 6 18 18"/><polyline points="6 18 18 6"/></svg>
+                        Cắt lỗ · giá HT 22,30 đã thủng
+                      </div>
+                      <div class="tech-cell-val">22,40</div>
+                    </div>
+                    <div class="tech-cell target" style="grid-column: span 2;">
+                      <div class="tech-cell-lbl">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#028D96" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2" fill="#028D96"/></svg>
+                        Mục tiêu
+                      </div>
+                      <div class="tech-cell-val">27,20</div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="disclaimer">Nội dung khuyến nghị do Phòng Phân tích NHSV cung cấp, chỉ mang tính chất tham khảo, không phải là lời chào mua/bán hoặc tư vấn đầu tư. NHSV không chịu trách nhiệm đối với quyết định giao dịch dựa trên thông tin này.</div>
+            </div>
+
+            <div class="bottom-nav">
+              <div class="nav-item active"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span>Trang chủ</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>Lệnh</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>Kênh NH</span></div>
+              <div class="nav-item inactive"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>Tài khoản</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /screen-rail -->
   </div>
 
@@ -1837,6 +2123,20 @@
         <div style="margin-top:12px;font-size:11px;color:var(--muted);">v1.2: schema hỗ trợ sẵn BÁN/HOLD (đổi màu #DA1004/#8691B3 khi cần) nhưng v1 admin chỉ tạo được MUA - badge luôn xanh #07A461</div>
       </div>
 
+      <!-- (v1.3) Dynamic status badge -->
+      <div class="comp-card">
+        <div class="comp-title">(v1.3) Badge trạng thái động</div>
+        <table class="token-table">
+          <thead><tr><th>State</th><th>BG</th><th>Text</th><th>Preview</th></tr></thead>
+          <tbody>
+            <tr><td>Đã đạt mục tiêu</td><td><span class="token-hex">#E6F6EF</span></td><td><span class="token-hex">#07A461</span></td><td><span class="status-badge reached">✓ Đã đạt mục tiêu</span></td></tr>
+            <tr><td>Đã chạm cắt lỗ</td><td><span class="token-hex">#FFEBE6</span></td><td><span class="token-hex">#DA1004</span></td><td><span class="status-badge stoploss">✕ Đã chạm cắt lỗ</span></td></tr>
+            <tr><td>Đang cập nhật giá</td><td><span class="token-hex">#F2F6FB</span></td><td><span class="token-hex">#8691B3</span></td><td><span class="status-badge updating">Đang cập nhật giá</span></td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;font-size:11px;color:var(--muted);">Lato 9px/700 · radius 5px · padding 3/8. Cơ bản: cạnh % tiềm năng (KN_09). Kỹ thuật: cạnh "MUA +X%" (KN_10). "Đang cập nhật giá" thay % khi currentPrice null/0.</div>
+      </div>
+
       <!-- Search mini pill -->
       <div class="comp-card">
         <div class="comp-title">Search Mini Pill (Kỹ thuật hằng ngày)</div>
@@ -1913,6 +2213,11 @@
           <li><span class="check-icon check-pass">✓</span> Vùng mua hiển thị range "X – Y" hoặc "≥ X"</li>
           <li><span class="check-icon check-pass">✓</span> Tap mã CK → push navigate stock detail (tái dùng)</li>
           <li><span class="check-icon check-pass">✓</span> "Cập nhật MM/YYYY" badge ở NHSV Rating header</li>
+          <li><span class="check-icon check-pass">✓</span> (v1.3) % tiềm năng ≤ 0: % đỏ + badge "Đã đạt mục tiêu" (KN_09)</li>
+          <li><span class="check-icon check-pass">✓</span> (v1.3) currentPrice null/0: ẩn %, hiển thị "Đang cập nhật giá" (KN_09)</li>
+          <li><span class="check-icon check-pass">✓</span> (v1.3) Kỹ thuật badge động "Đã đạt mục tiêu"/"Đã chạm cắt lỗ" theo giá (KN_10)</li>
+          <li><span class="check-icon check-pass">✓</span> (v1.3) Nhóm ngày Kỹ thuật bỏ qua Thứ 7 & Chủ nhật (20/07 → 17/07)</li>
+          <li><span class="check-icon check-pass">✓</span> (v1.3) Báo cáo bị gỡ → "No data" tại dòng đó (KN_02)</li>
         </ul>
       </div>
     </div>
@@ -1951,7 +2256,7 @@
 </div><!-- /content -->
 
 <div style="text-align:center;padding:20px 0 32px;font-size:11px;color:var(--muted);">
-  Document Status: 🎨 Design Draft (v1.2 - 2026-07-20) &nbsp;|&nbsp; For: Mobile FE, Phòng Phân tích, Phòng QTRR &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma node trên trang "Official - Light Mode". Đồng bộ với `PRD.md` v1.2 - xem các đoạn đánh dấu (v1.2) trong file này.
+  Document Status: 🎨 Design Draft (v1.3 - 2026-07-23) &nbsp;|&nbsp; For: Mobile FE, Phòng Phân tích, Phòng QTRR &nbsp;|&nbsp; Next Steps: Review với IT team, export to Figma node trên trang "Official - Light Mode". Đồng bộ với `PRD.md` v1.3 &amp; `Edge_Cases_Review.html` - xem các đoạn đánh dấu (v1.3) trong file này.
 </div>
 
 </body>

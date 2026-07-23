@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khuyến nghị (A-05) — Edge Cases Review</title>
+<style>
+  :root {
+    --teal: #028D96;
+    --teal-dark: #016b73;
+    --green: #07A461;
+    --red: #DA1004;
+    --bg: #EBECF0;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --text-muted: #5B6472;
+    --border: #E1E4E8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  header.page {
+    background: linear-gradient(135deg, var(--teal) 0%, #05B0A8 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 28px;
+  }
+  header.page h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 700;
+  }
+  header.page p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.92;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    opacity: 0.95;
+  }
+  .meta-row span b { font-weight: 600; }
+
+  .section {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px 24px 26px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 3px rgba(16,24,40,0.06);
+  }
+  .section h2 {
+    font-size: 17px;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section h2 .badge-count {
+    font-size: 11px;
+    font-weight: 600;
+    background: #E0F7F4;
+    color: var(--teal-dark);
+    padding: 2px 9px;
+    border-radius: 999px;
+  }
+  .section .sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0 0 16px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  thead th {
+    text-align: left;
+    background: #F5F7FA;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 12px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #FAFBFC; }
+
+  td.num {
+    width: 30px;
+    font-weight: 700;
+    color: var(--teal-dark);
+  }
+  td.case { width: 18%; font-weight: 600; }
+  td.problem { width: 26%; color: var(--text); }
+  td.fix { width: 26%; color: var(--text); }
+  td.decision { width: 26%; color: var(--text); }
+
+  .tag {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+  }
+  .tag.gap { background: #FFEBE6; color: var(--red); }
+  .tag.decision-tag { background: #FFF4D1; color: #B47800; }
+  .tag.confirm { background: #E6F6EF; color: var(--green); }
+
+  .decision-cell {
+    background: #F3FCFA;
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid #CFEFE9;
+  }
+  .decision-cell.skip {
+    background: #F5F6F8;
+    border-color: var(--border);
+    color: var(--text-muted);
+  }
+  .decision-cell.na {
+    background: #F5F6F8;
+    border-color: var(--border);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .decision-cell.pending {
+    background: #FFF9E9;
+    border-color: #F5E3A8;
+  }
+  .decision-label {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--teal-dark);
+    margin-bottom: 3px;
+  }
+
+  .highlight-row td { background: #FFF9E9; }
+
+  footer.note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 30px;
+  }
+
+  @media (max-width: 900px) {
+    td.case, td.problem, td.fix, td.decision { width: auto; }
+    table, thead, tbody, th, td, tr { display: block; }
+    thead { display: none; }
+    tbody tr {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+    }
+    tbody td {
+      border-bottom: none;
+      padding: 6px 0;
+    }
+    tbody td.problem::before { content: "Vấn đề: "; font-weight: 700; color: var(--text-muted); }
+    tbody td.fix::before { content: "Đề xuất ban đầu: "; font-weight: 700; color: var(--text-muted); }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page">
+    <h1>🎯 Khuyến nghị (A-05) — Edge Cases Review</h1>
+    <p>Rà soát các tình huống biên chưa được PRD v1.2 xử lý rõ + quyết định chốt của PM (2026-07-23).</p>
+    <div class="meta-row">
+      <span><b>Nguồn:</b> PRD.md v1.3 (2026-07-23)</span>
+      <span><b>Loại tài liệu:</b> Internal review — quyết định đã chốt, đã cập nhật vào PRD.md</span>
+      <span><b>Owner:</b> PM (Midu)</span>
+      <span><b>Tổng số case:</b> 18 — đã chốt 17, còn treo 0, không còn áp dụng 1</span>
+    </div>
+  </header>
+
+  <div class="section">
+    <h2>Sub-tab Cơ bản <span class="badge-count">6 case</span></h2>
+    <p class="sub">Danh mục cổ phiếu khuyến nghị dài hạn — mốc/lịch sử, price enrichment, corporate actions.</p>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Edge case</th><th>Vấn đề</th><th>Đề xuất ban đầu</th><th>Quyết định (23/07)</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td class="num">1</td>
+          <td class="case"><span class="tag gap">CÂU HỎI GỐC</span><br>Giá hiện tại &gt; Giá kỳ vọng</td>
+          <td class="problem">% tiềm năng ra số âm nhưng khuyến nghị vẫn hiển thị như đang "còn hấp dẫn" → dễ hiểu lầm là NHSV vẫn khuyên mua ở giá đã vượt target.</td>
+          <td class="fix">(a) hiển thị % đỏ / (b) badge cảnh báo / (c) đề xuất Phòng PT review.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Option (b) + (c)</span>
+              Vẫn hiển thị bình thường với % đỏ + badge "Đã đạt mục tiêu". Admin 1 highlight mã này để Phòng PT chủ động review (giữ nguyên/mốc mới/Archive) — không auto-archive theo giá.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">2</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Status mốc archive-do-expiry vs mốc bị thay thế</td>
+          <td class="problem">SUPERSEDED và EXPIRED dùng chung status ARCHIVED → audit trail mất ý nghĩa.</td>
+          <td class="fix">Tách 3 status riêng: SUPERSEDED / EXPIRED / ARCHIVED.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Bỏ hẳn expiryDate cho Cơ bản</span>
+              Cơ bản không còn ngày hết hạn — chỉ ẩn field trên Admin page (không xóa schema). Không còn cần status EXPIRED. Reverse Q1 đã resolved trước đó (xem PRD Q1b, Section 10).
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">3</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Mã bị hủy niêm yết / đình chỉ giao dịch</td>
+          <td class="problem">currentPrice enrichment có thể trả null/giá cũ → % tiềm năng tính sai hoặc lỗi chia 0.</td>
+          <td class="fix">Badge "Tạm ngừng giao dịch", đóng băng giá hiển thị.</td>
+          <td class="decision">
+            <div class="decision-cell skip">
+              <span class="decision-label" style="color:var(--text-muted)">🚫 Không triển khai</span>
+              Chấp nhận rủi ro hiển thị sai/giá cũ trong trường hợp hiếm gặp. Ghi vào Out of Scope (Section 5, PRD v1.3).
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">4</td>
+          <td class="case"><span class="tag gap">Gap nghiêm trọng</span><br>Chia tách / cổ tức (GDKHQ)</td>
+          <td class="problem">Giá kỳ vọng nhập trước GDKHQ không tương thích giá sau điều chỉnh → % tiềm năng lệch lớn.</td>
+          <td class="fix">BE tự động điều chỉnh targetPrice theo tỷ lệ, hoặc bắt buộc re-review.</td>
+          <td class="decision">
+            <div class="decision-cell skip">
+              <span class="decision-label" style="color:var(--text-muted)">🚫 Không triển khai</span>
+              Phòng PT tự nhận biết và sửa thủ công nếu cần. Ghi vào Out of Scope (Section 5, PRD v1.3).
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">5</td>
+          <td class="case"><span class="tag gap">Gap</span><br>currentPrice = null/0</td>
+          <td class="problem">Công thức % tiềm năng chia cho 0 → NaN/Infinity hiển thị lỗi.</td>
+          <td class="fix">Validate: ẩn % tiềm năng, hiển thị "Đang cập nhật giá".</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Theo đề xuất</span>
+              Ẩn % tiềm năng, hiển thị "Đang cập nhật giá" khi currentPrice null/0.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">6</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Segment thay đổi (Midcap → Bluechip)</td>
+          <td class="problem">Badge segment sai lệch nếu admin không chủ động sửa.</td>
+          <td class="fix">Chốt trách nhiệm: admin sửa thủ công hay tự động đồng bộ.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ BE tự động xác định</span>
+              Segment do BE tự động xác định theo mã (index membership), không còn là input admin nhập tay. Ẩn field khỏi form Admin 1.
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Sub-tab Kỹ thuật <span class="badge-count">4 case</span></h2>
+    <p class="sub">Khuyến nghị kỹ thuật ngắn hạn — rolling 14 ngày, vùng mua/cắt lỗ/mục tiêu.</p>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Edge case</th><th>Vấn đề</th><th>Đề xuất ban đầu</th><th>Quyết định (23/07)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">7</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Giá đã vượt/chạm Cắt lỗ hoặc Mục tiêu trong phiên</td>
+          <td class="problem">Card hiển thị tĩnh, không phản ánh diễn biến thực tế → dễ khiến user đặt lệnh sai thời điểm.</td>
+          <td class="fix">Badge động theo giá realtime: "Đã đạt mục tiêu"/"Đã chạm cắt lỗ" — có thể để v2.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Vào scope v1</span>
+              Thêm badge động "Đã đạt mục tiêu" / "Đã chạm cắt lỗ" dựa trên currentPrice real-time, hiển thị cạnh badge "MUA +X%".
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">8</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Nhiều entry cùng mã trong cùng 1 ngày</td>
+          <td class="problem">Chưa rõ hiển thị cả 2 entry hay entry mới nhất đè lên.</td>
+          <td class="fix">Quyết định 1 mã/1 ngày unique hay cho phép nhiều.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Unique — 1 entry/mã/ngày</span>
+              Ràng buộc UNIQUE(stockCode, tradeDate). Admin thêm dòng trùng mã cùng ngày → hệ thống chặn, yêu cầu sửa entry hiện có.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">9</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Admin backdate entry quá 14 ngày</td>
+          <td class="problem">Entry backdate quá 14 ngày sẽ không bao giờ hiển thị trên mobile dù vừa publish.</td>
+          <td class="fix">Window lọc theo tradeDate; cảnh báo admin khi chọn ngày quá xa.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Theo đề xuất</span>
+              Window lọc theo tradeDate. Hiển thị cảnh báo "Entry sẽ không hiển thị trên mobile" khi admin chọn ngày &gt;14 ngày trước — vẫn cho lưu, không chặn.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">10</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Cuối tuần / ngày lễ không có phiên</td>
+          <td class="problem">Header nhóm ngày "Hôm qua" xử lý sao khi rơi vào Thứ 7/Chủ nhật (không có entry)?</td>
+          <td class="fix">Group theo ngày có entry thực tế, bỏ qua ngày không data.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Tự động skip Thứ 7 & CN</span>
+              App tự động bỏ qua Thứ 7, Chủ nhật (theo giờ Việt Nam) khi group ngày — quy tắc lịch cố định, không phụ thuộc có/không có entry. Ngày lễ khác vẫn hiển thị header rỗng nếu không có data.
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Sub-tab NHSV Rating <span class="badge-count">3 case</span></h2>
+    <p class="sub">Upload Excel batch hàng tháng từ Phòng QTRR.</p>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Edge case</th><th>Vấn đề</th><th>Đề xuất ban đầu</th><th>Quyết định (23/07)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">11</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Mã có ở batch cũ nhưng thiếu ở batch mới</td>
+          <td class="problem">Flow atomic replace, không có diff/warning — admin publish xong mới phát hiện mã "biến mất".</td>
+          <td class="fix">Preview thêm dòng cảnh báo "N mã bị thiếu so với batch trước".</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Theo đề xuất</span>
+              Preview hiển thị cảnh báo liệt kê N mã có ở batch active hiện tại nhưng không có trong file mới.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">12</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Mã trùng lặp trong cùng file Excel</td>
+          <td class="problem">Chưa rõ validate có check duplicate row hay không.</td>
+          <td class="fix">Rule validate: duplicate mã → error, chặn publish.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Hiển thị warning cho admin</span>
+              Preview cảnh báo khi phát hiện mã trùng lặp trong file — không quy định cứng việc chặn publish, để admin tự xử lý sau khi thấy cảnh báo.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">13</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Mã trong Excel không tồn tại trên hệ thống</td>
+          <td class="problem">Chưa rõ lỗi này block toàn bộ batch hay chỉ skip riêng dòng đó.</td>
+          <td class="fix">(a) skip dòng lỗi + publish phần còn lại, hay (b) chặn publish toàn bộ đến khi Excel sạch.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Phương án (b)</span>
+              Preview hiển thị rõ dòng lỗi, nhưng nút "Xác nhận publish" bị chặn (disable) cho đến khi admin sửa và re-upload file sạch 100% — không cho publish một phần.
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Cross-cutting / Chung <span class="badge-count">5 case</span></h2>
+    <p class="sub">Ảnh hưởng nhiều sub-tab hoặc toàn bộ tính năng.</p>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Edge case</th><th>Vấn đề</th><th>Đề xuất ban đầu</th><th>Quyết định (23/07)</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">14</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Tie % tiềm năng trong topPicks</td>
+          <td class="problem">Nhiều mã % tiềm năng bằng nhau khi chọn top 5-6 cho card Home.</td>
+          <td class="fix">Thêm tie-break rule phụ.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Ngày KN gần nhất ưu tiên trước</span>
+              Tie-break: khi % tiềm năng bằng nhau, mã có ngày KN gần nhất được ưu tiên trước.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">15</td>
+          <td class="case"><span class="tag gap">Gap</span><br>Bài NH Research bị unpublish/xóa sau khi đã link</td>
+          <td class="problem">Link trên mobile sẽ 404 nếu bài gốc bị gỡ sau khi đã link vào khuyến nghị Cơ bản.</td>
+          <td class="fix">Cảnh báo/chặn khi unpublish, hoặc fallback "Báo cáo không khả dụng".</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ FE hiển thị "No data"</span>
+              Không cần xử lý phức tạp phía admin — nếu report không khả dụng, FE chỉ hiển thị "No data" tại dòng đó.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">16</td>
+          <td class="case"><span class="tag confirm">Xác nhận trade-off</span><br>PDF cache in-session khi admin sửa report giữa session</td>
+          <td class="problem">User thấy bản PDF cũ do cache in-session.</td>
+          <td class="fix">Chấp nhận được — xác nhận là trade-off cố ý.</td>
+          <td class="decision">
+            <div class="decision-cell skip">
+              <span class="decision-label" style="color:var(--text-muted)">— Giữ nguyên</span>
+              Không cần thay đổi, trade-off đã được chấp nhận từ NFR gốc.
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">17</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Toàn bộ 6 API mobile yêu cầu Bearer token</td>
+          <td class="problem">Nội dung cạnh tranh trực tiếp SSI/VNDIRECT — chưa rõ có nên giữ login bắt buộc không.</td>
+          <td class="fix">Cân nhắc cho guest xem preview Home, giữ login cho full-screen chi tiết.</td>
+          <td class="decision">
+            <div class="decision-cell">
+              <span class="decision-label">✅ Tạm thời mở toàn bộ, không cần login</span>
+              Toàn bộ 6 API mobile Khuyến nghị tạm thời không yêu cầu đăng nhập. Đây là quyết định tạm thời — cần revisit trước GA (xem Q11 mới trong PRD.md Section 10).
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td class="num">18</td>
+          <td class="case"><span class="tag decision-tag">Cần quyết định</span><br>Thời điểm chạy scheduled job auto-archive theo expiryDate</td>
+          <td class="problem">Job chạy đầu phiên sáng có thể archive mã trước khi user kịp thấy trong phiên.</td>
+          <td class="fix">Chạy job off-hours (VD: 0h00).</td>
+          <td class="decision">
+            <div class="decision-cell na">
+              <span class="decision-label" style="color:var(--text-muted)">⚪ Không còn áp dụng</span>
+              Case 2 đã quyết định bỏ hẳn expiryDate/scheduled job cho Cơ bản — câu hỏi về thời điểm chạy job không còn liên quan.
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="note">
+    Toàn bộ quyết định trên đã được cập nhật vào <code>PRD.md</code> (v1.3, 2026-07-23) — Section 4.1, 4.2, 5, 8, 10.<br>
+    Còn cần cập nhật lại <code>Design.html</code> / <code>Spec.html</code> / <code>admin-demo.html</code> theo v1.3 trước khi giao IT estimate (xem Q10, PRD.md).
+  </footer>
+
+</div>
+</body>
+</html>

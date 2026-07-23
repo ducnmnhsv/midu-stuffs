@@ -95,6 +95,7 @@
   .data-table .type { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--violet); }
   .req-y { font-size:10px; padding:2px 7px; border-radius:20px; font-weight:500; background:var(--red-light); color:var(--red); }
   .req-n { font-size:10px; padding:2px 7px; border-radius:20px; font-weight:500; background:#f1f5f9; color:var(--slate); }
+  .data-table td.strike { text-decoration:line-through; color:var(--muted); }
 
   /* API */
   .api-block { background:white; border:1px solid var(--border); border-radius:10px; margin-bottom:14px; overflow:hidden; }
@@ -165,12 +166,12 @@
 <div class="doc-header">
   <div class="eyebrow">NHSV Pro · Feature Spec · A-05</div>
   <h1>Khuyến nghị — Recommendation</h1>
-  <div class="subtitle">v1.2: Entry point trên Home (không còn trong NHSV Channel) · 3 sub-tab theo thứ tự Cơ bản · Kỹ thuật · NHSV Rating · Nhiều nguồn dữ liệu</div>
+  <div class="subtitle">v1.3: Bỏ expiryDate & segment input cho Cơ bản (BE auto segment) · badge trạng thái động (đã đạt mục tiêu/cắt lỗ) · unique 1 mã/ngày Kỹ thuật · Rating preview cảnh báo · tạm bỏ yêu cầu đăng nhập cho API mobile</div>
   <div class="meta-row">
     <div class="meta-item"><strong>Module</strong> · A-05 (Home Screen entry point)</div>
-    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.2</div>
+    <div class="meta-item"><strong>Phiên bản spec</strong> · v1.3</div>
     <div class="meta-item"><strong>Admin URL</strong> · tnhsvpro.nhsv.vn/nhsv-admin</div>
-    <div class="meta-item"><strong>Ngày</strong> · 2026-07-20</div>
+    <div class="meta-item"><strong>Ngày</strong> · 2026-07-23</div>
   </div>
 </div>
 
@@ -180,13 +181,13 @@
   <div class="sum-card"><div class="num c-teal">13</div><div class="lbl">BE tasks</div></div>
   <div class="sum-card"><div class="num c-teal">9</div><div class="lbl">Mobile FE tasks</div></div>
   <div class="sum-card"><div class="num c-violet">6</div><div class="lbl">Admin FE tasks</div></div>
-  <div class="sum-card"><div class="num c-amber">7</div><div class="lbl">Open questions</div></div>
+  <div class="sum-card"><div class="num c-amber">8</div><div class="lbl">Open questions</div></div>
 </div>
 
 <div class="content">
 
 <div class="note-info" style="margin-top:0;">
-  <strong>Integration type:</strong> TradeX-native (internal DB only). Toàn bộ API mục 5 & 6 không đi qua Lotte/Core — không cần map field Lotte, không cần <code>sourceIp</code>/<code>deviceUniqueId</code>/<code>lang_code</code> auto-populate kiểu Order API. Duy nhất bước enrich <code>currentPrice</code> (mục 5, API 1) gọi service nội bộ market-data — không phải Lotte.
+  <strong>Integration type:</strong> TradeX-native (internal DB only). Toàn bộ API mục 5 & 6 không đi qua Lotte/Core — không cần map field Lotte, không cần <code>sourceIp</code>/<code>deviceUniqueId</code>/<code>lang_code</code> auto-populate kiểu Order API. Duy nhất bước enrich <code>currentPrice</code> gọi service nội bộ market-data (không phải Lotte) — áp dụng cho Cơ bản (list/detail/topPicks) và <strong>(v1.3)</strong> Kỹ thuật (để tính badge trạng thái động).
 </div>
 
 <!-- 1. OVERVIEW -->
@@ -419,6 +420,8 @@
         <li class="ac-item">Mỗi card: Mã CK (bold) + tên công ty + sàn · % tiềm năng (nổi bật, xanh/đỏ) · Giá hiện tại (realtime) / Giá kỳ vọng / Ngày khuyến nghị · Badge Bluechip/Midcap · Nút "📄 Báo cáo" (nếu có PDF)</li>
         <li class="ac-item"><strong>Giá hiện tại</strong>: fetch từ market data service — không cần realtime tick, snapshot phiên là đủ. Nếu ngoài giờ giao dịch: hiển thị giá đóng cửa phiên gần nhất.</li>
         <li class="ac-item">% tiềm năng = (Giá kỳ vọng / Giá hiện tại - 1) × 100 — tính trên app, màu xanh nếu dương, đỏ nếu âm</li>
+        <li class="ac-item">(v1.3) Khi <code>isTargetReached=true</code> (giá hiện tại ≥ giá kỳ vọng, % ≤ 0): vẫn hiển thị card bình thường với % đỏ + badge "Đã đạt mục tiêu" cạnh % tiềm năng. Không tự động ẩn/archive mã theo giá.</li>
+        <li class="ac-item">(v1.3) Khi <code>currentPrice=null</code> (mã mới niêm yết chưa khớp / lỗi giá): ẩn % tiềm năng, hiển thị "Đang cập nhật giá" thay cho NaN/lỗi.</li>
         <li class="ac-item">Nút "📄 Báo cáo": mở report trong in-app viewer — có thể là PDF riêng hoặc bài NH Research được link (tái sử dụng component viewer từ NH Research). Ẩn nếu không có report.</li>
         <li class="ac-item">(v1.2) Card hiển thị mốc khuyến nghị mới nhất/mã (current). Các mốc cũ không hiện ở list — xem đầy đủ ở "Danh sách báo cáo gần nhất" tại Screen 3.2</li>
         <li class="ac-item">Sort mặc định: ngày khuyến nghị mới nhất lên đầu</li>
@@ -491,6 +494,7 @@
         <li class="ac-item">Info card: Ngày khuyến nghị. (v1.2) Bỏ "Giá tại ngày khuyến nghị" — không còn lưu snapshot giá lúc tạo</li>
         <li class="ac-item">Short description (nếu có): text tóm tắt luận điểm khuyến nghị từ mốc hiện tại</li>
         <li class="ac-item">(v1.2) <strong>Danh sách báo cáo gần nhất</strong>: liệt kê tất cả mốc/report của mã này theo thời gian (mới nhất trước), mỗi item gồm ngày + tên report + nguồn (PDF riêng hoặc link NH Research) — tái sử dụng component PDF viewer từ NH Research khi mở</li>
+        <li class="ac-item">(v1.3) Nếu report là bài NH Research đã bị unpublish/xóa (<code>reportAvailable=false</code>): dòng đó hiển thị "No data", không mở link lỗi. API vẫn trả bình thường, không phải màn lỗi.</li>
         <li class="ac-item">CTA: "Xem cổ phiếu {stockCode} →" → navigate stock detail screen</li>
         <li class="ac-item">Disclaimer footer cố định ở cuối màn hình</li>
       </ul>
@@ -637,6 +641,7 @@
         <li class="ac-item">(v1.2) Pill "📅 14 ngày gần nhất" (teal, tĩnh — không phải date picker) + Search box mã CK cùng hàng</li>
         <li class="ac-item">(v1.2) List cuộn, group theo ngày (header "Hôm nay", "Hôm qua", "DD/MM"...) — gộp toàn bộ entry Published trong 14 ngày</li>
         <li class="ac-item">Mỗi card: Mã CK + tên + sàn · Badge "MUA +X%" nổi bật (xanh — chỉ loại MUA ở v1). (v1.2) Grid 4 ô nhóm lại: row 1 = Vùng mua + Cắt lỗ (chung 1 row); row 2 = Mục tiêu + Upsize</li>
+        <li class="ac-item">(v1.3) Badge trạng thái động cạnh "MUA +X%" dựa trên <code>currentPrice</code> real-time: <code>isTargetReached=true</code> → "Đã đạt mục tiêu" (xanh); <code>isStopLossReached=true</code> → "Đã chạm cắt lỗ" (đỏ). Không hiển thị badge nếu currentPrice null.</li>
         <li class="ac-item"><strong>Vùng mua</strong>: hiển thị dạng range "XX – YY" nếu có 2 giá, hoặc "≥ XX" nếu chỉ có 1</li>
         <li class="ac-item"><strong>Upsize</strong>: ẩn ô này nếu null (không hiển thị placeholder)</li>
         <li class="ac-item">(v1.2) Nếu cả 14 ngày không có entry Published: empty state "Phòng Phân tích thường cập nhật khuyến nghị kỹ thuật trong phiên sáng. Vui lòng quay lại sau."</li>
@@ -665,7 +670,7 @@
     <tbody>
       <tr><td>recommendation_id</td><td class="type">BIGINT</td><td><span class="req-y">Y</span></td><td>PK</td><td>Auto-increment</td></tr>
       <tr><td>stock_code</td><td class="type">VARCHAR(10)</td><td><span class="req-y">Y</span></td><td>Mã CK</td><td>Index — không unique nữa (v1.2, nhiều mốc/mã)</td></tr>
-      <tr><td>segment</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Phân khúc</td><td>'BLUECHIP' | 'MIDCAP'</td></tr>
+      <tr><td>segment</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Phân khúc</td><td>'BLUECHIP' | 'MIDCAP'. <span style="color:var(--red);">(v1.3)</span> BE tự xác định theo index membership của mã — <strong>không nhận từ admin input</strong>, chỉ read-only ở response</td></tr>
       <tr><td>target_price</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá kỳ vọng</td><td>VNĐ. % tiềm năng = target_price / currentPrice (live, không đổi)</td></tr>
       <tr><td class="strike">recommended_price</td><td class="type">—</td><td>—</td><td colspan="2"><span style="color:var(--red);">(v1.2) Đã bỏ</span> — không còn snapshot giá lúc tạo, % luôn tính live theo giá hiện tại</td></tr>
       <tr><td>recommendation_date</td><td class="type">DATE</td><td><span class="req-y">Y</span></td><td>Ngày khuyến nghị (= ngày tạo mốc)</td><td>Sort DESC, Index</td></tr>
@@ -676,14 +681,14 @@
       <tr><td>pdf_url</td><td class="type">VARCHAR(1000)</td><td><span class="req-n">N</span></td><td>URL báo cáo PDF riêng</td><td>Chỉ set khi report_source='UPLOAD'. NHSV server, public URL</td></tr>
       <tr><td>pdf_filename</td><td class="type">VARCHAR(255)</td><td><span class="req-n">N</span></td><td>Tên file</td><td></td></tr>
       <tr><td>pdf_size_bytes</td><td class="type">BIGINT</td><td><span class="req-n">N</span></td><td>Dung lượng</td><td></td></tr>
-      <tr><td>status</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Trạng thái</td><td>'ACTIVE' | 'ARCHIVED'. Default: ACTIVE</td></tr>
-      <tr><td>expiry_date</td><td class="type">DATE</td><td><span class="req-n">N</span></td><td>Ngày hết hiệu lực</td><td>Optional, set theo từng mốc (Q1 resolved 2026-07-10). Null = không tự hết hạn — admin tự Archive tay.</td></tr>
+      <tr><td>status</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>Trạng thái</td><td>'ACTIVE' | 'ARCHIVED'. Default: ACTIVE. Chỉ chuyển ARCHIVED khi admin Archive tay</td></tr>
+      <tr><td class="strike">expiry_date</td><td class="type">DATE</td><td><span class="req-n">N</span></td><td colspan="2"><span style="color:var(--red);">(v1.3) Deprecated cho Cơ bản</span> — cột vẫn giữ trong schema nhưng luôn NULL cho Cơ bản, ẩn khỏi form Admin 1. Không còn scheduled auto-archive theo ngày (đảo Q1, xem Q1b). Mã hết hiệu lực chỉ khi Phòng PT tự Archive.</td></tr>
       <tr><td>created_by</td><td class="type">VARCHAR(100)</td><td><span class="req-y">Y</span></td><td>Admin tạo</td><td></td></tr>
       <tr><td>created_at / updated_at</td><td class="type">DATETIME</td><td><span class="req-y">Y</span></td><td>Timestamps</td><td>Auto</td></tr>
     </tbody>
   </table>
   <div class="note-warn" style="margin-top:8px;">
-    <strong>Scheduled job (BE-11):</strong> Chạy hàng ngày (vd. 00:05) — tìm record <code>status='ACTIVE' AND expiry_date IS NOT NULL AND expiry_date &lt; CURDATE()</code> → SET <code>status='ARCHIVED'</code>. Record có <code>expiry_date = NULL</code> không bị ảnh hưởng (không tự hết hạn). Chỉ áp dụng cho mốc <code>is_current=true</code>.
+    <strong>(v1.3) Scheduled job (BE-11) — đã bỏ cho Cơ bản:</strong> Danh mục cơ bản không còn auto-archive theo <code>expiry_date</code>. Thay vào đó, mã có <code>% tiềm năng ≤ 0</code> (currentPrice ≥ targetPrice) được đánh dấu <code>isTargetReached=true</code> ở response để mobile hiển thị badge "Đã đạt mục tiêu" và Admin 1 highlight cho Phòng PT chủ động review — <strong>hệ thống không tự đổi status/archive theo giá</strong>. BE-11 gỡ khỏi Work Breakdown.
   </div>
 
   <!-- Table 2: nhsv_rating_batches -->
@@ -720,8 +725,8 @@
     <thead><tr><th>Field</th><th>Type</th><th>Req</th><th>Mô tả</th><th>Ghi chú</th></tr></thead>
     <tbody>
       <tr><td>technical_id</td><td class="type">BIGINT</td><td><span class="req-y">Y</span></td><td>PK</td><td>Auto</td></tr>
-      <tr><td>stock_code</td><td class="type">VARCHAR(10)</td><td><span class="req-y">Y</span></td><td>Mã CK</td><td>Index</td></tr>
-      <tr><td>trade_date</td><td class="type">DATE</td><td><span class="req-y">Y</span></td><td>Ngày giao dịch khuyến nghị</td><td>Index. (v1.2) App default query: <code>trade_date BETWEEN CURDATE()-13 AND CURDATE()</code> (14 ngày), thay vì chỉ CURDATE()</td></tr>
+      <tr><td>stock_code</td><td class="type">VARCHAR(10)</td><td><span class="req-y">Y</span></td><td>Mã CK</td><td>Index. <span style="color:var(--red);">(v1.3)</span> Ràng buộc <code>UNIQUE(stock_code, trade_date)</code> — 1 mã chỉ 1 entry/ngày</td></tr>
+      <tr><td>trade_date</td><td class="type">DATE</td><td><span class="req-y">Y</span></td><td>Ngày giao dịch khuyến nghị</td><td>Index. (v1.2) App default query: <code>trade_date BETWEEN CURDATE()-13 AND CURDATE()</code> (14 ngày), thay vì chỉ CURDATE(). <span style="color:var(--red);">(v1.3)</span> Thuộc unique key <code>(stock_code, trade_date)</code></td></tr>
       <tr><td>recommendation_type</td><td class="type">ENUM</td><td><span class="req-y">Y</span></td><td>(v1.2) Loại khuyến nghị</td><td>'BUY' | 'SELL' | 'HOLD'. Default 'BUY'. v1 chỉ chấp nhận 'BUY' — BE validate chặn SELL/HOLD</td></tr>
       <tr><td>buy_price_from</td><td class="type">DECIMAL(15,2)</td><td><span class="req-y">Y</span></td><td>Giá mua dưới (lower bound)</td><td></td></tr>
       <tr><td>buy_price_to</td><td class="type">DECIMAL(15,2)</td><td><span class="req-n">N</span></td><td>Giá mua trên (upper bound)</td><td>Null = chỉ 1 giá mua (hiển thị ≥ buy_price_from)</td></tr>
@@ -754,8 +759,9 @@
     <tbody>
       <tr><td>createdBy</td><td>POST /recommendations/portfolio<br>POST /recommendations/dailyTechnical</td><td>Admin session</td><td>Lấy từ session admin đang login. Null nếu <code>dataSource = VIETSTOCK_AUTO</code> (v2).</td></tr>
       <tr><td>isCurrent</td><td>POST /recommendations/portfolio</td><td>Hệ thống</td><td>(v1.2) Row mới luôn <code>true</code>. BE tự set <code>false</code> cho row <code>is_current=true</code> trước đó của cùng stockCode.</td></tr>
+      <tr><td>segment</td><td>POST /recommendations/portfolio<br>PUT /recommendations/portfolio/{id}</td><td>Hệ thống</td><td>(v1.3) BE tự xác định <code>'BLUECHIP' | 'MIDCAP'</code> theo index membership của mã — <strong>không nhận từ request body</strong>, chỉ trả về ở response (read-only).</td></tr>
       <tr><td>uploadedBy</td><td>POST /recommendations/ratingUpload</td><td>Admin session</td><td>Lấy từ session admin đang login.</td></tr>
-      <tr><td>status</td><td>POST /recommendations/portfolio</td><td>Hệ thống</td><td>Luôn khởi tạo <code>'ACTIVE'</code>. Tự chuyển <code>'ARCHIVED'</code> khi quá <code>expiryDate</code> (scheduled job BE-11) hoặc khi admin Archive tay.</td></tr>
+      <tr><td>status</td><td>POST /recommendations/portfolio</td><td>Hệ thống</td><td>Luôn khởi tạo <code>'ACTIVE'</code>. (v1.3) Chỉ chuyển <code>'ARCHIVED'</code> khi admin Archive tay — bỏ auto-archive theo <code>expiryDate</code>/scheduled job.</td></tr>
       <tr><td>batch.isActive</td><td>POST /recommendations/ratingPublish</td><td>Hệ thống</td><td>Set <code>true</code> cho batch mới, <code>false</code> cho batch cũ, cùng 1 transaction.</td></tr>
       <tr><td>status</td><td>POST /recommendations/dailyTechnical/batch</td><td>Hệ thống</td><td>Luôn khởi tạo <code>'DRAFT'</code>. Chỉ chuyển <code>'PUBLISHED'</code> qua PUT /dailyTechnical/publish — client không tự set trực tiếp.</td></tr>
     </tbody>
@@ -768,7 +774,10 @@
   <div class="section-hdr">
     <div class="icon" style="background:#d1fae5">🔌</div>
     <h2>5. API Specification — Mobile App</h2>
-    <span class="sub">Base URL: /api/v1 · Auth: Bearer token · (v1.2) 6 endpoints — thêm topPicks</span>
+    <span class="sub">Base URL: /api/v1 · Auth: (v1.3) Không yêu cầu đăng nhập (tạm thời) · (v1.2) 6 endpoints — thêm topPicks</span>
+  </div>
+  <div class="note-warn" style="margin-top:0;margin-bottom:14px;">
+    <strong>(v1.3) Auth — thay đổi tạm thời (quyết định 2026-07-23):</strong> Toàn bộ <strong>6 API mobile Khuyến nghị</strong> (topPicks, portfolio list/detail, rating, dailyTechnical list/detail) <strong>không yêu cầu đăng nhập</strong> — Bearer token là optional, gọi được cả khi guest chưa login. Đây là quyết định business tạm thời nhằm tăng conversion / preview không cần login (cạnh tranh SSI/VNDIRECT/KBSV), <strong>cần revisit trước GA</strong> (xem Q11 trong <code>PRD.md</code>). API admin (<code>/admin/api/*</code>) KHÔNG đổi — vẫn bắt buộc Admin session.
   </div>
 
   <!-- API 0: Home topPicks (v1.2 new) -->
@@ -792,7 +801,8 @@
         </div>
       </div>
       <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
-        <strong>Nguồn:</strong> Cùng bảng <code>portfolio_recommendations</code>, filter <code>is_current=true AND status='ACTIVE'</code>, sort <code>expectedReturnPercent DESC</code>, limit 6. Response nhẹ hơn API 1 (không enrich đủ field) để load Home &lt; 1 giây.
+        <strong>Nguồn:</strong> Cùng bảng <code>portfolio_recommendations</code>, filter <code>is_current=true AND status='ACTIVE'</code>, sort <code>expectedReturnPercent DESC</code>, limit 6. Response nhẹ hơn API 1 (không enrich đủ field) để load Home &lt; 1 giây.<br>
+        <strong>(v1.3) Tie-break:</strong> Khi nhiều mã có <code>expectedReturnPercent</code> bằng nhau, ưu tiên mã có <code>recommendationDate</code> (ngày KN) gần nhất trước — <code>ORDER BY expectedReturnPercent DESC, recommendationDate DESC</code>.
       </div>
     </div>
   </div>
@@ -819,8 +829,9 @@
           <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Mã CK</span></div>
           <div class="param-row"><span class="pname">segment</span><span class="ptype">string</span><span class="pdesc">"BLUECHIP" | "MIDCAP"</span></div>
           <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Giá kỳ vọng (VNĐ)</span></div>
-          <div class="param-row"><span class="pname">currentPrice</span><span class="ptype">number?</span><span class="pdesc">Giá hiện tại — từ market data service. Null nếu không fetch được.</span></div>
-          <div class="param-row"><span class="pname">expectedReturnPercent</span><span class="ptype">number?</span><span class="pdesc">% tiềm năng = (targetPrice/currentPrice-1)×100. Null nếu currentPrice null.</span></div>
+          <div class="param-row"><span class="pname">currentPrice</span><span class="ptype">number?</span><span class="pdesc">Giá hiện tại — từ market data service. <code>null</code> nếu mã mới niêm yết chưa khớp / lỗi enrichment.</span></div>
+          <div class="param-row"><span class="pname">expectedReturnPercent</span><span class="ptype">number?</span><span class="pdesc">% tiềm năng = (targetPrice/currentPrice-1)×100. Null nếu currentPrice null/0.</span></div>
+          <div class="param-row"><span class="pname">isTargetReached</span><span class="ptype">bool</span><span class="pdesc">(v1.3) <code>true</code> khi currentPrice ≥ targetPrice (% tiềm năng ≤ 0). Mobile hiển thị badge "Đã đạt mục tiêu"; false nếu currentPrice null.</span></div>
           <div class="param-row"><span class="pname">recommendationDate</span><span class="ptype">date</span><span class="pdesc">ISO date</span></div>
           <div class="param-row"><span class="pname">hasPdf</span><span class="ptype">bool</span><span class="pdesc">Có báo cáo PDF không</span></div>
         </div>
@@ -828,7 +839,9 @@
       <div style="margin-top:10px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>Price enrichment:</strong> BE join với market data service khi serve API. Nếu market data không available (ngoài giờ giao dịch): dùng closing price phiên gần nhất.<br>
         <strong>Response wrapper:</strong> <code>{"totalCount": ..., "recommendations": [...]}</code>. Pagination theo cursor <code>fetchCount</code> + <code>lastRecommendationId</code> — nhất quán với convention TradeX-native khác (vd. stopOrder history), thay cho <code>page</code>/<code>pageSize</code>.<br>
-        <strong>Filter status:</strong> (v1.2) Chỉ trả records có <code>is_current=true AND status='ACTIVE'</code> — mốc lịch sử không xuất hiện ở list.
+        <strong>Filter status:</strong> (v1.2) Chỉ trả records có <code>is_current=true AND status='ACTIVE'</code> — mốc lịch sử không xuất hiện ở list.<br>
+        <strong>(v1.3) currentPrice null/0 — validate rule (không phải lỗi 500):</strong> API vẫn trả 200 với <code>currentPrice: null</code>, <code>expectedReturnPercent: null</code>, <code>isTargetReached: false</code>. Mobile tự hiển thị "Đang cập nhật giá" thay cho % (không hiển thị NaN/Infinity).<br>
+        <strong>(v1.3) currentPrice &gt; targetPrice:</strong> API vẫn trả bình thường với <code>expectedReturnPercent</code> âm + <code>isTargetReached: true</code> — <strong>không</strong> tự đổi status/archive theo giá.
       </div>
     </div>
   </div>
@@ -848,16 +861,19 @@
         </div>
         <div class="param-block">
           <div class="pb-title">Response — thêm so với list</div>
+          <div class="param-row"><span class="pname">isTargetReached</span><span class="ptype">bool</span><span class="pdesc">(v1.3) Giống list — <code>true</code> khi currentPrice ≥ targetPrice (% tiềm năng ≤ 0)</span></div>
           <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Luận điểm ngắn (của mốc current)</span></div>
           <div class="param-row"><span class="pname">pdfUrl</span><span class="ptype">string?</span><span class="pdesc">Public URL PDF (nếu reportSource=UPLOAD)</span></div>
           <div class="param-row"><span class="pname">pdfFilename</span><span class="ptype">string?</span><span class="pdesc">Tên file</span></div>
           <div class="param-row"><span class="pname">pdfSizeBytes</span><span class="ptype">int?</span><span class="pdesc">Dung lượng</span></div>
-          <div class="param-row"><span class="pname">reportHistory</span><span class="ptype">Report[]</span><span class="pdesc">(v1.2) "Danh sách báo cáo gần nhất" — mỗi item: <code>recommendedDate</code>, <code>title</code>, <code>reportUrl</code>, <code>source</code> ("NH_RESEARCH"|"UPLOAD"). Sort mới nhất trước, gồm cả mốc hiện tại</span></div>
+          <div class="param-row"><span class="pname">reportHistory</span><span class="ptype">Report[]</span><span class="pdesc">(v1.2) "Danh sách báo cáo gần nhất" — mỗi item: <code>recommendedDate</code>, <code>title</code>, <code>reportUrl</code>, <code>source</code> ("NH_RESEARCH"|"UPLOAD"), <code>reportAvailable</code> (v1.3, bool). Sort mới nhất trước, gồm cả mốc hiện tại</span></div>
         </div>
       </div>
       <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>(v1.2) Đã bỏ <code>recommendedPrice</code>:</strong> Không còn snapshot giá lúc tạo — price-compare card trên app chỉ so sánh currentPrice vs targetPrice.<br>
-        <strong>Error 404:</strong> <code>{"code":"OBJECT_NOT_FOUND"}</code>
+        <strong>(v1.3) Đã bỏ <code>expiryDate</code></strong> khỏi response — Cơ bản không còn dùng field này.<br>
+        <strong>(v1.3) reportHistory — bài NH Research đã unpublish/xóa:</strong> API <strong>vẫn trả 200 bình thường</strong> (không 404 cho cả request). Item bị gỡ có <code>reportAvailable: false</code> và <code>reportUrl: null</code> → FE hiển thị "No data" tại dòng đó thay vì mở link lỗi.<br>
+        <strong>Error 404:</strong> <code>{"code":"OBJECT_NOT_FOUND"}</code> — chỉ khi bản thân <code>recommendationId</code> không tồn tại.
       </div>
     </div>
   </div>
@@ -915,11 +931,15 @@
           <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Giá mục tiêu</span></div>
           <div class="param-row"><span class="pname">stopLoss</span><span class="ptype">number</span><span class="pdesc">Cắt lỗ</span></div>
           <div class="param-row"><span class="pname">upsize</span><span class="ptype">number?</span><span class="pdesc">Upsize. Null → ẩn ô</span></div>
+          <div class="param-row"><span class="pname">currentPrice</span><span class="ptype">number?</span><span class="pdesc">(v1.3) Giá hiện tại — enrich từ market data service như Cơ bản. Null nếu không fetch được.</span></div>
+          <div class="param-row"><span class="pname">isTargetReached</span><span class="ptype">bool</span><span class="pdesc">(v1.3) <code>true</code> khi currentPrice ≥ targetPrice → badge "Đã đạt mục tiêu". False nếu currentPrice null.</span></div>
+          <div class="param-row"><span class="pname">isStopLossReached</span><span class="ptype">bool</span><span class="pdesc">(v1.3) <code>true</code> khi currentPrice ≤ stopLoss → badge "Đã chạm cắt lỗ". False nếu currentPrice null.</span></div>
           <div class="param-row"><span class="pname">hasPdf</span><span class="ptype">bool</span><span class="pdesc">Có PDF không</span></div>
         </div>
       </div>
       <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>Empty response:</strong> <code>{"fromDate":"...","toDate":"...","technicals":[],"totalCount":0}</code> — HTTP 200, không phải 404, kể cả khi cả 14 ngày không có data. Mobile hiển thị empty state.<br>
+        <strong>(v1.3) Price enrichment:</strong> BE enrich <code>currentPrice</code> cho từng entry (giống Cơ bản) để tính badge trạng thái động <code>isTargetReached</code> / <code>isStopLossReached</code> dựa trên giá real-time so với target/stopLoss.<br>
         <strong>dataSource filter:</strong> Trả cả MANUAL và VIETSTOCK_AUTO — app không phân biệt.<br>
         <strong>Status filter:</strong> Chỉ trả record <code>status='PUBLISHED'</code>. Record còn <code>DRAFT</code> không xuất hiện.<br>
         <strong>recommendationType filter (v1.2):</strong> Query luôn implicit <code>recommendationType='BUY'</code> ở v1 — field tồn tại trong response để client sẵn sàng cho SELL/HOLD ở v2.
@@ -979,9 +999,11 @@
         <div class="param-row"><span class="pname">batchId</span><span class="ptype">string</span><span class="pdesc">Temp ID để confirm</span></div>
         <div class="param-row"><span class="pname">totalRecords</span><span class="ptype">int</span><span class="pdesc">Số records parse được</span></div>
         <div class="param-row"><span class="pname">validRecords</span><span class="ptype">int</span><span class="pdesc">Số records hợp lệ</span></div>
-        <div class="param-row"><span class="pname">errors</span><span class="ptype">Error[]?</span><span class="pdesc">Danh sách lỗi (mã không hợp lệ, rating không đúng format…)</span></div>
+        <div class="param-row"><span class="pname">errors</span><span class="ptype">Error[]?</span><span class="pdesc">Danh sách lỗi (mã không hợp lệ, rating không đúng format…) — mỗi item kèm số dòng</span></div>
+        <div class="param-row"><span class="pname">duplicateCodes</span><span class="ptype">string[]</span><span class="pdesc">(v1.3) Cảnh báo: mã xuất hiện &gt;1 lần trong chính file upload</span></div>
+        <div class="param-row"><span class="pname">missingCodesFromPreviousBatch</span><span class="ptype">string[]</span><span class="pdesc">(v1.3) Cảnh báo: mã có ở batch active hiện tại nhưng thiếu trong file mới (có thể bị sót)</span></div>
         <div class="param-row"><span class="pname">previewRows</span><span class="ptype">Row[10]</span><span class="pdesc">10 rows đầu để admin review</span></div>
-        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Error 400:</strong> <code>{"code":"INVALID_PARAMETER"}</code> nếu không phải Excel hoặc thiếu cột bắt buộc.</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Error 400:</strong> <code>{"code":"INVALID_PARAMETER"}</code> nếu không phải Excel hoặc thiếu cột bắt buộc.<br><strong>(v1.3) Hai field cảnh báo là warning, không block:</strong> <code>duplicateCodes</code> / <code>missingCodesFromPreviousBatch</code> chỉ hiển thị cho admin tự xử lý — không tự chặn publish. Việc chặn publish chỉ do dòng lỗi trong <code>errors</code> (xem ratingPublish).</div>
       </div>
     </div>
     <!-- Publish API -->
@@ -997,6 +1019,7 @@
         <div class="param-row"><span class="pname">batchId</span><span class="ptype">string</span><span class="pdesc">Batch đã publish</span></div>
         <div class="param-row"><span class="pname">publishedAt</span><span class="ptype">datetime</span><span class="pdesc">Thời điểm kích hoạt</span></div>
         <div class="param-row"><span class="pname">totalRecords</span><span class="ptype">int</span><span class="pdesc">Số records đã publish</span></div>
+        <div style="margin-top:8px;padding:7px;background:var(--red-light);border-radius:5px;font-size:11px;color:var(--red);">🚫 <strong>(v1.3) Chặn publish khi còn dòng lỗi:</strong> Nếu preview (ratingUpload) của batch còn bất kỳ dòng nào trong <code>errors</code> (mã không tồn tại / sai định dạng) → trả <code>{"code":"VALIDATION_ERRORS_PRESENT"}</code> (HTTP 400). <strong>Không cho publish một phần</strong> (skip dòng lỗi) — admin phải sửa & re-upload file sạch 100%. Nút "Xác nhận publish" cũng bị disable ở FE cho tới khi hết lỗi.</div>
         <div style="margin-top:8px;padding:7px;background:var(--amber-light);border-radius:5px;font-size:11px;color:var(--amber);">⚠️ Idempotent: gọi 2 lần với cùng batchId → không tạo duplicate. Kiểm tra batchId đã published chưa trước khi process.</div>
       </div>
     </div>
@@ -1014,10 +1037,10 @@
         <div class="param-block">
           <div class="pb-title">Request Body</div>
           <div class="param-row"><span class="pname">stockCode</span><span class="ptype">string</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">segment</span><span class="ptype">string</span><span class="pdesc">Required. <code>BLUECHIP</code> | <code>MIDCAP</code></span></div>
+          <div class="param-row"><span class="pname" style="text-decoration:line-through;color:var(--red);">segment</span><span class="ptype">—</span><span class="pdesc">(v1.3) <strong>Đã bỏ khỏi request</strong> — BE tự xác định theo mã, chỉ trả ở response (read-only)</span></div>
           <div class="param-row"><span class="pname">targetPrice</span><span class="ptype">number</span><span class="pdesc">Required. Giá kỳ vọng</span></div>
           <div class="param-row"><span class="pname">recommendationDate</span><span class="ptype">date</span><span class="pdesc">Required</span></div>
-          <div class="param-row"><span class="pname">expiryDate</span><span class="ptype">date?</span><span class="pdesc">Optional (Q1 resolved). Null = không hết hạn</span></div>
+          <div class="param-row"><span class="pname" style="text-decoration:line-through;color:var(--red);">expiryDate</span><span class="ptype">—</span><span class="pdesc">(v1.3) <strong>Đã bỏ khỏi request</strong> — Cơ bản không còn ngày hết hiệu lực (đảo Q1)</span></div>
           <div class="param-row"><span class="pname">shortDesc</span><span class="ptype">string?</span><span class="pdesc">Optional</span></div>
           <div class="param-row"><span class="pname">reportSource</span><span class="ptype">string?</span><span class="pdesc">(v1.2) <code>NH_RESEARCH</code> | <code>UPLOAD</code>. Bỏ qua nếu mốc không có report</span></div>
           <div class="param-row"><span class="pname">nhResearchArticleId</span><span class="ptype">number?</span><span class="pdesc">(v1.2) Required nếu reportSource=NH_RESEARCH — lấy từ <code>GET /admin/api/nhResearch/articles?stockCode=X</code></span></div>
@@ -1030,6 +1053,8 @@
       </div>
       <div style="margin-top:8px;padding:8px 12px;background:#f8fafc;border-radius:6px;font-size:11.5px;color:var(--slate);">
         <strong>(v1.2) Đã bỏ <code>recommendedPrice</code></strong> khỏi request — không còn cần admin nhập giá lúc khuyến nghị.<br>
+        <strong>(v1.3) Đã bỏ <code>segment</code></strong> khỏi request — BE tự xác định theo index membership của mã, trả về read-only ở response. Áp dụng cho cả <code>PUT /recommendations/portfolio/{id}</code>.<br>
+        <strong>(v1.3) Đã bỏ <code>expiryDate</code></strong> khỏi request — Cơ bản không còn ngày hết hiệu lực; mã chỉ kết thúc khi admin Archive tay.<br>
         <strong>(v1.2) Mốc & lịch sử:</strong> Nếu <code>stockCode</code> đã có row <code>is_current=true</code>, BE tự động set <code>is_current=false</code> cho row đó (cùng transaction) rồi INSERT row mới với <code>is_current=true</code> — không cần client gọi thêm API nào khác.
       </div>
     </div>
@@ -1108,7 +1133,7 @@
         <div class="param-row"><span class="pname">items</span><span class="ptype">Item[]</span><span class="pdesc">Required, ít nhất 1. Mỗi item: <code>stockCode</code>, <code>recommendationType?</code>, <code>buyPriceFrom</code>, <code>buyPriceTo?</code>, <code>targetPrice</code>, <code>stopLoss</code>, <code>upsize?</code>, <code>shortDesc?</code>, <code>pdfUrl/pdfFilename/pdfSizeBytes?</code></span></div>
         <div class="pb-title" style="margin-top:10px;margin-bottom:8px;">Response (200)</div>
         <div class="param-row"><span class="pname">ids</span><span class="ptype">number[]</span><span class="pdesc">ID các entry vừa tạo, cùng thứ tự với <code>items</code></span></div>
-        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Lưu ý convention:</strong> đây là bulk mutation nên trả <code>{"ids": [...]}</code> (array) thay vì <code>{"id"}</code> đơn — deviation có chủ đích, ghi rõ để BE/FE không nhầm với mutation đơn.<br><strong>Error 400:</strong> <code>INVALID_PARAMETER</code> nếu <code>items</code> rỗng hoặc thiếu field required ở bất kỳ item nào — reject toàn bộ batch, không tạo 1 phần. (v1.2) Cũng reject nếu <code>recommendationType</code> khác "BUY".<br><strong>(v1.2) recommendationType:</strong> optional, default "BUY". Chỉ "BUY" được chấp nhận ở v1 (schema sẵn BUY/SELL/HOLD cho v2).</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--slate);"><strong>Lưu ý convention:</strong> đây là bulk mutation nên trả <code>{"ids": [...]}</code> (array) thay vì <code>{"id"}</code> đơn — deviation có chủ đích, ghi rõ để BE/FE không nhầm với mutation đơn.<br><strong>Error 400:</strong> <code>INVALID_PARAMETER</code> nếu <code>items</code> rỗng hoặc thiếu field required ở bất kỳ item nào — reject toàn bộ batch, không tạo 1 phần. (v1.2) Cũng reject nếu <code>recommendationType</code> khác "BUY".<br><strong>(v1.3) Error 400 <code>DUPLICATE_ENTRY_FOR_DATE</code>:</strong> Ràng buộc <code>UNIQUE(stockCode, tradeDate)</code> — nếu <code>items</code> chứa mã đã có entry cho <code>tradeDate</code> đang chọn (hoặc mã trùng nhau trong cùng batch), reject toàn bộ batch, kèm danh sách mã trùng để admin sửa entry hiện có thay vì tạo mới.<br><strong>(v1.2) recommendationType:</strong> optional, default "BUY". Chỉ "BUY" được chấp nhận ở v1 (schema sẵn BUY/SELL/HOLD cho v2).</div>
       </div>
     </div>
     <div class="api-block">
@@ -1173,7 +1198,8 @@
       <div class="card-body">
         <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/portfolio</div>
         <ul class="ac-list">
-          <li class="ac-item">Table: Mã CK | Segment | Giá Kỳ vọng | Ngày KN | Report | Trạng thái | Thao tác. (v1.2) Bỏ cột "Giá KN"</li>
+          <li class="ac-item">Table: Mã CK | Segment (v1.3 auto, read-only) | Giá Kỳ vọng | Ngày KN | Report | Trạng thái | Thao tác. (v1.2) Bỏ cột "Giá KN"</li>
+          <li class="ac-item">(v1.3) Mã có % tiềm năng ≤ 0 (giá hiện tại đã vượt giá kỳ vọng, <code>isTargetReached</code>) → highlight badge cảnh báo trong bảng để Phòng PT dễ nhận diện cần review (giữ nguyên/ra mốc mới/Archive)</li>
           <li class="ac-item">Filter: Bluechip/Midcap dropdown + ô search theo mã + status filter (Active/Archived)</li>
           <li class="ac-item">Nút "+ Thêm khuyến nghị" → form tạo mới. (v1.2) Nếu mã đã có mốc active, submit sẽ tự tạo mốc mới và chuyển mốc cũ vào lịch sử — không cần thao tác riêng</li>
           <li class="ac-item">Thao tác: Sửa (mốc current) | Archive (không xóa cứng)</li>
@@ -1186,10 +1212,10 @@
         <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/portfolio/new</div>
         <ul class="ac-list">
           <li class="ac-item"><strong>Mã CK</strong>: input với autocomplete từ danh mục (required)</li>
-          <li class="ac-item"><strong>Segment</strong>: Bluechip / Midcap dropdown (required)</li>
+          <li class="ac-item">(v1.3) <strong>Segment</strong>: <em>bỏ khỏi form</em> — BE tự xác định theo mã, hiển thị read-only (không cho admin sửa)</li>
           <li class="ac-item"><strong>Giá kỳ vọng</strong>: số, auto tính % tiềm năng hiển thị live so với giá hiện tại khi nhập (required). (v1.2) Bỏ field "Giá tại ngày KN"</li>
           <li class="ac-item"><strong>Ngày khuyến nghị</strong>: date picker (required)</li>
-          <li class="ac-item"><strong>Ngày hết hiệu lực</strong>: date picker (optional) — để trống = không giới hạn thời gian, khuyến nghị không tự Archive (Q1 resolved 2026-07-10)</li>
+          <li class="ac-item">(v1.3) <strong>Ngày hết hiệu lực</strong>: <em>bỏ khỏi form</em> — Cơ bản không còn ngày hết hiệu lực, mã chỉ kết thúc khi admin Archive tay (đảo Q1, xem Q1b)</li>
           <li class="ac-item"><strong>Luận điểm</strong>: textarea (optional)</li>
           <li class="ac-item">(v1.2) <strong>Report đính kèm</strong>: radio 2 lựa chọn — (a) <em>Link NH Research</em>: autocomplete tìm bài đã tag mã này (<code>GET /admin/api/nhResearch/articles?stockCode=X</code>); (b) <em>Upload PDF</em>: drag-drop, .pdf only. Cả 2 đều optional</li>
         </ul>
@@ -1203,7 +1229,8 @@
           <li class="ac-item">Header: "NHSV Rating" + badge "Batch hiện tại: MM/YYYY · N mã"</li>
           <li class="ac-item">Upload area: drag-drop file .xlsx / .xls. Required columns tooltip: "Mã, Cơ bản, Thị trường, NHSV Rating"</li>
           <li class="ac-item">Sau upload: preview table 10 rows + tổng records + error list (nếu có)</li>
-          <li class="ac-item">Nút "Xác nhận publish": active nếu không có errors. Sau confirm → toast "Đã cập nhật N mã rating"</li>
+          <li class="ac-item">(v1.3) Preview bổ sung 2 khối cảnh báo (warning, không chặn): (a) mã trùng lặp trong file (<code>duplicateCodes</code>); (b) N mã có ở batch active hiện tại nhưng thiếu trong file mới (<code>missingCodesFromPreviousBatch</code>) — giúp admin phát hiện sót mã</li>
+          <li class="ac-item">(v1.3) Nút "Xác nhận publish": <strong>disable khi còn bất kỳ dòng lỗi</strong> nào (mã không tồn tại/sai định dạng) — admin phải sửa & re-upload file sạch 100%, không cho publish một phần. Publish API trả <code>VALIDATION_ERRORS_PRESENT</code> nếu vẫn cố gọi. Sau confirm thành công → toast "Đã cập nhật N mã rating"</li>
           <li class="ac-item">Lịch sử: bảng các batch cũ (ngày upload, số mã, người upload)</li>
         </ul>
       </div>
@@ -1214,11 +1241,13 @@
         <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">URL: /nhsv-admin/recommendations/daily-technical</div>
         <ul class="ac-list">
           <li class="ac-item">Date picker để chọn ngày (default: hôm nay) — chọn được <strong>bất kỳ ngày trong quá khứ</strong>, không giới hạn hôm nay. Hiển thị toàn bộ entry của ngày đó, gồm cả Nháp và đã Publish.</li>
+          <li class="ac-item">(v1.3) Nếu chọn ngày áp dụng &gt; 14 ngày trước hiện tại: hiển thị cảnh báo "Entry cho ngày này sẽ không hiển thị trên mobile (ngoài rolling 14 ngày)" — <strong>vẫn cho phép lưu</strong> (phục vụ audit/lưu trữ), chỉ cảnh báo, không chặn.</li>
           <li class="ac-item">Ngày không có entry nào (kể cả Nháp): empty state rõ ràng "Ngày [X] không có mã kỹ thuật nào — kể cả Nháp" — không hiểu nhầm là lỗi tải dữ liệu.</li>
           <li class="ac-item">Table: Mã CK | Vùng mua | Mục tiêu | Cắt lỗ | Upsize | PDF | Nguồn | <strong>Trạng thái</strong> (Nháp/Còn hiệu lực/Đạt target) | Thao tác</li>
           <li class="ac-item">Badge "MANUAL" / "AUTO" trên cột Nguồn — phân biệt entry thủ công vs tương lai tự động</li>
           <li class="ac-item">(v1.2) Giới hạn "14 ngày gần nhất" chỉ áp dụng cho mobile — Admin vẫn xem/sửa được mọi ngày trong quá khứ không đổi. Mỗi entry ngầm định <code>recommendationType=BUY</code> (schema sẵn SELL/HOLD, v1 chưa cho chọn)</li>
           <li class="ac-item"><strong>Nút "+ Thêm entry" (đổi hành vi — 2026-07-10):</strong> mở form batch — chọn 1 Ngày áp dụng, sau đó thêm <strong>nhiều dòng mã</strong> (mỗi dòng: Mã CK, Vùng mua from/to, Mục tiêu, Cắt lỗ, Upsize optional) qua nút "+ Thêm dòng". Bấm "Lưu nháp" → tất cả lưu <code>status=DRAFT</code>, chưa hiện trên app.</li>
+          <li class="ac-item">(v1.3) <strong>Unique 1 mã/ngày:</strong> nếu thêm dòng với mã đã có entry cho ngày đang chọn (hoặc trùng mã trong cùng batch) → hệ thống chặn (<code>DUPLICATE_ENTRY_FOR_DATE</code>), yêu cầu sửa entry hiện có thay vì tạo mới (<code>UNIQUE(stockCode, tradeDate)</code>).</li>
           <li class="ac-item"><strong>Nút "Publish ngày [ngày đang chọn]" (mới):</strong> hiện/enable khi ngày đang chọn có ≥ 1 entry Nháp. Bấm → toàn bộ Nháp của ngày đó chuyển "Còn hiệu lực" cùng lúc, app đọc thấy ngay.</li>
           <li class="ac-item">Sửa từng dòng (action Edit riêng): dùng khi cần bổ sung Luận điểm/PDF sau khi batch-tạo, hoặc chỉnh số liệu — áp dụng cho cả entry Nháp và đã Publish.</li>
           <li class="ac-item">Delete: hard delete (không soft delete — dữ liệu kỹ thuật ngắn hạn), áp dụng cho cả Nháp và đã Publish.</li>
@@ -1240,19 +1269,20 @@
     <div class="layer-card">
       <div class="layer-hdr" style="background:var(--blue);color:white;">⚙️ Backend (BE)</div>
       <ul class="task-list">
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-01</span><div><div class="t-name">DB: Tạo 4 bảng + migration</div><div class="t-note">portfolio_recommendations (v1.2: bỏ recommended_price, thêm is_current/report_source/nh_research_article_id), nhsv_rating_batches, nhsv_ratings, daily_technicals (v1.2: thêm recommendation_type). Indexes theo mục 4.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-02</span><div><div class="t-name">API: GET /recommendations/portfolio (list)</div><div class="t-note">Filter segment/stockCode + (v1.2) is_current=true AND status=ACTIVE, paginate, enrich currentPrice từ market data service</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-03</span><div><div class="t-name">API: GET /recommendations/portfolio/{id} (detail)</div><div class="t-note">(v1.2) Trả shortDesc + reportHistory[] (tất cả mốc/mã, mới nhất trước) — bỏ recommendedPrice. 404 nếu không tồn tại.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-01</span><div><div class="t-name">DB: Tạo 4 bảng + migration</div><div class="t-note">portfolio_recommendations (v1.2: bỏ recommended_price, thêm is_current/report_source/nh_research_article_id; v1.3: expiry_date deprecated — luôn NULL cho Cơ bản), nhsv_rating_batches, nhsv_ratings, daily_technicals (v1.2: thêm recommendation_type; v1.3: <code>UNIQUE(stock_code, trade_date)</code>). Indexes theo mục 4.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-02</span><div><div class="t-name">API: GET /recommendations/portfolio (list)</div><div class="t-note">Filter segment/stockCode + (v1.2) is_current=true AND status=ACTIVE, paginate, enrich currentPrice từ market data service. (v1.3) Trả thêm <code>isTargetReached</code>; currentPrice null/0 → % null (không lỗi 500).</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-03</span><div><div class="t-name">API: GET /recommendations/portfolio/{id} (detail)</div><div class="t-note">(v1.2) Trả shortDesc + reportHistory[] (tất cả mốc/mã, mới nhất trước) — bỏ recommendedPrice. (v1.3) Trả thêm <code>isTargetReached</code>; mỗi reportHistory item có <code>reportAvailable</code> (false nếu bài NH Research đã unpublish → không 404); bỏ expiryDate. 404 chỉ khi recommendationId không tồn tại.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-04</span><div><div class="t-name">API: GET /recommendations/rating</div><div class="t-note">Join nhsv_ratings với batch is_active=true. sortBy param. Trả batchUpdatedAt.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-05</span><div><div class="t-name">API: GET /recommendations/dailyTechnical</div><div class="t-note">(v1.2) Default range fromDate=CURDATE()-13 → toDate=CURDATE() (14 ngày), thay vì 1 ngày. Chỉ trả status=PUBLISHED. Empty array nếu cả range không có data.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-06</span><div><div class="t-name">Admin API: CRUD /recommendations/portfolio</div><div class="t-note">POST create (v1.2: tự supersede mốc cũ → is_current=false), PUT update mốc current, DELETE soft-archive. Tái sử dụng /upload/pdf từ A-04.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-12</span><div><div class="t-name">(v1.2) API: GET /recommendations/portfolio/topPicks</div><div class="t-note">Preview cho card Home — is_current=true AND status=ACTIVE, sort expectedReturnPercent DESC, limit 6, response nhẹ.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-05</span><div><div class="t-name">API: GET /recommendations/dailyTechnical</div><div class="t-note">(v1.2) Default range fromDate=CURDATE()-13 → toDate=CURDATE() (14 ngày), thay vì 1 ngày. Chỉ trả status=PUBLISHED. Empty array nếu cả range không có data. (v1.3) Enrich currentPrice + tính <code>isTargetReached</code>/<code>isStopLossReached</code> (xem BE-14).</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-06</span><div><div class="t-name">Admin API: CRUD /recommendations/portfolio</div><div class="t-note">POST create (v1.2: tự supersede mốc cũ → is_current=false), PUT update mốc current, DELETE soft-archive. Tái sử dụng /upload/pdf từ A-04. (v1.3) Bỏ nhận <code>segment</code> (BE auto) + <code>expiryDate</code> khỏi request body (POST & PUT).</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-12</span><div><div class="t-name">(v1.2) API: GET /recommendations/portfolio/topPicks</div><div class="t-note">Preview cho card Home — is_current=true AND status=ACTIVE, sort expectedReturnPercent DESC, limit 6, response nhẹ. (v1.3) Tie-break: recommendationDate DESC khi % bằng nhau.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-13</span><div><div class="t-name">(v1.2) Admin API: GET /admin/api/nhResearch/articles?stockCode=</div><div class="t-note">Reuse NH Research article query (A-06) để admin link report — phụ thuộc A-06 build xong (Q9).</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-07</span><div><div class="t-name">Admin API: Excel upload + parse NHSV Rating</div><div class="t-note">POST /ratingUpload: parse .xlsx, validate columns + values, trả preview + batchId. POST /ratingPublish: activate batch trong transaction.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-08</span><div><div class="t-name">Admin API: List theo ngày + Batch create + Publish + Edit /recommendations/dailyTechnical</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): GET admin trả mọi status theo tradeDate bất kỳ (kể cả quá khứ) — ngày trống trả {totalCount:0, technicals:[]} HTTP 200, không 404. POST /batch tạo nhiều mã cùng lúc (status=DRAFT, reject toàn batch nếu 1 item lỗi). PUT /publish chuyển DRAFT→PUBLISHED theo tradeDate (transaction). PUT /{id} sửa 1 entry. DELETE hard delete.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-09</span><div><div class="t-name">Price enrichment: currentPrice từ market data service</div><div class="t-note">Fetch batch prices cho danh sách mã trong portfolio list. Fallback: closing price phiên gần nhất nếu ngoài giờ GD.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-07</span><div><div class="t-name">Admin API: Excel upload + parse NHSV Rating</div><div class="t-note">POST /ratingUpload: parse .xlsx, validate columns + values, trả preview + batchId. (v1.3) preview thêm <code>duplicateCodes</code> + <code>missingCodesFromPreviousBatch</code> (warning). POST /ratingPublish: activate batch trong transaction; (v1.3) chặn với <code>VALIDATION_ERRORS_PRESENT</code> nếu còn dòng lỗi (không publish một phần).</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-08</span><div><div class="t-name">Admin API: List theo ngày + Batch create + Publish + Edit /recommendations/dailyTechnical</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): GET admin trả mọi status theo tradeDate bất kỳ (kể cả quá khứ) — ngày trống trả {totalCount:0, technicals:[]} HTTP 200, không 404. POST /batch tạo nhiều mã cùng lúc (status=DRAFT, reject toàn batch nếu 1 item lỗi). (v1.3) enforce <code>UNIQUE(stockCode, tradeDate)</code> → reject <code>DUPLICATE_ENTRY_FOR_DATE</code> nếu trùng mã+ngày. PUT /publish chuyển DRAFT→PUBLISHED theo tradeDate (transaction). PUT /{id} sửa 1 entry. DELETE hard delete.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-09</span><div><div class="t-name">Price enrichment: currentPrice từ market data service</div><div class="t-note">Fetch batch prices cho danh sách mã trong portfolio list. Fallback: closing price phiên gần nhất nếu ngoài giờ GD. (v1.3) Áp dụng cả cho <code>dailyTechnical</code> để tính badge trạng thái động (isTargetReached/isStopLossReached).</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-10</span><div><div class="t-name">API: GET /recommendations/dailyTechnical/{id} (detail)</div><div class="t-note">Trả thêm shortDesc, pdfUrl. 404 nếu không tồn tại.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-11</span><div><div class="t-name">Scheduled job: auto-archive khuyến nghị hết hiệu lực</div><div class="t-note">Daily cron: status='ACTIVE' AND expiry_date &lt; CURDATE() → SET status='ARCHIVED'. Không ảnh hưởng record expiry_date=NULL. (Mới — Q1 resolved 2026-07-10)</div></div></li>
+        <li class="task-item" style="opacity:0.6;"><span class="task-id" style="background:var(--red-light);color:var(--red);">BE-11</span><div><div class="t-name" style="text-decoration:line-through;">Scheduled job: auto-archive khuyến nghị hết hiệu lực</div><div class="t-note"><strong>(v1.3) Đã bỏ</strong> — Cơ bản không còn expiryDate/auto-archive theo ngày (đảo Q1, xem Q1b). Thay bằng flag <code>isTargetReached</code> + admin review thủ công (BE-14). Gỡ khỏi scope.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--blue-light);color:var(--blue);">BE-14</span><div><div class="t-name">(v1.3) Enrich flag trạng thái động + segment auto</div><div class="t-note">Cơ bản: tính <code>isTargetReached</code> (currentPrice ≥ targetPrice) cho list/detail/topPicks; BE tự xác định <code>segment</code> theo index membership của mã (bỏ khỏi request). Kỹ thuật: enrich currentPrice + <code>isTargetReached</code>/<code>isStopLossReached</code>. reportHistory: gắn <code>reportAvailable</code> khi bài NH Research bị unpublish.</div></div></li>
       </ul>
     </div>
     <!-- Mobile FE -->
@@ -1260,10 +1290,10 @@
       <div class="layer-hdr" style="background:var(--teal);color:white;">📱 Mobile FE</div>
       <ul class="task-list">
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-01</span><div><div class="t-name">Full-screen Khuyến nghị + 3 sub-tab navigation</div><div class="t-note">(v1.2) Tab pill buttons theo thứ tự mới: Cơ bản / Kỹ thuật / Rating. Active state.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-02</span><div><div class="t-name">Cơ bản list screen</div><div class="t-note">Filter Bluechip/Midcap + search. Card component (mã, giá, % tiềm năng, ngày) — hiển thị mốc current. Pagination. Tap → detail.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-02</span><div><div class="t-name">Cơ bản list screen</div><div class="t-note">Filter Bluechip/Midcap + search. Card component (mã, giá, % tiềm năng, ngày) — hiển thị mốc current. Pagination. Tap → detail. (v1.3) Badge "Đã đạt mục tiêu" khi isTargetReached; "Đang cập nhật giá" khi currentPrice null.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-03</span><div><div class="t-name">Cơ bản detail screen</div><div class="t-note">Hero card + info card + (v1.2) "Danh sách báo cáo gần nhất" (list, không phải PDF đơn) + CTA "Xem cổ phiếu"</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-04</span><div><div class="t-name">NHSV Rating table screen</div><div class="t-note">Search bar + sortable table + rating badge component (S/A/B/C/D màu sắc) + tap row → stock detail</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-05</span><div><div class="t-name">Kỹ thuật list screen</div><div class="t-note">(v1.2) Rolling 14 ngày, list cuộn group theo ngày + search. Card: row Vùng mua+Cắt lỗ gộp / row Mục tiêu+Upsize. Empty state nếu cả 14 ngày không có data.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-05</span><div><div class="t-name">Kỹ thuật list screen</div><div class="t-note">(v1.2) Rolling 14 ngày, list cuộn group theo ngày + search. Card: row Vùng mua+Cắt lỗ gộp / row Mục tiêu+Upsize. Empty state nếu cả 14 ngày không có data. (v1.3) Group ngày skip Thứ 7/CN; badge động "Đã đạt mục tiêu"/"Đã chạm cắt lỗ" theo currentPrice.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-06</span><div><div class="t-name">Kỹ thuật detail screen</div><div class="t-note">Đầy đủ fields + shortDesc + PDF (tái dùng viewer) + CTA</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-07</span><div><div class="t-name">Disclaimer footer component (reusable)</div><div class="t-note">Dùng chung cho tất cả 3 sub-tabs. Nội dung khác nhau cho từng tab (xem spec màn hình).</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--teal-light);color:var(--teal);">MOB-08</span><div><div class="t-name">Error & empty states</div><div class="t-note">API lỗi → error state + retry. Empty danh mục. Empty kỹ thuật (14 ngày). NHSV Rating chưa có data.</div></div></li>
@@ -1275,9 +1305,9 @@
       <div class="layer-hdr" style="background:var(--violet);color:white;">🖥️ Admin FE</div>
       <ul class="task-list">
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-01</span><div><div class="t-name">Menu: thêm "Khuyến nghị" vào sidebar</div><div class="t-note">3 sub-menu: Cơ bản / Kỹ thuật hằng ngày / NHSV Rating</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-02</span><div><div class="t-name">Cơ bản: list + CRUD form</div><div class="t-note">Table với filter/search + form tạo/sửa (auto-calculate % tiềm năng live, bỏ giá tại ngày KN). (v1.2) Radio chọn report: link NH Research hoặc upload PDF</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-03</span><div><div class="t-name">NHSV Rating: Excel upload page</div><div class="t-note">Upload component + preview table + error list + confirm button + lịch sử batches</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-04</span><div><div class="t-name">Kỹ thuật hằng ngày: list + batch-entry form + Publish</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): form "+ Thêm entry" cho phép chọn 1 Ngày + thêm nhiều dòng mã (repeatable row) trước khi Lưu nháp. Nút "Publish ngày [X]" riêng, enable khi có Nháp. Cột Trạng thái (Nháp/Còn hiệu lực/Đạt target) trên table. Date picker xem được ngày quá khứ (cả Nháp + Publish); ngày trống → empty state rõ ràng, không phải lỗi.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-02</span><div><div class="t-name">Cơ bản: list + CRUD form</div><div class="t-note">Table với filter/search + form tạo/sửa (auto-calculate % tiềm năng live, bỏ giá tại ngày KN). (v1.2) Radio chọn report: link NH Research hoặc upload PDF. (v1.3) Bỏ field Segment (BE auto, read-only) + Ngày hết hiệu lực khỏi form; highlight row isTargetReached trong table.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-03</span><div><div class="t-name">NHSV Rating: Excel upload page</div><div class="t-note">Upload component + preview table + error list + confirm button + lịch sử batches. (v1.3) Hiển thị 2 khối warning (duplicateCodes, missingCodesFromPreviousBatch); disable nút publish khi còn dòng lỗi.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-04</span><div><div class="t-name">Kỹ thuật hằng ngày: list + batch-entry form + Publish</div><div class="t-note">Đổi sang draft/publish flow (2026-07-10): form "+ Thêm entry" cho phép chọn 1 Ngày + thêm nhiều dòng mã (repeatable row) trước khi Lưu nháp. Nút "Publish ngày [X]" riêng, enable khi có Nháp. Cột Trạng thái (Nháp/Còn hiệu lực/Đạt target) trên table. Date picker xem được ngày quá khứ (cả Nháp + Publish); ngày trống → empty state rõ ràng, không phải lỗi. (v1.3) Cảnh báo khi backdate &gt;14 ngày (vẫn cho lưu); chặn thêm dòng trùng mã+ngày (DUPLICATE_ENTRY_FOR_DATE).</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-05</span><div><div class="t-name">PDF upload component (reuse from A-04)</div><div class="t-note">Tái sử dụng component từ NH Research. Áp dụng cho Danh mục cơ bản + Kỹ thuật hằng ngày.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--violet-light);color:var(--violet);">ADM-06</span><div><div class="t-name">Excel parsing validation UI</div><div class="t-note">Hiển thị error list từ ratingUpload API: mã không hợp lệ, rating value sai, row number. Giúp admin fix file.</div></div></li>
       </ul>
@@ -1286,11 +1316,11 @@
     <div class="layer-card">
       <div class="layer-hdr" style="background:var(--green);color:white;">🧪 QA</div>
       <ul class="task-list">
-        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-01</span><div><div class="t-name">Test: Cơ bản — filter, price, %</div><div class="t-note">Bluechip/Midcap filter. % tiềm năng tính đúng (dương/âm, màu sắc). currentPrice = closing price ngoài giờ GD.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-01</span><div><div class="t-name">Test: Cơ bản — filter, price, %</div><div class="t-note">Bluechip/Midcap filter. % tiềm năng tính đúng (dương/âm, màu sắc). currentPrice = closing price ngoài giờ GD. (v1.3) currentPrice &gt; targetPrice → badge "Đã đạt mục tiêu" + % đỏ, không auto-archive. currentPrice null → "Đang cập nhật giá", không lỗi 500. Segment do BE trả, không nhận từ form.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-07</span><div><div class="t-name">(v1.2) Test: mốc & lịch sử Cơ bản + Home entry + link NH Research</div><div class="t-note">Tạo mốc mới cho mã đã có → mốc cũ vào "Danh sách báo cáo gần nhất", không mất data. Card Home load đúng topPicks, tap mở đúng full-screen. Admin link bài NH Research hiển thị đúng trên report history.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-02</span><div><div class="t-name">Test: NHSV Rating — Excel upload flow</div><div class="t-note">File hợp lệ → preview đúng → confirm → app show batch mới. File thiếu cột → error. File có giá trị rating sai (E, F) → error list đúng.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-02</span><div><div class="t-name">Test: NHSV Rating — Excel upload flow</div><div class="t-note">File hợp lệ → preview đúng → confirm → app show batch mới. File thiếu cột → error. File có giá trị rating sai (E, F) → error list đúng. (v1.3) File có mã trùng → warning duplicateCodes. Mã ở batch cũ thiếu ở file mới → warning missingCodesFromPreviousBatch. Còn dòng lỗi → publish bị chặn (VALIDATION_ERRORS_PRESENT), không publish một phần.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-03</span><div><div class="t-name">Test: NHSV Rating — batch replacement</div><div class="t-note">Sau upload batch mới: app hiện data mới. Batch cũ is_active=false. Search đúng mã trong batch mới.</div></div></li>
-        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-04</span><div><div class="t-name">Test: Kỹ thuật hằng ngày</div><div class="t-note">(v1.2) List gộp đúng 14 ngày, group theo ngày đúng thứ tự. Cả 14 ngày không PUBLISHED → empty state đúng. Batch-tạo nhiều mã 1 lần → tất cả DRAFT. Publish → toàn bộ DRAFT của ngày đó lên app ngay, không ảnh hưởng entry đã PUBLISHED trước. Upsize=null → ẩn ô. Vùng mua 1 giá vs range. recommendationType khác BUY bị BE reject.</div></div></li>
+        <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-04</span><div><div class="t-name">Test: Kỹ thuật hằng ngày</div><div class="t-note">(v1.2) List gộp đúng 14 ngày, group theo ngày đúng thứ tự. Cả 14 ngày không PUBLISHED → empty state đúng. Batch-tạo nhiều mã 1 lần → tất cả DRAFT. Publish → toàn bộ DRAFT của ngày đó lên app ngay, không ảnh hưởng entry đã PUBLISHED trước. Upsize=null → ẩn ô. Vùng mua 1 giá vs range. recommendationType khác BUY bị BE reject. (v1.3) Thêm dòng trùng mã+ngày → DUPLICATE_ENTRY_FOR_DATE. Backdate &gt;14 ngày → cảnh báo, vẫn lưu, không hiện trên mobile. Group ngày skip Thứ 7/CN. Badge động target/cắt lỗ theo currentPrice.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-05</span><div><div class="t-name">Test: Search mã CK — tất cả 3 sub-tabs</div><div class="t-note">Search "VCB" → lọc đúng. Search mã không tồn tại → empty state. Clear search → full list.</div></div></li>
         <li class="task-item"><span class="task-id" style="background:var(--green-light);color:var(--green);">QA-06</span><div><div class="t-name">Test: Disclaimer + navigate stock detail</div><div class="t-note">Disclaimer hiển thị đúng trên cả 3 tabs. Tap card/row → navigate đúng stock detail screen với stockCode đúng.</div></div></li>
       </ul>
@@ -1306,11 +1336,11 @@
     <span class="sub">Cần xác nhận trước khi estimate / bắt đầu dev</span>
   </div>
 
-  <div class="oq-card" style="background:#f0fdf4;border-color:#86efac;">
-    <div class="oq-num" style="background:#16a34a;">✓</div>
+  <div class="oq-card" style="background:#fef2f2;border-color:#fca5a5;">
+    <div class="oq-num" style="background:var(--red);">⟲</div>
     <div class="oq-content">
-      <div class="oq-q" style="color:#14532d;">[RESOLVED 2026-07-10] Danh mục cơ bản: khuyến nghị có expire hay tự quản lý?</div>
-      <div class="oq-note" style="color:#166534;">Trả lời: Có expire, set theo từng mã (optional, field <code>expiry_date</code>). Không set = không tự hết hạn, admin tự Archive tay. Có set = scheduled job (BE-11) tự SET <code>status='ARCHIVED'</code> sau ngày hết hiệu lực. Đã cập nhật data model (mục 4), Admin form (mục 7), Work Breakdown (mục 8).</div>
+      <div class="oq-q" style="color:#7f1d1d;">[REOPENED → RESOLVED 2026-07-23, v1.3] Danh mục cơ bản: expiryDate</div>
+      <div class="oq-note" style="color:#991b1b;">Q1 (2026-07-10) trước đây chốt "có expiry + scheduled job BE-11". <strong>v1.3 đảo quyết định (Q1b):</strong> <strong>bỏ hẳn <code>expiryDate</code> cho Cơ bản</strong> — cột giữ trong schema nhưng luôn NULL, ẩn khỏi Admin form; không còn scheduled auto-archive; BE-11 gỡ khỏi scope. Thay bằng flag <code>isTargetReached</code> + admin review/Archive thủ công. Đã cập nhật data model (mục 4), Admin form (mục 7), Work Breakdown (mục 8). Xem <code>Edge_Cases_Review.html</code> case 2 & 18.</div>
     </div>
   </div>
 
@@ -1366,12 +1396,21 @@
       <div class="oq-tags"><span class="tag tag-open">❓ Owner: PM</span></div>
     </div>
   </div>
+
+  <div class="oq-card">
+    <div class="oq-num" style="background:var(--red);">8</div>
+    <div class="oq-content">
+      <div class="oq-q">(v1.3) Auth: có nên giữ vĩnh viễn việc mở API mobile không cần login?</div>
+      <div class="oq-note">v1.3 tạm thời mở toàn bộ 6 API mobile Khuyến nghị không cần đăng nhập (Bearer token optional) — quyết định business tạm thời (2026-07-23). Cần chốt trước GA: giữ mở (tăng conversion, cạnh tranh SSI/VNDIRECT/KBSV) hay bắt buộc login trở lại (bảo vệ nội dung premium)? Tương ứng Q11 trong <code>PRD.md</code>.</div>
+      <div class="oq-tags"><span class="tag tag-block">🚫 Owner: PM + IT · Trước GA</span></div>
+    </div>
+  </div>
 </div>
 
 <!-- FOOTER -->
 <div class="doc-footer">
-  <div>NHSV Pro · A-05 Khuyến nghị Feature Spec · v1.2 (2026-07-20)</div>
-  <div>35 tasks (13 BE · 9 Mobile · 6 Admin) · 7 QA tasks · 7 open questions (2 resolved)</div>
+  <div>NHSV Pro · A-05 Khuyến nghị Feature Spec · v1.3 (2026-07-23)</div>
+  <div>35 tasks (13 BE · 9 Mobile · 6 Admin) · 7 QA tasks · 8 open questions (3 resolved, 1 reopened→resolved)</div>
 </div>
 
 </div>
