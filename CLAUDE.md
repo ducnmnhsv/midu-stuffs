@@ -164,6 +164,7 @@ Daily stack: Figma · Jira (NHMTS) · Sentry · tradex-monitoring repo · Claude
 @Knowledge/TradeX/API Standards/tradex-api-spec-template.md
 @Knowledge/TradeX/Planning/regular-order-api-mapping.md
 @Knowledge/TradeX/Planning/conditional-order-api-mapping.md
+@Knowledge/TradeX/Diagram-Standards/BA_Diagram_Selection_Guide.md
 
 ---
 
