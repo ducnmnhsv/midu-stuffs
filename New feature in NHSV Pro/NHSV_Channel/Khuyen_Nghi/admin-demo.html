@@ -201,6 +201,26 @@
   .chip-draft .chip-dot { background: var(--amber); }
   .chip-target   { background: color-mix(in srgb, var(--blue) 14%, var(--card)); color: var(--blue); }
   .chip-target .chip-dot { background: var(--blue); }
+  .chip-warn     { background: color-mix(in srgb, var(--amber) 16%, var(--card)); color: var(--amber); }
+  .chip-warn .chip-dot { background: var(--amber); }
+  tr.row-warn td { background: color-mix(in srgb, var(--amber) 8%, var(--card)); }
+  .badge-warn {
+    display: inline-flex; align-items: center; gap: 4px; margin-left: 6px;
+    font-size: 10px; font-weight: 800; color: var(--amber);
+    background: color-mix(in srgb, var(--amber) 16%, var(--card));
+    padding: 2px 7px; border-radius: 20px; vertical-align: middle; white-space: nowrap;
+  }
+  .warn-list { background: color-mix(in srgb, var(--amber) 9%, var(--card)); border: 1px solid color-mix(in srgb, var(--amber) 32%, var(--border)); border-radius: 9px; padding: 12px 14px; margin-bottom: 12px; }
+  .warn-list .wt { font-size: 12px; font-weight: 800; color: var(--amber); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .warn-list ul { list-style: none; }
+  .warn-list li { font-size: 12px; color: var(--text); padding: 3px 0; }
+  .warn-list li b { color: var(--amber); font-variant-numeric: tabular-nums; }
+  .milestone-note { display: flex; gap: 10px; align-items: flex-start; background: color-mix(in srgb, var(--amber) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--border)); border-radius: 10px; padding: 11px 14px; margin-bottom: 14px; }
+  .milestone-note svg { color: var(--amber); flex-shrink: 0; margin-top: 1px; }
+  .milestone-note .mn-t { font-size: 12.5px; font-weight: 800; color: var(--text); }
+  .milestone-note .mn-s { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .row-error-line { padding: 2px 10px 9px 10px; color: var(--red); font-size: 11px; font-weight: 700; }
+  .batch-warn { display: none; margin-top: 8px; font-size: 11.5px; font-weight: 600; color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--amber) 30%, var(--border)); border-radius: 7px; padding: 8px 11px; }
   .pdf-chip { font-size: 11px; color: var(--primary); font-weight: 700; }
   .pdf-chip.none { color: var(--text-muted); font-weight: 500; }
 
@@ -380,7 +400,7 @@
   <div class="page-head">
     <div>
       <div class="page-title">Khuyến nghị</div>
-      <div class="page-sub">Quản lý 3 nguồn nội dung khuyến nghị NHSV — v1.2: Cơ bản · Kỹ thuật hằng ngày · NHSV Rating (mobile entry point: card Home, không còn trong NHSV Channel)</div>
+      <div class="page-sub">Quản lý 3 nguồn nội dung khuyến nghị NHSV — v1.3: Cơ bản · Kỹ thuật hằng ngày · NHSV Rating (mobile entry point: card Home, không còn trong NHSV Channel)</div>
     </div>
   </div>
 
@@ -395,7 +415,7 @@
 
     <div class="stats">
       <div class="stat"><div class="v">5</div><div class="l">Đang hiệu lực</div></div>
-      <div class="stat warn"><div class="v">1</div><div class="l">Sắp hết hiệu lực (≤ 7 ngày)</div></div>
+      <div class="stat warn"><div class="v">1</div><div class="l">Cần review — đã đạt mục tiêu</div></div>
       <div class="stat"><div class="v">3</div><div class="l">Bluechip</div></div>
       <div class="stat"><div class="v">2</div><div class="l">Midcap</div></div>
     </div>
@@ -427,7 +447,7 @@
       <div class="tbl-scroll">
         <table>
           <thead><tr>
-            <th>Mã CK</th><th>Phân khúc</th><th>Giá kỳ vọng</th><th>Ngày KN</th><th>Hết hiệu lực</th><th>Report</th><th>Trạng thái</th><th>Thao tác</th>
+            <th>Mã CK</th><th>Phân khúc <span style="text-transform:none;font-weight:600;color:var(--text-muted)">· auto</span></th><th>Giá kỳ vọng</th><th>Ngày KN</th><th>Report</th><th>Trạng thái</th><th>Thao tác</th>
           </tr></thead>
           <tbody>
             <tr>
@@ -435,7 +455,6 @@
               <td><span class="chip chip-bluechip">Bluechip</span></td>
               <td class="num" style="color:var(--green);font-weight:700">40.000</td>
               <td class="num">04/06/26</td>
-              <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
               <td><span class="pdf-chip" title="Link NH Research">NH Research</span></td>
               <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
               <td><div class="act-group">
@@ -449,7 +468,6 @@
               <td><span class="chip chip-midcap">Midcap</span></td>
               <td class="num" style="color:var(--green);font-weight:700">43.900</td>
               <td class="num">17/04/26</td>
-              <td class="num" style="color:var(--text-muted)">Không giới hạn</td>
               <td><span class="pdf-chip" title="Upload PDF riêng">1.8 MB</span></td>
               <td><span class="chip chip-active"><span class="chip-dot"></span>Đang hiệu lực</span></td>
               <td><div class="act-group">
@@ -458,14 +476,13 @@
                 <button class="act-btn danger" title="Lưu trữ" onclick="archiveRow(this)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
               </div></td>
             </tr>
-            <tr>
-              <td class="code-cell"><div class="code">GMD</div><div class="name">Gemadept · HOSE</div></td>
+            <tr class="row-warn" title="Giá hiện tại 92.100 đã vượt giá kỳ vọng 90.000 — % tiềm năng -2,28% ≤ 0, cần Phòng PT review">
+              <td class="code-cell"><div class="code">GMD <span class="badge-warn"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> % ≤ 0</span></div><div class="name">Gemadept · HOSE</div></td>
               <td><span class="chip chip-bluechip">Bluechip</span></td>
               <td class="num" style="color:var(--green);font-weight:700">90.000</td>
               <td class="num">02/07/26</td>
-              <td class="num" style="color:var(--amber);font-weight:700">15/07/26</td>
               <td><span class="pdf-chip none">Chưa có</span></td>
-              <td><span class="chip chip-expiring"><span class="chip-dot"></span>Sắp hết hiệu lực</span></td>
+              <td><span class="chip chip-warn"><span class="chip-dot"></span>Đã đạt mục tiêu</span></td>
               <td><div class="act-group">
                 <button class="act-btn" title="Lịch sử mốc" onclick="alert('Lịch sử: 1 mốc — 02/07/26 (current)')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
                 <button class="act-btn" title="Sửa" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
@@ -477,9 +494,8 @@
               <td><span class="chip chip-bluechip">Bluechip</span></td>
               <td class="num">135.000</td>
               <td class="num">02/03/26</td>
-              <td class="num">30/06/26</td>
               <td><span class="pdf-chip">3.1 MB</span></td>
-              <td><span class="chip chip-archived"><span class="chip-dot"></span>Đã lưu trữ (tự động)</span></td>
+              <td><span class="chip chip-archived"><span class="chip-dot"></span>Đã lưu trữ (thủ công)</span></td>
               <td><div class="act-group">
                 <button class="act-btn" title="Xem" onclick="openModal('modal-dmcb')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div></td>
@@ -488,7 +504,7 @@
         </table>
       </div>
       <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
-        <div class="panel-meta">FPT tự chuyển "Đã lưu trữ" lúc 00:05 ngày 30/06/26 — scheduled job theo <code style="background:color-mix(in srgb, var(--text) 6%, var(--card));padding:1px 5px;border-radius:4px">expiryDate</code>, không cần admin can thiệp.</div>
+        <div class="panel-meta">(v1.3) Cơ bản <strong>không còn "Ngày hết hiệu lực"</strong> — mã chỉ kết thúc khi Phòng PT tự Archive (không còn scheduled job auto-archive theo <code style="background:color-mix(in srgb, var(--text) 6%, var(--card));padding:1px 5px;border-radius:4px">expiryDate</code>). Mã có % tiềm năng ≤ 0 (giá hiện tại đã vượt giá kỳ vọng) được <strong style="color:var(--amber)">highlight vàng + badge "Đã đạt mục tiêu"</strong> để Phòng PT chủ động review. Segment do BE tự xác định theo mã (read-only).</div>
       </div>
     </div>
   </section>
@@ -525,8 +541,21 @@
             <div class="psum ok"><div class="v">309</div><div class="l">Hợp lệ</div></div>
             <div class="psum err"><div class="v">3</div><div class="l">Lỗi</div></div>
           </div>
+          <div class="warn-list">
+            <div class="wt"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>(v1.3) 2 mã trùng lặp trong file — kiểm tra lại</div>
+            <ul>
+              <li><b>HPG</b> — xuất hiện ở dòng 12 và 88</li>
+              <li><b>SSI</b> — xuất hiện ở dòng 30 và 205</li>
+            </ul>
+          </div>
+          <div class="warn-list">
+            <div class="wt"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>(v1.3) 2 mã có ở batch active (06/2026) nhưng thiếu trong file mới</div>
+            <ul>
+              <li><b>FPT</b>, <b>MWG</b> — sẽ biến mất khỏi bảng rating nếu publish file này (khả năng Phòng QTRR bỏ sót)</li>
+            </ul>
+          </div>
           <div class="error-list">
-            <div class="et">3 dòng lỗi — sửa file và tải lại</div>
+            <div class="et">3 dòng lỗi — sửa file và tải lại (không cho publish một phần)</div>
             <ul>
               <li><b>Dòng 47</b> — Mã "XYZ99" không tồn tại trong danh sách niêm yết</li>
               <li><b>Dòng 118</b> — Giá trị "E" ở cột NHSV Rating không hợp lệ (chỉ nhận S / A / B / C / D)</li>
@@ -545,7 +574,7 @@
           </div>
           <div class="preview-actions">
             <button class="btn btn-primary" disabled>Xác nhận publish</button>
-            <span class="preview-note">Publish bị khoá tới khi 3 dòng lỗi được sửa và tải lại file.</span>
+            <span class="preview-note">(v1.3) Publish bị <strong>khoá</strong> tới khi 3 dòng lỗi được sửa và <strong>re-upload file sạch 100%</strong> — không cho publish một phần / skip dòng lỗi. (Cảnh báo trùng lặp & thiếu mã ở trên không chặn publish.)</span>
           </div>
         </div>
 
@@ -555,6 +584,12 @@
             <div class="psum"><div class="v">315</div><div class="l">Tổng số dòng</div></div>
             <div class="psum ok"><div class="v">315</div><div class="l">Hợp lệ</div></div>
             <div class="psum"><div class="v" style="color:var(--text-muted)">0</div><div class="l">Lỗi</div></div>
+          </div>
+          <div class="warn-list">
+            <div class="wt"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>(v1.3) 1 mã có ở batch active (06/2026) nhưng thiếu trong file mới</div>
+            <ul>
+              <li><b>DXG</b> — sẽ biến mất khỏi bảng rating nếu publish. Không chặn — xác nhận đây là chủ ý trước khi publish.</li>
+            </ul>
           </div>
           <div class="tbl-scroll">
             <table>
@@ -656,7 +691,7 @@
         </table>
       </div>
       <div class="panel-head" style="border-top:1px solid var(--border);border-bottom:none;">
-        <div class="panel-meta">Entry "Nháp" <strong>không</strong> hiển thị trên app — chỉ lên app sau khi bấm "Publish ngày...". Xoá ở bảng này luôn là hard delete (khác Cơ bản dùng soft archive), áp dụng cho cả Nháp và đã publish. "Upsize" hiện gạch ngang khi không có giá trị. Mọi entry ngầm định <code>recommendationType=BUY</code> (v1 chưa cho chọn SELL/HOLD).</div>
+        <div class="panel-meta">Entry "Nháp" <strong>không</strong> hiển thị trên app — chỉ lên app sau khi bấm "Publish ngày...". Xoá ở bảng này luôn là hard delete (khác Cơ bản dùng soft archive), áp dụng cho cả Nháp và đã publish. "Upsize" hiện gạch ngang khi không có giá trị. Mọi entry ngầm định <code>recommendationType=BUY</code> (v1 chưa cho chọn SELL/HOLD). <strong>(v1.3)</strong> Ràng buộc <code>UNIQUE(stockCode, tradeDate)</code> — mỗi mã tối đa 1 entry/ngày; thêm dòng trùng mã cùng ngày sẽ bị chặn, phải sửa entry hiện có.</div>
       </div>
     </div>
   </section>
@@ -674,14 +709,19 @@
       <div class="frow">
         <div class="fgroup">
           <label class="flabel">Mã CK <span class="req">*</span></label>
-          <input class="ftext" id="dmcb-code" placeholder="VD: VCB" value="VCB">
+          <input class="ftext" id="dmcb-code" placeholder="VD: VCB" value="VCB" oninput="checkMilestone()">
         </div>
         <div class="fgroup">
-          <label class="flabel">Phân khúc <span class="req">*</span></label>
-          <select class="fselect">
-            <option>Bluechip</option>
-            <option>Midcap</option>
-          </select>
+          <label class="flabel">Phân khúc <span class="opt">(auto — BE xác định)</span></label>
+          <input class="ftext" value="Bluechip" disabled style="color:var(--text-muted)">
+          <div class="fhint">(v1.3) Segment tự động theo mã (index membership) — admin không nhập tay</div>
+        </div>
+      </div>
+      <div class="milestone-note" id="dmcb-milestone-note">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <div class="mn-t">Mã VCB đã có 1 mốc khuyến nghị đang active</div>
+          <div class="mn-s">(v1.2) Lưu sẽ tạo <strong>mốc mới (current)</strong>. Mốc hiện tại (12/03/2026) tự chuyển vào lịch sử — không xoá, vẫn xem được ở "Danh sách báo cáo gần nhất" trên app.</div>
         </div>
       </div>
       <div class="frow">
@@ -699,16 +739,10 @@
         <span class="lc-l">% tiềm năng (live)</span>
         <span class="lc-v" id="dmcb-potential">+25,79%</span>
       </div>
-      <div class="frow">
-        <div class="fgroup">
-          <label class="flabel">Ngày khuyến nghị <span class="req">*</span></label>
-          <input class="fdate" type="text" value="04/06/2026">
-        </div>
-        <div class="fgroup">
-          <label class="flabel">Ngày hết hiệu lực <span class="opt">(tuỳ chọn)</span></label>
-          <input class="fdate" type="text" placeholder="Để trống = không giới hạn">
-          <div class="fhint">Không set = khuyến nghị không tự hết hạn, cần Archive tay. Có set = tự chuyển "Đã lưu trữ" sau ngày này.</div>
-        </div>
+      <div class="fgroup" style="max-width:240px;">
+        <label class="flabel">Ngày khuyến nghị <span class="req">*</span></label>
+        <input class="fdate" type="text" value="04/06/2026">
+        <div class="fhint">(v1.3) Đã bỏ "Ngày hết hiệu lực" — Cơ bản không tự hết hạn, chỉ kết thúc khi Archive tay</div>
       </div>
       <div class="fgroup">
         <label class="flabel">Luận điểm <span class="opt">(tuỳ chọn)</span></label>
@@ -754,10 +788,13 @@
       <button class="modal-close" onclick="closeModal('modal-kythuat')" aria-label="Đóng">✕</button>
     </div>
     <div class="modal-body">
-      <div class="fgroup" style="max-width:220px;">
+      <div class="fgroup" style="max-width:220px;margin-bottom:6px;">
         <label class="flabel">Ngày áp dụng <span class="req">*</span></label>
-        <input class="fdate" type="text" id="batch-date" value="12/06/2026">
+        <input class="fdate" type="text" id="batch-date" value="12/06/2026" oninput="checkBatchDate()">
         <div class="fhint">Áp dụng cho toàn bộ các mã thêm bên dưới</div>
+      </div>
+      <div class="batch-warn" id="batch-date-warn">
+        ⚠ (v1.3) Ngày áp dụng cách hiện tại &gt; 14 ngày — entry sẽ <strong>không hiển thị trên mobile</strong> (ngoài rolling 14 ngày). Vẫn lưu được để lưu trữ/audit, không chặn.
       </div>
 
       <div class="fgroup">
@@ -838,6 +875,33 @@
   function toggleReportSource(kind) {
     document.getElementById('report-nhresearch').style.display = kind === 'nhresearch' ? '' : 'none';
     document.getElementById('report-upload').style.display = kind === 'upload' ? '' : 'none';
+  }
+
+  /* (v1.2) Mốc & lịch sử — mã đã có mốc active → tạo mốc mới, mốc cũ vào lịch sử */
+  const DMCB_ACTIVE_CODES = ['VCB', 'TV1', 'GMD'];
+  function checkMilestone() {
+    const code = (document.getElementById('dmcb-code').value || '').trim().toUpperCase();
+    const note = document.getElementById('dmcb-milestone-note');
+    const has = DMCB_ACTIVE_CODES.includes(code);
+    note.style.display = has ? '' : 'none';
+    if (has) note.querySelector('.mn-t').textContent = 'Mã ' + code + ' đã có 1 mốc khuyến nghị đang active';
+  }
+
+  /* (v1.3) Cảnh báo backdate khi Ngày áp dụng cách "hôm nay" > 14 ngày */
+  const KT_TODAY = '11/06/2026';
+  function parseDMY(s) {
+    const p = (s || '').trim().split('/');
+    if (p.length !== 3) return null;
+    const d = new Date(+p[2], +p[1] - 1, +p[0]);
+    return isNaN(d) ? null : d;
+  }
+  function checkBatchDate() {
+    const warn = document.getElementById('batch-date-warn');
+    const d = parseDMY(document.getElementById('batch-date').value);
+    const today = parseDMY(KT_TODAY);
+    if (!d || !today) { warn.style.display = 'none'; return; }
+    const diffDays = (today - d) / 86400000;
+    warn.style.display = diffDays > 14 ? '' : 'none';
   }
 
   function simulateUpload(kind) {
@@ -984,30 +1048,63 @@
     btn.style.opacity = draftCount === 0 ? '.5' : '1';
   }
 
+  function clearRowErrors() {
+    document.querySelectorAll('#row-list .row-error-line').forEach(e => e.remove());
+    document.querySelectorAll('#row-list .row-item input').forEach(i => { i.style.borderColor = ''; });
+  }
+
+  function markRowError(rowEl, msg) {
+    rowEl.querySelector('input').style.borderColor = 'var(--red)';
+    const line = document.createElement('div');
+    line.className = 'row-error-line';
+    line.textContent = msg;
+    rowEl.after(line);
+  }
+
   function saveDraftBatch() {
+    clearRowErrors();
     const rows = document.querySelectorAll('#row-list .row-item');
     const dateVal = document.getElementById('batch-date').value || currentKtDate;
     if (!KT_DATA[dateVal]) KT_DATA[dateVal] = [];
-    let added = 0;
+
+    // (v1.3) Ràng buộc UNIQUE(stockCode, tradeDate)
+    const existing = new Set((KT_DATA[dateVal] || []).map(i => i.code.toUpperCase()));
+    const seen = new Set();
+    let hasConflict = false;
+    const staged = [];
     rows.forEach(r => {
       const inputs = r.querySelectorAll('input');
-      const code = inputs[0].value.trim();
+      const code = inputs[0].value.trim().toUpperCase();
       if (!code) return;
-      KT_DATA[dateVal].push({
-        code: code.toUpperCase(), name: 'Mới nhập',
+      if (existing.has(code)) {
+        markRowError(r, 'Mã ' + code + ' đã có entry cho ngày ' + dateVal + ' — vui lòng sửa dòng hiện có.');
+        hasConflict = true; return;
+      }
+      if (seen.has(code)) {
+        markRowError(r, 'Mã ' + code + ' bị nhập trùng trong danh sách — mỗi mã chỉ 1 dòng/ngày.');
+        hasConflict = true; return;
+      }
+      seen.add(code);
+      staged.push({
+        code: code, name: 'Mới nhập',
         buyFrom: inputs[1].value || '0', buyTo: inputs[2].value || null,
         target: inputs[3].value || '—', stop: inputs[4].value || '—',
         upsize: inputs[5].value || null, pdf: null, status: 'DRAFT', hitTarget: false,
       });
-      added++;
     });
-    closeModal('modal-kythuat');
-    if (added > 0) {
-      renderKt(dateVal);
-      showToast('Đã lưu ' + added + ' mã dưới dạng Nháp cho ngày ' + dateVal + '. Bấm "Publish" khi sẵn sàng.');
-    } else {
-      showToast('Chưa nhập mã nào — không có gì để lưu.');
+
+    if (hasConflict) {
+      showToast('Có mã trùng cho ngày ' + dateVal + ' — hệ thống đã chặn, vui lòng sửa dòng được đánh dấu.');
+      return;
     }
+    if (staged.length === 0) {
+      showToast('Chưa nhập mã nào — không có gì để lưu.');
+      return;
+    }
+    staged.forEach(s => KT_DATA[dateVal].push(s));
+    closeModal('modal-kythuat');
+    renderKt(dateVal);
+    showToast('Đã lưu ' + staged.length + ' mã dưới dạng Nháp cho ngày ' + dateVal + '. Bấm "Publish" khi sẵn sàng.');
   }
 
   function publishDay() {
