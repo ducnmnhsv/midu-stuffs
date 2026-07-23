@@ -1,0 +1,503 @@
+# Instincts generated from https://github.com/ducnmnhsv/midu-stuffs
+# Generated: 2026-07-23T14:35:53.729Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: midu-stuffs-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: feat, fix, chore, test, refactor
+
+## Evidence
+
+- 30 commits analyzed
+- Detected conventional commit pattern
+- Examples: chore: import existing Project management dashboard as tracked baseline, test: add source-extraction harness for ProjectDashboard pure helpers
+
+---
+id: midu-stuffs-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Commit Length
+
+## Action
+
+Write moderate-length commit messages (~70 characters)
+
+## Evidence
+
+- Average commit message length: 70 chars
+- Based on 30 commits
+
+---
+id: midu-stuffs-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Naming Files
+
+## Action
+
+Use PascalCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: PascalCase
+
+---
+id: midu-stuffs-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: midu-stuffs-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: midu-stuffs-workflow-feature-development
+trigger: "when implementing a new feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Workflow Feature Development
+
+## Action
+
+Follow the feature-development workflow:
+1. Add feature implementation
+2. Add tests for feature
+3. Update documentation
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~22x per month
+- Files: **/*.test.*
+
+---
+id: midu-stuffs-workflow-add-or-enhance-dashboard-feature
+trigger: "when doing add or enhance dashboard feature"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Workflow Add Or Enhance Dashboard Feature
+
+## Action
+
+Follow the add-or-enhance-dashboard-feature workflow:
+1. Edit or extend Project management/ProjectDashboard.jsx to implement the feature.
+2. Optionally update or add related helpers or constants within the same file.
+3. Commit with a 'feat:' message describing the new feature.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~10x per month
+- Files: Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-workflow-add-or-update-helper-functions-with-tests
+trigger: "when doing add or update helper functions with tests"
+confidence: 0.65
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Workflow Add Or Update Helper Functions With Tests
+
+## Action
+
+Follow the add-or-update-helper-functions-with-tests workflow:
+1. Edit Project management/ProjectDashboard.jsx to add or update helper functions.
+2. Update or add tests in Project management/scripts/helpers.test.js.
+3. Optionally update helper extraction/loading scripts.
+4. Commit with a 'feat:' or 'fix:' message referencing helpers and tests.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~3x per month
+- Files: Project management/ProjectDashboard.jsx, Project management/scripts/helpers.test.js
+
+---
+id: midu-stuffs-workflow-fix-dashboard-bug-or-address-review-feedback
+trigger: "when doing fix dashboard bug or address review feedback"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Workflow Fix Dashboard Bug Or Address Review Feedback
+
+## Action
+
+Follow the fix-dashboard-bug-or-address-review-feedback workflow:
+1. Edit Project management/ProjectDashboard.jsx to fix the bug or apply review suggestions.
+2. Optionally update related test files if the fix affects logic.
+3. Commit with a 'fix:' message referencing the issue or review finding.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~7x per month
+- Files: Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-workflow-add-or-update-localization-or-language-support
+trigger: "when doing add or update localization or language support"
+confidence: 0.7
+domain: workflow
+source: repo-analysis
+source_repo: https://github.com/ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Workflow Add Or Update Localization Or Language Support
+
+## Action
+
+Follow the add-or-update-localization-or-language-support workflow:
+1. Edit Project management/ProjectDashboard.jsx to add or update language toggles, dictionaries, or localized text.
+2. Optionally update or add tests for language features in helpers.test.js.
+3. Commit with a 'feat:' or 'fix:' message referencing language or localization.
+
+## Evidence
+
+- Workflow detected from commit patterns
+- Frequency: ~4x per month
+- Files: Project management/ProjectDashboard.jsx, Project management/scripts/helpers.test.js
+
+---
+id: midu-stuffs-instinct-file-naming
+trigger: "When creating a new file or renaming an existing file"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct File Naming
+
+## Action
+
+Use PascalCase for file names (e.g., ProjectDashboard.jsx)
+
+## Evidence
+
+- Pattern in files: Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-function-naming
+trigger: "When defining a new function"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Function Naming
+
+## Action
+
+Use camelCase for function names
+
+## Evidence
+
+- Pattern in Project management/scripts/extract-helpers.js
+- Pattern in Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-class-naming
+trigger: "When defining a new class"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Class Naming
+
+## Action
+
+Use PascalCase for class names
+
+## Evidence
+
+- Pattern in Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-constant-naming
+trigger: "When defining a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Constant Naming
+
+## Action
+
+Use SCREAMING_SNAKE_CASE for constant names
+
+## Evidence
+
+- Pattern in Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-import-style
+trigger: "When importing modules"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Import Style
+
+## Action
+
+Use relative import paths
+
+## Evidence
+
+- Pattern in Project management/scripts/extract-helpers.js
+- Pattern in Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-export-style
+trigger: "When exporting modules or functions"
+confidence: 0.9
+domain: code-style
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Export Style
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in Project management/scripts/extract-helpers.js
+- Pattern in Project management/ProjectDashboard.jsx
+
+---
+id: midu-stuffs-instinct-testing-location
+trigger: "When writing tests for a module or helper function"
+confidence: 0.85
+domain: testing
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Testing Location
+
+## Action
+
+Place tests in a .test.js file, possibly in the same or a nearby folder (mixed location)
+
+## Evidence
+
+- Pattern in Project management/scripts/helpers.test.js
+
+---
+id: midu-stuffs-instinct-test-helper-functions
+trigger: "When adding or updating helper functions"
+confidence: 0.9
+domain: testing
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Test Helper Functions
+
+## Action
+
+Add or update corresponding tests in helpers.test.js
+
+## Evidence
+
+- Commit: test: add source-extraction harness for ProjectDashboard pure helpers
+- Pattern in Project management/scripts/helpers.test.js
+
+---
+id: midu-stuffs-instinct-git-commit-format
+trigger: "When making a commit"
+confidence: 0.95
+domain: git
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Git Commit Format
+
+## Action
+
+Use Conventional Commits with prefixes: feat, fix, chore, test, refactor, followed by a colon and a short description
+
+## Evidence
+
+- Commit: feat: migrate dashboard storage from v2 to v3, preserving existing data
+- Commit: fix: remove hardcoded depsMap from load-helpers, make test dependencies explicit
+
+---
+id: midu-stuffs-instinct-git-commit-length
+trigger: "When writing a commit message"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Git Commit Length
+
+## Action
+
+Keep the commit message concise, around 70 characters on average
+
+## Evidence
+
+- Average commit length: 70
+- Example: fix: remove hardcoded depsMap from load-helpers, make test dependencies explicit
+
+---
+id: midu-stuffs-instinct-add-dashboard-feature
+trigger: "When someone wants to add a new capability or major UI feature to the project dashboard"
+confidence: 0.95
+domain: workflow
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Add Dashboard Feature
+
+## Action
+
+Edit or extend Project management/ProjectDashboard.jsx to implement the feature and commit with a 'feat:' message describing the new feature
+
+## Evidence
+
+- Workflow: add-or-enhance-dashboard-feature
+- Commits: feat: migrate dashboard storage from v2 to v3, preserving existing data
+
+---
+id: midu-stuffs-instinct-add-helper-with-tests
+trigger: "When someone wants to introduce or change helper utilities for dashboard logic"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Add Helper With Tests
+
+## Action
+
+Edit Project management/ProjectDashboard.jsx to add or update helper functions, update or add tests in helpers.test.js, and commit with a 'feat:' or 'fix:' message referencing helpers and tests
+
+## Evidence
+
+- Workflow: add-or-update-helper-functions-with-tests
+- Commit: test: add source-extraction harness for ProjectDashboard pure helpers
+
+---
+id: midu-stuffs-instinct-fix-dashboard-bug
+trigger: "When someone wants to resolve a bug or implement changes from code review"
+confidence: 0.9
+domain: workflow
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Fix Dashboard Bug
+
+## Action
+
+Edit Project management/ProjectDashboard.jsx to fix the bug or apply review suggestions, optionally update related test files, and commit with a 'fix:' message referencing the issue or review finding
+
+## Evidence
+
+- Workflow: fix-dashboard-bug-or-address-review-feedback
+- Commit: fix: give week-border divs explicit grid placement in GanttView
+
+---
+id: midu-stuffs-instinct-add-localization
+trigger: "When someone wants to add new language coverage or improve localization"
+confidence: 0.85
+domain: workflow
+source: repo-analysis
+source_repo: ducnmnhsv/midu-stuffs
+---
+
+# Midu Stuffs Instinct Add Localization
+
+## Action
+
+Edit Project management/ProjectDashboard.jsx to add or update language toggles, dictionaries, or localized text, optionally update or add tests for language features in helpers.test.js, and commit with a 'feat:' or 'fix:' message referencing language or localization
+
+## Evidence
+
+- Workflow: add-or-update-localization-or-language-support
+
